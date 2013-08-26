@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Filestore Web Access</title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		{% include 'html-header.html' %}
+
+		<style type="text/css">
+
+			body {
+			padding-left: 0px;
+			padding-right: 0px;
+		    padding-top: 60px;
+			padding-bottom: 40px;
+			}
+
+		/* desktops should get a background, small screens shouldnt */
+		@media (min-width: 768px)
+		{
+		 	body {
+				background-image: url(/static/images/bgimage.jpg) !important;
+				background-position: center top !important;
+				background-repeat: no-repeat !important;
+				min-width: 550px !important;
+			  }
+		}
+
+		</style>
+	</head>
+	<body>
+
+	<script type="text/javascript">
+	window.onload = function()
+	{
+	  var text_input = document.getElementById ('loginUsername');
+	  text_input.focus();
+	  text_input.select();
+	}
+	</script>
+
+	<div class="container signin-block">
+		<form class="form-signin" action="{{ url_for('login') }}" method="POST">
+			<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+			{% if next %}
+			<input name="next" type="hidden" value="{{next}}"/>
+			{% endif %}
+			<div style="text-align: center">
+				<img src="https://blackboard.soton.ac.uk/login/uoslogoblue.png" style="padding: 10px;"/>
+			</div>
+			<h2 class="form-signin-heading">Filestore Web Access</h2>
+			<label>Username:</label>
+			<input type="text" class="input-block-level" id="loginUsername" name="username">
+			<label>Password:</label>
+			<input type="password" class="input-block-level" id="loginPassword" name="password">
+			<label class="checkbox">
+			<input type="checkbox" value="sec" id="sec" name="sec"> Remember me
+			</label>
+			<button class="btn btn-large btn-primary" type="submit">Sign in</button>
+		</form>
+		{% for category, message in get_flashed_messages(with_categories=true) %}
+		<div class="alert {{ category }} fade in"> <a data-dismiss="alert" class="close" href="#">×</a> {{ message|safe }} </div>
+		{% endfor %}
+	</div>
+
+    </div>
+  </body>
+</html>

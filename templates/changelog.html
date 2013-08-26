@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row-fluid">
+
+	<div class="span12">
+		<div class="well">
+			<h1>Changelog</h1>
+
+		<h3>0.9.7</h3>
+		<p>Released 2013-08-13</p>
+		<ul class="changelog">
+			<li><i class="icon-wrench"></i> Fixed spacing on popup menu on directory entries</li>
+			<li><i class="icon-bolt"></i> Changed default click behaviour on directory entries to download rather than view properties</li>
+			<li><i class="icon-bolt"></i> Directory entry rows are now clickable, where as before only the text was clickable</li>
+		</ul>
+
+		<h3>0.9.6</h3>
+		<p>Released 2013-05-07</p>
+		<ul class="changelog">
+			<li><i class="icon-wrench"></i> Fixed login template so that placeholders aren't used - this was confusing logins on IE8 and iPad</li>
+			<li><i class="icon-wrench"></i> Added extensive logging to track failures</li>
+			<li><i class="icon-wrench"></i> Permission denied errors when browsing into directories no longer generate full-page errors</li>
+		</ul>
+
+		<h3>0.9.5</h3>
+		<p>Released 2013-05-06</p>
+		<ul class="changelog">
+			<li><i class="icon-wrench"></i> Fixed a bug in the sidebar for custom/other which prevented navigation</li>
+			<li><i class="icon-wrench"></i> Fixed a bug in the CSRF protection code which produced a nonsensical error</li>
+			<li><i class="icon-lock"></i> Security fix - path checking code now prevents users from navigating to erroneous paths</li>
+			<li><i class="icon-wrench"></i> Added logging for various fwa actions</li>
+			<li><i class="icon-bolt"></i> Improved error reporting e-mails to include various important extra details</li>
+		</ul>
+
+		<h3>0.9.4</h3>
+		<p>Released 2013-04-10</p>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i> Full support for custom servers added</li>
+			<li><i class="icon-bolt"></i> Full support for shared filestore added</li>
+			<li><i class="icon-wrench"></i> Fixed several bugs</li>
+			<li><i class="icon-wrench"></i> Less space wasted on mobile view</li>
+		</ul>
+
+		<h3>0.9.1</h3>
+		<p>Released 2013-03-05</p>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Files can now be copied</li>
+			<li><i class="icon-bolt"></i>  Added experimental support for custom servers</li>
+			<li><i class="icon-bolt"></i>  Added experimental support for shared filestore</li>
+			<li><i class="icon-wrench"></i>  Fixed several bugs in the browse handler</li>
+		</ul>
+
+		<h3>0.9</h3>
+		<p>Released 2013-03-03</p>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Most errors now produce modal error dialogs rather than hard error pages</li>
+			<li><i class="icon-wrench"></i>  Fixed several bugs in the download file handler</li>
+			<li><i class="icon-wrench"></i>  Login background is hidden on small screens</li>
+			<li><i class="icon-wrench"></i>  Lack of padding/header on signin screen now fixed</li>
+			<li><i class="icon-wrench"></i>  Fixed bug where on mobile most pages had no padding around borders</li>
+		</ul>
+
+		<h3>0.8.9</h3>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Mobile borders/padding removed so directory entries fill the mobile screen</li>
+		</ul>
+
+		<h3>0.8.8</h3>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Updated to Bootstrap 2.3.1</li>
+			<li><i class="icon-bolt"></i>  Updated to Font Awesome 3.0.1</li>
+			<li><i class="icon-bolt"></i>  Added new simple sign in page, styled to branding</li>
+		</ul>
+
+		<h3>0.8.7</h3>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Directories can now be deleted</li>
+			<li><i class="icon-wrench"></i>  Internal smb code refactored to determine entry types via st_mode</li>
+			<li><i class="icon-wrench"></i>  File uploads now detect if the target, when overwriting, is a directory</li>
+		</ul>
+
+		<h3>0.8.6</h3>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Directories can now be renamed</li>
+		</ul>		
+
+		<h3>0.8.5</h3>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Blank favicon added</li>
+			<li><i class="icon-bolt"></i>  Pop-up menu for directories added (but rename/delete dir does not yet work)</li>
+			<li><i class="icon-bolt"></i>  Logins restricted to iSolutions staff only</li>
+		</ul>
+
+		<h3>0.8.4</h3>
+		<ul class="changelog">
+			<li><i class="icon-bolt"></i>  Re-written top navigation bar, removes most items on mobile/tablet</li>
+			<li><i class="icon-bolt"></i>  Introduced return-to redirect upon login functionality</li>
+			<li><i class="icon-wrench"></i>  Totally re-written javascript popover implementation fixes interaction bug with dialog popups</li>
+			<li><i class="icon-wrench"></i>  The rename pop up sets the value as the current filename rather than just a placeholder</li>
+			<li><i class="icon-bolt"></i>  File uploads now allow spaces in filenames</li>
+		</ul>
+
+		<h3>0.8.3</h3>
+		<ul class="changelog">
+			<li><i class="icon-wrench"></i>  Changed 'cifsbridge' to 'bargate' in python code</li>
+		</ul>
+
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}

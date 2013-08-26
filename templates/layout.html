@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Filestore Web Access</title>
+		{% include 'responsive-header.html' %}
+		{% include 'html-header.html' %}
+	</head>
+	<body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+
+          <a class="brand visible-phone">Filestore</a>
+          <a class="brand visible-tablet">Filestore Web Access</a>
+          <a class="brand visible-desktop">Filestore Web Access</a>
+
+			{% if not session.logged_in %}
+
+			{% else %}	
+
+
+			<div class=" pull-right">
+            <a class="btn hidden-desktop" href="{{ url_for('logout') }}">
+              Logout
+            </a>
+            <a class="btn dropdown-toggle hidden-tablet hidden-phone" data-toggle="dropdown" href="#">
+              <i class="icon-user"></i> {{ session.username }}
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="https://subscribe.iss.soton.ac.uk/subscribed.html"><i class="icon-key"></i> iSolutions Account</a></li>
+              <li class="divider"></li>
+              <li><a href="{{ url_for('logout') }}">Sign Out</a></li>
+            </ul>
+
+
+          </div>
+			{% endif %}
+			
+
+			<div class="nav">
+		      <ul class="nav">
+				{% if not session.logged_in %}
+		        <li {% if active == 'hero' %} class="active" {% endif %}><a href="{{ url_for('hero') }}">Login</a></li>
+				{% else %}
+		        <li class="visible-desktop" {% if active == 'personal' %} class="active" {% endif %}><a href="{{ url_for('personal') }}">Personal</a></li>
+		        <li class="visible-desktop" {% if active == 'webfiles' %} class="active" {% endif %}><a href="{{ url_for('webfiles') }}">Website</a></li>
+		        <li class="visible-desktop" {% if active == 'webfiles' %} class="active" {% endif %}><a href="{{ url_for('resource') }}">Shared Files</a></li>
+				{% endif %}
+				<li class="visible-desktop {% if active == 'about' or acive == 'help' %}active {% endif %}dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+					<li><a target="_blank" href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php">Help</a></li>
+					<li><a href="{{ url_for('about') }}">About</a></li>
+					</ul>
+				</li>
+		      </ul>
+			</div>
+        </div>
+      </div>
+    </div>
+
+{% if session.popup_error %}
+<!-- modal popup for when upload file is clicked -->
+<div class="modal hide fade" id="popup-error">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>{{ session.popup_error_title }}</h3>
+  </div>
+    <div class="modal-body">
+	{{ session.popup_error_message }}
+  	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn"  data-dismiss="modal">Close</a>
+	</div>
+</div>
+
+<script type="text/javascript">
+    $(window).load(function(){
+        $('#popup-error').modal('show');
+    });
+</script>
+<!-- test -->
+{{ poperr_clear() }}
+<!-- test2 -->
+{% endif %}
+
+    <div class="container-fluid">
+		{% for category, message in get_flashed_messages(with_categories=true) %}
+		<div class="alert {{ category }} fade in"> <a data-dismiss="alert" class="close" href="#">×</a> {{ message|safe }} </div>
+		{% endfor %}
+		{% block body %}{% endblock %}
+    </div>
+  </body>
+</html>

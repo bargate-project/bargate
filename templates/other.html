@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row-fluid">
+	<div class="span2">
+	{% include 'sidebar.html' %}
+	</div>
+	<div class="span10">
+		<h3>Custom Server</h3>
+		<hr/>
+		<form action="{{ url_for('custom') }}" method="POST">
+			<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+			<fieldset>
+				<label>Server URL</label>
+				<input type="text" name="open_server_uri" placeholder="smb://">
+				<span class="help-block">e.g. smb://fileserver.soton.ac.uk/share/</span>
+				<button type="submit" class="btn">Connect</button>
+			</fieldset>
+		</form>
+		<h3>Common Servers</h3>
+		<hr/>
+		<table class="table table-striped table-bordered">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Comment</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>LAMP1</td>
+					<td>LAMP web hosting - RHEL5</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://lamp.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>LAMP2</td>
+					<td>LAMP web hosting - RHEL5 with MSSQL</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://lamp2.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>LAMP3</td>
+					<td>LAMP web hosting - RHEL6</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://lamp3.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>LAMP Dev</td>
+					<td>LAMP web hosting for development systems - RHEL6</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://dev.lamp.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>ECS Undergraduate Filestore</td>
+					<td>Filestore provided by ECS Systems for ECS undergraduate students</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://ugsamba.ecs.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>ECS Postgraduate Filestore</td>
+					<td>Filestore provided by ECS Systems for ECS postgraduate students</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://pgsamba.ecs.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>ECS Staff Filestore</td>
+					<td>Filestore provided by ECS Systems for ECS staff</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://staffsamba.ecs.soton.ac.uk/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+				<tr>
+					<td>K Drive</td>
+					<td>Legacy/obsolete shared filestore for staff</td>
+					<td>
+						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
+							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+							<input type="hidden" name="open_server_uri" value="smb://soton.ac.uk/filestore/">
+							<button type="submit" class="btn">Connect</button>
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!--
+
+lamp lamp lamp
+k ecs ecs
+
+
+-->
+
+{% endblock %}

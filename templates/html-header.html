@@ -1,0 +1,99 @@
+		<!-- FAVICON -->
+		<link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+
+		<!-- JQUERY -->
+		<script src="{{ url_for('static', filename='js/jquery-1.9.1.min.js') }}"></script>
+
+		<!-- FONT AWESOME -->
+		<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+		<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome-ie7.css" rel="stylesheet">
+
+		<!-- BOOTSTRAP, NO ICONS -->
+		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-responsive.min.css" rel="stylesheet">
+		<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+		<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+
+		<!-- jasny bootstrap plugin for rowlink -->
+		<script src="{{ url_for('static', filename='js/bootstrap-rowlink.js') }}"></script>
+		<link href="{{ url_for('static', filename='css/bootstrap-rowlink.css') }}" rel="stylesheet">
+
+		<!-- jQuery-File-Upload -->
+		<script src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/upload/jquery.iframe-transport.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
+	
+		<!-- local CSS -->	
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bargate.css') }}">
+
+		<!-- tooltips -->
+		<script type="text/javascript">
+		  $(document).ready(function () {
+			$("[rel=tooltip]").tooltip();
+		  });
+		</script>
+
+		<style type="text/css">
+			.help-inline, .help-block
+			{
+				color: #A3A3A3;
+			}
+
+			div.dataTables_length label {
+				float: left;
+				text-align: left;
+			}
+			 
+			div.dataTables_length select {
+				width: 75px;
+			}
+			 
+			div.dataTables_filter label {
+				float: right;
+			}
+			 
+			div.dataTables_info {
+				padding-top: 8px;
+			}
+			 
+			div.dataTables_paginate {
+				float: right;
+				margin: 0;
+			}
+			 
+			table
+			{
+				/*margin-bottom: 6px !important;*/
+				margin-bottom: 0px !important;
+				clear: both;
+			}
+
+			table td
+			{
+				vertical-align: middle;
+			}
+
+		</style>
+
+		{% if browse_mode %}
+		<!-- this is so that on mobile the body isn't padded so the dir entries
+			are right up to the edge of the page -->
+		<style type="text/css">
+			body
+			{
+				padding-left: 0px;
+				padding-right: 0px;
+				padding-bottom: 0px;
+			}
+			.navbar-fixed-top
+			{
+				margin-left: 0px;
+				margin-right: 0px;
+			}
+		</style>
+		{% endif %}
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+

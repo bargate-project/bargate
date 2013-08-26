@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div>
+	<h1>{{ title }} <small>{{ error }}</small></h1>
+	<p>
+		{{ message }}
+	</p>
+	<p>
+		For further assistance with this problem contact <a href="http://www.soton.ac.uk/ithelp">ServiceLine</a>.
+	</p>
+	<p>
+		<img style="padding-top:30px" src="{{ url_for('static', filename='images/tbservers.png') }}" alt="error image"/>
+	</p>
+	{% if debug %}
+		<pre>{{ debug }}</pre>
+	{% endif %}
+</div>
+
+{% endblock %}
