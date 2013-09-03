@@ -21,6 +21,9 @@ from flask import Flask, request, session, g, redirect, url_for, abort, render_t
 import smbc
 import traceback
 
+def debugError(msg):
+	return output_error("Debug Message",msg,"Debug")
+
 #### Output error handler
 ## outputs a template error page, or if redirect is set, redirects with a popup
 ## error set on the users' session so it pops up a modal dialog after redirect

@@ -9,22 +9,24 @@
 
 		<style type="text/css">
 
-			body {
-			padding-left: 0px;
-			padding-right: 0px;
-		    padding-top: 60px;
-			padding-bottom: 40px;
+			body
+			{
+				padding-left: 0px;
+				padding-right: 0px;
+			    padding-top: 60px;
+				padding-bottom: 40px;
 			}
 
 		/* desktops should get a background, small screens shouldnt */
 		@media (min-width: 768px)
 		{
-		 	body {
+		 	body
+		 	{
 				background-image: url(/static/images/bgimage.jpg) !important;
 				background-position: center top !important;
 				background-repeat: no-repeat !important;
 				min-width: 550px !important;
-			  }
+			}
 		}
 
 		</style>
@@ -60,10 +62,14 @@
 			<button class="btn btn-large btn-primary" type="submit">Sign in</button>
 		</form>
 		{% for category, message in get_flashed_messages(with_categories=true) %}
-		<div class="alert {{ category }} fade in"> <a data-dismiss="alert" class="close" href="#">×</a> {{ message|safe }} </div>
+		<div class="alert {{ category }} fade in">
+			<a data-dismiss="alert" class="close" href="#">×</a>
+			{{ message|safe }}
+		</div>
 		{% endfor %}
-	</div>
-
+		<div class="alert alert-info fade in">
+			Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>
+		</div>
     </div>
   </body>
 </html>

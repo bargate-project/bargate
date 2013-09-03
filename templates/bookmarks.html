@@ -7,6 +7,14 @@
 	</div>
 	<div class="span10">
 		<h3>Bookmarks</h3>
+		<table>
+		{% for entry in bookmarks %}
+			<tr>
+				<td><a href="{{ entry.url }}">{{ entry.name }}</a></td>
+				<td>Delete</td>
+			</tr>
+		{% endfor %}
+		</table>
 	</div>
 </div>
 

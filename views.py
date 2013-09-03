@@ -26,6 +26,8 @@ import smbc
 import sys
 import mimetypes
 import socket
+import os 
+import json
 # pwd+grp added by db2z07 to allow jf lookups, can remove after prod
 #import grp
 #import pwd
@@ -186,10 +188,37 @@ def bookmarks():
 	url_mydesktop   = url_for('personal',path='mydesktop')
 	url_website     = url_for('webfiles')
 
+	ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth)
+	bmPath = u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/.fwabookmarks'
+
+	try:
+		bmFile = ctx.open(bmPath, os.O_CREAT | os.O_RDWR)
+	except Exception as ex:
+		 return bargate.errors.smbc_handler(ex)
+
+	try:
+		jsonData = json.load(bmFile)
+	except TypeError as ex:
+		## no json here, fix later.
+		pass
+	except Exception as ex:
+		return bargate.errors.smbc_handler(ex)
+
+	bmList = list()
+
+	if type(jsonData) is dict:
+		if 'bookmarks' in jsonData:
+			#return bargate.errors.debugError(str(type(jsonData['bookmarks'])))
+			for entry in jsonData['bookmarks']:
+				if type(entry) is dict:
+					if 'name' in entry and 'function' in entry and 'path' in entry:
+						listEntry = { 'name': entry['name'], 'url': url_for(entry['function'],path=entry['path']) }
+						bmList.append(listEntry)
 	return render_template('bookmarks.html', active='bookmarks',pwd='',url_personal=url_personal,
 				url_mydocuments=url_mydocuments,
 				url_mydesktop=url_mydesktop,
-				url_website=url_website)
+				url_website=url_website,
+				bookmarks = bmList)
 
 
 ################################################################################
