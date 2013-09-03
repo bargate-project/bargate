@@ -104,6 +104,9 @@ def login():
 	# why on earth would we show this?
 	#flash('<strong>Success!</strong> You were logged in successfully.','alert-success')
 
+	## Put in a flash message for the survey
+	flash('Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>','alert-info')
+
 	## determine if "next" variable is set (the URL to be sent to)
 	next = request.form.get('next',default=None)
 
