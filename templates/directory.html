@@ -1,7 +1,14 @@
 {% extends "layout.html" %}
 {% block body %}
 
+<!-- JSCRIPT -->
 <script type="text/javascript">
+$(document).ready(function() 
+    { 
+        $("#dir").tablesorter(); 
+    } 
+);
+
 var popoverIsVisible = false;
 //var clickedAway = false;
 var currentPopover;
@@ -194,7 +201,45 @@ $(document).click(function(e)
   </form>
 </div>
 
-<div class="container visible-phone mobile-header">
+<!-- MOBILE MENU -->
+<!--<div class="container visible-phone mobile-header">
+	<div class="btn-group">
+		<a href="#" class="btn btn-large"><i class="icon-home"></i> Places</a>
+		<a href="#" class="btn btn-large"><i class="icon-ellipsis-vertical"></i> Menu</a>
+	</div>
+</div>-->
+
+<div class="container visible-phone" style="text-align: center">
+			<div class="btn-toolbar">
+				<div class="btn-group">
+				    <button class="btn btn-large dropdown-toggle" data-toggle="dropdown">
+				      <i class="icon-hdd"></i> Places
+				      <span class="caret"></span>
+				    </button>
+				    <ul class="dropdown-menu" style="text-align: left">
+				      <li><a href="{{ url_personal }}"><i class="icon-home"></i> Personal Files</a></li>
+					  <li><a href="{{ url_website }}"><i class="icon-globe"></i> Personal Website</a></li>
+				      <li><a href="{{ url_for('resource') }}"><i class="icon-group"></i> Resource Drive</a></li>
+				      <li><a href="{{ url_for('linuxresearch') }}"><i class="icon-linux"></i> Linux Research</a></li>
+				    </ul>
+
+				</div>
+				<div class="btn-group">
+					<button class="btn btn-large dropdown-toggle" data-toggle="dropdown">
+				      <i class="icon-gear"></i> Options
+				      <span class="caret"></span>
+				    </button>
+				    <ul class="dropdown-menu" style="text-align: left">
+				      <li><a href=""><a data-toggle="modal" href="#upload-file"><i class="icon-upload-alt"></i> Upload File</a></li>
+				      <li><a data-toggle="modal" href="#create-directory"><i class="icon-folder-close"></i> Create Folder</a></li>
+					  <li><a href="{{ url_switch_hidden }}"><i class="icon-eye-open"></i> {{ switch_hidden_string }}</a></li>
+				    </ul>
+				</div>
+			</div>
+</div>
+
+<!-- LEGACY HEADER FOR MOBILE -->
+<!--<div class="container visible-phone mobile-header">
 	<div class="btn-group">
 		<a href="{{ url_personal }}" class="btn btn-large"><i class="icon-home"></i></a>
 		<a href="{{ url_for('resource') }}" class="btn btn-large"><i class="icon-sitemap"></i></a>
@@ -204,7 +249,9 @@ $(document).click(function(e)
 		<a href="{{ url_switch_hidden }}" class="btn btn-large"><i class="icon-eye-open"></i></a>
 	</div>
 </div>
+-->
 
+<!-- MAIN BLOCK BEGIN -->
 <div class="row-fluid">
 	<div class="span2">
 		{% include 'sidebar.html' %}
@@ -243,11 +290,12 @@ $(document).click(function(e)
 		</ul>
 		{%endif%}
 
-		<table id="dir" class="table table-striped table-hover" data-provides="rowlink">
+		<table id="dir" class="table table-striped table-hover tablesorter" data-provides="rowlink">
 			<thead>
 				<tr>
 					<th style="width: 1px"></th>
 					<th>Name</th>
+					<th class="hidden-phone hidden-tablet">Modified</th>
 					<th style="width: 1px">Options</th>
 				</tr>
 			</thead>
@@ -260,6 +308,9 @@ $(document).click(function(e)
 					</td>
 					<td>
 						<a href="{{ url_parent_dir }}">Parent Folder</a>
+					</td>
+					<td class="hidden-phone hidden-tablet">
+						-
 					</td>
 					<td>
 						<a href="{{ url_parent_dir }}" class="btn"><i class="icon-folder-open"></i></a>
@@ -276,6 +327,14 @@ $(document).click(function(e)
 						<span class="visible-tablet"><a class="rowlink" href="{{ entry.default_open }}">{{ entry.name|truncate(length=55,killwords=True) }}</a></span>
 						<span class="visible-desktop"><a class="rowlink" href="{{ entry.default_open }}">{{ entry.name|truncate(length=125,killwords=True) }}</a></span>
 					</td>
+					<td class="hidden-phone hidden-tablet">
+						{% if entry.type == 'file' %}
+						{{ entry.mtime }}
+						{% endif %}
+						{% if entry.type == 'dir' %}
+						-
+						{% endif %}						
+					</td>
 					<td>
 						{% if entry.type == 'file' %}
 						<div id="pop{{ loop.index }}_content" style="display: none;">
@@ -289,13 +348,13 @@ $(document).click(function(e)
 									<a href="{{ entry.download }}"><i class="icon-download"></i> Download</a>
 								</li>
 								<li>
-									<a href="#" onclick="$('#copy_path').val('{{entry.path}}'); $('#copyfilename').attr('value','Copy of {{entry.name}}'); $('#copy-file').modal({backdrop: 'static', show: true});"><i class="icon-copy"></i> Copy</a>
+									<a href="#" onclick="$('#copy_path').val('{{entry.path}}'); $('#copyfilename').attr('value','Copy of {{entry.name}}'); $('#copy-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-copy"></i> Copy</a>
 								</li>
 								<li>
-									<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true});"><i class="icon-move"></i> Rename</a>
+									<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-move"></i> Rename</a>
 								</li>
 								<li>
-									<a href="#" onclick="$('#delete_path').val('{{entry.path}}'); $('#delete-confirm').modal({backdrop: 'static', show: true});"><i class="icon-trash"></i> Delete</a>
+									<a href="#" onclick="$('#delete_path').val('{{entry.path}}'); $('#delete-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-trash"></i> Delete</a>
 								</li>
 								<li>
 									<a href="{{ entry.view }}"><i class="icon-info-sign"></i> Properties</a>
@@ -329,6 +388,8 @@ $(document).click(function(e)
 				<tr id="no_files">
 					<td colspan="3">
 						<em>No files found!</em>
+					</td>
+					<td class="hidden-phone hidden-tablet">
 					</td>
 				<tr>
 				{% endfor %}

@@ -24,13 +24,28 @@ import os
 import smbc
 import sys
 import stat
+import pprint
+import urllib
 
 #### SMB entry types
-SMB_ERR   =-1
-SMB_SHARE =3
-SMB_DIR   =7
-SMB_FILE  =8
-SMB_LINK  =9
+SMB_ERR   = -1
+SMB_SHARE = 3
+SMB_DIR   = 7
+SMB_FILE  = 8
+SMB_LINK  = 9
+
+### stat response
+# (33188, 18446744071764076844L, 1219393884L, 1L, 48, 48, 592517L, 1363042779, 1363042779, 1363042779)
+# st_mode (unix mode)
+# st_ino inode number
+# st_dev device number
+# st_nlink number of links
+# uid
+# gid
+# size
+# atime
+# mtime
+# ctime
 
 ## from libsmbclient source
 #00088 #define SMBC_WORKGROUP      1
@@ -42,6 +57,34 @@ SMB_LINK  =9
 #00094 #define SMBC_DIR            7
 #00095 #define SMBC_FILE           8
 #00096 #define SMBC_LINK           9
+
+def statURI(ctx,uri):
+	## stat the file
+	## return a dictionary with friendly named access to data
+
+	## Strip off trailing slashes as they're useless to us
+	if uri.endswith('/'):
+		uri = uri[:-1]
+
+	## stat the URI
+	try:
+		fstat = ctx.stat(uri)
+	except Exception as ex:
+		return bargate.errors.smbc_handler(ex,uri)
+
+	dstat = {}
+	dstat['mode']  = fstat[0]
+	dstat['ino']   = fstat[1]
+	dstat['dev']   = fstat[2]
+	dstat['nlink'] = fstat[3]	
+	dstat['uid']   = fstat[4]
+	dstat['gid']   = fstat[5]
+	dstat['size']  = fstat[6]
+	dstat['atime'] = fstat[7]
+	dstat['mtime'] = fstat[8]
+	dstat['ctime'] = fstat[9]
+
+	return dstat
 
 def getEntryType(ctx,uri):
 	## stat the file, st_mode has all the info we need
@@ -124,7 +167,8 @@ def connection(srv_path,func_name):
 			return ret
 
 		## Build the URI
-		uri = srv_path + path
+		uri = srv_path + urllib.quote(path)
+		#uri = srv_path + path 
 
 		## Determine the action type
 		action = request.args.get('action','browse')
@@ -234,7 +278,7 @@ def connection(srv_path,func_name):
 			dirs = []
 			files = []
 
-			## Stat each entry and build up a list of dictionarys
+			## List each entry and build up a list of dictionarys
 			for dentry in dentries:
 				# Create a new dict for the entry
 				entry = {}
@@ -251,7 +295,7 @@ def connection(srv_path,func_name):
 
 				## UTF-8 stuff
 				entry['name'] = entry['name'].decode("utf-8")
-				utfuri = srv_path + path + '/' + entry['name']
+				utfuri = srv_path + urllib.quote(path) + '/' + urllib.quote(entry['name'])
 				utfuri = utfuri.encode('utf8')
 
 				## Add the URI (the full path) as an element to the entry dict
@@ -279,6 +323,15 @@ def connection(srv_path,func_name):
 
 					## Entry type
 					entry['type'] = 'file'
+
+					## Stat the file so we get file size and other bits. 
+					dstat = statURI(ctx,utfuri)
+
+					if 'mtime' in dstat:
+						entry['mtime'] = bargate.core.ut_to_string(dstat['mtime'])
+					else:
+						### BUG BUG BUG
+						entry['mtime'] = '-'
 
 					## URL to view the file, and downlad the file
 					entry['view']     = url_for(func_name,path=entry['path'],action='view')
@@ -412,7 +465,6 @@ def connection(srv_path,func_name):
 		###################
 		
 		elif action == 'view':
-
 			## Build the URL to the parent directory (for errors, and for the template output)
 			if len(path) > 0:
 				(before,sep,after) = path.rpartition('/')
@@ -514,10 +566,10 @@ def connection(srv_path,func_name):
 		path = request.form['path']
 
 		## Build the URI
-		uri = srv_path + path
+		uri = srv_path + urllib.quote(path)
 
 		## Debug this for now
-#		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
+		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 		
 		#####################
 		#### UPLOAD FILE ####

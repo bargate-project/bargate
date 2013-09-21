@@ -44,7 +44,6 @@ def output_error(title,message,errstr,redirect=None):
 		), 200
 
 	else:
-
 		## Set error popup and return
 		bargate.core.poperr_set(title,message)
 		return redirect

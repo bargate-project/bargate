@@ -1,12 +1,13 @@
 		<ul class="nav nav-list well hidden-phone">
-			<li class="nav-header">PLACES</li>
+			<li class="nav-header">PERSONAL FILES</li>
 			<li{% if atroot and func_name == 'personal' %} class="active"{% endif %}><a href="{{ url_personal }}">Home</a></li>
 			<li{% if pwd == 'mydocuments' and func_name == 'personal' %} class="active"{% endif %}><a href="{{ url_mydocuments }}">My Documents</a></li>
 			<li{% if pwd == 'mydesktop' and func_name == 'personal' %} class="active"{% endif %}><a href="{{ url_mydesktop }}">Desktop</a></li>
 			<li{% if func_name == 'webfiles' %} class="active"{% endif %}><a href="{{ url_website }}">Website</a></li>
 			<li class="divider"></li>
-			<li class="nav-header"></li>
-			<li{% if func_name == 'resource' %} class="active"{% endif %}><a href="{{ url_for('resource') }}">Shared Files</a></li>
+			<li class="nav-header">SHARED FILES</li>
+			<li{% if func_name == 'resource' %} class="active"{% endif %}><a href="{{ url_for('resource') }}">Resource Drive</a></li>
+			<li{% if func_name == 'linuxresearch' %} class="active"{% endif %}><a href="{{ url_for('linuxresearch') }}">Linux Research</a></li>
 			<li{% if active == 'custom' or active == 'other' %} class="active"{% endif %}><a href="{{ url_for('custom') }}">Custom Server</a></li>
 			{% if active != 'other' %}
 			<li class="divider"></li>

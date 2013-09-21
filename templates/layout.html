@@ -63,14 +63,15 @@
     </div>
 
 {% if session.popup_error %}
-<!-- modal popup for when upload file is clicked -->
+{% with poperr = poperr_get() %}
+<!-- modal popup for when there is a redirected error NEW -->
 <div class="modal hide fade" id="popup-error">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>{{ session.popup_error_title }}</h3>
+    <h3>{{ poperr.0 }}</h3>
   </div>
     <div class="modal-body">
-	{{ session.popup_error_message }}
+	{{ poperr.1 }}
   	</div>
 	<div class="modal-footer">
 		<a href="#" class="btn"  data-dismiss="modal">Close</a>
@@ -82,9 +83,9 @@
         $('#popup-error').modal('show');
     });
 </script>
-<!-- test -->
-{{ poperr_clear() }}
-<!-- test2 -->
+{% endwith %}
+{% else %}
+<!-- session didn't have a popup_error -->
 {% endif %}
 
     <div class="container-fluid">

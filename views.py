@@ -28,9 +28,6 @@ import mimetypes
 import socket
 import os 
 import json
-# pwd+grp added by db2z07 to allow jf lookups, can remove after prod
-#import grp
-#import pwd
 
 ################################################################################
 #### HOME PAGE
@@ -137,7 +134,14 @@ def logout():
 @bargate.core.downtime_check
 @bargate.core.login_required
 def mime():
-	return render_template("mime.html",types=mimetypes.types_map)
+	ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth)
+	test = bargate.smb.statURI(ctx,u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/fwa.tar.gz')
+	return render_template("mime.html",types=mimetypes.types_map,test=test)
+
+@app.route('/test')
+@bargate.core.login_required
+def test():
+	return bargate.errors.output_error('title','message','errstr',redirect(url_for('mime')))
 
 ################################################################################
 #### FILE VIEWS
@@ -176,7 +180,7 @@ def resource():
 @bargate.core.login_required
 @bargate.core.downtime_check
 def linuxresearch():
-	return bargate.smb.connection(u"smb://ssh.soton.ac.uk/","linuxresearch")
+	return bargate.smb.connection(u"smb://linuxresearch.soton.ac.uk/","linuxresearch")
 
 ################################################################################
 #### FAVOURITES / BOOKMARKS

@@ -283,15 +283,17 @@ def poperr_set(title,message):
 
 ################################################################################
 
-def poperr_clear():
+def poperr_get():
 	"""This function clears any currently set error popup. It is only to be
 	called from inside a jinja template
 	"""
 
+	title = session['popup_error_title']
+	message = session['popup_error_message']
+
+	## clear the session
 	session['popup_error'] = False
 	session['popup_error_title'] = ""
 	session['popup_error_message'] = ""
-	## this function is called inside jinja templates.
-	## if you return nothing, it prints "None", so we return empty string!
-	return ""
-
+	
+	return (title,message)

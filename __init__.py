@@ -141,4 +141,5 @@ import bargate.views
 import bargate.mime
 
 # load jinja functions into scope
-app.jinja_env.globals.update(poperr_clear=bargate.core.poperr_clear)
+app.jinja_env.globals.update(poperr_get=bargate.core.poperr_get)
+

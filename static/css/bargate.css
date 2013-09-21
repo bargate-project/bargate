@@ -84,3 +84,15 @@ ul.changelog
 	margin-bottom: 15px;
 	padding: 7px 9px;
 }
+
+/* try to fix span2 being too small on tablet screens */
+@media (max-width: 979px) and (min-width: 768px) { /*tablet*/
+    .row-fluid .span2
+    {
+    	width: 22.92817679558011%; 
+    }
+    .row-fluid .span10
+    {
+        width: 74.30939226519337%;
+    }
+}
