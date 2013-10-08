@@ -27,6 +27,9 @@ import stat
 import pprint
 import urllib
 
+## NOTE! pysmbc sucks for unicode. See:
+## https://lists.fedorahosted.org/pipermail/system-config-printer-devel/2011-September/000108.html
+
 #### SMB entry types
 SMB_ERR   = -1
 SMB_SHARE = 3
@@ -161,25 +164,33 @@ def connection(srv_path,func_name):
 		## Load the path
 		path = request.args.get('path','')
 
+		## pysmbc needs urllib quoted, but urllib can't handle unicode
+		## so convert to str via encode utf8 and then urllib quote
+		## it seems pysmbc can't handle unicode strings either anyway
+		Spath = path.encode('utf8')
+		Qpath = urllib.quote(Spath)
+
 		## Check path security
 		(error,ret) = check_path_security(path)
 		if error:
 			return ret
 
 		## Build the URI
-		uri = srv_path + urllib.quote(path)
-		#uri = srv_path + path 
+		## TODO quote the srv_path too?
+		uri = srv_path + path
+		Suri = srv_path.encode('utf8') + Qpath
 
 		## Determine the action type
 		action = request.args.get('action','browse')
 
-		## Debug this for now
+		## Debug this in logs
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
 
-		##################
-		#### DOWNLOAD ####
-		##################
+################################################################################
+# DOWNLOAD FILE
+################################################################################
+
 		if action == 'download':
 
 			## Pull the filename out of the path
@@ -191,9 +202,13 @@ def connection(srv_path,func_name):
 				filename = path
 				error_redirect = redirect(url_for(func_name))
 
+			## Filename now has to be encoded
+			## We can do this before the above rpartition cos the quoting will remove / chars
+			filename = filename.encode('utf8')
+
 			try:
 				## stat the file first
-				fstat = ctx.stat(uri)
+				fstat = ctx.stat(Suri)
 
 				## determine item type
 				itemType = bargate.smb.statToType(fstat)
@@ -203,17 +218,11 @@ def connection(srv_path,func_name):
 					return bargate.errors.invalid_item_download(error_redirect)
 
 			except Exception as ex:
-				return bargate.errors.smbc_handler(ex,uri,error_redirect)
+				return bargate.errors.smbc_handler(ex,Suri,error_redirect)
 
 			try:		
 				## Assuming we got here without an exception, open the file
-				cfile = ctx.open(uri)
-		
-				## Get the file size
-				utfuri = uri.encode('utf8')
-
-				## TODO why are we stat'ing it again here?
-				fstat = ctx.stat(utfuri)
+				cfile = ctx.open(Suri)
 
 				## don't set as attachment for certain file types!
 				attach = True
@@ -227,17 +236,114 @@ def connection(srv_path,func_name):
 					if bargate.mime.view_in_browser(mtype):
 						attach = False
 
+				## TODO BUG HERE WITH web browsers without PDF viewers.
+				## if you set attach = False, then the filename is not sent correctly...
+
 				## Download the file
+
+#				if isinstance(filename, str):
+#					app.logger.info("filename regular string")
+#				elif isinstance(filename, unicode):	
+#					app.logger.info("filename unicode string")
+
 				resp = make_response(send_file(cfile,add_etags=False,as_attachment=attach,attachment_filename=filename))
 				resp.headers['content-length'] = str(fstat[6])
 				return resp
 	
 			except Exception as ex:
-				return bargate.errors.smbc_handler(ex,uri,error_redirect)
+				return bargate.errors.smbc_handler(ex,Suri,error_redirect)
 
-		#############################
-		#### BROWSE - LIST FILES ####
-		#############################
+################################################################################
+# FILE PROPERTIES / VIEW FILE
+################################################################################
+		
+		elif action == 'view':
+			## Build the URL to the parent directory (for errors, and for the template output)
+			if len(path) > 0:
+				(before,sep,after) = path.rpartition('/')
+				if len(sep) > 0:
+					url_parent_dir = url_for(func_name,path=before)
+				else:
+					url_parent_dir = url_for(func_name)
+			else:
+				url_parent_dir = url_for(func_name)
+
+			## try to stat the file
+			try:
+				fstat = ctx.stat(Suri)
+			except Exception as ex:
+				return bargate.errors.smbc_handler(ex,uri,redirect(url_parent_dir))
+	
+			## Pull the filename out of the path
+			(before,sep,after) = path.rpartition('/')
+			if len(sep) > 0:
+				filename = after
+
+				## Build a breadcrumbs trail ##
+				crumbs = []
+				parts = before.split('/')
+				b4 = ''
+
+				## Build up a list of dicts, each dict representing a crumb
+				for crumb in parts:
+					if len(crumb) > 0:
+						crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+						b4 = b4 + crumb + '/'
+
+			else:
+				filename = path
+				crumbs = []
+
+			## URLs
+			url_home=url_for(func_name)
+			url_download = url_for(func_name,path=path,action='download')
+			url_view = url_for(func_name,path=path,action='view')
+			url_rename = url_for(func_name,action='rename')
+
+			## stat translation into useful stuff
+			stat_atime = bargate.core.ut_to_string(fstat[7])
+			stat_mtime = bargate.core.ut_to_string(fstat[8])
+			stat_ctime = bargate.core.ut_to_string(fstat[9])
+
+			## guess a mimetype
+			(ftype,mtype) = bargate.mime.filename_to_mimetype(filename)
+
+			## pick a representative file icon
+			ficon = bargate.mime.mimetype_to_icon(mtype)
+
+			## file size
+			fsize = bargate.core.str_size(fstat[6])
+
+			## View-in-browser download type
+			if bargate.mime.view_in_browser(mtype):
+				url_bdownload = url_for(func_name,path=path,action='download',inbrowser='True')
+			else:
+				url_bdownload = None
+
+			## Render the template
+			return render_template('view.html', active=func_name,
+				crumbs=crumbs,
+				path=path,
+				url_home=url_home,
+				url_parent_dir=url_parent_dir,
+				url_download=url_download,
+				url_bdownload=url_bdownload,
+				url_view=url_view,
+				url_rename=url_rename,
+				filename=filename,
+				stat=fstat,
+				atime=stat_atime,
+				mtime=stat_mtime,
+				ctime=stat_ctime,
+				mtype = mtype,
+				ftype = ftype,
+				ficon = ficon,
+				fsize = fsize,
+			)
+
+################################################################################
+# BROWSE / DIRECTORY / LIST FILES
+################################################################################
 		
 		elif action == 'browse':
 
@@ -293,10 +399,15 @@ def connection(srv_path,func_name):
 				if entry['name'] == '..':
 					continue
 
-				## UTF-8 stuff
+				#bargate.core.debugStrType(entry['name'],"entry name 1")
+
+				## getdents returns REGULAR strings, not unicode!
+				## Decode into a unicode string for use in templates etc.
+				entry['Sname'] = entry['name']
 				entry['name'] = entry['name'].decode("utf-8")
-				utfuri = srv_path + urllib.quote(path) + '/' + urllib.quote(entry['name'])
-				utfuri = utfuri.encode('utf8')
+
+				## Create a REGULAR str urllib quoted string for use to send back to ctx calls
+				entry['Suri'] = srv_path + urllib.quote(path) + '/' + urllib.quote(entry['Sname'])
 
 				## Add the URI (the full path) as an element to the entry dict
 				if len(path) == 0:
@@ -312,11 +423,11 @@ def connection(srv_path,func_name):
 						continue
 
 					## hide typical windows hidden files
-					if entry['name'] == 'desktop.ini': continue # desktop settings
+					if entry['name'] == 'desktop.ini': continue  # desktop settings
 					if entry['name'] == '$RECYCLE.BIN': continue # recycle bin (vista/7)
-					if entry['name'] == 'RECYCLER': continue # recycle bin (xp)
-					if entry['name'] == 'Thumbs.db': continue # windows pic/video thumbnails
-					if entry['name'].startswith('~$'): continue # temp files (office)
+					if entry['name'] == 'RECYCLER': continue     # recycle bin (xp)
+					if entry['name'] == 'Thumbs.db': continue    # windows pic/video thumbnails
+					if entry['name'].startswith('~$'): continue  # temp files (office)
 
 				## FILE ########################################################
 				if dentry.smbc_type == bargate.smb.SMB_FILE:
@@ -325,7 +436,7 @@ def connection(srv_path,func_name):
 					entry['type'] = 'file'
 
 					## Stat the file so we get file size and other bits. 
-					dstat = statURI(ctx,utfuri)
+					dstat = statURI(ctx,entry['Suri'])
 
 					if 'mtime' in dstat:
 						entry['mtime'] = bargate.core.ut_to_string(dstat['mtime'])
@@ -460,95 +571,6 @@ def connection(srv_path,func_name):
 				url_website=url_website,
 			)
 
-		###################
-		#### VIEW FILE ####
-		###################
-		
-		elif action == 'view':
-			## Build the URL to the parent directory (for errors, and for the template output)
-			if len(path) > 0:
-				(before,sep,after) = path.rpartition('/')
-				if len(sep) > 0:
-					url_parent_dir = url_for(func_name,path=before)
-				else:
-					url_parent_dir = url_for(func_name)
-			else:
-				url_parent_dir = url_for(func_name)
-
-			## try to stat the file
-			try:
-				utfuri = uri.encode('utf8')
-				fstat = ctx.stat(utfuri)
-			except Exception as ex:
-				return bargate.errors.smbc_handler(ex,uri,redirect(url_parent_dir))
-	
-			## Pull the filename out of the path
-			(before,sep,after) = path.rpartition('/')
-			if len(sep) > 0:
-				filename = after
-
-				## Build a breadcrumbs trail ##
-				crumbs = []
-				parts = before.split('/')
-				b4 = ''
-
-				## Build up a list of dicts, each dict representing a crumb
-				for crumb in parts:
-					if len(crumb) > 0:
-						crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
-						b4 = b4 + crumb + '/'
-
-			else:
-				filename = path
-				crumbs = []
-
-			## URLs
-			url_home=url_for(func_name)
-			url_download = url_for(func_name,path=path,action='download')
-			url_view = url_for(func_name,path=path,action='view')
-			url_rename = url_for(func_name,action='rename')
-
-			## stat translation into useful stuff
-			stat_atime = bargate.core.ut_to_string(fstat[7])
-			stat_mtime = bargate.core.ut_to_string(fstat[8])
-			stat_ctime = bargate.core.ut_to_string(fstat[9])
-
-			## guess a mimetype
-			(ftype,mtype) = bargate.mime.filename_to_mimetype(filename)
-
-			## pick a representative file icon
-			ficon = bargate.mime.mimetype_to_icon(mtype)
-
-			## file size
-			fsize = bargate.core.str_size(fstat[6])
-
-			## View-in-browser download type
-			if bargate.mime.view_in_browser(mtype):
-				url_bdownload = url_for(func_name,path=path,action='download',inbrowser='True')
-			else:
-				url_bdownload = None
-
-			## Render the template
-			return render_template('view.html', active=func_name,
-				crumbs=crumbs,
-				path=path,
-				url_home=url_home,
-				url_parent_dir=url_parent_dir,
-				url_download=url_download,
-				url_bdownload=url_bdownload,
-				url_view=url_view,
-				url_rename=url_rename,
-				filename=filename,
-				stat=fstat,
-				atime=stat_atime,
-				mtime=stat_mtime,
-				ctime=stat_ctime,
-				mtype = mtype,
-				ftype = ftype,
-				ficon = ficon,
-				fsize = fsize,
-			)
-
 		else:
 			abort(400)
 
@@ -565,15 +587,25 @@ def connection(srv_path,func_name):
 		## Get the path out of the form
 		path = request.form['path']
 
+		## pysmbc needs urllib quoted, but urllib can't handle unicode
+		## so convert to str via encode utf8 and then urllib quote
+		## it seems pysmbc can't handle unicode strings either anyway
+		Spath = path.encode('utf8')
+		Qpath = urllib.quote(Spath)
+
 		## Build the URI
-		uri = srv_path + urllib.quote(path)
+		## TODO quote the srv_path too?
+		uri = srv_path + path
+		Suri = srv_path.encode('utf8') + Qpath
+
+		## TODO shouldn't check_path_security be here, like in GET?
 
 		## Debug this for now
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 		
-		#####################
-		#### UPLOAD FILE ####
-		#####################
+################################################################################
+# UPLOAD FILE
+################################################################################
 
 		if action == 'upload':
 
@@ -586,15 +618,16 @@ def connection(srv_path,func_name):
 
 					## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
 					filename = bargate.core.secure_filename(ufile.filename)
-					uri = uri + '/' + filename
-					uri = uri.encode('utf8')
+					filename = filename.encode('utf8')
+					filename = urllib.quote(filename)
+					upload_uri = uri + '/' + filename
 
 					## Check the new file name is valid
 					bargate.core.checkValidPathName(filename)
 
 					## Check to see if the file exists
 					try:
-						fstat = ctx.stat(uri)
+						fstat = ctx.stat(upload_uri)
 					except smbc.NoEntryError:
 						## It doesn't exist so lets continue to upload
 						pass
@@ -611,13 +644,13 @@ def connection(srv_path,func_name):
 								return bargate.errors.smbc_ExistsError(filename,error_redirect)
 
 							## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
-							itemType = bargate.smb.getEntryType(ctx,uri)
+							itemType = bargate.smb.getEntryType(ctx,Suri)
 							if itemType == bargate.smb.SMB_DIR:
 								return bargate.errors.upload_overwrite_directory(error_redirect)
 				
 					## Actual upload
 					try:
-						wfile = ctx.open(uri,os.O_CREAT | os.O_WRONLY)
+						wfile = ctx.open(upload_uri,os.O_CREAT | os.O_WRONLY)
 						data = ufile.read()
 						wfile.write(data)
 						wfile.close()
@@ -626,7 +659,7 @@ def connection(srv_path,func_name):
 						return redirect(url_for(func_name,path=path))
 
 					except Exception as ex:
-						return bargate.errors.smbc_handler(ex,uri,error_redirect)
+						return bargate.errors.smbc_handler(ex,upload_uri,error_redirect)
 
 				else:
 					## INVALID FILE TYPE (BANNED)
@@ -636,9 +669,9 @@ def connection(srv_path,func_name):
 				## FILE NOT ATTACHED
 				return bargate.errors.no_file_attached(error_redirect)
 
-		#####################
-		#### RENAME FILE ####
-		#####################
+################################################################################
+# RENAME FILE
+################################################################################
 
 		elif action == 'rename':
 
@@ -652,21 +685,20 @@ def connection(srv_path,func_name):
 			filename = after
 
 			## Check the path is valid/acceptable
-			bargate.core.checkValidPathName(request.form['newfilename'])
-
-			## Build existing URI
-			exuri = uri.encode('utf8')
+			## TODO URGENT TODO URGENT 
+			## this is disabled for now because it breaks special filenames with odd chars
+			#bargate.core.checkValidPathName(request.form['newfilename'])
 
 			## build new URI
-			newfilename = request.form['newfilename'].decode("utf-8")
-			newuri = srv_path + parent_path + '/' + newfilename
-			newuri = newuri.encode('utf8')
+			newPath = request.form['newfilename'].encode('utf8')
+			newPath = urllib.quote(newPath)
+			newURI = srv_path + parent_path + '/' + newPath
 
 			## the place to redirect to on success or failure
 			redirect_path = redirect(url_for(func_name,path=parent_path))
 
 			## get the item type of the existing 'filename'
-			itemType = bargate.smb.getEntryType(ctx,uri)
+			itemType = bargate.smb.getEntryType(ctx,Suri)
 
 			if itemType == bargate.smb.SMB_FILE:
 				typemsg = "The file"
@@ -676,15 +708,17 @@ def connection(srv_path,func_name):
 				return bargate.errors.invalid_item_type(redirect_path)
 
 			try:
-				ctx.rename(exuri,newuri)
+				## Suri is the existing quoted-encoded URI
+				## newURI is the new URI which has been quoted-encoded
+				ctx.rename(Suri,newURI)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,redirect_path)
 			else:
-				flash(typemsg + " '" + filename + "' was renamed to '" + newfilename + "' successfully.",'alert-success')
+				flash(typemsg + " '" + filename + "' was renamed to '" + request.form['newfilename'] + "' successfully.",'alert-success')
 				return redirect_path
 
-########	########################################################################
-		##### COPY FILE #####
+################################################################################
+# COPY FILE
 ################################################################################
 
 		elif action == 'copy':
@@ -702,7 +736,7 @@ def connection(srv_path,func_name):
 
 			try:
 				## stat the source file first
-				source_stat = ctx.stat(uri)
+				source_stat = ctx.stat(Suri)
 
 				## size of source
 				source_size = source_stat[6]
@@ -719,9 +753,8 @@ def connection(srv_path,func_name):
 
 			## Get the new filename
 			dest_filename = request.form['filename']
-			dest = before_path + '/' + dest_filename
-
-			#flash("uri: " + uri + " before_path:" + before_path + " path: " + path + " filename: " + filename + " dest_filename: " + dest_filename + " dest: " + dest)
+			## encode it and quote it
+			dest = before_path + '/' + urllib.quote(dest_filename.encode('utf8'))
 
 			## Make sure the dest file doesn't exist
 			try:
@@ -734,7 +767,7 @@ def connection(srv_path,func_name):
 
 			## Assuming we got here without an exception, open the source file
 			try:		
-				source_fh = ctx.open(uri)
+				source_fh = ctx.open(Suri)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,error_redirect)
 
@@ -759,9 +792,9 @@ def connection(srv_path,func_name):
 			flash('A copy of "' + filename + '" was created as "' + dest_filename + '"','alert-success')
 			return error_redirect
 
-		##################
-		#### MAKE DIR ####
-		##################
+################################################################################
+# MAKE DIR
+################################################################################
 
 		elif action == 'mkdir':
 
@@ -771,20 +804,21 @@ def connection(srv_path,func_name):
 			## the place to redirect to on success or failure
 			redirect_path = redirect(url_for(func_name,path=path))
 
-			uri = uri + '/' + request.form['directory_name']
-			uri = uri.encode('utf8')
+			mkdirname = request.form['directory_name'].encode('utf8')
+			mkdirname = urllib.quote(mkdirname)
+			mkdir_uri = uri + '/' + mkdirname
 
 			try:
-				ctx.mkdir(uri,0755)
+				ctx.mkdir(mkdir_uri,0755)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,redirect_path)
 			else:
 				flash("The directory '" + request.form['directory_name'] + "' was created successfully.",'alert-success')
 				return redirect_path
 
-		##################
-		#### DELETE ####
-		##################
+################################################################################
+# DELETE FILE
+################################################################################
 
 		elif action == 'unlink':
 			uri = uri.encode('utf8')
@@ -812,14 +846,14 @@ def connection(srv_path,func_name):
 				if request.form['mode'] == 'view':
 					error_return_path = redirect(url_for(func_name,action='view',path=path))
 			except KeyError:
-				pass				
+				pass
 
 			## get the item type of the existing 'filename'
-			itemType = bargate.smb.getEntryType(ctx,uri)
+			itemType = bargate.smb.getEntryType(ctx,Suri)
 
 			if itemType == bargate.smb.SMB_FILE:
 				try:
-					ctx.unlink(uri)
+					ctx.unlink(Suri)
 				except Exception as ex:
 					return bargate.errors.smbc_handler(ex,uri,error_return_path)
 				else:
@@ -827,7 +861,7 @@ def connection(srv_path,func_name):
 					return return_path
 			elif itemType == bargate.smb.SMB_DIR:
 				try:
-					ctx.rmdir(uri)
+					ctx.rmdir(Suri)
 				except Exception as ex:
 					return bargate.errors.smbc_handler(ex,uri,error_return_path)
 				else:

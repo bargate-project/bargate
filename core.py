@@ -40,8 +40,17 @@ def checkValidPathName(name):
 
 	## VERY strict path allowed regex
 	## a-z, A-Z, 0-9, _ . $ , [ ] ( )
-	if not re.match('^[ a-zA-Z0-9_\.\,\$\(\)\[\]]{1,255}$',name):
+	if not re.match('^[ a-zA-Z0-9_\.\%\,\$\(\)\[\]]{1,255}$',name):
+		app.logger.error("checkValidPathName ABORT: " + name)
 		abort(400)
+
+################################################################################
+
+def debugStrType(obj,name):
+	if isinstance(obj, str):
+		app.logger.info(name + " regular string")
+	elif isinstance(obj, unicode):	
+		app.logger.info(name + " unicode string")
 
 ################################################################################
 

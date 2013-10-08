@@ -371,10 +371,10 @@ $(document).click(function(e)
 									<a href="{{ entry.view }}"><i class="icon-eye-open"></i> Open</a>
 								</li>
 								<li>
-									<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true});"><i class="icon-move"></i> Rename</a>
+									<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-move"></i> Rename</a>
 								</li>
 								<li>
-									<a href="#" onclick="$('#delete_dir_path').val('{{entry.path}}'); $('#delete-dir-confirm').modal({backdrop: 'static', show: true});"><i class="icon-trash"></i> Delete</a>
+									<a href="#" onclick="$('#delete_dir_path').val('{{entry.path}}'); $('#delete-dir-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-trash"></i> Delete</a>
 								</li>
 							</ul>
 						</div>
