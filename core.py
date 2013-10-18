@@ -100,6 +100,10 @@ def before_request():
 	"""
 	## Check CSRF key is valid
 	if request.method == "POST":
+		## login handler shouldn't have to be CSRF protected
+		if request.endpoint == 'login':
+			return
+
 		## check csrf token is valid
 		token = session.get('_csrf_token')
 		if not token or token != request.form.get('_csrf_token'):
