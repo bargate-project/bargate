@@ -22,7 +22,7 @@
 		{
 		 	body
 		 	{
-				background-image: url(/static/images/bgimage.jpg) !important;
+				background-image: url(/static/images/login/bgimage{{bgnumber}}.jpg) !important;
 				background-position: center top !important;
 				background-repeat: no-repeat !important;
 				min-width: 550px !important;
@@ -32,44 +32,85 @@
 		</style>
 	</head>
 	<body>
+		<script type="text/javascript">
+		window.onload = function()
+		{
+		  var text_input = document.getElementById ('loginUsername');
+		  text_input.focus();
+		  text_input.select();
+		}
+		</script>
 
-	<script type="text/javascript">
-	window.onload = function()
-	{
-	  var text_input = document.getElementById ('loginUsername');
-	  text_input.focus();
-	  text_input.select();
-	}
-	</script>
 
-	<div class="container signin-block">
-		<form class="form-signin" action="{{ url_for('login') }}" method="POST">
-			<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-			{% if next %}
-			<input name="next" type="hidden" value="{{next}}"/>
-			{% endif %}
-			<div style="text-align: center">
-				<img src="/static/images/uoslogoblue.png" style="padding: 10px;"/>
+
+		<div class="container hidden-phone hidden-tablet">
+			<div class="row">
+				<div class="span8">
+					<div class="signin-advert">
+						<h2 class="form-signin-heading pull-left">Filestore Web Access</h2>
+						<img src="/static/images/uoslogoblue.png" style="padding: 10px;" class="pull-right"/>
+						<div class="clearfix"></div>
+						<p style="font-size: 18px; line-height: 1.25;">Filestore Web Access is a new way to access your files over the web. It works on smart phones, tablets, desktops and laptops. You can access your personal files, shared files and more.</p>
+					</div>
+					{% for category, message in get_flashed_messages(with_categories=true) %}
+					<div class="alert {{ category }} fade in">
+						<a data-dismiss="alert" class="close" href="#">×</a>
+						{{ message|safe }}
+					</div>
+					{% endfor %}
+					<div class="alert alert-info fade in">
+						Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>
+					</div>
+				</div>
+				<div class="span4">
+					<form class="form-signin" action="{{ url_for('login') }}" method="POST">
+						<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+						{% if next %}
+						<input name="next" type="hidden" value="{{next}}"/>
+						{% endif %}
+						<label>Username:</label>
+						<input type="text" class="input-block-level" id="loginUsername" name="username">
+						<label>Password:</label>
+						<input type="password" class="input-block-level" id="loginPassword" name="password">
+						<label class="checkbox">
+						<input type="checkbox" value="sec" id="sec" name="sec"> Remember me
+						</label>
+						<button class="btn btn-large btn-primary" type="submit">Sign in</button>
+					</form>
+				</div>
 			</div>
-			<h2 class="form-signin-heading">Filestore Web Access</h2>
-			<label>Username:</label>
-			<input type="text" class="input-block-level" id="loginUsername" name="username">
-			<label>Password:</label>
-			<input type="password" class="input-block-level" id="loginPassword" name="password">
-			<label class="checkbox">
-			<input type="checkbox" value="sec" id="sec" name="sec"> Remember me
-			</label>
-			<button class="btn btn-large btn-primary" type="submit">Sign in</button>
-		</form>
-		{% for category, message in get_flashed_messages(with_categories=true) %}
-		<div class="alert {{ category }} fade in">
-			<a data-dismiss="alert" class="close" href="#">×</a>
-			{{ message|safe }}
-		</div>
-		{% endfor %}
-		<div class="alert alert-info fade in">
-			Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>
-		</div>
-    </div>
-  </body>
+	    </div>
+
+		<div class="container hidden-desktop signin-block">
+			<form class="form-signin" action="{{ url_for('login') }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				{% if next %}
+				<input name="next" type="hidden" value="{{next}}"/>
+				{% endif %}
+				<div style="text-align: center">
+					<img src="/static/images/uoslogoblue.png" style="padding: 10px;"/>
+				</div>
+				<h2 class="form-signin-heading">Filestore Web Access</h2>
+				<label>Username:</label>
+				<input type="text" class="input-block-level" id="loginUsername" name="username">
+				<label>Password:</label>
+				<input type="password" class="input-block-level" id="loginPassword" name="password">
+				<label class="checkbox">
+				<input type="checkbox" value="sec" id="sec" name="sec"> Remember me
+				</label>
+				<button class="btn btn-large btn-primary" type="submit">Sign in</button>
+			</form>
+
+
+			{% for category, message in get_flashed_messages(with_categories=true) %}
+			<div class="alert {{ category }} fade in">
+				<a data-dismiss="alert" class="close" href="#">×</a>
+				{{ message|safe }}
+			</div>
+			{% endfor %}
+			<div class="alert alert-info fade in">
+				Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>
+			</div>
+	    </div>
+	</body>
 </html>

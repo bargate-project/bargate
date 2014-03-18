@@ -8,8 +8,9 @@
 			<li class="nav-header">SHARED FILES</li>
 			<li{% if func_name == 'resource' %} class="active"{% endif %}><a href="{{ url_for('resource') }}">Resource Drive</a></li>
 			<li{% if func_name == 'linuxresearch' %} class="active"{% endif %}><a href="{{ url_for('linuxresearch') }}">Linux Research</a></li>
-			<li{% if active == 'custom' or active == 'other' %} class="active"{% endif %}><a href="{{ url_for('custom') }}">Custom Server</a></li>
-			{% if active != 'other' %}
+			<li{% if active == 'other' %} class="active"{% endif %}><a href="{{ url_for('other') }}">Other Servers</a></li>
+			<li{% if active == 'custom' %} class="active"{% endif %}><a href="{{ url_for('custom_server') }}">Custom Server</a></li>
+			{% if active != 'other' and active != 'custom' %}
 			<li class="divider"></li>
 			<li class="nav-header">OPTIONS</li>
 			<li><a data-toggle="modal" href="#upload-file"> Upload File</a></li>

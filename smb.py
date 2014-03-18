@@ -146,10 +146,13 @@ def check_path_security(path):
 
 ################################################################################
 
-def connection(srv_path,func_name):
+def connection(srv_path,func_name,active=None):
 	## ensure srv_path ends with a trailing slash
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
+
+	if active == None:
+		active = func_name
 
 	## Load the SMB engine
 	ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth)
@@ -321,7 +324,7 @@ def connection(srv_path,func_name):
 				url_bdownload = None
 
 			## Render the template
-			return render_template('view.html', active=func_name,
+			return render_template('view.html', active=active,
 				crumbs=crumbs,
 				path=path,
 				url_home=url_home,
@@ -553,7 +556,7 @@ def connection(srv_path,func_name):
 			url_website     = url_for('webfiles')
 
 			## Render the template
-			return render_template('directory.html', active=func_name,
+			return render_template('directory.html', active=active,
 				entries=entries,
 				crumbs=crumbs,
 				pwd=path,
@@ -623,7 +626,10 @@ def connection(srv_path,func_name):
 					upload_uri = uri + '/' + filename
 
 					## Check the new file name is valid
-					bargate.core.checkValidPathName(filename)
+					## Check the path is valid/acceptable
+					## TODO URGENT TODO URGENT 
+					## this is disabled for now because it breaks special filenames with odd chars
+					#bargate.core.checkValidPathName(filename)
 
 					## Check to see if the file exists
 					try:
@@ -799,7 +805,7 @@ def connection(srv_path,func_name):
 		elif action == 'mkdir':
 
 			## Check the path is valid
-			bargate.core.checkValidPathName(request.form['directory_name'])
+			#bargate.core.checkValidPathName(request.form['directory_name'])
 
 			## the place to redirect to on success or failure
 			redirect_path = redirect(url_for(func_name,path=path))

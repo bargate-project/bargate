@@ -28,6 +28,7 @@ import mimetypes
 import socket
 import os 
 import json
+from random import randint
 
 ################################################################################
 #### HOME PAGE
@@ -39,7 +40,11 @@ def hero():
 		return redirect(url_for('personal'))
 	else:
 		next = request.args.get('next',default=None)
-		return render_template('hero.html', active='hero',next=next)
+
+		## generate a background image to showz
+		bgnumber = randint(1,17)
+
+		return render_template('hero.html', active='hero',next=next,bgnumber=bgnumber)
 
 ################################################################################
 #### ABOUT PAGE
@@ -55,7 +60,7 @@ def changelog():
 ################################################################################
 #### LOGIN
 
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['POST'])
 def login():
 
 	try:
@@ -102,7 +107,7 @@ def login():
 	#flash('<strong>Success!</strong> You were logged in successfully.','alert-success')
 
 	## Put in a flash message for the survey
-	flash('Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>','alert-info')
+	#flash('Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>','alert-info')
 
 	## determine if "next" variable is set (the URL to be sent to)
 	next = request.form.get('next',default=None)
@@ -176,6 +181,18 @@ def filestore():
 def resource():
     return bargate.smb.connection(u"smb://soton.ac.uk/resource/","resource")
 
+@app.route('/medis/shared', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def medis():
+    return bargate.smb.connection(u"smb://rj-macleod.soton.ac.uk/medisdfs/","medis","other")
+
+@app.route('/medis/personal', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def medis_personal():
+    return bargate.smb.connection(u"smb://rj-macleod.soton.ac.uk/users$/" + unicode(session['username']) + '/',"medis_personal","other")
+
 @app.route('/linuxresearch', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
@@ -246,7 +263,22 @@ def other():
 				url_mydesktop=url_mydesktop,
 				url_website=url_website)
 
-@app.route('/custom', methods=['GET','POST'])
+@app.route('/custom')
+@bargate.core.login_required
+@bargate.core.downtime_check
+def custom_server():
+	## URLs for browsing around
+	url_personal    = url_for('personal')
+	url_mydocuments = url_for('personal',path='mydocuments')
+	url_mydesktop   = url_for('personal',path='mydesktop')
+	url_website     = url_for('webfiles')
+
+	return render_template('custom.html', active='custom',pwd='',url_personal=url_personal,
+				url_mydocuments=url_mydocuments,
+				url_mydesktop=url_mydesktop,
+				url_website=url_website)
+
+@app.route('/custom/browse', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
 def custom():
@@ -268,8 +300,8 @@ def custom():
 	## ensure the custom_uri is set
 	if 'custom_uri' in session:
 		if len(session['custom_uri']) == 0:
-			return redirect(url_for('other'))
+			return redirect(url_for('custom_server'))
 	else:
-		return redirect(url_for('other'))
+		return redirect(url_for('custom_server'))
 
 	return bargate.smb.connection(unicode(session['custom_uri']),"custom")

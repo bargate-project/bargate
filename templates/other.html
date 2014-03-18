@@ -6,18 +6,7 @@
 	{% include 'sidebar.html' %}
 	</div>
 	<div class="span10">
-		<h3>Custom Server</h3>
-		<hr/>
-		<form action="{{ url_for('custom') }}" method="POST">
-			<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-			<fieldset>
-				<label>Server URL</label>
-				<input type="text" name="open_server_uri" placeholder="smb://">
-				<span class="help-block">e.g. smb://fileserver.soton.ac.uk/share/</span>
-				<button type="submit" class="btn">Connect</button>
-			</fieldset>
-		</form>
-		<h3>Common Servers</h3>
+		<h3>Other Servers</h3>
 		<hr/>
 		<table class="table table-striped table-bordered">
 			<thead>
@@ -28,6 +17,22 @@
 				</tr>
 			</thead>
 			<tbody>
+				<tr>
+					<td>MEDIS Shared</td>
+					<td>Medicine M Drive</td>
+					<td>
+						<a href="{{ url_for('medis') }}"><button type="submit" class="btn">Connect</button></a>
+					</td>
+				</tr>
+
+				<tr>
+					<td>MEDIS Users</td>
+					<td>Medicine Personal Files</td>
+					<td>
+						<a href="{{ url_for('medis_personal') }}"><button type="submit" class="btn">Connect</button></a>
+					</td>
+				</tr>
+
 				<tr>
 					<td>LAMP1</td>
 					<td>LAMP web hosting - RHEL5</td>

@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row-fluid">
+	<div class="span2">
+	{% include 'sidebar.html' %}
+	</div>
+	<div class="span10">
+		<h3>Custom Server</h3>
+		<hr/>
+		<p>You can use this to connect to file servers on the University Network such as your own personal file servers in Labs or old school computer rooms. The server must support CIFS/SMB and if authentication is required must use University Authentication.</p>
+		<form action="{{ url_for('custom') }}" method="POST">
+			<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+			<fieldset>
+				<label>Server URL</label>
+				<input type="text" name="open_server_uri" placeholder="smb://">
+				<span class="help-block">e.g. smb://fileserver.soton.ac.uk/share/</span>
+				<button type="submit" class="btn">Connect</button>
+			</fieldset>
+		</form>
+
+{% endblock %}

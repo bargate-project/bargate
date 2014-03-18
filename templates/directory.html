@@ -201,14 +201,6 @@ $(document).click(function(e)
   </form>
 </div>
 
-<!-- MOBILE MENU -->
-<!--<div class="container visible-phone mobile-header">
-	<div class="btn-group">
-		<a href="#" class="btn btn-large"><i class="icon-home"></i> Places</a>
-		<a href="#" class="btn btn-large"><i class="icon-ellipsis-vertical"></i> Menu</a>
-	</div>
-</div>-->
-
 <div class="container visible-phone" style="text-align: center">
 			<div class="btn-toolbar">
 				<div class="btn-group">
@@ -221,6 +213,7 @@ $(document).click(function(e)
 					  <li><a href="{{ url_website }}"><i class="icon-globe"></i> Personal Website</a></li>
 				      <li><a href="{{ url_for('resource') }}"><i class="icon-group"></i> Resource Drive</a></li>
 				      <li><a href="{{ url_for('linuxresearch') }}"><i class="icon-linux"></i> Linux Research</a></li>
+				      <li><a href="{{ url_for('other') }}"><i class="icon-group"></i> Other Servers</a></li>
 				    </ul>
 
 				</div>
@@ -237,19 +230,6 @@ $(document).click(function(e)
 				</div>
 			</div>
 </div>
-
-<!-- LEGACY HEADER FOR MOBILE -->
-<!--<div class="container visible-phone mobile-header">
-	<div class="btn-group">
-		<a href="{{ url_personal }}" class="btn btn-large"><i class="icon-home"></i></a>
-		<a href="{{ url_for('resource') }}" class="btn btn-large"><i class="icon-sitemap"></i></a>
-		<a href="{{ url_website }}" class="btn btn-large"><i class="icon-globe"></i></a>
-		<a data-toggle="modal" href="#upload-file" class="btn btn-large"><i class="icon-upload-alt"></i></a>
-		<a data-toggle="modal" href="#create-directory" class="btn btn-large"><i class="icon-folder-close"></i></a>
-		<a href="{{ url_switch_hidden }}" class="btn btn-large"><i class="icon-eye-open"></i></a>
-	</div>
-</div>
--->
 
 <!-- MAIN BLOCK BEGIN -->
 <div class="row-fluid">
