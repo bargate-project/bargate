@@ -70,10 +70,10 @@ def login():
 		flash('<strong>Error</strong> - Incorrect username and/or password','alert-error')
 		return redirect(url_for('hero'))
 	except kerberos.KrbError as e:
-		flash('<strong>Unexpected Error</strong> - Kerberos Error: ' + e.__str__(),'error')
+		flash('<strong>Unexpected Error</strong> - Kerberos Error: ' + e.__str__(),'alert-error')
 		return redirect(url_for('hero'))
 	except kerberos.GSSError as e:
-		flash('<strong>Unexpected Error</strong> - GSS Error: ' + e.__str__(),'error')
+		flash('<strong>Unexpected Error</strong> - GSS Error: ' + e.__str__(),'alert-error')
 		return redirect(url_for('hero'))
 	except Exception as e:
 		bargate.errors.fatal(e)
@@ -123,13 +123,8 @@ def login():
 @app.route('/logout')
 @bargate.core.login_required
 def logout():
-	app.logger.info('User "' + session['username'] + '" logged out from "' + request.remote_addr + '" using ' + request.user_agent.string)
-
-	session.pop('logged_in', None)
-	session.pop('username', None)
-
+	bargate.core.session_logout()
 	flash('<strong>Goodbye!</strong> - You were logged out','alert-success')
-
 	return redirect(url_for('hero'))
 
 ################################################################################

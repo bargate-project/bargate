@@ -30,6 +30,11 @@ import os
 import datetime
 import re
 
+def session_logout():
+	app.logger.info('User "' + session['username'] + '" logged out from "' + request.remote_addr + '" using ' + request.user_agent.string)
+	session.pop('logged_in', None)
+	session.pop('username', None)
+
 ################################################################################
 
 def checkValidPathName(name):
@@ -169,13 +174,16 @@ def aes_decrypt(s,key):
 	c = AES.new(key,AES.MODE_CFB,iv)
 	return c.decrypt(e)
 
+def get_user_password():
+	return bargate.core.aes_decrypt(session['id'],app.config['ENCRYPT_KEY'])
+
 ################################################################################
 
 def get_smbc_auth(server,share,workgroup,username,password):
 	"""Returns authentication information for SMB/CIFS as required
 	by the pysmbc module
 	"""
-	return (app.config['SMB_WORKGROUP'],session['username'],bargate.core.aes_decrypt(session['id'],app.config['ENCRYPT_KEY']))
+	return (app.config['SMB_WORKGROUP'],session['username'],bargate.core.get_user_password())
 
 ################################################################################
 
