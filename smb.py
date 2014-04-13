@@ -514,7 +514,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['default_open'] = entry['view']
 					dirs.append(entry)
 
-				## SMB SHARE
+				## SMB SHARE ###################################################
 				elif dentry.smbc_type == bargate.smb.SMB_SHARE:
 					## check last char for $
 					last = entry['name'][-1]
@@ -528,6 +528,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']
 
+					files.append(entry)
+					
+				## OTHER ###################################################
+				else:
+					entry['icon'] = 'fa fa-times'	
+					entry['type'] = dentry.smbc_type
 					files.append(entry)
 
 			## Sort the directories and files by name

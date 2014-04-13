@@ -20,6 +20,7 @@ import bargate.core
 from flask import Flask, request, session, g, redirect, url_for, abort, flash
 import smbc
 import traceback
+import kerberos
 
 def debugError(msg):
 	return output_error("Debug Message",msg,"Debug")
@@ -115,9 +116,9 @@ def smbc_PermissionDenied(redirect_to=None):
 		## Check password again with kerberos, in case what we have in the cookie is now wrong
 		kerberos.checkPassword(session['username'], bargate.core.get_user_password(), app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
 	except Exception as e:
-		#bargate.core.session_logout()
-		flash('<strong>Authentication Error</strong> - To continue, you must login.','alert-error')
-		#return redirect(url_for('hero'))
+		bargate.core.session_logout()
+		flash('<strong>Error</strong> - Your password has changed. You must login again.','alert-danger')
+		return redirect(url_for('hero'))
 	
 	return output_error("Permission Denied","You do not have permission to perform the action.","smbc.PermissionError",redirect_to)
 

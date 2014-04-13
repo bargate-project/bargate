@@ -6,10 +6,33 @@
 		<h1>Changelog</h1>
 	</div>
 	<div class="panel-body">
+		<h3>0.10.1</h3>
+		<p>Released 2013-10-08</p>
+		<ul class="changelog">
+			<li><i class="fa fa-wrench"></i> Fixed a bug in the permission denied password checking code</li>
+			<li><i class="fa fa-bolt"></i> Added "other" item to directory views for illustrative purposes only</li>
+			<li><i class="fa fa-bolt"></i> Clicking yes in a delete modal popup will now change to 'Deleting' to indicate feedback</li>
+			<li><i class="fa fa-wrench"></i> Fixed the display name on file properties/view</li>
+		</ul>
+	
 		<h3>0.10</h3>
 		<p>Released 2014-04-13</p>
 		<ul class="changelog">
-			<li><i class="fa fa-wrench"></i> New development branch. Significant user interface re-write</li>
+			<li><i class="fa fa-bolt"></i> New code branch. Significant user interface re-write</li>
+			<li><i class="fa fabolt"></i> Sidebar removed, much better mobile view. Interface menus moved to navbars.</li>
+			<li><i class="fa fa-bolt"></i> User interface re-written in Bootstrap 3.1 (was Bootstrap 2.3)</li>
+			<li><i class="fa fa-bolt"></i> Icon library updated to Font Awesome 4.0</li>
+			<li><i class="fa fa-bolt"></i> Significantly better MIME to Icon support</li>
+			<li><i class="fa fa-bolt"></i> Added support for displaying file owner and group metadata (via winbind)</li>
+			<li><i class="fa fa-bolt"></i> Added theme support - user can choose a web design theme to use</li>
+			<li><i class="fa fa-bolt"></i> When users click on files they now see a popup with some info a link to download the file rather than just downloading the file</li>
+			<li><i class="fa fa-bolt"></i> Added proper table sorter functionality</li>
+			<li><i class="fa fa-bolt"></i> render_page function added which builds all default URLs for all pages</li>
+			<li><i class="fa fa-bolt"></i> Each area of FWA now has a 'display name' so that the breadcrumb displays where you are rather than 'Home'</li>
+			<li><i class="fa fa-bolt"></i> Replaced popover menus on files/dirs with dropdown/dropup menus</li>
+			<li><i class="fa fa-wrench"></i> All javascript and CSS moved out to seperate files</li>
+			<li><i class="fa fa-wrench"></i> Major cleanup of HTML, CSS and Javascript to reduce clutter and remove old code</li>
+			<li><i class="fa fa-wrench"></i> SMB engine now prevents users from viewing the root directory</li>
 			<li><i class="fa fa-wrench"></i> Permission denied errors where password is wrong now asks the user to logon again</li>
 		</ul>
 
