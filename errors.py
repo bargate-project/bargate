@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
+from flask import Flask, request, session, g, redirect, url_for, abort, flash
 import smbc
 import traceback
 
@@ -38,7 +38,7 @@ def output_error(title,message,errstr,redirect_to=None):
 	if redirect_to == None:
 
 		## Render an error page
-		return render_template('error.html',error=errstr,
+		return bargate.core.render_page('error.html',error=errstr,
 			title=title,
 			message=message,
 		), 200
@@ -115,9 +115,9 @@ def smbc_PermissionDenied(redirect_to=None):
 		## Check password again with kerberos, in case what we have in the cookie is now wrong
 		kerberos.checkPassword(session['username'], bargate.core.get_user_password(), app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
 	except Exception as e:
-		bargate.core.session_logout()
+		#bargate.core.session_logout()
 		flash('<strong>Authentication Error</strong> - To continue, you must login.','alert-error')
-		return redirect(url_for('hero'))
+		#return redirect(url_for('hero'))
 	
 	return output_error("Permission Denied","You do not have permission to perform the action.","smbc.PermissionError",redirect_to)
 
@@ -221,31 +221,31 @@ Username:             %s
 		))
 
 	debug = traceback.format_exc()
-	return render_template('error.html',error=error,title=g.fault_title,message=g.fault_message,debug=debug), 500
+	return bargate.core.render_page('error.html',error=error,title=g.fault_title,message=g.fault_message,debug=debug), 500
 
 @app.errorhandler(400)
 def error400(error):
 	"""Handles abort(400) calls in code.
 	"""
 	debug = traceback.format_exc()
-	return render_template('error.html',error=error,title="Bad Request",message='Your request was invalid, please try again.',debug=debug), 400
+	return bargate.core.render_page('error.html',error=error,title="Bad Request",message='Your request was invalid, please try again.',debug=debug), 400
 
 @app.errorhandler(403)
 def error403(error):
 	"""Handles abort(403) calls in code.
 	"""
-	return render_template('error.html',error=error,title="Permission Denied",message='You do not have permission to access this resource. If you have changed your password recently you must log out and log back in again.'), 403
+	return bargate.core.render_page('error.html',error=error,title="Permission Denied",message='You do not have permission to access this resource. If you have changed your password recently you must log out and log back in again.'), 403
 
 @app.errorhandler(404)
 def error404(error):
 	"""Handles abort(404) calls in code.
 	"""
-	return render_template('error.html',error=error,title="Not found",message="Sorry, I couldn't find what you were after. It might have been eaten."), 404
+	return bargate.core.render_page('error.html',error=error,title="Not found",message="Sorry, I couldn't find what you were after. It might have been eaten."), 404
 
 @app.errorhandler(405)
 def error405(error):
 	"""Handles abort(405) calls in code.
 	"""
-	return render_template('error.html',error=error,title="Not allowed",message="Method not allowed. This usually happens when your browser sent a POST rather than a GET, or vice versa"), 405
+	return bargate.core.render_page('error.html',error=error,title="Not allowed",message="Method not allowed. This usually happens when your browser sent a POST rather than a GET, or vice versa"), 405
 
 

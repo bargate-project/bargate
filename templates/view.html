@@ -1,139 +1,167 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<!-- modal popup for when delete is clicked upon -->
-<div class="modal hide fade" id="delete-confirm">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Delete File</h3>
-  </div>
-  <div class="modal-body">
-    <p>Are you sure you want to permanently delete this file?</p>
-  </div>
-  <div class="modal-footer">
-	<form action="{{ url_home }}" method="POST">
-		<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-		<input name="action" value="unlink" type="hidden"/>
-		<input name="path" type="hidden" value="{{ path }}"/>
-		<input name="mode" type="hidden" value="view"/>
-		<input type="submit" class="btn btn-danger" value="Yes"/>
-		<a href="#" data-dismiss="modal" class="btn">No</a>
-	</form>
-  </div>
-</div>
+<!-- modal to delete a file -->
+<div class="modal" id="delete-confirm">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="unlink" type="hidden"/>
+				<input name="path" type="hidden" value="{{ path }}"/>
+				<input name="mode" type="hidden" value="view"/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Delete file</h4>
+				</div>
 
-<!-- modal popup for when rename file is clicked -->
-<div class="modal hide fade" id="rename-file">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Rename File</h3>
-  </div>
-  <div class="modal-body">
-  	<form action="{{ url_rename }}" method="POST">
-		<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-		<input name="action" value="rename" type="hidden"/>
-  		<input name="path" type="hidden" value="{{ path }}"/>
-		<label>New file name:</label>
-      	<input style="width:95%" type="text" name="newfilename" value="{{ filename }}"/>
-    </div>
-    <div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Cancel</a>
-		<input type="submit" class="btn btn-primary" value="Rename"/>
-    </div>
-  </form>
-</div>
-
-
-<div class="row-fluid">
-	<div class="span2 hidden-phone">
-		<div class="well sidebar-nav" style="padding: 8px 0;">
-			<ul class="nav nav-list">
-				<li class="nav-header">
-					Actions
-				</li>
-				{% if url_bdownload is not none %}
-				<li>
-					<a href="{{ url_bdownload }}"><i style="color: #000000" class="icon-eye-open"></i> View</a>
-				</li>
-				{% endif %}
-				<li>
-					<a href="{{ url_download }}"><i style="color: #000000" class="icon-download-alt"></i> Download</a>
-				</li>
-				<li>
-					<a href="#delete-confirm" data-toggle="modal"><i style="color: #000000" class="icon-trash"></i> Delete</a>
-				</li>
-				<li>
-					<a href="#rename-file" data-toggle="modal"><i style="color: #000000" class="icon-move"></i> Rename</a>
-				</li>
-			</ul>
+				<div class="modal-body">
+					<p>Are you sure you want to permanently delete the file?</p>
+				</div>
+				
+				<div class="modal-footer">
+					<input type="submit" class="btn btn-primary" value="Yes"/>
+ 					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+				</div>
+			</form>
 		</div>
 	</div>
+</div>
 
-	<div class="span10">
+<!-- modal for rename -->
+<div class="modal" id="rename-file">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_rename }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="rename" type="hidden"/>
+				<input name="path" type="hidden" value="{{ path }}"/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Rename</h4>
+				</div>
 
-		<ul class="breadcrumb">
+				<div class="modal-body">
+					<label>New file name:</label>
+      				<input class="form-control" id="newfilename" type="text" name="newfilename" value="{{filename}}"/>
+				</div>
+				
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-primary" value="Rename"/>				
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+<div class="row" style="padding-bottom: 15px">
+	<div class="col-sm-12">
+		<ol class="breadcrumb">
 			<li>
-				<i class="icon-home"></i>
+				<i class="fa fa-home"></i>
 				<a href="{{ url_home }}">Home</a>
 			</li>
 			{% for dir in crumbs %}
 			<li>
-				<i class="icon-arrow-right"></i>
-				<a href="{{ dir.url }}">{{ dir.name }}</a>
+			<a href="{{ dir.url }}">{{ dir.name }}</a>
 			</li>
 			{% endfor %}
-			<li class="active hidden-phone">
-				<i class="icon-arrow-right"></i>
+			<li class="active hidden-xs">
 				{{ filename }}
 			</li>
-		</ul>
+		</ol>
 
 		<h3><i class="{{ ficon }}"></i> {{ filename }}</h3>
-
-		<div class="container visible-phone mobile-header">
-			<div class="btn-group">
-				<a href="{{ url_download }}" class="btn"><i class="icon-download-alt"></i> Download</a>
-				<a data-toggle="modal" href="#delete-confirm" class="btn"><i class="icon-trash"></i> Delete</a>
-				<a href="#rename-file" data-toggle="modal" class="btn"><i class="icon-move"></i> Rename</a>
+	</div>
+</div>
+ 
+ 
+<div class="row">
+ 	<div class="col-sm-4">
+ 		<div class="panel panel-default">
+			<div class="panel-heading">Options</div>
+			<div class="panel-body">
+				<ul class="nav nav-list">
+					{% if url_bdownload is not none %}
+					<li class="hidden-xs">
+						<a href="{{ url_bdownload }}"><i style="color: #000000" class="fa fa-eye fa-fw"></i> View</a>
+					</li>
+					{% endif %}
+					<li>
+						<a href="{{ url_download }}"><i style="color: #000000" class="fa fa-download fa-fw"></i> Download</a>
+					</li>
+					<li>
+						<a href="#rename-file" data-toggle="modal"><i style="color: #000000" class="fa fa-arrows fa-fw"></i> Rename</a>
+					</li>
+					<li>
+						<a href="#delete-confirm" data-toggle="modal"><i style="color: #000000" class="fa fa-trash-o fa-fw"></i> Delete</a>
+					</li>
+				</ul>
 			</div>
 		</div>
- 
-		</br>
-		<form class="form-horizontal">
-		  <fieldset>
-			<div class="ctonrol-group">
+		<div class="panel panel-default">
+			<div class="panel-heading">Permissions</div>
+			<div class="panel-body">
+				<form class="form" role="form">
+					<div class="form-group">
+					  <label class=" control-label">Owner:</label>
+					  <div >
+						<input class="form-control" type="text" readonly="readonly" value="{{ net_sec_desc_owner }}"/>
+						<p class="help-block">The user the file belongs to</p>
+					  </div>
+					</div>
+					<div class="form-group">
+					  <label class="control-label">Group:</label>
+					  <div>
+						<input class="form-control" type="text" readonly="readonly" value="{{ net_sec_desc_group }}"/>
+						<p class="help-block">The group the file belongs to</p>
+					  </div>
+					</div>
+				</form>
 			</div>
-			<div class="control-group">
-			  <label class="control-label">File Size:</label>
-			  <div class="controls">
-				<input class="input-xlarge" type="text" disabled="disabled" value="{{ fsize }}"/>
-				<p class="help-block">The size of the file as stored on disk</p>
-			  </div>
+		</div>
+	</div>
+ 	<div class="col-sm-8">
+ 		<div class="panel panel-default">
+			<div class="panel-heading">File Metadata</div>
+ 			<div class="panel-body">
+				<form class="form" role="form">
+					<div class="form-group">
+					  <label class="control-label">File Size:</label>
+					  <div>
+						<input class="form-control" type="text" disabled="disabled" value="{{ fsize }}"/>
+						<span class="help-block">The size of the file as stored on disk</span>
+					  </div>
+					</div>
+					<div class="form-group">
+					  <label class="control-label">Access Time:</label>
+					  <div>
+						<input class="form-control" type="text" disabled="disabled" value="{{ atime }}"/>
+						<span class="help-block">The last time the file was accessed</span>
+					  </div>
+					</div>
+					<div class="form-group">
+					  <label class="control-label">Modify Time:</label>
+					  <div>
+						<input class="form-control" type="text" disabled="disabled" value="{{ mtime }}"/>
+						<p class="help-block">The last time the file was modified</p>
+					  </div>
+					</div>
+					<div class="form-group">
+					  <label class="control-label">File type:</label>
+					  <div>
+						<input class="form-control" type="text" readonly="readonly" value="{{ ftype }}"/>
+						<input type="hidden" name="mime-type" value="{{ mtype }}"/>
+						<p class="help-block">The file type, or MIME type, based on file extension.</p>
+					  </div>
+					</div>
+				</form>
 			</div>
-			<div class="control-group">
-			  <label class="control-label">Access Time:</label>
-			  <div class="controls">
-				<input class="input-xlarge" type="text" disabled="disabled" value="{{ atime }}"/>
-				<p class="help-block">The last time the file was accessed</p>
-			  </div>
-			</div>
-			<div class="control-group">
-			  <label class="control-label">Modify Time:</label>
-			  <div class="controls">
-				<input class="input-xlarge" type="text" disabled="disabled" value="{{ mtime }}"/>
-				<p class="help-block">The last time the file was modified</p>
-			  </div>
-			</div>
-			<div class="control-group">
-			  <label class="control-label">File type:</label>
-			  <div class="controls">
-				<input class="input-xlarge" type="text" readonly="readonly" value="{{ ftype }}"/>
-				<input type="hidden" name="mime-type" value="{{ mtype }}"/>
-				<p class="help-block">The file type, or MIME type, based on file extension.</p>
-			  </div>
-			</div>
-		  </fieldset>
-		</form>
+		</div>
 	</div>
 </div>
 

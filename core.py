@@ -30,6 +30,23 @@ import os
 import datetime
 import re
 
+################################################################################
+
+def render_page(template_name, **kwargs):
+
+	## Send the standard urls required on all pages
+	url_personal    = url_for('personal')
+	url_mydocuments = url_for('personal',path='mydocuments')
+	url_mydesktop   = url_for('personal',path='mydesktop')
+	url_website     = url_for('webfiles')
+
+	return render_template(template_name, url_personal=url_personal,
+		url_mydocuments=url_mydocuments,
+		url_mydesktop=url_mydesktop,
+		url_website=url_website, **kwargs)
+
+################################################################################
+
 def session_logout():
 	app.logger.info('User "' + session['username'] + '" logged out from "' + request.remote_addr + '" using ' + request.user_agent.string)
 	session.pop('logged_in', None)
@@ -74,7 +91,7 @@ def login_required(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
 		if session.get('logged_in',False) is False:
-			flash('<strong>Oops!</strong> You must login first.','alert-error')
+			flash('<strong>Oops!</strong> You must login first.','alert-danger')
 			## TODO take the next code from sysman - much improved over this.
 			args = url_encode(request.args)
 			return redirect(url_for('hero', next=request.script_root + request.path + "?" + args))
@@ -120,6 +137,10 @@ def before_request():
 			### the user cannot have accidentally triggered this
 			### so just throw a 403.
 			abort(403)
+			
+	## Theme default
+	if not 'theme' in session:
+		session['theme'] = 'flatly'
 
 ################################################################################
 

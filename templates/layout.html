@@ -1,98 +1,159 @@
 <!doctype html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8">
 		<title>Filestore Web Access</title>
-		{% include 'responsive-header.html' %}
-		{% include 'html-header.html' %}
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+		{% include 'header-links.html' %}
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bargate.css') }}">
+		{% include 'javascript.html' %}
+		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
-
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-
-          <a class="brand visible-phone">Filestore</a>
-          <a class="brand visible-tablet">Filestore Web Access</a>
-          <a class="brand visible-desktop">Filestore Web Access</a>
-
-			{% if not session.logged_in %}
-
-			{% else %}	
-
-
-			<div class=" pull-right">
-            <a class="btn hidden-desktop" href="{{ url_for('logout') }}">
-              Logout
-            </a>
-            <a class="btn dropdown-toggle hidden-tablet hidden-phone" data-toggle="dropdown" href="#">
-              <i class="icon-user"></i> {{ session.username }}
-              <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a href="https://subscribe.iss.soton.ac.uk/subscribed.html"><i class="icon-key"></i> iSolutions Account</a></li>
-              <li class="divider"></li>
-              <li><a href="{{ url_for('logout') }}">Sign Out</a></li>
-            </ul>
-
-
-          </div>
-			{% endif %}
+		<div class="navbar navbar-default navbar-fixed-top" role="navigation">	
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a href="{{ url_personal }}" class="navbar-brand visible-xs">Filestore Web Access</a>
+					<a href="{{ url_personal }}" class="navbar-brand visible-sm">Filestore</a>
+					<a href="{{ url_personal }}" class="navbar-brand visible-md visible-lg">Filestore Web Access</a>
+				</div>
 			
-
-			<div class="nav">
-		      <ul class="nav">
-				{% if not session.logged_in %}
-		        <li {% if active == 'hero' %} class="active" {% endif %}><a href="{{ url_for('hero') }}">Login</a></li>
-				{% else %}
-		        <li class="visible-desktop" {% if active == 'personal' %} class="active" {% endif %}><a href="{{ url_for('personal') }}">Personal</a></li>
-		        <li class="visible-desktop" {% if active == 'webfiles' %} class="active" {% endif %}><a href="{{ url_for('webfiles') }}">Website</a></li>
-		        <li class="visible-desktop" {% if active == 'webfiles' %} class="active" {% endif %}><a href="{{ url_for('resource') }}">Shared Files</a></li>
-				{% endif %}
-				<li class="visible-desktop {% if active == 'about' or acive == 'help' %}active {% endif %}dropdown">
-					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
-					<ul class="dropdown-menu">
-					<li><a target="_blank" href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php">Help</a></li>
-					<li><a href="{{ url_for('about') }}">About</a></li>
+				{% if session.logged_in %}
+				<div class="navbar-collapse collapse" id="navbar-collapse-1">	
+					<ul class="nav navbar-nav">
+						<li class="dropdown{%if active == 'home'%} active{%endif%}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">My Files <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="{{ url_personal }}"><i class="fa fa-fw fa-home"></i> Home</a></li>
+								<li><a href="{{ url_mydocuments }}"><i class="fa fa-fw fa-files-o"></i> My Documents</a></li>
+								<li><a href="{{ url_mydesktop }}"><i class="fa fa-fw fa-desktop"></i> My Desktop</a></li>
+								<li><a href="{{ url_website }}"><i class="fa fa-fw fa-globe"></i> My Website</a></li>
+							</ul>
+						</li>
+						<li class="dropdown{%if active == 'shared'%} active{%endif%}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Shared Files <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="{{ url_for('resource') }}"><i class="fa fa-fw fa-group"></i> Resource Drive</a></li>
+								<li><a href="{{ url_for('linuxresearch') }}"><i class="fa fa-fw fa-linux"></i> Linux Research</a></li>
+								<li><a href="{{ url_for('other') }}"><i class="fa fa-fw fa-share-square-o"></i> Other Drives</a></li>
+								<li><a href="{{ url_for('custom_server') }}"><i class="fa fa-fw fa-hdd-o"></i> Custom Server</a></li>
+							</ul>
+						</li>
+						<li class="dropdown{%if active == 'help'%} active{%endif%}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php""><i class="fa fa-fw fa-home"></i> Help</a></li>
+								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-home"></i> About</a></li>
+							</ul>
+						</li>
 					</ul>
-				</li>
-		      </ul>
+					
+					<ul class="nav navbar-nav navbar-right">
+						<li class="dropdown{%if active == 'user'%} active{%endif%}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ session.username }} <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="https://subscribe.iss.soton.ac.uk/subscribed.html"><i class="fa fa-key fa-fw"></i> University Account</a></li>
+								<li><a href="{{ url_for('theme') }}"><i class="fa fa-tint fa-fw"></i> Change Theme</a></li>
+								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-question-circle fa-fw"></i> Take the survey</a></li>
+								<li class="divider"></li>
+								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
+							</ul>
+						</li>
+					</ul>
+					
+					<div class="pull-right action-btns">
+						<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-upload"></i>
+						</a>
+						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-folder-open"></i>
+						</a>
+			
+						{% if url_switch_hidden %}
+						<a class="btn navbar-btn btn-warning btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="{{switch_hidden_string}}" href="{{url_switch_hidden}}">
+							{% if hidden_icon == 'show' %}
+							<i class="fa fa-eye"></i>
+							{% else %}
+							<i class="fa fa-eye-slash"></i>
+							{% endif %}
+						</a>
+						{% else %}
+						<a class="btn btn-warning hidden-xs" disabled="disabled" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Show/hide hidden files" href="#">
+							<i class="fa fa-eye"></i>
+						</a>
+						{% endif %}
+					</div>
+				</div>
+				{% endif %}
 			</div>
-        </div>
-      </div>
-    </div>
+		</div>
 
-{% if session.popup_error %}
-{% with poperr = poperr_get() %}
-<!-- modal popup for when there is a redirected error NEW -->
-<div class="modal hide fade" id="popup-error">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>{{ poperr.0 }}</h3>
-  </div>
-    <div class="modal-body">
-	{{ poperr.1 }}
-  	</div>
-	<div class="modal-footer">
-		<a href="#" class="btn"  data-dismiss="modal">Close</a>
-	</div>
-</div>
+		{% if session.popup_error %}
+		{% with poperr = poperr_get() %}
+		<div class="modal fade" id="popup-error">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">×</button>
+						<h4 class="modal-title">{{ poperr.0 }}</h4>
+					</div>
+					<div class="modal-body">
+						{{ poperr.1 }}
+					</div>
+					<div class="modal-footer">
+						<a href="#" class="btn btn-default"  data-dismiss="modal">OK</a>
+					</div>
+				</div>
+			</div>
+		</div>
 
-<script type="text/javascript">
-    $(window).load(function(){
-        $('#popup-error').modal('show');
-    });
-</script>
-{% endwith %}
-{% else %}
-<!-- session didn't have a popup_error -->
-{% endif %}
+		{% endwith %}
+		{% endif %}
 
-    <div class="container-fluid">
-		{% for category, message in get_flashed_messages(with_categories=true) %}
-		<div class="alert {{ category }} fade in"> <a data-dismiss="alert" class="close" href="#">×</a> {{ message|safe }} </div>
-		{% endfor %}
-		{% block body %}{% endblock %}
-    </div>
-  </body>
+		<div class="{% if browse_mode %} container container-directory{%else%}container{%endif%}">
+			{% for category, message in get_flashed_messages(with_categories=true) %}
+			<div class="alert {{ category }} fade in"> <a data-dismiss="alert" class="close" href="#">×</a> {{ message|safe }} </div>
+			{% endfor %}
+			{% block body %}{% endblock %}
+		</div>
+		
+		{% if browse_mode %}
+		<div class="navbar navbar-default navbar-fixed-bottom visible-xs" role="navigation">	
+			<div class="container">
+				<div class="action-btns text-center">
+					<button onclick="document.location.reload();" class="btn navbar-btn btn-danger btn">
+						<i class="fa fa-refresh"></i>
+					</button>
+					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn">
+						<i class="fa fa-upload"></i>
+					</a>
+					<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info">
+						<i class="fa fa-folder-open"></i>
+					</a>
+		
+					{% if url_switch_hidden %}
+					<a class="btn navbar-btn btn-warning" href="{{url_switch_hidden}}">
+						{% if hidden_icon == 'show' %}
+						<i class="fa fa-eye"></i>
+						{% else %}
+						<i class="fa fa-eye-slash"></i>
+						{% endif %}
+					</a>
+					{% else %}
+					<a class="btn btn-warning" disabled="disabled" href="#">
+						<i class="fa fa-eye"></i>
+					</a>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		{% endif %}
+	</body>
 </html>

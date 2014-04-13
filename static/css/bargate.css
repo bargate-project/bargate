@@ -1,111 +1,119 @@
-.hero-login h3
+body
 {
-	padding-bottom: 10px;
+	padding-top: 60px;
+	padding-bottom: 0px;
 }
 
-.hero-login label.field
+@media (min-width: 768px)
 {
-	font-weight: bold;
+	body
+	{
+		padding-top: 70px;
+	}
 }
 
+/* don't put a margin on directory view table at the bottom */
+#dir
+{
+	margin-bottom: 0px;
+}
+
+/* clickable rows should have a mouse pointer */
+.rowclick-tr
+{
+	cursor: pointer; 
+}
+/* clickable rows need a mouse pointer change to indicate clickyness */
+.table-hover.rowclick-table tr:hover td,
+.table-hover .rowclick-table tr:hover td
+{
+	background-color: #cfcfcf;
+}
+
+/* Define a class for buttons to have borders
+.btn-border-white
+{
+	border-color: #ffffff;
+}
+.btn-border-white:hover
+{
+	border-color: #CCCCCC;
+}
+*/
+
+/* horrible modal center 'hack' -  but its so simple that is just DELICIOUS */
+.modal
+{
+	padding-top: 15%;
+}
+
+/* MAKE BOOTSTRAP DO VERTICAL ALIGN IN TABLES, DUH? */
 .table td
 {
-	vertical-align: middle;
+	vertical-align: middle !important;
 }
 
-/* MOBILE DIRECTORY VIEW */
-
-div.mobile-header .btn-group
+/* Prevent themes from putting borders on tables */ 
+.table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td
 {
-    margin: 0 auto; 
-    text-align: center;
-    width: inherit;
-    display: inline-block;
+	border-bottom: none;
+	border-top: none;
 }
 
-div.mobile-header
+/* Make sure no underlines on a's in tables pls - For flatly theme mostly */
+.table a, table a
 {
-	text-align: center;
+	text-decoration: none;
 }
 
+.action-btns
+{
+	margin-right: 15px;
+}
+
+/* The changelog list type */
 ul.changelog
 {
 	list-style: none;
 	margin: 0 0 10px 10px;
 }
 
-/* bootstrap 2.3.1 reduce margin on bottom of popover menu */
-
-.popover-nav
+/* Get rid of padding when we're in browse mode so directories go right up to screen edge */
+.container-directory
 {
-	margin: 0px !important;
-	padding: 0px !important;
+	padding: 0px;
 }
 
-/* sign in page stuff */
-.signin-block
-{
-	max-width: 400px;
+/* Use a custom icon from FontAwesome for the breadcrumb separator */
+.breadcrumb > li + li:before {
+padding: 0 5px;
+color: #cccccc;
+font-family: FontAwesome;
+content: "\f061";
 }
 
-.signin-advert
+/*
+ * Table sorter stuff
+ */
+ 
+.tablesorter-header
 {
-	padding: 19px 29px 29px;
-	margin: 0 auto 20px;
-	background-color: #fff;
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
-	border-radius: 10px;
-	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	border: 1px solid #b7b7b7;
+	background-image: url('/static/images/bg.gif');
+	cursor: pointer; 
+	font-weight: bold; 
+	background-repeat: no-repeat; 
+	background-position: center left;
+	padding-left: 20px !important;
 }
-
-.form-signin
+.tablesorter-headerAsc
 {
-	padding: 19px 29px 29px;
-	margin: 0 auto 20px;
-	background-color: #fff;
-	-webkit-border-radius: 10px;
-	-moz-border-radius: 10px;
-	border-radius: 10px;
-	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-	box-shadow: 0 1px 2px rgba(0,0,0,.05);
+	background-image: url('/static/images/asc.gif');
 }
-
-/* add a border around the form-signin but only on big screens */
-@media (min-width: 768px)
+.tablesorter-headerDesc
 {
-	.form-signin
-	{
-		border: 1px solid #b7b7b7;
-	}
+	background-image: url('/static/images/desc.gif');
 }
-
-.form-signin .form-signin-heading,
-.form-signin .checkbox
+.tsdisable
 {
-	margin-bottom: 10px;
-}
-.form-signin input[type="text"],
-.form-signin input[type="password"]
-{
-	font-size: 16px;
-	height: auto;
-	margin-bottom: 15px;
-	padding: 7px 9px;
-}
-
-/* try to fix span2 being too small on tablet screens */
-@media (max-width: 979px) and (min-width: 768px) { /*tablet*/
-    .row-fluid .span2
-    {
-    	width: 22.92817679558011%; 
-    }
-    .row-fluid .span10
-    {
-        width: 74.30939226519337%;
-    }
+	background-image: none;
 }

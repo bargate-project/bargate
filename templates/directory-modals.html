@@ -1,0 +1,204 @@
+<!-- modal popup for when upload file is clicked -->
+<div class="modal" id="upload-file">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="upload" type="hidden"/>
+				<input name="path" type="hidden" value="{{ pwd }}"/>
+				
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">×</button>
+					<h4 class="modal-title">Upload</h4>
+				</div>
+				<div class="modal-body">
+
+					<input type="file" name="file"/>
+					<label class="checkbox">
+					<input type="checkbox" id="overwrite" name="overwrite" value="overwrite"/>
+						Allow overwriting of an existing file
+					</label>
+					<label><span class="label label-danger">Warning!</span> The maximum file size is 64MB. Some file types are banned.</label>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="uploadbtn" type="submit" class="btn btn-success" onclick="$('#uploadbtn').button('loading')" data-loading-text="Uploading...">Upload</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- modal popup for when create directory is clicked -->
+<div class="modal" id="create-directory">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="mkdir" type="hidden"/>
+				<input name="path" type="hidden" value="{{ pwd }}"/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Create folder</h4>
+				</div>
+
+				<div class="modal-body">
+					<label>New folder name:</label>
+					<input class="form-control" type="text" name="directory_name" placeholder="New folder"/>
+				</div>
+				
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-success" value="Create"/>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- modal to delete a file -->
+<div class="modal" id="delete-confirm">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="unlink" type="hidden"/>
+				<input name="path" type="hidden" value="" id="delete_path"/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Delete file</h4>
+				</div>
+
+				<div class="modal-body">
+					<p>Are you sure you want to permanently delete the file?</p>
+				</div>
+				
+				<div class="modal-footer">
+					<input type="submit" class="btn btn-primary" value="Yes"/>
+ 					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- modal to delete a directory -->
+<div class="modal" id="delete-dir-confirm">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="unlink" type="hidden"/>
+				<input name="path" type="hidden" value="" id="delete_dir_path"/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Delete directory</h4>
+				</div>
+
+				<div class="modal-body">
+					<p>Are you sure you want to permanently delete the directory?</p>
+					<label><span class="label label-danger">Note!</span> Only empty directories can be deleted! </label>
+				</div>
+				
+				<div class="modal-footer">
+					<input type="submit" class="btn btn-primary" value="Yes"/>
+ 					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- modal for rename -->
+<div class="modal" id="rename-file">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="rename" type="hidden"/>
+  				<input id="rename_path" name="path" type="hidden" value=""/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Rename</h4>
+				</div>
+
+				<div class="modal-body">
+					<label>New file name:</label>
+      				<input class="form-control" id="newfilename" type="text" name="newfilename" value=""/>
+				</div>
+				
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-primary" value="Rename"/>				
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- modal popup for when copy file is clicked -->
+<div class="modal" id="copy-file">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="copy" type="hidden"/>
+  				<input id="copy_path" name="path" type="hidden" value=""/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4 class="modal-title">Copy</h4>
+				</div>
+
+				<div class="modal-body">
+					<label>Name of copied file:</label>
+      				<input class="form-control" id="copyfilename" type="text" name="filename" value=""/>
+				</div>
+				
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-primary" value="Copy"/>				
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- modal for file click -->
+<div class="modal" id="file-click">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h4 style="overflow: auto;" class="modal-title" id="file-click-filename">Unknown</h4>
+			</div>
+
+			<div class="modal-body text-center">
+				<i id="file-click-icon" class="" style="font-size: 6em"></i>
+				<table class="table table-condensed text-left table-nl">
+					<tr>
+						<th class="text-right">Size:</th>
+						<td id="file-click-size"></td>
+					</tr>
+					<tr>
+						<th class="text-right">Last Modified:</th>
+						<td id="file-click-mtime"></td>
+					</tr>
+					<tr>
+						<th class="text-right">Type:</th>
+						<td id="file-click-mtype"></td>
+					</tr>
+				</table>
+			</div>
+			<div class="modal-footer">
+				<a href="#" id="file-click-url" class="btn btn-primary">Download</a>
+				<a href="#" id="file-click-props" class="btn btn-info">Properties</a>
+				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>			
+			</div>
+		</div>
+	</div>
+</div>

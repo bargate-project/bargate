@@ -1,13 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div class="row-fluid">
-	<div class="span2">
-	{% include 'sidebar.html' %}
-	</div>
-	<div class="span10">
-		<h3>Other Servers</h3>
-		<hr/>
+		<h3><i class="fa fa-share-square-o"></i> Other Drives</h3>
 		<table class="table table-striped table-bordered">
 			<thead>
 				<tr>
@@ -21,7 +15,7 @@
 					<td>MEDIS Shared</td>
 					<td>Medicine M Drive</td>
 					<td>
-						<a href="{{ url_for('medis') }}"><button type="submit" class="btn">Connect</button></a>
+						<a href="{{ url_for('medis') }}"><button type="submit" class="btn btn-info">Connect</button></a>
 					</td>
 				</tr>
 
@@ -29,7 +23,7 @@
 					<td>MEDIS Users</td>
 					<td>Medicine Personal Files</td>
 					<td>
-						<a href="{{ url_for('medis_personal') }}"><button type="submit" class="btn">Connect</button></a>
+						<a href="{{ url_for('medis_personal') }}"><button type="submit" class="btn btn-info">Connect</button></a>
 					</td>
 				</tr>
 
@@ -40,7 +34,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://lamp.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -51,7 +45,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://lamp2.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -62,7 +56,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://lamp3.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -73,7 +67,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://dev.lamp.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -84,7 +78,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://ugsamba.ecs.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -95,7 +89,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://pgsamba.ecs.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -106,7 +100,7 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://staffsamba.ecs.soton.ac.uk/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
@@ -117,21 +111,11 @@
 						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
 							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 							<input type="hidden" name="open_server_uri" value="smb://soton.ac.uk/filestore/">
-							<button type="submit" class="btn">Connect</button>
+							<button type="submit" class="btn btn-info">Connect</button>
 						</form>
 					</td>
 				</tr>
 			</tbody>
 		</table>
-	</div>
-</div>
-
-<!--
-
-lamp lamp lamp
-k ecs ecs
-
-
--->
 
 {% endblock %}

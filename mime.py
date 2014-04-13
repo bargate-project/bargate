@@ -39,43 +39,70 @@ def mimetype_to_icon(mtype):
 	"""
 
 	## default type
-	ficon = 'icon-file'
+	ficon = 'fa fa-file'
 
 	if mtype.startswith('image'):
-		ficon = 'icon-camera-retro'
+		ficon = 'fa fa-camera-retro'
+		
 	elif mtype.startswith('audio'):
-		ficon = 'icon-music'
+		ficon = 'fa fa-music'
+		
 	elif mtype.startswith('video'):
-		ficon = 'icon-film'
+		ficon = 'fa fa-video-camera'
+		
 	elif mtype.startswith('message'):
-		ficon = 'icon-envelope-alt'
+		ficon = 'fa fa-envelope'
+		
+	elif mtype.startswith('application/vnd.visio'):
+		ficon = 'fa fa-sitemap'		
+		
+	elif mtype.startswith('application/octet-stream'):
+		ficon = 'fa fa-gears'
+		
+	elif mtype.startswith('application/x-gzip'):
+		ficon = 'fa fa-archive'
+	elif mtype.startswith('application/x-tar'):
+		ficon = 'fa fa-archive'
+	elif mtype.startswith('application/zip'):
+		ficon = 'fa fa-archive'
+	elif mtype.startswith('application/vnd.ms-cab-compressed'):
+		ficon = 'fa fa-archive'
+		
+	elif mtype.startswith('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
+		ficon = 'fa fa-table'
+	elif mtype.startswith('application/vnd.ms-excel'):
+		ficon = 'fa fa-table'
+	elif mtype.startswith('application/vnd.oasis.opendocument.spreadsheet'):
+		ficon = 'fa fa-table'
+		
+	elif mtype.startswith('application/vnd.ms-powerpoint'):
+		ficon = 'fa fa-bullhorn'
+	elif mtype.startswith('application/vnd.openxmlformats-officedocument.presentationml.presentation'):
+		ficon = 'fa fa-bullhorn'
+	elif mtype.startswith('application/vnd.oasis.opendocument.presentation'):
+		ficon = 'fa fa-bullhorn'
+
+	elif mtype.startswith('application/pdf'):
+		ficon = 'fa fa-book'	
+
+	elif mtype.startswith('text/html'):
+		ficon = 'fa fa-globe'
+		
 	elif mtype.startswith('application'):
-		ficon = 'icon-file-alt'
-
-	return ficon
-
-def mimetype_to_image(mtype):
-	"""Converts a file mime type into an icon
-	to be displayed next to the file name.
-	"""
-
-	## default type
-	ficon = 'images/_blank.png'
-
-	if mtype == 'image/bmp':
-		ficon = 'images/bmp.png'
-	if mtype == 'image/png':
-		ficon = 'images/png.png'
-
+		ficon = 'fa fa-file-text'
+		
 	return ficon
 
 def filename_to_mimetype(filename):
 	"""Takes a filename and returns the mime type for the file based
 	upon the file extension only.
 	"""
+	
+	## Load in /etc/mime.types on Linux
+	mimetypes.init()
 
-	## guess a mimetype from python mimetypes
-	(mtype,enc) = mimetypes.guess_type(filename)
+	## guess a mimetype from python mime types
+	(mtype,enc) = mimetypes.guess_type(filename,strict=False)
 
 	## If mimetypes module didn't detect anything
 	if mtype == None:
@@ -96,8 +123,9 @@ def filename_to_mimetype(filename):
 		'message/rfc822' : 'E-Mail Message',
 		'text/calendar' : 'Calendar File',
 		'application/x-java-archive' : 'Java Archive',
-		'application/vnd.oasis.opendocument.presentation' : 'OpenDocument Presentation',
-		'application/vnd.oasis.opendocument.spreadsheet' : 'OpenDocument Spreadsheet',
+		'application/vnd.oasis.opendocument.presentation' : 'Open Document Presentation',
+		'application/vnd.oasis.opendocument.spreadsheet' : 'Open Document Spreadsheet',
+		'application/vnd.oasis.opendocument.text' : 'Open Document Text',
 
 		'text/csv' : 'CSV - Comma Seperated Values',
 		'text/css' : 'CSS - Cascading Style Sheet',
@@ -111,14 +139,14 @@ def filename_to_mimetype(filename):
 		'text/html' : 'HTML - Hypertext Markup Language',
 		'application/xhtml+xml' : 'XHTML - XML and HTML',
 
-		'image/vnd.microsoft.icon' : 'Image - Microsoft Icon',
-		'image/bmp' : 'Image - Microsoft Bitmap',
-		'image/x-xpixmap' : 'Image - Pixmap',
-		'image/png' : 'Image - PNG - Portable Network Graphics',
-		'image/jpeg' : 'Image - JPEG',
-		'image/gif' : 'Image - GIF',
-		'image/tiff' : 'Image - TIFF',
-		'image/svg' : 'Image - Scalable Vector Graphic (SVG)',
+		'image/vnd.microsoft.icon' : 'Microsoft Icon',
+		'image/bmp' : 'Bitmap Image',
+		'image/x-xpixmap' : 'Pixmap Image',
+		'image/png' : 'PNG Image (Portable Network Graphics)',
+		'image/jpeg' : 'JPEG Image',
+		'image/gif' : 'GIF Image',
+		'image/tiff' : 'TIFF Image',
+		'image/svg' : 'SVG Image (Scalable Vector Graphic)',
 
 		'video/mp4' : 'Video - MPEG4',
 		'video/mpeg' : 'Video - MPEG2',
@@ -132,7 +160,7 @@ def filename_to_mimetype(filename):
 		'audio/basic' : 'Audio - Basic',
 
 		'application/x-gzip' : 'Compressed File - GZIP',
-		'application/x-tar' : 'TAR Archive (TApe Archive)',
+		'application/x-tar' : 'File Archive - TAR',
 		'application/zip' : 'Compressed File - ZIP',
 		'application/vnd.ms-cab-compressed' : 'Compressed File - Microsoft CABinet',
 	}

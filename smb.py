@@ -18,7 +18,7 @@
 from bargate import app
 import bargate.errors
 import string
-from flask import Flask, send_file, request, session, g, redirect, url_for, abort, render_template, flash, make_response
+from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response
 #from werkzeug import secure_filename
 import os
 import smbc
@@ -61,6 +61,23 @@ SMB_LINK  = 9
 #00095 #define SMBC_FILE           8
 #00096 #define SMBC_LINK           9
 
+
+################################################################################
+
+def wb_sid_to_name(sid):
+	import subprocess
+	process = subprocess.Popen(['/usr/bin/wbinfo', '--sid-to-name',sid], stdout=subprocess.PIPE)
+	sout, serr = process.communicate()
+	
+	sout = sout.rstrip()
+	
+	if sout.endswith(' 1') or sout.endswith(' 2'):
+		return sout[:-2]
+	else:
+		return sout
+
+################################################################################
+
 def statURI(ctx,uri):
 	## stat the file
 	## return a dictionary with friendly named access to data
@@ -89,9 +106,11 @@ def statURI(ctx,uri):
 
 	return dstat
 
+################################################################################
+
 def getEntryType(ctx,uri):
 	## stat the file, st_mode has all the info we need
-	## thanks to clayton for fixing this problem	
+	## thanks to clayton for fixing this problem
 
 	## Strip off trailing slashes as they're useless to us
 	if uri.endswith('/'):
@@ -104,6 +123,8 @@ def getEntryType(ctx,uri):
 		return bargate.errors.smbc_handler(ex,uri)
 
 	return statToType(fstat)
+	
+################################################################################
 
 def statToType(fstat):
 
@@ -119,6 +140,8 @@ def statToType(fstat):
 		return SMB_LINK
 	else:
 		return -1
+		
+################################################################################
 
 def check_path_security(path):
 	if path.startswith(".."):
@@ -146,7 +169,7 @@ def check_path_security(path):
 
 ################################################################################
 
-def connection(srv_path,func_name,active=None):
+def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 	## ensure srv_path ends with a trailing slash
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
@@ -165,7 +188,7 @@ def connection(srv_path,func_name,active=None):
 	if request.method == 'GET':
 
 		## Load the path
-		path = request.args.get('path','')
+		#path = request.args.get('path','')
 
 		## pysmbc needs urllib quoted, but urllib can't handle unicode
 		## so convert to str via encode utf8 and then urllib quote
@@ -270,6 +293,12 @@ def connection(srv_path,func_name,active=None):
 					url_parent_dir = url_for(func_name)
 			else:
 				url_parent_dir = url_for(func_name)
+				
+			## Catch out people trying to view the root directory
+			if len(path) == 0:
+				return redirect(url_for(func_name))
+				
+			## TODO catch out people trying to view a directory!
 
 			## try to stat the file
 			try:
@@ -296,6 +325,12 @@ def connection(srv_path,func_name,active=None):
 			else:
 				filename = path
 				crumbs = []
+				
+			try:
+				net_sec_desc_owner = bargate.smb.wb_sid_to_name(ctx.getxattr(Suri,smbc.XATTR_OWNER))
+				net_sec_desc_group = bargate.smb.wb_sid_to_name(ctx.getxattr(Suri,smbc.XATTR_GROUP))
+			except Exception as ex:
+				return bargate.errors.smbc_handler(ex,uri,redirect(url_parent_dir))
 
 			## URLs
 			url_home=url_for(func_name)
@@ -324,7 +359,7 @@ def connection(srv_path,func_name,active=None):
 				url_bdownload = None
 
 			## Render the template
-			return render_template('view.html', active=active,
+			return bargate.core.render_page('view.html', active=active,
 				crumbs=crumbs,
 				path=path,
 				url_home=url_home,
@@ -342,6 +377,9 @@ def connection(srv_path,func_name,active=None):
 				ftype = ftype,
 				ficon = ficon,
 				fsize = fsize,
+				root_display_name = display_name,
+				net_sec_desc_owner = net_sec_desc_owner,
+				net_sec_desc_group = net_sec_desc_group,
 			)
 
 ################################################################################
@@ -393,7 +431,7 @@ def connection(srv_path,func_name,active=None):
 				entry = {}
 
 				# Set a default icon and set name
-				entry['icon'] = 'icon-file'
+				entry['icon'] = 'fa fa-file'
 				entry['name'] = dentry.name
 
 				## Skip . and ..
@@ -451,10 +489,14 @@ def connection(srv_path,func_name,active=None):
 					entry['view']     = url_for(func_name,path=entry['path'],action='view')
 					entry['download'] = url_for(func_name,path=entry['path'],action='download')
 					entry['default_open'] = entry['download']
+					
+					if 'size' in dstat:
+						entry['size'] = bargate.core.str_size(dstat['size'])
 
 					## File icon
 					(ftype,mtype) = bargate.mime.filename_to_mimetype(entry['name'])
 					entry['icon'] = bargate.mime.mimetype_to_icon(mtype)
+					entry['mtype'] = ftype
 
 					## View-in-browser download type
 					if bargate.mime.view_in_browser(mtype):
@@ -466,7 +508,7 @@ def connection(srv_path,func_name,active=None):
 
 				## DIRECTORY ###################################################
 				elif dentry.smbc_type == bargate.smb.SMB_DIR:
-					entry['icon'] = 'icon-folder-close-alt'	
+					entry['icon'] = 'fa fa-folder'	
 					entry['type'] = 'dir'
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']
@@ -479,7 +521,7 @@ def connection(srv_path,func_name,active=None):
 					if last == "$":
 						continue
 
-					entry['icon'] = 'icon-hdd'
+					entry['icon'] = 'fa fa-hdd-o'
 					entry['type'] = 'share'
 
 					## url to view the share
@@ -549,14 +591,9 @@ def connection(srv_path,func_name,active=None):
 			else:
 				atroot = False
 
-			## URLs for browsing around
-			url_personal    = url_for('personal')
-			url_mydocuments = url_for('personal',path='mydocuments')
-			url_mydesktop   = url_for('personal',path='mydesktop')
-			url_website     = url_for('webfiles')
-
 			## Render the template
-			return render_template('directory.html', active=active,
+			return bargate.core.render_page('directory.html', 
+				active=active,
 				entries=entries,
 				crumbs=crumbs,
 				pwd=path,
@@ -565,13 +602,11 @@ def connection(srv_path,func_name,active=None):
 				url_refresh=url_refresh,
 				switch_hidden_string=switch_hidden_string,
 				url_switch_hidden=url_switch_hidden,
+				hidden_icon=hidden_new_type,
 				browse_mode=True,
 				atroot = atroot,
 				func_name = func_name,
-				url_personal=url_personal,
-				url_mydocuments=url_mydocuments,
-				url_mydesktop=url_mydesktop,
-				url_website=url_website,
+				root_display_name = display_name,
 			)
 
 		else:
@@ -588,6 +623,7 @@ def connection(srv_path,func_name,active=None):
 		action = request.form['action']
 
 		## Get the path out of the form
+		## and ignore the 'path' from the url
 		path = request.form['path']
 
 		## pysmbc needs urllib quoted, but urllib can't handle unicode
@@ -879,3 +915,4 @@ def connection(srv_path,func_name,active=None):
 		else:
 			abort(400)
 
+################################################################################

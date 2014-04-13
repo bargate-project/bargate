@@ -44,18 +44,18 @@ def hero():
 		## generate a background image to showz
 		bgnumber = randint(1,17)
 
-		return render_template('hero.html', active='hero',next=next,bgnumber=bgnumber)
+		return render_template('hero.html', next=next,bgnumber=bgnumber)
 
 ################################################################################
-#### ABOUT PAGE
+#### HELP PAGES
 
 @app.route('/about')
 def about():
-	return render_template('about.html', active='about')
+	return bargate.core.render_page('about.html', active='help')
 
 @app.route('/about/changelog')
 def changelog():
-	return render_template('changelog.html', active='about')
+	return bargate.core.render_page('changelog.html', active='help')
 
 ################################################################################
 #### LOGIN
@@ -67,13 +67,13 @@ def login():
 		## Check password with kerberos
 		kerberos.checkPassword(request.form['username'], request.form['password'], app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
 	except kerberos.BasicAuthError as e:
-		flash('<strong>Error</strong> - Incorrect username and/or password','alert-error')
+		flash('<strong>Error</strong> - Incorrect username and/or password','alert-danger')
 		return redirect(url_for('hero'))
 	except kerberos.KrbError as e:
-		flash('<strong>Unexpected Error</strong> - Kerberos Error: ' + e.__str__(),'alert-error')
+		flash('<strong>Unexpected Error</strong> - Kerberos Error: ' + e.__str__(),'alert-danger')
 		return redirect(url_for('hero'))
 	except kerberos.GSSError as e:
-		flash('<strong>Unexpected Error</strong> - GSS Error: ' + e.__str__(),'alert-error')
+		flash('<strong>Unexpected Error</strong> - GSS Error: ' + e.__str__(),'alert-danger')
 		return redirect(url_for('hero'))
 	except Exception as e:
 		bargate.errors.fatal(e)
@@ -134,65 +134,73 @@ def logout():
 @bargate.core.downtime_check
 @bargate.core.login_required
 def mime():
-	ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth)
-	test = bargate.smb.statURI(ctx,u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/fwa.tar.gz')
-	return render_template("mime.html",types=mimetypes.types_map,test=test)
-
-@app.route('/test')
-@bargate.core.login_required
-def test():
-	return bargate.errors.output_error('title','message','errstr',redirect(url_for('mime')))
+	mimetypes.init()
+	return bargate.core.render_page("mime.html",types=mimetypes.types_map,active="help")
 
 ################################################################################
 #### FILE VIEWS
 
-@app.route('/personal', methods=['GET','POST'])
-@bargate.core.login_required
-@bargate.core.downtime_check
-def personal():
-	return bargate.smb.connection(u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/',"personal")
+## SMB CONNECTION TAKES FOUR ARGS
+## SMB path to start at
+## function name (to allow url_for to be generated)
+## 'active' part of the site, for the menu 'active' CSS
+## 'display_name' - the name to show on the page to end users to show where they are
 
-@app.route('/webfiles', methods=['GET','POST'])
+@app.route('/personal', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/personal/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def webfiles():
-	return bargate.smb.connection(u"smb://webfiles.soton.ac.uk/" + unicode(session['username']) + '/',"webfiles")
+def personal(path):
+	return bargate.smb.connection(u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/',"personal", "home", "Home",path)
 
-@app.route('/soton', methods=['GET','POST'])
+@app.route('/webfiles', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/webfiles/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def soton():
-	return bargate.smb.connection(u"smb://soton.ac.uk/","soton")
+def webfiles(path):
+	return bargate.smb.connection(u"smb://webfiles.soton.ac.uk/" + unicode(session['username']) + '/',"webfiles", "home", "My Website",path)
 
-@app.route('/filestore', methods=['GET','POST'])
+@app.route('/soton', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/soton/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def filestore():
-	return bargate.smb.connection(u"smb://filestore.soton.ac.uk/","filestore")
+def soton(path):
+	return bargate.smb.connection(u"smb://soton.ac.uk/","soton","shared","DFS Root", path)
 
-@app.route('/resource', methods=['GET','POST'])
+@app.route('/filestore', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/filestore/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def resource():
-    return bargate.smb.connection(u"smb://soton.ac.uk/resource/","resource")
+def filestore(path):
+	return bargate.smb.connection(u"smb://filestore.soton.ac.uk/","filestore","shared","Isilon Root",path)
 
-@app.route('/medis/shared', methods=['GET','POST'])
+@app.route('/resource', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/resource/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def medis():
-    return bargate.smb.connection(u"smb://rj-macleod.soton.ac.uk/medisdfs/","medis","other")
+def resource(path):
+    return bargate.smb.connection(u"smb://soton.ac.uk/resource/","resource","shared","Resource Drive",path)
 
-@app.route('/medis/personal', methods=['GET','POST'])
+@app.route('/medis/shared', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/medis/shared/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def medis_personal():
-    return bargate.smb.connection(u"smb://rj-macleod.soton.ac.uk/users$/" + unicode(session['username']) + '/',"medis_personal","other")
+def medis(path):
+    return bargate.smb.connection(u"smb://rj-macleod.soton.ac.uk/medisdfs/","medis","shared", "MEDIS Shared",path)
 
-@app.route('/linuxresearch', methods=['GET','POST'])
+@app.route('/medis/users', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/medis/users/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def linuxresearch():
-	return bargate.smb.connection(u"smb://linuxresearch.soton.ac.uk/","linuxresearch")
+def medis_personal(path):
+    return bargate.smb.connection(u"smb://rj-macleod.soton.ac.uk/users$/" + unicode(session['username']) + '/',"medis_personal","shared", "MEDIS Users",path)
+
+@app.route('/linuxresearch', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/linuxresearch/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def linuxresearch(path):
+	return bargate.smb.connection(u"smb://linuxresearch.soton.ac.uk/","linuxresearch","shared","Linux Research",path)
 
 ################################################################################
 #### FAVOURITES / BOOKMARKS
@@ -201,11 +209,6 @@ def linuxresearch():
 @bargate.core.login_required
 @bargate.core.downtime_check
 def bookmarks():
-	## URLs for browsing around
-	url_personal    = url_for('personal')
-	url_mydocuments = url_for('personal',path='mydocuments')
-	url_mydesktop   = url_for('personal',path='mydesktop')
-	url_website     = url_for('webfiles')
 
 	ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth)
 	bmPath = u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/.fwabookmarks'
@@ -233,12 +236,39 @@ def bookmarks():
 					if 'name' in entry and 'function' in entry and 'path' in entry:
 						listEntry = { 'name': entry['name'], 'url': url_for(entry['function'],path=entry['path']) }
 						bmList.append(listEntry)
-	return render_template('bookmarks.html', active='bookmarks',pwd='',url_personal=url_personal,
-				url_mydocuments=url_mydocuments,
-				url_mydesktop=url_mydesktop,
-				url_website=url_website,
-				bookmarks = bmList)
+	return bargate.core.render_page('bookmarks.html', active='bookmarks',pwd='',bookmarks = bmList)
 
+#################################
+#### Theme 
+
+@app.route('/theme', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def theme():
+	## define the themes!
+	themes = []
+	themes.append({'name':'Default','value':'flatly'})
+	themes.append({'name':'Journal','value':'journal'})
+	themes.append({'name':'Lumen','value':'lumen'})
+	themes.append({'name':'Readable','value':'readable'})
+	themes.append({'name':'Simplex','value':'simplex'})
+	themes.append({'name':'Spacelab','value':'spacelab'})
+	themes.append({'name':'United','value':'united'})
+	themes.append({'name':'Cerulean','value':'cerulean'})
+
+	if request.method == 'POST':
+		new_theme = request.form['theme']
+		for theme in themes:
+			if new_theme == theme['value']:
+				session['theme'] = new_theme
+				flash('Theme preference changed','alert-success')
+				return redirect(url_for('personal'))
+				
+		flash('Invalid theme choice','alert-danger')
+		return bargate.core.render_page('theme.html', active='user', themes=themes)
+				
+	elif request.method == 'GET':
+		return bargate.core.render_page('theme.html', active='user', themes=themes)
 
 ################################################################################
 #### CUSTOM FILE SHARE
@@ -247,36 +277,19 @@ def bookmarks():
 @bargate.core.login_required
 @bargate.core.downtime_check
 def other():
-	## URLs for browsing around
-	url_personal    = url_for('personal')
-	url_mydocuments = url_for('personal',path='mydocuments')
-	url_mydesktop   = url_for('personal',path='mydesktop')
-	url_website     = url_for('webfiles')
-
-	return render_template('other.html', active='other',pwd='',url_personal=url_personal,
-				url_mydocuments=url_mydocuments,
-				url_mydesktop=url_mydesktop,
-				url_website=url_website)
+	return bargate.core.render_page('other.html', active='shared',pwd='')
 
 @app.route('/custom')
 @bargate.core.login_required
 @bargate.core.downtime_check
 def custom_server():
-	## URLs for browsing around
-	url_personal    = url_for('personal')
-	url_mydocuments = url_for('personal',path='mydocuments')
-	url_mydesktop   = url_for('personal',path='mydesktop')
-	url_website     = url_for('webfiles')
+	return bargate.core.render_page('custom.html', active='shared',pwd='')
 
-	return render_template('custom.html', active='custom',pwd='',url_personal=url_personal,
-				url_mydocuments=url_mydocuments,
-				url_mydesktop=url_mydesktop,
-				url_website=url_website)
-
-@app.route('/custom/browse', methods=['GET','POST'])
+@app.route('/c', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/c/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def custom():
+def custom(path):
 
 	if request.method == 'POST':
 		try:
@@ -299,4 +312,4 @@ def custom():
 	else:
 		return redirect(url_for('custom_server'))
 
-	return bargate.smb.connection(unicode(session['custom_uri']),"custom")
+	return bargate.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],path)

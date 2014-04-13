@@ -1,0 +1,84 @@
+.hero-login h3
+{
+	padding-bottom: 10px;
+}
+
+.hero-login label.field
+{
+	font-weight: bold;
+}
+
+/* sign in page stuff */
+.signin-block
+{
+	max-width: 400px;
+}
+
+.signin-advert
+{
+	padding: 19px 29px 29px;
+	margin: 0 auto 20px;
+	background-color: #ffffff;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+	box-shadow: 0 1px 2px rgba(0,0,0,.05);
+	border: 1px solid #b7b7b7;
+}
+
+.form-signin
+{
+	padding: 0px;
+	margin: 0 auto 20px;
+	background-color: #ffffff;
+}
+
+/* add a border around the form-signin but only on big screens */
+@media (min-width: 800px)
+{
+	.form-signin
+	{
+		padding: 19px 29px 29px;
+		border: 1px solid #b7b7b7;
+		-webkit-border-radius: 10px;
+		-moz-border-radius: 10px;
+		border-radius: 10px;
+		-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+		-moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+		box-shadow: 0 1px 2px rgba(0,0,0,.05);
+	}
+}
+
+.form-signin .form-signin-heading,
+.form-signin .checkbox
+{
+	margin-bottom: 10px;
+}
+.form-signin input[type="text"],
+.form-signin input[type="password"]
+{
+	font-size: 16px;
+	height: auto;
+	margin-bottom: 15px;
+	padding: 7px 9px;
+}
+
+body.signin
+{
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 10px;
+	padding-bottom: 0px;
+}
+
+@media (min-width: 800px)
+{
+	body.signin
+	{
+		min-width: 550px !important;
+		padding-top: 60px;
+		padding-bottom: 40px;
+	}
+}

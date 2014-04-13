@@ -1,42 +1,56 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div class="row-fluid">
-
-	<div class="span4">
-		<div class="well">
-			<h1>Bargate 0.9.9</h1>
-			<h4>A lightweight web based SMB client</h4>
+<div class="row">
+	<div class="col-sm-5">
+		<div class="panel panel-default">	
+			<div class="panel-body">	
+				<h1 style="margin: 0px"><i class="fa fa-download fa-fw"></i> Bargate 1.1-dev</h1>
+				<h4>A lightweight web based CIFS/SMB client</h4>
+			</div>
 		</div>
-		<div class="well">
-			<p>
-				Written by <a href="http://www.evad.info">David Bell</a> and Clayton Peters
-			</p>
-			<p>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">Project Information</h4>
+			</div>
+			<div class="panel-body">
+				<p>
+				Written by <a href="http://www.evad.info">David Bell</a> and <a href="http://www.claytonpeters.co.uk">Clayton Peters</a>
+				</p>
+				<p>
 				For project information please see: <a href="http://code.google.com/p/bargate/">http://code.google.com/p/bargate/</a>
-			</p>
-			<p>
-				<a href="{{ url_for('changelog') }}">Changelog</a>
-			</p>
+				</p>
+				<p class="text-center">
+				<a class="btn btn-success" href="{{ url_for('changelog') }}">View Changelog</a>
+				</p>
+			</div>
 		</div>
 	</div>
 
-	<div class="span8 well">
-		<h3>Acknowledgements</h3>
-		<p>
-			Bargate stands on the shoulders of giants. It is made possible by the following open source projects:
-		</p>
-		<ul>
-			<li><a href="http://flask.pocoo.org/">Flask</a></li>
-			<li><a href="http://cyberelk.net/tim/software/pysmbc/">pysmbc</a></li>
-			<li><a href="http://twitter.github.com/bootstrap/index.html">Twitter Bootstrap</a></li>
-			<li><a href="http://www.samba.org">Samba</a></li>
-			<li><a href="https://www.dlitz.net/software/pycrypto/">pycrypto</a></li>
-			<li><a href="http://www.python.org">Python</a></li>
-			<li><a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a></li>
-		</ul>
+	<div class="col-sm-7">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h4 class="panel-title">Acknowledgements</h4>
+			</div>
+			<div class="panel-body">
+				<p>
+				Bargate stands on the shoulders of giants. It is made possible by the following open source projects:
+				</p>
+					<ul>
+						<li><a href="http://flask.pocoo.org/">Flask</a></li>
+						<li><a href="http://cyberelk.net/tim/software/pysmbc/">pysmbc</a></li>
+						<li><a href="http://getbootstrap.com">Twitter Bootstrap</a></li>
+						<li><a href="http://www.samba.org">Samba</a></li>
+						<li><a href="https://www.dlitz.net/software/pycrypto/">pycrypto</a></li>
+						<li><a href="http://www.python.org">Python</a></li>
+						<li><a href="http://fortawesome.github.com/Font-Awesome/">Font Awesome</a></li>
+						<li><a href="https://github.com/teamdf/jquery-visible">jQuery Visible</a></li>
+						<li><a href="http://tablesorter.com">jQuery Tablesorter</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
 	</div>
-
 </div>
 
 {% endblock %}

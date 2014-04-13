@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block body %}
+
+
+		<h3>Change Theme</h3>
+		<hr/>
+		<p>Change the theme to your liking. We highly recommend 'Default', 'Lumen' and 'Spacelab'.</p>
+		<form action="{{ url_for('theme') }}" method="POST">
+			<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+			<fieldset>
+				{% for theme in themes %}
+				<div class="radio">
+					<label>
+					<input type="radio" name="theme" id="theme_{{theme.value}}" value="{{theme.value}}" {% if session.theme == theme.value%}checked{%endif%}>
+					{{theme.name}}
+					</label>
+				</div>
+				{% endfor %}
+				
+				<button type="submit" class="btn btn-default">Save Theme</button>
+			</fieldset>
+		</form>
+
+{% endblock %}

@@ -1,381 +1,145 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<!-- JSCRIPT -->
-<script type="text/javascript">
-$(document).ready(function() 
-    { 
-        $("#dir").tablesorter(); 
-    } 
-);
+{# POP UP MODALS FOR FILE ACTIONS #}
+{% include 'directory-modals.html' %}
 
-var popoverIsVisible = false;
-//var clickedAway = false;
-var currentPopover;
-
-// Get the HTML content to show for the popover which was just clicked
-function getPopContent(target)
-{
-    return $("#" + target + "_content").html();
-};
-
-// this hides the current popover
-// and sets the marker var to undef
-function hideCurrentPopover()
-{
-	if ('undefined' !== typeof currentPopover)
-	{
-		$(currentPopover).popover('hide');
-		currentPopover = undefined;
-	}
-}
-
-// This function builds each popover once the page is loaded
-$(document).ready(function ()
-{
-	$(".pop").each(
-		function()
-		{
-			var $pElem= $(this);
-
-			$pElem.popover(
-			{
-				html: true,
-/*				title: "Options",*/
-				placement: "left",
-				content: getPopContent($pElem.attr("id")),
-			}).click(function(e)
-			{
-				if (currentPopover == this)
-				{
-					hideCurrentPopover();
-					return false;
-				}
-				else
-				{
-					hideCurrentPopover()
-					currentPopover = this;
-					$(this).popover('show');
-					popoverIsVisible = true;
-					return false;
-				}
-			});
-		});
-});
-
-// This function hides the current
-// popover which is being shown
-$(document).click(function(e)
-{
-	hideCurrentPopover()
-});
-
-</script>
-
-<!-- modal popup for when upload file is clicked -->
-<div class="modal hide fade" id="upload-file">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Upload file</h3>
-  </div>
-    <div class="modal-body">
-  <form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
-	<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-	<input name="action" value="upload" type="hidden"/>
-  	<input name="path" type="hidden" value="{{ pwd }}"/>
-		<input type="file" name="file"/>
-		<label class="checkbox">
-			<input type="checkbox" id="overwrite" name="overwrite" value="overwrite"/>
-				Allow overwriting of an existing file
-		</label>
-		<label><span class="label label-warning">Warning!</span> The maximum file size is 64MB. Some file types are banned.</label>
-    </div>
-    <div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Cancel</a>
-		<button id="uploadbtn" type="submit" class="btn btn-primary" onclick="$('#uploadbtn').button('loading')" data-loading-text="Uploading...">Upload</button>
-    </div>
-  </form>
+{% if func_name == 'webfiles' and atroot == True %}
+<div class="alert alert-info">
+	<strong>Heads up!</strong> Files you place here appear on your personal website: <a target="_blank" href="http://www.southampton.ac.uk/~{{ session.username }}">http://www.southampton.ac.uk/~{{ session.username }}</a>
 </div>
+{% endif %}
 
-<!-- modal popup for when create directory is clicked -->
-<div class="modal hide fade" id="create-directory">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Create Directory</h3>
-  </div>
-  <form action="{{ url_home }}" method="POST">
-	<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-	<input name="action" value="mkdir" type="hidden"/>
-  	<input name="path" type="hidden" value="{{ pwd }}"/>
-    <div class="modal-body">
-		<label>New directory name:</label>
-      <input type="text" name="directory_name" placeholder="New directory"/>
-    </div>
-    <div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Cancel</a>
-		<input type="submit" class="btn btn-primary" value="Create"/>
-    </div>
-  </form>
-</div>
+<!-- BREADCRUMB NAVIGATION -->
+<ol class="breadcrumb">
+		<li>
+			<i class="fa fa-home"></i>
+			<a href="{{ url_home }}">
+			{{ root_display_name }}
+			</a>
+		</li>
+		{% for dir in crumbs %}
+		<li {% if loop.last %} class="active"{%endif%}>
+			{% if not loop.last %}
+			<a href="{{ dir.url }}">
+			{{ dir.name }}
+			</a>
+			{% else %}
+			{{ dir.name }}
+			{% endif %}
+		</li>
+		{% endfor %}
+</ol>
 
-<!-- modal popup for when delete is clicked upon -->
-<div class="modal hide fade" id="delete-confirm">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Delete File</h3>
-  </div>
-  <div class="modal-body">
-    <p>Are you sure you want to permanently delete the file?</p>
-  </div>
-  <div class="modal-footer">
-	<form action="{{ url_home }}" method="POST">
-		<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-		<input name="action" value="unlink" type="hidden"/>
-		<input name="path" type="hidden" value="" id="delete_path"/>
-		<input type="submit" class="btn btn-danger" value="Yes"/>
-		<a href="#" data-dismiss="modal" class="btn">No</a>
-	</form>
-  </div>
-</div>
+<!-- MAIN DIRECTORY LISTING -->
 
-<!-- modal popup for when delete is clicked upon -->
-<div class="modal hide fade" id="delete-dir-confirm">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Delete Directory</h3>
-  </div>
-  <div class="modal-body">
-    <p>Are you sure you want to permanently delete the directory?</p>
-  </div>
-  <div class="modal-footer">
-	<form action="{{ url_home }}" method="POST">
-		<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-		<input name="action" value="unlink" type="hidden"/>
-		<input name="path" type="hidden" value="" id="delete_dir_path"/>
-		<input type="submit" class="btn btn-danger" value="Yes"/>
-		<a href="#" data-dismiss="modal" class="btn">No</a>
-	</form>
-  </div>
-</div>
+<table id="dir" class="table table-striped table-hover tablesorter">
+	<thead>
+		<tr>
+			<th class="tsdisable" style="width: 1px"></th>
+			<th>Name</th>
+			<th class="hidden-xs hidden-sm">Modified</th>
+			<th class="tsdisable"></th>
+		</tr>
+	</thead>
 
-
-<!-- modal popup for when rename file is clicked -->
-<div class="modal hide fade" id="rename-file">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Rename</h3>
-  </div>
-  <div class="modal-body">
-  	<form action="{{ url_home }}" method="POST">
-		<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-		<input name="action" value="rename" type="hidden"/>
-  		<input id="rename_path" name="path" type="hidden" value=""/>
-		<label>New name:</label>
-      	<input style="width:95%" id="newfilename" type="text" name="newfilename" placeholder=""/>
-    </div>
-    <div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Cancel</a>
-		<input type="submit" class="btn btn-primary" value="Rename"/>
-    </div>
-  </form>
-</div>
-
-<!-- modal popup for when copy file is clicked -->
-<div class="modal hide fade" id="copy-file">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>Copy</h3>
-  </div>
-  <div class="modal-body">
-  	<form action="{{ url_home }}" method="POST">
-		<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-		<input name="action" value="copy" type="hidden"/>
-  		<input id="copy_path" name="path" type="hidden" value=""/>
-		<label>Name of copied file:</label>
-      	<input style="width:95%" id="copyfilename" type="text" name="filename" placeholder=""/>
-    </div>
-    <div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal">Cancel</a>
-		<input type="submit" class="btn btn-primary" value="Copy"/>
-    </div>
-  </form>
-</div>
-
-<div class="container visible-phone" style="text-align: center">
-			<div class="btn-toolbar">
-				<div class="btn-group">
-				    <button class="btn btn-large dropdown-toggle" data-toggle="dropdown">
-				      <i class="icon-hdd"></i> Places
-				      <span class="caret"></span>
-				    </button>
-				    <ul class="dropdown-menu" style="text-align: left">
-				      <li><a href="{{ url_personal }}"><i class="icon-home"></i> Personal Files</a></li>
-					  <li><a href="{{ url_website }}"><i class="icon-globe"></i> Personal Website</a></li>
-				      <li><a href="{{ url_for('resource') }}"><i class="icon-group"></i> Resource Drive</a></li>
-				      <li><a href="{{ url_for('linuxresearch') }}"><i class="icon-linux"></i> Linux Research</a></li>
-				      <li><a href="{{ url_for('other') }}"><i class="icon-group"></i> Other Servers</a></li>
-				    </ul>
-
-				</div>
-				<div class="btn-group">
-					<button class="btn btn-large dropdown-toggle" data-toggle="dropdown">
-				      <i class="icon-gear"></i> Options
-				      <span class="caret"></span>
-				    </button>
-				    <ul class="dropdown-menu" style="text-align: left">
-				      <li><a href=""><a data-toggle="modal" href="#upload-file"><i class="icon-upload-alt"></i> Upload File</a></li>
-				      <li><a data-toggle="modal" href="#create-directory"><i class="icon-folder-close"></i> Create Folder</a></li>
-					  <li><a href="{{ url_switch_hidden }}"><i class="icon-eye-open"></i> {{ switch_hidden_string }}</a></li>
-				    </ul>
-				</div>
-			</div>
-</div>
-
-<!-- MAIN BLOCK BEGIN -->
-<div class="row-fluid">
-	<div class="span2">
-		{% include 'sidebar.html' %}
-	</div>
-
-	<div class="span10">
-
-		{% if func_name == 'webfiles' and atroot == True %}
-			<div class="alert alert-info">
-				<strong>Heads up!</strong> Files you place here appear on your personal website: <a target="_blank" href="http://www.southampton.ac.uk/~{{ session.username }}">http://www.southampton.ac.uk/~{{ session.username }}</a>
-			</div>
-		{% endif %}
-
-		{% if func_name == 'custom' and session.custom_uri %}
-			<div class="alert alert-info">
-				<strong>Custom Server:</strong> {{ session.custom_uri }} <a href="{{ url_for('other') }}">[Change Server]</a>
-			</div>
-		{% endif %}
-
+	<tbody class="rowclick-table">
 		{% if atroot == False %}
-		<ul class="breadcrumb">
-				<li>
-					<i class="icon-home"></i>
-					<a href="{{ url_home }}">
-					Home
-					</a>
-				</li>
-				{% for dir in crumbs %}
-				<li>
-					<i class="icon-arrow-right"></i>
-					<a href="{{ dir.url }}">
-					{{ dir.name }}
-					</a>
-				</li>
-				{% endfor %}
-		</ul>
+		<tr class="rowclick-tr" data-url="{{ url_parent_dir }}">
+			<td class="text-center rowclick-td">
+				<i class="fa fa-arrow-circle-up fa-2x"></i>
+			</td>
+			<td class="rowclick-td">
+				<a href="{{ url_parent_dir }}">Parent Folder</a>
+			</td>
+			<td class="rowclick-td hidden-xs hidden-sm">
+				-
+			</td>
+			<td class="rowclick-td">
+				
+			</td>
+		</td>
+		{% endif %}
+		{% for entry in entries %}
+
+		{% if entry.type == 'file'%}
+		{% set rclick = 'mclick-td' %}
+		{% else %}
+		{% set rclick = 'rowclick-td' %}
 		{%endif%}
-
-		<table id="dir" class="table table-striped table-hover tablesorter" data-provides="rowlink">
-			<thead>
-				<tr>
-					<th style="width: 1px"></th>
-					<th>Name</th>
-					<th class="hidden-phone hidden-tablet">Modified</th>
-					<th style="width: 1px">Options</th>
-				</tr>
-			</thead>
-
-			<tbody>
-				{% if atroot == False %}
-				<tr>
-					<td style="text-align: center; vertical-align: middle">
-						<i class="icon-circle-arrow-up icon-large"></i>
-					</td>
-					<td>
-						<a href="{{ url_parent_dir }}">Parent Folder</a>
-					</td>
-					<td class="hidden-phone hidden-tablet">
-						-
-					</td>
-					<td>
-						<a href="{{ url_parent_dir }}" class="btn"><i class="icon-folder-open"></i></a>
-					</td>
-				</td>
+		
+		<tr class="rowclick-tr" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name|truncate(length=45,killwords=True)}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}">
+			<td class="text-center {{rclick}}">
+				<i class="{{ entry.icon }} fa-2x"></i>
+			</td>
+			<td class="{{rclick}}">
+				<span class="visible-xs">{{ entry.name|truncate(length=16,killwords=True) }}</span>
+				<span class="visible-sm">{{ entry.name|truncate(length=70,killwords=True) }}</span>
+				<span class="visible-md">{{ entry.name|truncate(length=75,killwords=True) }}</span>
+				<span class="visible-lg">{{ entry.name|truncate(length=75,killwords=True) }}</span>
+			</td>
+			<td class="hidden-xs hidden-sm {{rclick}}">
+				{% if entry.type == 'file' %}
+				{{ entry.mtime }}
 				{% endif %}
-				{% for entry in entries %}
-				<tr>
-					<td style="text-align: center">
-						<i class="{{ entry.icon }} icon-large"></i>
-					</td>
-					<td>
-						<span class="visible-phone"><a class="rowlink" href="{{ entry.default_open }}">{{ entry.name|truncate(length=25,killwords=True) }}</a></span>
-						<span class="visible-tablet"><a class="rowlink" href="{{ entry.default_open }}">{{ entry.name|truncate(length=55,killwords=True) }}</a></span>
-						<span class="visible-desktop"><a class="rowlink" href="{{ entry.default_open }}">{{ entry.name|truncate(length=125,killwords=True) }}</a></span>
-					</td>
-					<td class="hidden-phone hidden-tablet">
-						{% if entry.type == 'file' %}
-						{{ entry.mtime }}
-						{% endif %}
-						{% if entry.type == 'dir' %}
-						-
-						{% endif %}						
-					</td>
-					<td>
-						{% if entry.type == 'file' %}
-						<div id="pop{{ loop.index }}_content" style="display: none;">
-							<ul class="nav nav-pills nav-stacked popover-nav">
-								{% if entry.bdownload %}
-								<li class="hidden-phone">
-									<a href="{{ entry.bdownload }}"><i class="icon-eye-open"></i> View</a>
-								</li>
-								{% endif %}
-								<li>
-									<a href="{{ entry.download }}"><i class="icon-download"></i> Download</a>
-								</li>
-								<li>
-									<a href="#" onclick="$('#copy_path').val('{{entry.path}}'); $('#copyfilename').attr('value','Copy of {{entry.name}}'); $('#copy-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-copy"></i> Copy</a>
-								</li>
-								<li>
-									<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-move"></i> Rename</a>
-								</li>
-								<li>
-									<a href="#" onclick="$('#delete_path').val('{{entry.path}}'); $('#delete-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-trash"></i> Delete</a>
-								</li>
-								<li>
-									<a href="{{ entry.view }}"><i class="icon-info-sign"></i> Properties</a>
-								</li>
-							</ul>
-						</div>
-						<!--<a href="#" id="pop{{ loop.index }}" class="btn pop"><i class="icon-cog"></i></a>-->
-						<button id="pop{{ loop.index }}" class="btn pop"><i class="icon-cog"></i></a>
-						{% endif %}
-						{% if entry.type == 'dir' %}
-						<div id="pop{{ loop.index }}_content" style="display: none">
-							<ul class="nav nav-pills nav-stacked popover-nav">
-								<li>
-									<a href="{{ entry.view }}"><i class="icon-eye-open"></i> Open</a>
-								</li>
-								<li>
-									<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-move"></i> Rename</a>
-								</li>
-								<li>
-									<a href="#" onclick="$('#delete_dir_path').val('{{entry.path}}'); $('#delete-dir-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="icon-trash"></i> Delete</a>
-								</li>
-							</ul>
-						</div>
-						<!--<a href="#" id="pop{{ loop.index }}" class="btn pop"><i class="icon-cog"></i></a>-->
-						<button id="pop{{ loop.index }}" class="btn pop"><i class="icon-cog"></i></a>
-						<!--<a href="{{ entry.view }}" class="btn" rel="popover"><i class="icon-folder-open"></i></a>-->
-						{%endif %}
-					</td>
-				</tr>
-				{% else %}
-				<tr id="no_files">
-					<td colspan="3">
-						<em>No files found!</em>
-					</td>
-					<td class="hidden-phone hidden-tablet">
-					</td>
-				<tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
-</div>
+				{% if entry.type == 'dir' %}
+				-
+				{% endif %}						
+			</td>
+			<td class="text-right" style="width: 56px">					
+				<div class="btn-group fcog">
+					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"></i></button>
+					
+					{% if entry.type == 'file' %}
+					<ul class="dropdown-menu pull-right text-left">
+							{% if entry.bdownload %}
+							<li class="hidden-xs">
+								<a href="{{ entry.bdownload }}"><i class="fa fa-eye fa-fw"></i> View</a>
+							</li>
+							{% endif %}
+							<li>
+								<a href="{{ entry.download }}"><i class="fa fa-download fa-fw"></i> Download</a>
+							</li>
+							<li>
+								<a href="#" onclick="$('#copy_path').val('{{entry.path}}'); $('#copyfilename').attr('value','Copy of {{entry.name}}'); $('#copy-file').modal({show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-copy fa-fw"></i> Copy</a>
+							</li>
+							<li>
+								<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-arrows fa-fw"></i> Rename</a>
+							</li>
+							<li>
+								<a href="#" onclick="$('#delete_path').val('{{entry.path}}'); $('#delete-confirm').modal({show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="{{ entry.view }}"><i class="fa fa-info-circle fa-fw"></i> Properties</a>
+							</li>
+					</ul>
+					{% elif entry.type == 'dir' %}
+					<ul class="dropdown-menu pull-right text-left">
+							<li>
+								<a href="{{ entry.view }}"><i class="fa fa-eye fa-fw"></i> Open</a>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-arrows fa-fw"></i> Rename</a>
+							</li>
+							<li>
+								<a href="#" onclick="$('#delete_dir_path').val('{{entry.path}}'); $('#delete-dir-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
+							</li>
+					</ul>
+					{% endif %}
+				</div>
+			</td>
+		</tr>
+		{% else %}
+		<tr id="no_files">
+			<td colspan="4">
+				<em>No files found!</em>
+			</td>
+		</tr>
+		<tr>
+		{% endfor %}
+	</tbody>
+</table>
 
 {% endblock %}

@@ -2,55 +2,36 @@
 <html>
 	<head>
 		<meta charset="utf-8">
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Filestore Web Access</title>
-
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		{% include 'html-header.html' %}
+		
+		{% include 'header-links.html' %}
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/hero.css') }}">
+		{% include 'javascript.html' %}
+		<script type="text/javascript" src="{{ url_for('static', filename='js/hero.js') }}"></script>
 
 		<style type="text/css">
-
-			body
-			{
-				padding-left: 0px;
-				padding-right: 0px;
-			    padding-top: 60px;
-				padding-bottom: 40px;
-			}
-
-		/* desktops should get a background, small screens shouldnt */
 		@media (min-width: 800px)
 		{
-		 	body
-		 	{
+			body.signin
+			{
 				background-image: url(/static/images/login/bgimage{{bgnumber}}.jpg) !important;
 				background-position: center top !important;
 				background-repeat: no-repeat !important;
-				min-width: 550px !important;
 			}
 		}
-
 		</style>
 	</head>
-	<body>
-		<script type="text/javascript">
-		window.onload = function()
-		{
-		  var text_input = document.getElementById ('loginUsername');
-		  text_input.focus();
-		  text_input.select();
-		}
-		</script>
-
-
-
-		<div class="container hidden-phone hidden-tablet">
+	<body class="signin">
+		<div class="container hidden-xs hidden-sm">
 			<div class="row">
-				<div class="span8">
+				<div class="col-sm-8">
 					<div class="signin-advert">
-						<h2 class="form-signin-heading pull-left">Filestore Web Access</h2>
-						<img src="/static/images/uoslogoblue.png" style="padding: 10px;" class="pull-right"/>
+						<img src="{{ url_for('static', filename='images/uoslogoblue.png') }}" style="padding: 10px;" class="pull-right"/>
+						<h1 class="form-signin-heading pull-left">Filestore Web Access</h1>
 						<div class="clearfix"></div>
-						<p style="font-size: 18px; line-height: 1.25;">Filestore Web Access is a new way to access your files over the web. It works on smart phones, tablets, desktops and laptops. You can access your personal files, shared files and more.</p>
+						<p style="font-size: 18px; line-height: 1.25; padding-top:10px">Filestore Web Access is a new way to access your files over the web. It works on smart phones, tablets, desktops and laptops. You can access your personal files, shared files and more.</p>
 					</div>
 					{% for category, message in get_flashed_messages(with_categories=true) %}
 					<div class="alert {{ category }} fade in">
@@ -58,49 +39,49 @@
 						{{ message|safe }}
 					</div>
 					{% endfor %}
-					<div class="alert alert-info fade in">
-						Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>
-					</div>
 				</div>
-				<div class="span4">
+				<div class="col-sm-4">
 					<form class="form-signin" action="{{ url_for('login') }}" method="POST">
 						<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 						{% if next %}
 						<input name="next" type="hidden" value="{{next}}"/>
 						{% endif %}
 						<label>Username:</label>
-						<input type="text" class="input-block-level" id="loginUsername" name="username">
+						<input type="text" class="form-control" id="loginUsername" name="username">
 						<label>Password:</label>
-						<input type="password" class="input-block-level" id="loginPassword" name="password">
+						<input type="password" class="form-control" id="loginPassword" name="password">
 						<label class="checkbox">
 						<input type="checkbox" value="sec" id="sec" name="sec"> Remember me
 						</label>
-						<button class="btn btn-large btn-primary" type="submit">Sign in</button>
+						<div class="text-center">
+							<button class="btn btn-default" type="submit">Sign in</button>
+						</div>
 					</form>
 				</div>
 			</div>
 	    </div>
 
-		<div class="container hidden-desktop signin-block">
+		<div class="container hidden-md hidden-lg signin-block">
 			<form class="form-signin" action="{{ url_for('login') }}" method="POST">
 				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 				{% if next %}
 				<input name="next" type="hidden" value="{{next}}"/>
 				{% endif %}
 				<div style="text-align: center">
-					<img src="/static/images/uoslogoblue.png" style="padding: 10px;"/>
+					<img src="{{ url_for('static', filename='images/uoslogoblue.png') }}" style="padding: 10px;"/>
 				</div>
-				<h2 class="form-signin-heading">Filestore Web Access</h2>
+				<h1 class="form-signin-heading text-center">Filestore Web Access</h1>
 				<label>Username:</label>
-				<input type="text" class="input-block-level" id="loginUsername" name="username">
+				<input type="text" class="form-control" id="loginUsername" name="username">
 				<label>Password:</label>
-				<input type="password" class="input-block-level" id="loginPassword" name="password">
+				<input type="password" class="form-control" id="loginPassword" name="password">
 				<label class="checkbox">
 				<input type="checkbox" value="sec" id="sec" name="sec"> Remember me
 				</label>
-				<button class="btn btn-large btn-primary" type="submit">Sign in</button>
+				<div class="text-center">
+					<button class="btn btn-default btn-lg" type="submit">Sign in</button>
+				</div>
 			</form>
-
 
 			{% for category, message in get_flashed_messages(with_categories=true) %}
 			<div class="alert {{ category }} fade in">
@@ -108,9 +89,6 @@
 				{{ message|safe }}
 			</div>
 			{% endfor %}
-			<div class="alert alert-info fade in">
-				Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>
-			</div>
 	    </div>
 	</body>
 </html>
