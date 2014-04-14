@@ -3,116 +3,84 @@
 
 		<h3><i class="fa fa-share-square-o"></i> Other Drives</h3>
 		<table class="table table-striped table-bordered">
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th>Comment</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>MEDIS Shared</td>
-					<td>Medicine M Drive</td>
-					<td>
-						<a href="{{ url_for('medis') }}"><button type="submit" class="btn btn-info">Connect</button></a>
+			<tbody class="rowclick-table">
+				<tr class="rowclick-tr" data-url="{{ url_for('medis') }}">
+					<td class="rowclick-td">MEDIS Shared</td>
+					<td class="rowclick-td">Medicine M Drive</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('medis') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
 
-				<tr>
-					<td>MEDIS Users</td>
-					<td>Medicine Personal Files</td>
-					<td>
-						<a href="{{ url_for('medis_personal') }}"><button type="submit" class="btn btn-info">Connect</button></a>
+				<tr class="rowclick-tr" data-url="{{ url_for('medis_personal') }}">
+					<td class="rowclick-td">MEDIS Users</td>
+					<td class="rowclick-td">Medicine Personal Files</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('medis_personal') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
 
-				<tr>
-					<td>LAMP1</td>
-					<td>LAMP web hosting - RHEL5</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://lamp.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lamp1') }}">
+					<td class="rowclick-td">LAMP1</td>
+					<td class="rowclick-td">Legacy LAMP web hosting - RHEL5</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lamp1') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>LAMP2</td>
-					<td>LAMP web hosting - RHEL5 with MSSQL</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://lamp2.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lamp2') }}">
+					<td class="rowclick-td">LAMP2</td>
+					<td class="rowclick-td">Legacy LAMP web hosting - RHEL5 with MSSQL</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lamp2') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>LAMP3</td>
-					<td>LAMP web hosting - RHEL6</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://lamp3.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lamp3') }}">
+					<td class="rowclick-td">LAMP3</td>
+					<td class="rowclick-td">Legacy LAMP web hosting - RHEL6</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lamp3') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>LAMP Dev</td>
-					<td>LAMP web hosting for development systems - RHEL6</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://dev.lamp.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lampx1') }}">
+					<td class="rowclick-td">LAMP-X Server 1</td>
+					<td class="rowclick-td">LAMP web hosting server 1</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lampx1') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>ECS Undergraduate Filestore</td>
-					<td>Filestore provided by ECS Systems for ECS undergraduate students</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://ugsamba.ecs.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lampx2') }}">
+					<td class="rowclick-td">LAMP-X Server 2</td>
+					<td class="rowclick-td">LAMP web hosting server 2</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lampx2') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>ECS Postgraduate Filestore</td>
-					<td>Filestore provided by ECS Systems for ECS postgraduate students</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://pgsamba.ecs.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lampx3') }}">
+					<td class="rowclick-td">LAMP-X Server 3</td>
+					<td class="rowclick-td">LAMP web hosting server 3</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lampx3') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>ECS Staff Filestore</td>
-					<td>Filestore provided by ECS Systems for ECS staff</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://staffsamba.ecs.soton.ac.uk/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lampx4') }}">
+					<td class="rowclick-td">LAMP-X Server 4</td>
+					<td class="rowclick-td">LAMP web hosting server 4</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lampx4') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
-				<tr>
-					<td>K Drive</td>
-					<td>Legacy/obsolete shared filestore for staff</td>
-					<td>
-						<form action="{{ url_for('custom') }}" method="POST" style="margin: 0px">					
-							<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
-							<input type="hidden" name="open_server_uri" value="smb://soton.ac.uk/filestore/">
-							<button type="submit" class="btn btn-info">Connect</button>
-						</form>
+				<tr class="rowclick-tr" data-url="{{ url_for('lampx5') }}">
+					<td class="rowclick-td">LAMP-X Server 5</td>
+					<td class="rowclick-td">LAMP web hosting server 5</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('lampx5') }}"><button type="submit" class="btn btn-info">Open</button></a>
+					</td>
+				</tr>
+				<tr class="rowclick-tr" data-url="{{ url_for('kdrive') }}">
+					<td class="rowclick-td">K Drive</td>
+					<td class="rowclick-td">Legacy/obsolete shared filestore for staff</td>
+					<td class="rowclick-td">
+						<a href="{{ url_for('kdrive') }}"><button type="submit" class="btn btn-info">Open</button></a>
 					</td>
 				</tr>
 			</tbody>

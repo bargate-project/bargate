@@ -3,11 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Filestore Web Access</title>
-    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-    	<meta name="viewport" content="width=device-width, initial-scale=1">
-		{% include 'header-links.html' %}
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+{% include 'header-links.html' %}
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bargate.css') }}">
-		{% include 'javascript.html' %}
+{% include 'javascript.html' %}
 		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
@@ -25,7 +25,7 @@
 					<a href="{{ url_personal }}" class="navbar-brand visible-md visible-lg">Filestore Web Access</a>
 				</div>
 			
-				{% if session.logged_in %}
+				{%- if session.logged_in %}
 				<div class="navbar-collapse collapse" id="navbar-collapse-1">	
 					<ul class="nav navbar-nav">
 						<li class="dropdown{%if active == 'home'%} active{%endif%}">
@@ -75,28 +75,27 @@
 						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
 							<i class="fa fa-folder-open"></i>
 						</a>
-			
-						{% if url_switch_hidden %}
+						{%- if url_switch_hidden %}
 						<a class="btn navbar-btn btn-warning btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="{{switch_hidden_string}}" href="{{url_switch_hidden}}">
-							{% if hidden_icon == 'show' %}
+							{%- if hidden_icon == 'show' %}
 							<i class="fa fa-eye"></i>
-							{% else %}
+							{%- else %}
 							<i class="fa fa-eye-slash"></i>
 							{% endif %}
 						</a>
-						{% else %}
+						{%- else %}
 						<a class="btn btn-warning hidden-xs" disabled="disabled" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Show/hide hidden files" href="#">
 							<i class="fa fa-eye"></i>
 						</a>
-						{% endif %}
+						{%- endif %}
 					</div>
 				</div>
-				{% endif %}
+				{%- endif %}
 			</div>
 		</div>
 
-		{% if session.popup_error %}
-		{% with poperr = poperr_get() %}
+		{%- if session.popup_error -%}
+		{%- with poperr = poperr_get() -%}
 		<div class="modal fade" id="popup-error">
 			<div class="modal-dialog">
 				<div class="modal-content">
@@ -113,18 +112,17 @@
 				</div>
 			</div>
 		</div>
+		{%- endwith -%}
+		{%- endif %}
 
-		{% endwith %}
-		{% endif %}
-
-		<div class="{% if browse_mode %} container container-directory{%else%}container{%endif%}">
+		<div class="{% if browse_mode %}container container-directory{%else%}container{%endif%}">
 			{% for category, message in get_flashed_messages(with_categories=true) %}
 			<div class="alert {{ category }} fade in"> <a data-dismiss="alert" class="close" href="#">×</a> {{ message|safe }} </div>
 			{% endfor %}
-			{% block body %}{% endblock %}
+			{% block body %}{% endblock -%}
 		</div>
 		
-		{% if browse_mode %}
+		{%- if browse_mode %}
 		<div class="navbar navbar-default navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container">
 				<div class="action-btns text-center">
@@ -138,22 +136,22 @@
 						<i class="fa fa-folder-open"></i>
 					</a>
 		
-					{% if url_switch_hidden %}
+					{%- if url_switch_hidden %}
 					<a class="btn navbar-btn btn-warning" href="{{url_switch_hidden}}">
-						{% if hidden_icon == 'show' %}
+						{%- if hidden_icon == 'show' %}
 						<i class="fa fa-eye"></i>
-						{% else %}
+						{%- else %}
 						<i class="fa fa-eye-slash"></i>
 						{% endif %}
 					</a>
-					{% else %}
+					{%- else %}
 					<a class="btn btn-warning" disabled="disabled" href="#">
 						<i class="fa fa-eye"></i>
 					</a>
-					{% endif %}
+					{%- endif %}
 				</div>
 			</div>
 		</div>
-		{% endif %}
+		{%- endif %}
 	</body>
 </html>

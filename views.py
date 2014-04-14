@@ -103,12 +103,6 @@ def login():
 	## Log a successful login
 	app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
-	# why on earth would we show this?
-	#flash('<strong>Success!</strong> You were logged in successfully.','alert-success')
-
-	## Put in a flash message for the survey
-	#flash('Please give us feedback by taking the <a href="https://www.isurvey.soton.ac.uk/8771">FWA Survey</a>','alert-info')
-
 	## determine if "next" variable is set (the URL to be sent to)
 	next = request.form.get('next',default=None)
 
@@ -201,6 +195,69 @@ def medis_personal(path):
 @bargate.core.downtime_check
 def linuxresearch(path):
 	return bargate.smb.connection(u"smb://linuxresearch.soton.ac.uk/","linuxresearch","shared","Linux Research",path)
+
+@app.route('/lamp1', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lamp1/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lamp1(path):
+	return bargate.smb.connection(u"smb://lamp.soton.ac.uk/","lamp1","shared","LAMP Server 1",path)
+
+@app.route('/lamp2', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lamp2/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lamp2(path):
+	return bargate.smb.connection(u"smb://lamp2.soton.ac.uk/","lamp2","shared","LAMP Server 2",path)
+
+@app.route('/lamp3', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lamp3/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lamp3(path):
+	return bargate.smb.connection(u"smb://lamp3.soton.ac.uk/","lamp3","shared","LAMP Server 3",path)
+
+@app.route('/lampx1', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lampx1/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lampx1(path):
+	return bargate.smb.connection(u"smb://srv00521.soton.ac.uk/","lampx1","shared","LAMP-X server 1",path)
+
+@app.route('/lampx2', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lampx2/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lampx2(path):
+	return bargate.smb.connection(u"smb://srv00522.soton.ac.uk/","lampx2","shared","LAMP-X server 2",path)
+
+@app.route('/lampx3', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lampx3/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lampx3(path):
+	return bargate.smb.connection(u"smb://srv00523.soton.ac.uk/","lampx3","shared","LAMP-X server 3",path)
+
+@app.route('/lampx4', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lampx4/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lampx4(path):
+	return bargate.smb.connection(u"smb://srv00524.soton.ac.uk/","lampx4","shared","LAMP-X server 4",path)
+
+@app.route('/lampx5', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/lampx5/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def lampx5(path):
+	return bargate.smb.connection(u"smb://srv00525.soton.ac.uk/","lampx5","shared","LAMP-X server 5",path)
+
+@app.route('/kdrive', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/kdrive/<path:path>/', methods=['GET','POST'])
+@bargate.core.login_required
+@bargate.core.downtime_check
+def kdrive(path):
+	return bargate.smb.connection(u"smb://soton.ac.uk/filestore/","kdrive","shared","Legacy K Drive",path)
 
 ################################################################################
 #### FAVOURITES / BOOKMARKS

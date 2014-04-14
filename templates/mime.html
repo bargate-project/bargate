@@ -1,24 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<h1>{{ test }}</h1>
-
-<input id="fileupload" type="file" name="files[]" data-url="server/php/" multiple>
-
-<script>
-$(function () {
-    $('#fileupload').fileupload({
-        dataType: 'json',
-        done: function (e, data) {
-            $.each(data.result.files, function (index, file) {
-                $('<p/>').text(file.name).appendTo(document.body);
-            });
-        }
-    });
-});
-</script>
-
-
 	<table id="dir" class="table table-striped table-bordered table-condensed">
 		<thead>
 			<tr>

@@ -70,6 +70,8 @@ def wb_sid_to_name(sid):
 	sout, serr = process.communicate()
 	
 	sout = sout.rstrip()
+
+	## TODO better error handling!!!
 	
 	if sout.endswith(' 1') or sout.endswith(' 2'):
 		return sout[:-2]
@@ -272,13 +274,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 				## TODO BUG HERE WITH web browsers without PDF viewers.
 				## if you set attach = False, then the filename is not sent correctly...
+				## see the mime module for more
 
 				## Download the file
-
-#				if isinstance(filename, str):
-#					app.logger.info("filename regular string")
-#				elif isinstance(filename, unicode):	
-#					app.logger.info("filename unicode string")
 
 				resp = make_response(send_file(cfile,add_etags=False,as_attachment=attach,attachment_filename=filename))
 				resp.headers['content-length'] = str(fstat[6])
@@ -300,19 +298,20 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				else:
 					url_parent_dir = url_for(func_name)
 			else:
-				url_parent_dir = url_for(func_name)
-				
-			## Catch out people trying to view the root directory
-			if len(path) == 0:
+				## Then we must be at the root, which is a dir. Go away.
 				return redirect(url_for(func_name))
 				
-			## TODO catch out people trying to view a directory!
-
 			## try to stat the file
 			try:
 				fstat = ctx.stat(Suri)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,redirect(url_parent_dir))
+
+			## Ensure we stat'ed a file and not a directory
+			stat_type = statToType(fstat)
+			if not stat_type == SMB_FILE:
+				flash("Sorry, you can only the view the properties of files!",'alert-danger')
+				return redirect(url_parent_dir)
 	
 			## Pull the filename out of the path
 			(before,sep,after) = path.rpartition('/')
@@ -395,7 +394,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 ################################################################################
 		
 		elif action == 'browse':
-
 			## Load view options from GET variables (if present)
 			hfiles = request.args.get('hfiles','')
 

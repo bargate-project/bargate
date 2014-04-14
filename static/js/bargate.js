@@ -1,7 +1,7 @@
 /* BARGATE LOCAL JAVASCRIPT */
 
 /* Popup error modal show, if any */
-$(window).load(function(){
+$(document).ready(function(){
 	$('#popup-error').modal('show');
 });
 
@@ -18,7 +18,7 @@ $(document).ready(function ()
 	$("[rel=tooltip]").tooltip();
 });
 
-jQuery(document).ready(function($)
+$(document).ready(function($)
 {
 	$(".rowclick-td").click(function()
 	{
@@ -60,20 +60,48 @@ jQuery(document).ready(function($)
 	  
 });
 
-function copyClick(src, dst, e)
-{
-	$('#copy_path').val(src); $('#copyfilename').attr('value',dst); $('#copy-file').modal({show: true}); e.preventDefault(); e.stopPropagation();
-}
-function renameClick(path, name, e)
-{
-	$('#rename_path').val(path); $('#newfilename').attr('value',name); $('#rename-file').modal({show: true}); e.preventDefault(); e.stopPropagation();
-}
-function deleteClick(path, e)
-{
-	$('#delete_path').val(path); $('#delete-confirm').modal({show: true}); e.preventDefault(); e.stopPropagation();
-}
-function deleteDirClick(path, e)
-{
-	$('#delete_dir_path').val(path); $('#delete-dir-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();
-}
+$(document).ready(function() {
+	$('#create-directory').on('shown.bs.modal', function() {
+		$('#create-directory input[type="text"]').focus();
+	});
 
+	$('.copy').click(function()
+	{
+		var parentRow = $(this).closest(".rowclick-tr");
+		$('#copy_path').val(parentRow.attr('data-path'));
+		$('#copyfilename').attr('value',"Copy of " + parentRow.attr('data-filename'));
+		$('#copy-file').modal({show: true});
+		$('#copyfilename').focus();
+		event.preventDefault();
+		event.stopPropagation();
+	});
+
+	$('.rename').click(function()
+	{
+		var parentRow = $(this).closest(".rowclick-tr");
+		$('#rename_path').val(parentRow.attr('data-path'));
+		$('#newfilename').attr('value',parentRow.attr('data-filename'));
+		$('#rename-file').modal({show: true});
+		$('#newfilename').focus();
+		event.preventDefault();
+		event.stopPropagation();
+	});
+
+	$('.del').click(function()
+	{
+		var parentRow = $(this).closest(".rowclick-tr");
+		$('#delete_path').val(parentRow.attr('data-path'));
+		$('#delete-confirm').modal({show: true});
+		event.preventDefault();
+		event.stopPropagation();
+	});
+
+	$('.delDir').click(function()
+	{
+		var parentRow = $(this).closest(".rowclick-tr");
+		$('#delete_dir_path').val(parentRow.attr('data-path'));
+		$('#delete-dir-confirm').modal({backdrop: 'static', show: true});
+		event.preventDefault();
+		event.stopPropagation();
+	});
+});

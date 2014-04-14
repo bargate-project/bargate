@@ -1,21 +1,14 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div class="row">
-	<div class="col-sm-2">
-	{% include 'sidebar.html' %}
-	</div>
-	<div class="col-sm-10">
-		<h3>Bookmarks</h3>
-		<table>
-		{% for entry in bookmarks %}
-			<tr>
-				<td><a href="{{ entry.url }}">{{ entry.name }}</a></td>
-				<td>Delete</td>
-			</tr>
-		{% endfor %}
-		</table>
-	</div>
-</div>
+<h3>Bookmarks</h3>
+<table>
+{% for entry in bookmarks %}
+	<tr>
+		<td><a href="{{ entry.url }}">{{ entry.name }}</a></td>
+		<td>Delete</td>
+	</tr>
+{% endfor %}
+</table>
 
 {% endblock %}
