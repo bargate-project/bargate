@@ -89,16 +89,16 @@ app.config.from_pyfile('/data/fwa/bargate.conf', silent=True)
 app.config.from_envvar('BARGATE_CONFIG_FILE', silent=True)
 
 # set up e-mail alert logging
-if not app.debug:
-	if app.config['EMAIL_ALERTS'] == True:
+#if not app.debug:
+if app.config['EMAIL_ALERTS'] == True:
 
-		mail_handler = SMTPHandler(app.config['SMTP_SERVER'],
-			app.config['EMAIL_FROM'],
-			app.config['ADMINS'], 
-			'Bargate Application Error')
+	mail_handler = SMTPHandler(app.config['SMTP_SERVER'],
+		app.config['EMAIL_FROM'],
+		app.config['ADMINS'], 
+		'Bargate Application Error')
 
-		mail_handler.setLevel(logging.ERROR)
-		mail_handler.setFormatter(Formatter("""
+	mail_handler.setLevel(logging.ERROR)
+	mail_handler.setFormatter(Formatter("""
 A fatal error occured in Bargate.
 
 Message type:       %(levelname)s
@@ -115,15 +115,15 @@ Further Details:
 
 """))
 
-		app.logger.addHandler(mail_handler)
+	app.logger.addHandler(mail_handler)
 	
-	## Set up file logging as well
-	file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', 1 * 1024 * 1024, 10)
-	file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-	app.logger.setLevel(logging.INFO)
-	file_handler.setLevel(logging.INFO)
-	app.logger.addHandler(file_handler)
-	app.logger.info('bargate started up')
+## Set up file logging as well
+file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', 1 * 1024 * 1024, 10)
+file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+app.logger.setLevel(logging.INFO)
+file_handler.setLevel(logging.INFO)
+app.logger.addHandler(file_handler)
+app.logger.info('bargate started up')
 
 
 ################################################################################

@@ -17,6 +17,63 @@
 
 import mimetypes
 
+mimemap = {
+	'application/msword' : 'Microsoft Word Document',
+	'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'Microsoft Word Document XML',
+	'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'Microsoft Powerpoint XML',
+	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'Microsoft Excel XML',
+	'application/vnd.ms-powerpoint' : 'Microsoft Powerpoint',
+	'application/octet-stream' : 'Binary file (executable or image)',
+	'application/mathematica' : 'Mathematica File',
+	'application/x-shockwave-flash' : 'Shockwave Flash',
+	'application/vnd.visio' : 'Microsoft Visio',
+	'application/vnd.ms-excel' : 'Microsoft Excel',
+	
+	'message/rfc822' : 'E-Mail Message',
+	'text/calendar' : 'Calendar File',
+	'application/x-java-archive' : 'Java Archive',
+	'application/vnd.oasis.opendocument.presentation' : 'Open Document Presentation',
+	'application/vnd.oasis.opendocument.spreadsheet' : 'Open Document Spreadsheet',
+	'application/vnd.oasis.opendocument.text' : 'Open Document Text',
+
+	'text/csv' : 'CSV - Comma Seperated Values',
+	'text/css' : 'CSS - Cascading Style Sheet',
+	'application/pdf' : 'PDF - Portable Document Format',
+	'text/plain' : 'Plain text',
+	'application/x-perl' : 'Perl File',
+	'text/x-python' : 'Python File',
+	'text/xml' : 'XML - eXtensible Markup Language',
+	'application/xml' : 'XML - eXtensible Markup Language',
+	'application/postscript' : 'Postscript',
+	'text/html' : 'HTML - Hypertext Markup Language',
+	'application/xhtml+xml' : 'XHTML - XML and HTML',
+
+	'image/vnd.microsoft.icon' : 'Microsoft Icon',
+	'image/bmp' : 'Bitmap Image',
+	'image/x-xpixmap' : 'Pixmap Image',
+	'image/png' : 'PNG Image (Portable Network Graphics)',
+	'image/jpeg' : 'JPEG Image',
+	'image/gif' : 'GIF Image',
+	'image/tiff' : 'TIFF Image',
+	'image/svg' : 'SVG Image (Scalable Vector Graphic)',
+
+	'video/mp4' : 'Video - MPEG4',
+	'video/mpeg' : 'Video - MPEG2',
+	'video/ogg' : 'Video - OGG',
+	'video/x-msvideo' : 'Video - AVI',
+	'video/quicktime' : 'Video - Quicktime',
+
+	'audio/x-wav' : 'Audio - WAV',
+	'audio/x-ms-wma' : 'Audio - WMA - Windows Media Audio',
+	'audio/mpeg' : 'Audio - MPEG',
+	'audio/basic' : 'Audio - Basic',
+
+	'application/x-gzip' : 'Compressed File - GZIP',
+	'application/x-tar' : 'File Archive - TAR',
+	'application/zip' : 'Compressed File - ZIP',
+	'application/vnd.ms-cab-compressed' : 'Compressed File - Microsoft CABinet',
+}
+
 ## returns true if this file type should be viewed in browser
 def view_in_browser(mtype):
 	"""Returns true if the file mime type passed to this function
@@ -99,7 +156,7 @@ def filename_to_mimetype(filename):
 	"""
 	
 	## Load in /etc/mime.types on Linux
-	mimetypes.init()
+	#mimetypes.init()
 
 	## guess a mimetype from python mime types
 	(mtype,enc) = mimetypes.guess_type(filename,strict=False)
@@ -108,63 +165,6 @@ def filename_to_mimetype(filename):
 	if mtype == None:
 		return ("Unknown file type","unknown")
 	
-	mimemap = {
-		'application/msword' : 'Microsoft Word Document',
-		'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'Microsoft Word Document XML',
-		'application/vnd.openxmlformats-officedocument.presentationml.presentation' : 'Microsoft Powerpoint XML',
-		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'Microsoft Excel XML',
-		'application/vnd.ms-powerpoint' : 'Microsoft Powerpoint',
-		'application/octet-stream' : 'Binary file (executable or image)',
-		'application/mathematica' : 'Mathematica File',
-		'application/x-shockwave-flash' : 'Shockwave Flash',
-		'application/vnd.visio' : 'Microsoft Visio',
-		'application/vnd.ms-excel' : 'Microsoft Excel',
-		
-		'message/rfc822' : 'E-Mail Message',
-		'text/calendar' : 'Calendar File',
-		'application/x-java-archive' : 'Java Archive',
-		'application/vnd.oasis.opendocument.presentation' : 'Open Document Presentation',
-		'application/vnd.oasis.opendocument.spreadsheet' : 'Open Document Spreadsheet',
-		'application/vnd.oasis.opendocument.text' : 'Open Document Text',
-
-		'text/csv' : 'CSV - Comma Seperated Values',
-		'text/css' : 'CSS - Cascading Style Sheet',
-		'application/pdf' : 'PDF - Portable Document Format',
-		'text/plain' : 'Plain text',
-		'application/x-perl' : 'Perl File',
-		'text/x-python' : 'Python File',
-		'text/xml' : 'XML - eXtensible Markup Language',
-		'application/xml' : 'XML - eXtensible Markup Language',
-		'application/postscript' : 'Postscript',
-		'text/html' : 'HTML - Hypertext Markup Language',
-		'application/xhtml+xml' : 'XHTML - XML and HTML',
-
-		'image/vnd.microsoft.icon' : 'Microsoft Icon',
-		'image/bmp' : 'Bitmap Image',
-		'image/x-xpixmap' : 'Pixmap Image',
-		'image/png' : 'PNG Image (Portable Network Graphics)',
-		'image/jpeg' : 'JPEG Image',
-		'image/gif' : 'GIF Image',
-		'image/tiff' : 'TIFF Image',
-		'image/svg' : 'SVG Image (Scalable Vector Graphic)',
-
-		'video/mp4' : 'Video - MPEG4',
-		'video/mpeg' : 'Video - MPEG2',
-		'video/ogg' : 'Video - OGG',
-		'video/x-msvideo' : 'Video - AVI',
-		'video/quicktime' : 'Video - Quicktime',
-
-		'audio/x-wav' : 'Audio - WAV',
-		'audio/x-ms-wma' : 'Audio - WMA - Windows Media Audio',
-		'audio/mpeg' : 'Audio - MPEG',
-		'audio/basic' : 'Audio - Basic',
-
-		'application/x-gzip' : 'Compressed File - GZIP',
-		'application/x-tar' : 'File Archive - TAR',
-		'application/zip' : 'Compressed File - ZIP',
-		'application/vnd.ms-cab-compressed' : 'Compressed File - Microsoft CABinet',
-	}
-
 	try:
 		friendly = mimemap[mtype]
 	except KeyError as e:

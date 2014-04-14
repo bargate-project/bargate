@@ -468,8 +468,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				## Hide hidden files if the user has selected to do so (default)
 				if session['hidden_files'] == 'hide':
 					## check first character for . (unix hidden)
-					first = entry['name'][0]
-					if first == ".":
+					if entry['name'][0] == ".":
 						continue
 
 					## hide typical windows hidden files
@@ -537,12 +536,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']
 
-					files.append(entry)
-					
-				## OTHER ###################################################
-				else:
-					entry['icon'] = 'fa fa-times'	
-					entry['type'] = dentry.smbc_type
 					files.append(entry)
 
 			## Sort the directories and files by name
