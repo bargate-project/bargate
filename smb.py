@@ -189,22 +189,30 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 		## Load the path
 		#path = request.args.get('path','')
+		
+		#flash("Path 1: " + path,'alert-info')
 
-		## pysmbc needs urllib quoted, but urllib can't handle unicode
-		## so convert to str via encode utf8 and then urllib quote
-		## it seems pysmbc can't handle unicode strings either anyway
+		## pysmbc needs urllib quoted strings, but urllib can't handle unicode
+		## so convert to str via 'encode utf8' and then urllib quote
+		## it seems pysmbc can't handle unicode strings either anyway (need to confirm!)
 		Spath = path.encode('utf8')
 		Qpath = urllib.quote(Spath)
-
+		
+		#flash("Spath: " + Spath.decode('utf8'),'alert-info')
+		#flash("Qpath: " + Qpath.decode('utf8'),'alert-info')
+		
 		## Check path security
 		(error,ret) = check_path_security(path)
 		if error:
 			return ret
 
 		## Build the URI
-		## TODO quote the srv_path too?
+		# uri is not str, its unicode, so uri must not be given to pysmbc/urllib
 		uri = srv_path + path
+		# Suri CAN be given to pysmbc as its a byte string or 'str' in python land
 		Suri = srv_path.encode('utf8') + Qpath
+		
+		#flash("Suri: " + Suri.decode('utf8'),'alert-info')
 
 		## Determine the action type
 		action = request.args.get('action','browse')
@@ -405,7 +413,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			## Try getting directory contents
 			try:
-				dentries = ctx.opendir (uri).getdents ()
+				dentries = ctx.opendir (Suri).getdents ()
 			except Exception as ex:
 				# Place to redirect to, if any
 				redir = None
@@ -442,13 +450,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 				#bargate.core.debugStrType(entry['name'],"entry name 1")
 
-				## getdents returns REGULAR strings, not unicode!
+				## getdents returns REGULAR strings, not unicode!...maybe. Who the fuck knows.
 				## Decode into a unicode string for use in templates etc.
 				entry['Sname'] = entry['name']
 				entry['name'] = entry['name'].decode("utf-8")
 
-				## Create a REGULAR str urllib quoted string for use to send back to ctx calls
-				entry['Suri'] = srv_path + urllib.quote(path) + '/' + urllib.quote(entry['Sname'])
+				## Create a REGULAR str urllib quoted string for use to send back to ctx calls (only in python)
+				## path is UNICODE. urllib needs string. Use Spath and Sname.
+				entry['Suri'] = srv_path + urllib.quote(Spath) + '/' + urllib.quote(entry['Sname'])
 
 				## Add the URI (the full path) as an element to the entry dict
 				if len(path) == 0:
