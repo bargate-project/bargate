@@ -117,3 +117,49 @@ content: "\f061";
 {
 	background-image: none;
 }
+
+td.dentry
+{
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+@media (max-width: 768px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+}
+
+@media (min-width: 768px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+}
+
+@media (min-width: 992px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+	td.dentry-mtime
+	{
+		width: 15em;
+	}
+}
+
+@media (min-width: 1200px)
+{
+	td.dentry
+	{
+		max-width: 200px;
+	}
+	td.dentry-mtime
+	{
+		width: 15em;
+	}
+}

@@ -1,8 +1,8 @@
-{% extends "layout.html" %}
-{% block body %}
+{%- extends "layout.html" -%}
+{%- block body -%}
 
-{# POP UP MODALS FOR FILE ACTIONS #}
-{% include 'directory-modals.html' %}
+{#- POP UP MODALS FOR FILE ACTIONS -#}
+{%- include 'directory-modals.html' -%}
 
 {% if func_name == 'webfiles' and atroot == True %}
 <div class="alert alert-info">
@@ -10,7 +10,7 @@
 </div>
 {% endif %}
 
-<!-- BREADCRUMB NAVIGATION -->
+{#- BREADCRUMB NAVIGATION -#}
 <ol class="breadcrumb">
 		<li>
 			<i class="fa fa-home"></i>
@@ -31,8 +31,7 @@
 		{% endfor %}
 </ol>
 
-<!-- MAIN DIRECTORY LISTING -->
-
+{#- MAIN DIRECTORY LISTING -#}
 <table id="dir" class="table table-striped table-hover tablesorter">
 	<thead>
 		<tr>
@@ -44,7 +43,7 @@
 	</thead>
 
 	<tbody class="rowclick-table">
-		{% if atroot == False %}
+		{%- if atroot == False %}
 		<tr class="rowclick-tr" data-url="{{ url_parent_dir }}">
 			<td class="text-center rowclick-td">
 				<i class="fa fa-arrow-circle-up fa-2x"></i>
@@ -60,72 +59,66 @@
 			</td>
 		</td>
 		{% endif %}
-		{% for entry in entries %}
+		{%- for entry in entries -%}
 
-		{% if entry.type == 'file'%}
-		{% set rclick = 'mclick-td' %}
-		{% else %}
-		{% set rclick = 'rowclick-td' %}
-		{%endif%}
+		{%- if entry.type == 'file' -%}
+		{%- set rclick = 'mclick-td' -%}
+		{%- else -%}
+		{%- set rclick = 'rowclick-td' -%}
+		{%- endif -%}
 		
-		<tr class="rowclick-tr" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name|truncate(length=45,killwords=True)}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}">
+		<tr class="rowclick-tr" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}">
 			<td class="text-center {{rclick}}">
 				<i class="{{ entry.icon }} fa-2x"></i>
 			</td>
-			<td class="{{rclick}}">
-				<span class="visible-xs">{{ entry.name|truncate(length=16,killwords=True) }}</span>
-				<span class="visible-sm">{{ entry.name|truncate(length=70,killwords=True) }}</span>
-				<span class="visible-md">{{ entry.name|truncate(length=75,killwords=True) }}</span>
-				<span class="visible-lg">{{ entry.name|truncate(length=75,killwords=True) }}</span>
-			</td>
-			<td class="hidden-xs hidden-sm {{rclick}}">
-				{% if entry.type == 'file' %}
+			<td class="{{rclick}} dentry">{{ entry.name}}</td>
+			<td class="hidden-xs hidden-sm {{rclick}} dentry-mtime">
+				{%- if entry.type == 'file' -%}
 				{{ entry.mtime }}
-				{% endif %}
-				{% if entry.type == 'dir' %}
+				{%- endif -%}
+				{%- if entry.type == 'dir' -%}
 				-
-				{% endif %}						
+				{%- endif -%}
 			</td>
 			<td class="text-right" style="width: 56px">					
 				<div class="btn-group fcog">
 					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"></i></button>
-					
 					{% if entry.type == 'file' %}
 					<ul class="dropdown-menu pull-right text-left">
-							{% if entry.bdownload %}
-							<li class="hidden-xs">
-								<a href="{{ entry.bdownload }}"><i class="fa fa-eye fa-fw"></i> View</a>
-							</li>
-							{% endif %}
-							<li>
-								<a href="{{ entry.download }}"><i class="fa fa-download fa-fw"></i> Download</a>
-							</li>
-							<li>
-								<a href="#" onclick="$('#copy_path').val('{{entry.path}}'); $('#copyfilename').attr('value','Copy of {{entry.name}}'); $('#copy-file').modal({show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-copy fa-fw"></i> Copy</a>
-							</li>
-							<li>
-								<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-arrows fa-fw"></i> Rename</a>
-							</li>
-							<li>
-								<a href="#" onclick="$('#delete_path').val('{{entry.path}}'); $('#delete-confirm').modal({show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
-							</li>
-							<li class="divider"></li>
-							<li>
-								<a href="{{ entry.view }}"><i class="fa fa-info-circle fa-fw"></i> Properties</a>
-							</li>
+						{% if entry.bdownload %}
+						<li class="hidden-xs">
+							<a href="{{ entry.bdownload }}"><i class="fa fa-eye fa-fw"></i> View</a>
+						</li>
+						{% endif %}
+						<li>
+							<a href="{{ entry.download }}"><i class="fa fa-download fa-fw"></i> Download</a>
+						</li>
+						<li>
+							<a href="#" onclick="copyClick('{{entry.path}}','Copy of {{entry.name}}',event)"><i class="fa fa-copy fa-fw"></i> Copy</a>
+						</li>
+						<li>
+							<a href="#" onclick="renameClick('{{entry.path}}','{{entry.name}}',event)"><i class="fa fa-arrows fa-fw"></i> Rename</a>
+						</li>
+						<li>
+							<a href="#" onclick="deleteClick('{{entry.path}}',event);"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="{{ entry.view }}"><i class="fa fa-info-circle fa-fw"></i> Properties</a>
+						</li>
 					</ul>
 					{% elif entry.type == 'dir' %}
 					<ul class="dropdown-menu pull-right text-left">
-							<li>
-								<a href="{{ entry.view }}"><i class="fa fa-eye fa-fw"></i> Open</a>
-							</li>
-							<li class="divider"></li>
-							<li>
-								<a href="#" onclick="$('#rename_path').val('{{entry.path}}'); $('#newfilename').attr('value','{{entry.name}}'); $('#rename-file').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-arrows fa-fw"></i> Rename</a>
-							</li>
-							<li>
-								<a href="#" onclick="$('#delete_dir_path').val('{{entry.path}}'); $('#delete-dir-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
-							</li>
+						<li>
+							<a href="{{ entry.view }}"><i class="fa fa-eye fa-fw"></i> Open</a>
+						</li>
+						<li class="divider"></li>
+						<li>
+							<a href="#" onclick="renameClick('{{entry.path}}','{{entry.name}}',event)"><i class="fa fa-arrows fa-fw"></i> Rename</a>
+						</li>
+						<li>
+							<a href="#" onclick="deleteDirClick('{{entry.path}}',event);"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
+						</li>
 					</ul>
 					{% endif %}
 				</div>

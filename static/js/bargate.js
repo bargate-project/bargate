@@ -59,3 +59,21 @@ jQuery(document).ready(function($)
 	});
 	  
 });
+
+function copyClick(src, dst, e)
+{
+	$('#copy_path').val(src); $('#copyfilename').attr('value',dst); $('#copy-file').modal({show: true}); e.preventDefault(); e.stopPropagation();
+}
+function renameClick(path, name, e)
+{
+	$('#rename_path').val(path); $('#newfilename').attr('value',name); $('#rename-file').modal({show: true}); e.preventDefault(); e.stopPropagation();
+}
+function deleteClick(path, e)
+{
+	$('#delete_path').val(path); $('#delete-confirm').modal({show: true}); e.preventDefault(); e.stopPropagation();
+}
+function deleteDirClick(path, e)
+{
+	$('#delete_dir_path').val(path); $('#delete-dir-confirm').modal({backdrop: 'static', show: true}); event.preventDefault(); event.stopPropagation();
+}
+
