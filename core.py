@@ -140,7 +140,7 @@ def before_request():
 			
 	## Theme default
 	if not 'theme' in session:
-		session['theme'] = 'flatly'
+		session['theme'] = 'lumen'
 
 ################################################################################
 

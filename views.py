@@ -304,9 +304,9 @@ def bookmarks():
 def theme():
 	## define the themes!
 	themes = []
-	themes.append({'name':'Default','value':'flatly'})
+	themes.append({'name':'Lumen (Default)','value':'lumen'})
 	themes.append({'name':'Journal','value':'journal'})
-	themes.append({'name':'Lumen','value':'lumen'})
+	themes.append({'name':'Flatly','value':'flatly'})
 	themes.append({'name':'Readable','value':'readable'})
 	themes.append({'name':'Simplex','value':'simplex'})
 	themes.append({'name':'Spacelab','value':'spacelab'})
