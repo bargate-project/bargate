@@ -118,8 +118,14 @@ def downtime_check(f):
 @app.before_request
 def before_request():
 	"""This function is run before the request is handled by Flask. At present it checks
-	to make sure a valid CSRF token has been supplied if a POST request is made.
+	to make sure a valid CSRF token has been supplied if a POST request is made, sets
+	the default theme, and tells out of date web browsers to foad.
 	"""
+	# Check for MSIE version <= 8.0, or links or lynx and if found, tell the
+	# user to bugger off
+	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 8):
+		return render_template('foad.html')
+
 	## Check CSRF key is valid
 	if request.method == "POST":
 		## login handler shouldn't have to be CSRF protected
