@@ -177,13 +177,25 @@ def aes_encrypt(s,key):
 	Pass it the string to encrypt and the key to use to do so.
 	Returns a base64 encoded string using AES CFB.
 	"""
+	
+	## https://www.dlitz.net/software/pycrypto/api/current/Crypto.Cipher.blockalgo-module.html#MODE_CFB
+	## CFB does not require padding
+	## 32-bit key is required (AES256)
+	
+	if len(key) != 32:
+		## TODO raise a custom exception?
+		bargate.core.fatal('Configuration Error','The Bargate configuration is invalid. The ENCRYPT_KEY must be exactly 32-bytes long.')
 
-	# the following needs a later pycrypto version than is on RHEL6.
-	#iv = Random.new().read(AES.block_size)
+	# Create the IV (Initialization Vector)
 	iv = os.urandom(AES.block_size)
 	
+	## Create the cipher with the key, mode and iv
 	c = AES.new(key,AES.MODE_CFB,iv)
+	
+	## Base 64 encode the iv and the encrypted data together
 	b64 = base64.b64encode(iv + c.encrypt(s))
+	
+	## return the base64 encoded string
 	return b64
 
 ################################################################################
@@ -195,10 +207,22 @@ def aes_decrypt(s,key):
 	Returns an unencrypted string.
 	"""
 
+	# Get the block size for AES
+	block_size = AES.block_size
+	
+	# Base64 decode the encrypted data
 	binary = base64.b64decode(s)
-	iv = binary[:16]
-	e = binary[16:]
+
+	# Pull out the IV (Initialization Vector) which is the first N bytes where N is the block size 
+	iv = binary[:block_size]
+	
+	# Pull out the data
+	e = binary[block_size:]
+	
+	# Set up the cipher object with the key, the mode (CFB) and the IV
 	c = AES.new(key,AES.MODE_CFB,iv)
+	
+	# return decrypted data
 	return c.decrypt(e)
 
 def get_user_password():

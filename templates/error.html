@@ -1,19 +1,28 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div>
-	<h1>{{ title }} <small>{{ error }}</small></h1>
-	<p>
+<style type="text/css">
+body
+{
+	padding-top: 0px;
+}
+</style>
+
+</div>
+<div class="error-block">
+	<div class="error-img error-text">
+		<i class="fa fa-fw fa-exclamation-triangle"></i>
+	</div>
+	<div class="error-header error-text">
+		{{title}}
+	</div>
+	<div class="error-body error-text">
 		{{ message }}
-	</p>
-	<p>
-		For further assistance with this problem contact <a href="http://www.soton.ac.uk/ithelp">ServiceLine</a>.
-	</p>
-	<p>
-		<img style="padding-top:30px" src="{{ url_for('static', filename='images/tbservers.png') }}" alt="error image"/>
-	</p>
+	</div>
 	{% if debug %}
+	<div class="error-debug">
 		<pre>{{ debug }}</pre>
+	</div>
 	{% endif %}
 </div>
 

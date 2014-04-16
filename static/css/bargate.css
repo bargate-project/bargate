@@ -41,6 +41,90 @@ body
 }
 */
 
+@media (min-width: 768px)
+{
+	.error-block
+	{
+		padding-top: 80px;
+	
+		position:fixed !important;
+		position:absolute;
+		top:0;
+		right:0;
+		bottom:0;
+		left:0;
+	
+		background-image: url("/static/images/fire.jpg");
+		background-size: cover;
+		color: #fffff;
+		text-align: center;
+	
+		overflow: auto;
+	}
+	
+	.error-text
+	{
+		color: #ffffff;
+		text-shadow:
+		   3px 3px 0 #000,
+		 -1px -1px 0 #000,  
+		  1px -1px 0 #000,
+		  -1px 1px 0 #000,
+		   1px 1px 0 #000;
+	}
+	.error-img
+	{
+		font-size: 10em;
+	}
+	.error-header
+	{
+		font-size: 3em;
+	}
+	.error-body
+	{
+		font-size: 1.5em;
+		margin-left: 10%;
+		margin-right: 10%;
+	}
+}
+@media (max-width: 767px)
+{
+	.error-block
+	{
+		padding-top: 80px;
+		text-align: center;
+	}
+	.error-text
+	{
+		color: #000000;
+	}
+	.error-img
+	{
+		font-size: 5em;
+	}
+	.error-header
+	{
+		font-size: 2em;
+	}
+	.error-body
+	{
+		font-size: 1.2em;
+		margin-left: 5%;
+		margin-right: 5%;
+	}
+}
+
+.error-debug pre
+{
+	margin-top: 10px;
+	background-color: #ffffff;
+	margin-left: 10%;
+	margin-right: 10%;
+	text-align: left;
+	border: 3px #000000 solid;
+}
+	
+
 
 /* horrible modal center 'hack' -  but its so simple that is just DELICIOUS */
 @media (max-height: 768px)

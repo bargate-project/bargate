@@ -679,11 +679,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					except smbc.NoEntryError:
 						## It doesn't exist so lets continue to upload
 						pass
-					except smbc.PermissionError:
-						## Can't stat file
-						return bargate.errors.smbc_PermissionDenied()
-					except Exception as e:
-						bargate.errors.fatal(e)
+					except Exception as ex:
+						return bargate.errors.smbc_handler(ex,upload_uri,error_redirect)
 					else:
 						## If the file did exist, check to see if we should overwrite
 						if fstat:

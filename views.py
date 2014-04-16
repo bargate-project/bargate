@@ -75,8 +75,6 @@ def login():
 	except kerberos.GSSError as e:
 		flash('<strong>Unexpected Error</strong> - GSS Error: ' + e.__str__(),'alert-danger')
 		return redirect(url_for('hero'))
-	except Exception as e:
-		bargate.errors.fatal(e)
 
 	## Set logged in (if we got this far)
 	session['logged_in'] = True
@@ -95,10 +93,7 @@ def login():
 	session['hidden_files'] = 'hide'
 	
 	## Encrypt the password and store in the session!
-	try:
-		session['id'] = bargate.core.aes_encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
-	except Exception as e:
-		bargate.errors.fatal(e)
+	session['id'] = bargate.core.aes_encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
 
 	## Log a successful login
 	app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
