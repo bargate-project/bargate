@@ -178,14 +178,14 @@
 			</div>
 
 			<div class="modal-body text-center">
-				<i id="file-click-icon" class="" style="font-size: 6em"></i>
+				<i id="file-click-icon" style="font-size: 6em"></i>
 				<table class="table table-condensed text-left table-nl">
 					<tr>
 						<th class="text-right">Size:</th>
 						<td id="file-click-size"></td>
 					</tr>
 					<tr>
-						<th class="text-right">Last Modified:</th>
+						<th class="text-right">Modified:</th>
 						<td id="file-click-mtime"></td>
 					</tr>
 					<tr>
@@ -193,11 +193,14 @@
 						<td id="file-click-mtype"></td>
 					</tr>
 				</table>
+				<div class="btn-group">
+					<a href="#" id="file-click-download" class="btn btn-primary">Download</a>
+					<a href="#" id="file-click-view" class="btn btn-success hidden hidden-xs">View</a>
+					<a href="#" id="file-click-props" class="btn btn-info">Properties</a>
+				</div>	
 			</div>
-			<div class="modal-footer">
-				<a href="#" id="file-click-url" class="btn btn-primary">Download</a>
-				<a href="#" id="file-click-props" class="btn btn-info">Properties</a>
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>			
+			<div class="modal-footer">	
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>	
 			</div>
 		</div>
 	</div>

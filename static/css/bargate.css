@@ -41,10 +41,22 @@ body
 }
 */
 
+
 /* horrible modal center 'hack' -  but its so simple that is just DELICIOUS */
-.modal
+@media (max-height: 768px)
 {
-	padding-top: 15%;
+	.modal
+	{
+		padding-top: 6%;
+	}
+}
+
+@media (min-height: 769px)
+{
+	.modal
+	{
+		padding-top: 12%;
+	}
 }
 
 /* MAKE BOOTSTRAP DO VERTICAL ALIGN IN TABLES, DUH? */

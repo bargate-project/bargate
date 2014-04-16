@@ -27,13 +27,28 @@ $(document).ready(function($)
 	
 	$(".mclick-td").click(function()
 	{
-		$('#file-click-filename').text($(this).parent().data('filename'));
-		$('#file-click-size').text($(this).parent().data('size'));
-		$('#file-click-mtime').text($(this).parent().data('mtime'));
-		$('#file-click-mtype').text($(this).parent().data('mtype'));
-		$('#file-click-icon').attr('class','fa fa-2x' + $(this).parent().data('icon'));
-		$('#file-click-url').attr('href',$(this).parent().data('url'));
-		$('#file-click-props').attr('href',$(this).parent().data('props'));
+		var parent = $(this).parent()
+		
+		$('#file-click-filename').text(parent.data('filename'));
+		$('#file-click-size').text(parent.data('size'));
+		$('#file-click-mtime').text(parent.data('mtime'));
+		$('#file-click-mtype').text(parent.data('mtype'));
+		$('#file-click-icon').attr('class','fa fa-2x' + parent.data('icon'));
+		$('#file-click-download').attr('href',parent.data('download'));
+		$('#file-click-props').attr('href',parent.data('props'));
+		
+		if (parent.attr('data-view'))
+		{
+			console.log('thing1');
+			$('#file-click-view').attr('href',parent.data('view'));
+			$('#file-click-view').removeClass('hidden');
+		}
+		else
+		{
+			console.log('thing2');
+			$('#file-click-view').addClass('hidden');
+		}
+		
 		$('#file-click').modal();
 	});
 	

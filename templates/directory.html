@@ -67,7 +67,7 @@
 		{%- else -%}
 		{%- set rclick = 'rowclick-td' -%}
 		{%- endif %}
-		<tr class="rowclick-tr" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}" data-path="{{entry.path}}">
+		<tr class="rowclick-tr" data-icon="{{entry.icon}}" {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}" data-path="{{entry.path}}">
 			<td class="text-center {{rclick}}">
 				<i class="{{ entry.icon }} fa-2x"></i>
 			</td>
