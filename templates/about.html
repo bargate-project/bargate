@@ -5,8 +5,11 @@
 	<div class="col-sm-5">
 		<div class="panel panel-default">	
 			<div class="panel-body">	
-				<h1 style="margin: 0px"><i class="fa fa-download fa-fw"></i> Bargate 0.10.6</h1>
+				<h1 style="margin: 0px"><i class="fa fa-download fa-fw"></i> Bargate 0.10.7</h1>
 				<h4>A lightweight web based CIFS/SMB client</h4>
+				<p>
+				Written by <a href="http://www.evad.io">David Bell</a> and <a href="http://www.claytonpeters.co.uk">Clayton Peters</a>
+				</p>				
 			</div>
 		</div>
 		<div class="panel panel-default">
@@ -14,15 +17,11 @@
 				<h4 class="panel-title">Project Information</h4>
 			</div>
 			<div class="panel-body">
-				<p>
-				Written by <a href="http://www.evad.info">David Bell</a> and <a href="http://www.claytonpeters.co.uk">Clayton Peters</a>
-				</p>
-				<p>
-				For project information please see: <a href="http://divad.github.io/bargate">http://divad.github.io/bargate</a>
-				</p>
-				<p class="text-center">
-				<a class="btn btn-success" href="{{ url_for('changelog') }}">View Changelog</a>
-				</p>
+				<ul class="nav nav-list">
+					<li><a href="http://divad.github.io/bargate"><i class="fa fa-fw fa-globe"></i> Bargate Website</a></li>
+					<li><a href="http://github.com/divad/bargate"><i class="fa fa-fw fa-github-alt"></i>GitHub Project Page</a></li>
+					<li><a href="{{ url_for('changelog') }}"><i class="fa fa-fw fa-list-alt"></i> View Changelog</a></li>
+				</ul>
 			</div>
 		</div>
 	</div>

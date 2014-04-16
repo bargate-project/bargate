@@ -40,25 +40,26 @@
 			<th class="hidden-xs hidden-sm">Modified</th>
 			<th class="tsdisable"></th>
 		</tr>
-	</thead>
 
-	<tbody class="rowclick-table">
 		{%- if atroot == False %}
-		<tr class="rowclick-tr" data-url="{{ url_parent_dir }}">
-			<td class="text-center rowclick-td">
+		<tr class="tsdisable rowclick-tr" data-url="{{ url_parent_dir }}">
+			<td class="sorter-false text-center rowclick-td">
 				<i class="fa fa-arrow-circle-up fa-2x"></i>
 			</td>
-			<td class="rowclick-td">
+			<td class="sorter-false rowclick-td">
 				<a href="{{ url_parent_dir }}">Parent Folder</a>
 			</td>
-			<td class="rowclick-td hidden-xs hidden-sm">
-				-
+			<td class="sorter-false rowclick-td hidden-xs hidden-sm">
+				
 			</td>
-			<td class="rowclick-td">
+			<td class="sorter-false rowclick-td">
 				
 			</td>
 		</td>
 		{% endif -%}
+	</thead>
+
+	<tbody class="rowclick-table">
 		{%- for entry in entries -%}
 
 		{%- if entry.type == 'file' -%}
