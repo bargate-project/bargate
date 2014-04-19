@@ -27,7 +27,7 @@ body
 .table-hover .rowclick-table tr:hover td
 {
 	background-color: #cfcfcf;
-	overflow: hidden;
+	/*overflow: hidden;*/
 }
 
 /* Define a class for buttons to have borders
