@@ -67,9 +67,17 @@ ADMINS=['root']
 SMTP_SERVER='localhost'
 EMAIL_FROM='root'
 
+## Redis
+REDIS_ENABLED=True
+REDIS_HOST='localhost'
+REDIS_PORT=6379
+
 ## Disable the application or not
 # Default to true if no config file to make sure a config file has been found.
 DISABLE_APP=True
+
+## Default bootstrap theme
+THEME_DEFAULT='lumen'
 
 ################################################################################
 
@@ -132,6 +140,7 @@ import bargate.core
 
 # load anti csrf function reference into template engine
 app.jinja_env.globals['csrf_token'] = core.generate_csrf_token 
+app.jinja_env.globals['get_user_theme'] = core.get_user_theme
 
 # import modules
 import bargate.smb

@@ -20,19 +20,19 @@ import bargate.errors
 import random
 import string
 from werkzeug.urls import url_encode
-from flask import Flask, request, redirect, session, url_for, abort, render_template, flash
+from flask import Flask, request, redirect, session, url_for, abort, render_template, flash, g
 from functools import wraps
 from Crypto.Cipher import AES
 import base64
 import os
 import datetime
 import re
+import redis
 from random import randint
 
 ################################################################################
 
 def render_page(template_name, **kwargs):
-
 	## Send the standard urls required on all pages
 	url_personal    = url_for('personal')
 	url_mydocuments = url_for('personal',path='mydocuments')
@@ -119,7 +119,8 @@ def downtime_check(f):
 def before_request():
 	"""This function is run before the request is handled by Flask. At present it checks
 	to make sure a valid CSRF token has been supplied if a POST request is made, sets
-	the default theme, and tells out of date web browsers to foad.
+	the default theme, tells out of date web browsers to foad, and connects to redis
+	for user data storage.
 	"""
 	# Check for MSIE version <= 6.0
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 6):
@@ -143,9 +144,33 @@ def before_request():
 			### so just throw a 403.
 			abort(403)
 			
-	## Theme default
-	if not 'theme' in session:
-		session['theme'] = 'lumen'
+	## Connect to redis
+	if app.config['REDIS_ENABLED']:
+		try:
+			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=0)
+			g.redis.get('foo')
+		except Exception as ex:
+			bargate.errors.fatal('Unable to connect to redis',str(ex))
+
+################################################################################
+
+def get_user_theme():
+	if 'username' in session:
+		try:
+			theme = g.redis.get('user:' + session['username'] + ':theme')
+
+			if theme != None:
+				return theme
+		except Exception as ex:
+			## Can't return an error, this function is called from jinja.
+			app.logger.error('Unable to speak to redis: ' + str(ex))
+			return app.config['THEME_DEFAULT']
+
+	## If we didn't return a new theme, return the default from the config file
+	return app.config['THEME_DEFAULT']
+
+def set_user_theme(theme_name):
+	g.redis.set('user:' + session['username'] + ':theme',theme_name)
 
 ################################################################################
 
@@ -183,7 +208,7 @@ def aes_encrypt(s,key):
 	
 	if len(key) != 32:
 		## TODO raise a custom exception?
-		bargate.core.fatal('Configuration Error','The Bargate configuration is invalid. The ENCRYPT_KEY must be exactly 32-bytes long.')
+		bargate.errors.fatal('Configuration Error','The Bargate configuration is invalid. The ENCRYPT_KEY must be exactly 32-bytes long.')
 
 	# Create the IV (Initialization Vector)
 	iv = os.urandom(AES.block_size)

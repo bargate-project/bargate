@@ -162,7 +162,7 @@ def bookmarks():
 def theme():
 	## define the themes!
 	themes = []
-	themes.append({'name':'Lumen (Default)','value':'lumen'})
+	themes.append({'name':'Lumen','value':'lumen'})
 	themes.append({'name':'Journal','value':'journal'})
 	themes.append({'name':'Flatly','value':'flatly'})
 	themes.append({'name':'Readable','value':'readable'})
@@ -175,7 +175,7 @@ def theme():
 		new_theme = request.form['theme']
 		for theme in themes:
 			if new_theme == theme['value']:
-				session['theme'] = new_theme
+				bargate.core.set_user_theme(new_theme)
 				flash('Theme preference changed','alert-success')
 				return redirect(url_for('personal'))
 				
