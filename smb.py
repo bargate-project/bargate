@@ -399,15 +399,18 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			## Flash a message if hidden files mode has changed
 			if hfiles == 'show':
-				if session['hidden_files'] == 'hide':
+				# If files are currently hidden
+				if not bargate.core.show_hidden_files():
 					flash("Files marked as 'hidden' are now being shown.",'alert-info')
 
-				session['hidden_files'] = 'show'
-			elif hfiles == 'hide':
-				if session['hidden_files'] == 'show':
-					flash("Files marked as 'hidden' are now not being shown.",'alert-info')
+				bargate.core.set_user_data('hidden_files','show')
 
-				session['hidden_files'] = 'hide'
+			elif hfiles == 'hide':
+				# If files are currently being sown
+				if bargate.core.show_hidden_files():
+					flash("Files marked as 'hidden' are now not being shown.",'alert-info')
+				# Set files to hidden
+				bargate.core.set_user_data('hidden_files','hide')
 
 			## Try getting directory contents
 			try:
@@ -463,8 +466,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				else:
 					entry['path'] = path + '/' + entry['name']
 
-				## Hide hidden files if the user has selected to do so (default)
-				if session['hidden_files'] == 'hide':
+				## Hide hidden files if the user has selected to do so (the default)
+				if not bargate.core.show_hidden_files():
 					## check first character for . (unix hidden)
 					if entry['name'][0] == ".":
 						continue
@@ -578,7 +581,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					b4 = b4 + crumb + '/'
 
 			## Build URL for show/hide hidden files
-			if session['hidden_files'] == 'show':
+			if bargate.core.show_hidden_files():
 				hidden_new_type = 'hide'
 				switch_hidden_string = 'Hide Hidden Files'
 				

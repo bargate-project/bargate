@@ -169,8 +169,26 @@ def get_user_theme():
 	## If we didn't return a new theme, return the default from the config file
 	return app.config['THEME_DEFAULT']
 
-def set_user_theme(theme_name):
-	g.redis.set('user:' + session['username'] + ':theme',theme_name)
+################################################################################
+
+def show_hidden_files():
+	if 'username' in session:
+		try:
+			hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
+
+			if hidden_files != None:
+				if hidden_files == 'show':
+					return True
+
+		except Exception as ex:
+			app.logger.error('Unable to speak to redis: ' + str(ex))
+
+	return False
+
+################################################################################
+
+def set_user_data(key,value):
+	g.redis.set('user:' + session['username'] + ':' + key,value)
 
 ################################################################################
 

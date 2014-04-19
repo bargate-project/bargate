@@ -65,9 +65,6 @@ def login():
 			else:
 				session.permanent = False
 
-			## Set defaults for hidden files
-			session['hidden_files'] = 'hide'
-	
 			## Encrypt the password and store in the session!
 			session['id'] = bargate.core.aes_encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
 
@@ -175,7 +172,7 @@ def theme():
 		new_theme = request.form['theme']
 		for theme in themes:
 			if new_theme == theme['value']:
-				bargate.core.set_user_theme(new_theme)
+				bargate.core.set_user_data('theme',new_theme)
 				flash('Theme preference changed','alert-success')
 				return redirect(url_for('personal'))
 				
