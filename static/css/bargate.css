@@ -23,23 +23,12 @@ body
 {
 	cursor: pointer; 
 }
-.table-hover.rowclick-table tr:hover td,
+
+/*.table-hover.rowclick-table tr:hover td,
 .table-hover .rowclick-table tr:hover td
 {
 	background-color: #cfcfcf;
-	/*overflow: hidden;*/
-}
-
-/* Define a class for buttons to have borders
-.btn-border-white
-{
-	border-color: #ffffff;
-}
-.btn-border-white:hover
-{
-	border-color: #CCCCCC;
-}
-*/
+}*/
 
 @media (min-width: 768px)
 {

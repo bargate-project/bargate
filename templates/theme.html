@@ -11,7 +11,7 @@
 				{% for theme in themes %}
 				<div class="radio">
 					<label>
-					<input type="radio" name="theme" id="theme_{{theme.value}}" value="{{theme.value}}" {% if session.theme == theme.value%}checked{%endif%}>
+					<input type="radio" name="theme" id="theme_{{theme.value}}" value="{{theme.value}}" {% if get_user_theme() == theme.value%}checked{%endif%}>
 					{{theme.name}}
 					</label>
 				</div>
