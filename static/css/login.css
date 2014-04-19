@@ -1,0 +1,139 @@
+@import url(https://fonts.googleapis.com/css?family=Voltaire);
+
+.uoslogo
+{
+	position: fixed;
+	position: absolute;
+	top: 25px;
+	right: 25px;
+}
+
+html, body
+{
+	height: 100%;
+	width: 100%;
+	font-family:Arial,sans-serif;
+}
+
+h1, .btn, label
+{
+	text-transform:uppercase;
+	font-family:'Voltaire',Arial,sans-serif;
+	letter-spacing:2px;
+
+}
+
+.form-group
+{
+	margin-bottom: 1.5em;
+}
+
+.vert
+{
+	vertical-align: middle;
+	width:100%;
+}
+
+@media (max-width: 767px)
+{  
+	.vert
+	{
+		text-align:center;
+	}
+}
+
+.header .btn-lg
+{
+	font-size: 28px;
+	border-color: #eeeeee;
+	padding: 15px;
+	background-color: transparent;
+	color: #ffffff;
+}
+
+
+.header
+{
+	height: 100%;
+}
+
+.header .btn-lg:hover
+{
+	background-color:#eeeeee;
+	color:#777777;
+}
+
+.header h1 
+{
+	-webkit-text-stroke: 1px rgba(f,f,f,0.1);
+	color:#431a6d;
+	color:#fff;
+	margin-left:0px;
+	margin-bottom:20px;
+	text-transform:uppercase;
+}
+
+@media (min-width: 768px)
+{   
+	.header h1 
+	{
+		font-size:60px;
+	}
+}
+
+@media (min-width: 992px)
+{   
+	.header h1 
+	{
+		font-size:70px;
+	}
+}
+
+@media (min-width: 1200px)
+{   
+	.header h1 
+	{
+		font-size:80px;
+	}
+}
+
+@media (min-width: 1500px)
+{   
+	.header h1 
+	{
+		font-size:90px;
+	}
+}
+
+
+@media (min-width: 768px)
+{
+	.header
+	{
+		background-image: url('/static/images/login/bgimage9.jpg');
+		background-size: cover;	
+	}
+}
+
+@media (max-width: 767px)
+{
+	.alt
+	{
+		background-color: #0A96A9;
+	}
+}
+
+.header label
+{
+	color: #FFFFFF;
+	font-size: 1.5em;
+}
+
+@media (min-width: 768px)
+{   
+	.alert
+	{
+		max-width: 40%;
+	}
+}
+

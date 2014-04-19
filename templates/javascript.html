@@ -3,14 +3,12 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.tablesorter.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.visible.min.js') }}"></script>
 
-<script type="text/javascript"> 
-var $buoop = {}; 
-$buoop.ol = $(window).load(function() 
-{ 
- try {if ($buoop.ol) $buoop.ol();}catch (e) {} 
- var e = document.createElement("script"); 
- e.setAttribute("type", "text/javascript"); 
- e.setAttribute("src", "//browser-update.org/update.js"); 
- document.body.appendChild(e); 
-});
-</script>
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	<link href="{{ url_for('static', filename='respond.proxy.gif') }}" id="respond-redirect" rel="respond-redirect" />
+	<link href="//netdna.bootstrapcdn.com/respond-proxy.html" id="respond-proxy" rel="respond-proxy" />
+	<script src="{{ url_for('static', filename='js/respond.proxy.js') }}"></script>
+<![endif]-->

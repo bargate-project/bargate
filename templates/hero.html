@@ -5,6 +5,10 @@
     	<meta http-equiv="X-UA-Compatible" content="IE=edge">
     	<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Filestore Web Access</title>
+
+		<noscript>
+			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
+		</noscript>
 		
 		{% include 'header-links.html' %}
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/hero.css') }}">

@@ -44,7 +44,7 @@ def hero():
 		## generate a background image to showz
 		bgnumber = randint(1,17)
 
-		return render_template('hero.html', next=next,bgnumber=bgnumber)
+		return render_template('login.html', next=next,bgnumber=bgnumber)
 
 ################################################################################
 #### HELP PAGES
@@ -56,6 +56,14 @@ def about():
 @app.route('/about/changelog')
 def changelog():
 	return bargate.core.render_page('changelog.html', active='help')
+
+@app.route('/nojs')
+def nojs():
+	return bargate.core.render_page('nojs.html')
+
+@app.route('/login')
+def login_test():
+	return bargate.core.render_page('login.html')
 
 ################################################################################
 #### LOGIN
@@ -346,7 +354,7 @@ def custom(path):
 	if request.method == 'POST':
 		try:
 			server_uri = request.form['open_server_uri']
-			## TODO validate the path...somehow
+			## TODO validate the path...somehow?
 
 			session['custom_uri'] = server_uri
 			session.modified = True

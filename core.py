@@ -121,8 +121,7 @@ def before_request():
 	to make sure a valid CSRF token has been supplied if a POST request is made, sets
 	the default theme, and tells out of date web browsers to foad.
 	"""
-	# Check for MSIE version <= 8.0, or links or lynx and if found, tell the
-	# user to bugger off
+	# Check for MSIE version <= 6.0
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 8):
 		return render_template('foad.html')
 

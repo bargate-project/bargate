@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+		<meta charset="utf-8">
+		<title>Filestore Web Access</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
+		<noscript>
+			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
+		</noscript>
+		{% include 'javascript.html' %}
+		<script type="text/javascript" src="{{ url_for('static', filename='js/hero.js') }}"></script>
+	</head>
+	<body>
+		<div class="hidden-xs hidden-sm uoslogo">
+			<img src="{{ url_for('static', filename='images/uoslogowhite.png') }}"></img>
+		</div>
+
+		<div class="header alt vert">
+			<div class="container">
+				<h1>Filestore Web Access</h1>
+				{% for category, message in get_flashed_messages(with_categories=true) %}
+				<div class="alert {{ category }} fade in">
+					<a data-dismiss="alert" class="close" href="#">×</a>
+					{{ message|safe }}
+				</div>
+				{% endfor %}
+				<form role="form" action="{{ url_for('login') }}" method="POST" class="text-left">
+					<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+					{% if next %}
+					<input name="next" type="hidden" value="{{next}}"/>
+					{% endif %}
+					<div class="row form-group">
+						<div class="col-sm-5">
+							<label>Username:</label>
+							<input type="text" class="form-control input-lg" id="loginUsername" name="username">
+						</div>
+					</div>
+					<div class="row form-group">
+						<div class="col-sm-5">
+							<label>Password:</label>
+							<input type="password" class="form-control input-lg" id="loginPassword" name="password">
+						</div>
+					</div>
+					<div class="row form-group">
+						<div class="col-sm-5">
+							<label class="checkbox">
+								<input type="checkbox" class="" value="sec" id="sec" name="sec"> Remember me
+							</label>
+						</div>
+					</div>
+					<div class="row form-group">
+						<div class="col-sm-5 text-center">
+							<button class="btn btn-default btn-lg" type="submit">Login</button>
+						</div>
+					</div>				
+				</form>
+			</div>
+		</div>
+
+
+    </body>
+</html>

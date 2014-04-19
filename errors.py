@@ -75,8 +75,9 @@ def smbc_handler(ex,uri="Unknown",redirect_to=None):
 	elif isinstance(ex,smbc.TimedOutError):
 		return smbc_TimedOutError(redirect_to)
 		
+	# pysmbc spits out RuntimeError when everything else fails
 	elif isinstance(ex,RuntimeError):
-		return smbc_RuntimeError()
+		return smbc_RuntimeError(redirect_to)
 
 	# ALL OTHER EXCEPTIONS
 	else:
