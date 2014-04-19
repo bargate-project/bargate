@@ -86,7 +86,6 @@ app.config.from_pyfile('/etc/bargate/bargate.conf', silent=True)
 app.config.from_pyfile('/opt/bargate/bargate.conf', silent=True)
 app.config.from_pyfile('/data/bargate/bargate.conf', silent=True)
 app.config.from_pyfile('/data/fwa/bargate.conf', silent=True)
-app.config.from_envvar('BARGATE_CONFIG_FILE', silent=True)
 
 # set up e-mail alert logging
 #if not app.debug:
@@ -138,8 +137,8 @@ app.jinja_env.globals['csrf_token'] = core.generate_csrf_token
 import bargate.smb
 import bargate.errors
 import bargate.views
+import bargate.smb_views
 import bargate.mime
 
 # load jinja functions into scope
 app.jinja_env.globals.update(poperr_get=bargate.core.poperr_get)
-

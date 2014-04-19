@@ -5,9 +5,9 @@
 		<title>Filestore Web Access</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-{% include 'header-links.html' %}
+		{%- include 'header-links.html' %}
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bargate.css') }}">
-{% include 'javascript.html' %}
+		{%- include 'javascript.html' %}
 		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
@@ -20,9 +20,13 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
+					{%- if session.logged_in %}
 					<a href="{{ url_personal }}" class="navbar-brand visible-xs">Filestore Web Access</a>
 					<a href="{{ url_personal }}" class="navbar-brand visible-sm">Filestore</a>
 					<a href="{{ url_personal }}" class="navbar-brand visible-md visible-lg">Filestore Web Access</a>
+					{%- else %}
+					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fa fa-arrow-circle-o-left"></i> Back to Login</a>
+					{%- endif %}
 				</div>
 			
 				{%- if session.logged_in %}

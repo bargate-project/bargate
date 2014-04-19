@@ -106,7 +106,7 @@ def smbc_PermissionDenied(redirect_to=None):
 	except Exception as e:
 		bargate.core.session_logout()
 		flash('<strong>Error</strong> - Your password has changed. You must login again.','alert-danger')
-		return redirect(url_for('hero'))
+		return redirect(url_for('login'))
 	
 	return output_error("Permission Denied","You do not have permission to perform the action.",redirect_to)
 

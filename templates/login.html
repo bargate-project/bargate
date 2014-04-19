@@ -7,19 +7,51 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
 		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
+
+		<!--[if lt IE 9]>
+		<style type="text/css">
+		.form-control
+		{
+			width: 95% !important;
+		}
+		body
+		{
+			background-color: none;
+			background-image: url('/static/images/login/bgimage{{bgnumber}}.jpg');
+			background-size: cover;	
+		}
+		</style>
+		<![endif]-->
+
+		<style type="text/css">
+		@media (min-width: 768px)
+		{
+			body
+			{
+				background-color: none;
+				background-image: url('/static/images/login/bgimage{{bgnumber}}.jpg');
+				background-size: cover;	
+			}
+		}
+
+		</style>
+
 		<noscript>
 			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
 		</noscript>
 		{% include 'javascript.html' %}
-		<script type="text/javascript" src="{{ url_for('static', filename='js/hero.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
 	</head>
 	<body>
-		<div class="hidden-xs hidden-sm uoslogo">
+		<div class="hidden-xs uoslogo">
 			<img src="{{ url_for('static', filename='images/uoslogowhite.png') }}"></img>
 		</div>
 
-		<div class="header alt vert">
-			<div class="container">
+		<div class="container">
+			<div class="visible-xs mobilelogo">
+				<img src="{{ url_for('static', filename='images/uoslogowhite.png') }}"></img>
+			</div>
+			<div class="loginbox">
 				<h1>Filestore Web Access</h1>
 				{% for category, message in get_flashed_messages(with_categories=true) %}
 				<div class="alert {{ category }} fade in">
@@ -27,39 +59,33 @@
 					{{ message|safe }}
 				</div>
 				{% endfor %}
+
 				<form role="form" action="{{ url_for('login') }}" method="POST" class="text-left">
 					<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 					{% if next %}
 					<input name="next" type="hidden" value="{{next}}"/>
 					{% endif %}
-					<div class="row form-group">
-						<div class="col-sm-5">
-							<label>Username:</label>
-							<input type="text" class="form-control input-lg" id="loginUsername" name="username">
-						</div>
+					<div class="form-group">
+						<label>Username:</label>
+						<input type="text" class="login-input form-control" id="loginUsername" name="username">
 					</div>
-					<div class="row form-group">
-						<div class="col-sm-5">
-							<label>Password:</label>
-							<input type="password" class="form-control input-lg" id="loginPassword" name="password">
-						</div>
+					<div class="form-group">
+						<label>Password:</label>
+						<input type="password" class="login-input form-control" id="loginPassword" name="password">
 					</div>
-					<div class="row form-group">
-						<div class="col-sm-5">
-							<label class="checkbox">
-								<input type="checkbox" class="" value="sec" id="sec" name="sec"> Remember me
-							</label>
-						</div>
+					<div class="form-group">
+						<label class="checkbox">
+							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Remember me
+						</label>
 					</div>
-					<div class="row form-group">
-						<div class="col-sm-5 text-center">
-							<button class="btn btn-default btn-lg" type="submit">Login</button>
-						</div>
+					<div class="form-group text-center">
+						<button class="btn btn-default btn-lg" type="submit">Login</button>
 					</div>				
 				</form>
+				<p class="text-center">
+					<a href="https://www.southampton.ac.uk/inf/termsandconditions.html">Terms and Conditions</a> - <a href="{{ url_for('about') }}">About</a>
+				</p>
 			</div>
 		</div>
-
-
     </body>
 </html>

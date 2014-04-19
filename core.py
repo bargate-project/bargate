@@ -20,15 +20,14 @@ import bargate.errors
 import random
 import string
 from werkzeug.urls import url_encode
-from flask import Flask, g, request, redirect, session, url_for, abort, render_template, flash
+from flask import Flask, request, redirect, session, url_for, abort, render_template, flash
 from functools import wraps
 from Crypto.Cipher import AES
-# the following needs a later pycrypto than is in RHEL6.
-#from Crypto import Random
 import base64
 import os
 import datetime
 import re
+from random import randint
 
 ################################################################################
 
@@ -94,7 +93,7 @@ def login_required(f):
 			flash('<strong>Oops!</strong> You must login first.','alert-danger')
 			## TODO take the next code from sysman - much improved over this.
 			args = url_encode(request.args)
-			return redirect(url_for('hero', next=request.script_root + request.path + "?" + args))
+			return redirect(url_for('login', next=request.script_root + request.path + "?" + args))
 		return f(*args, **kwargs)
 	return decorated_function
 
@@ -108,8 +107,9 @@ def downtime_check(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
 		if app.config['DISABLE_APP']:
-			flash('<strong>Service Temporarily Unavailable</strong><br/> Normal service will be restored as soon as possible.','alert-error')
-			return render_template('hero.html', active='hero')
+			flash('<strong>Service Temporarily Unavailable</strong><br/> Normal service will be restored as soon as possible.','alert-danger')
+			bgnumber = randint(1,17)
+			return render_template('login.html', bgnumber=bgnumber)
 		return f(*args, **kwargs)
 	return decorated_function
 
@@ -121,8 +121,8 @@ def before_request():
 	to make sure a valid CSRF token has been supplied if a POST request is made, sets
 	the default theme, and tells out of date web browsers to foad.
 	"""
-	# Check for MSIE version <= 8.0
-	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 8):
+	# Check for MSIE version <= 6.0
+	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 6):
 		return render_template('foad.html')
 
 	## Check CSRF key is valid

@@ -23,11 +23,11 @@ body
 {
 	cursor: pointer; 
 }
-/* clickable rows need a mouse pointer change to indicate clickyness */
 .table-hover.rowclick-table tr:hover td,
 .table-hover .rowclick-table tr:hover td
 {
 	background-color: #cfcfcf;
+	overflow: hidden;
 }
 
 /* Define a class for buttons to have borders
