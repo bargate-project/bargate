@@ -39,13 +39,11 @@ $(document).ready(function($)
 		
 		if (parent.attr('data-view'))
 		{
-			console.log('thing1');
 			$('#file-click-view').attr('href',parent.data('view'));
 			$('#file-click-view').removeClass('hidden');
 		}
 		else
 		{
-			console.log('thing2');
 			$('#file-click-view').addClass('hidden');
 		}
 		
@@ -58,7 +56,6 @@ $(document).ready(function($)
 
 		if (menu.visible() )
 		{
-			/*console.log('menu is visible');*/
 			/*$(this).parent().removeClass('dropup');*/
 		}
 		else
@@ -78,6 +75,10 @@ $(document).ready(function($)
 $(document).ready(function() {
 	$('#create-directory').on('shown.bs.modal', function() {
 		$('#create-directory input[type="text"]').focus();
+	});
+	
+	$('#add-bookmark').on('shown.bs.modal', function() {
+		$('#add-bookmark input[type="text"]').focus();
 	});
 
 	$('.copy').click(function()

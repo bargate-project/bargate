@@ -171,7 +171,7 @@ def invalid_path(redirect_to=None):
 ################################################################################
 #### Flask error handlers - captures "abort" calls from within flask and our code
 
-def fatal(title,message):
+def fatal(title="Fatal Error",message="Default Message"):
 	g.fault_title = title
 	g.fault_message = message
 	abort(500)

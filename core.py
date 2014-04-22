@@ -29,6 +29,7 @@ import datetime
 import re
 import redis
 from random import randint
+import time
 
 ################################################################################
 
@@ -122,6 +123,7 @@ def before_request():
 	the default theme, tells out of date web browsers to foad, and connects to redis
 	for user data storage.
 	"""
+
 	# Check for MSIE version <= 6.0
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 6):
 		return render_template('foad.html')
@@ -129,20 +131,18 @@ def before_request():
 	## Check CSRF key is valid
 	if request.method == "POST":
 		## login handler shouldn't have to be CSRF protected
-		if request.endpoint == 'login':
-			return
+		if not request.endpoint == 'login':
+			## check csrf token is valid
+			token = session.get('_csrf_token')
+			if not token or token != request.form.get('_csrf_token'):
+				if 'username' in session:
+					app.logger.warning('CSRF protection alert: %s failed to present a valid POST token',session['username'])
+				else:
+					app.logger.warning('CSRF protection alert: a non-logged in user failed to present a valid POST token')
 
-		## check csrf token is valid
-		token = session.get('_csrf_token')
-		if not token or token != request.form.get('_csrf_token'):
-			if 'username' in session:
-				app.logger.warning('CSRF protection alert: %s failed to present a valid POST token',session['username'])
-			else:
-				app.logger.warning('CSRF protection alert: a non-logged in user failed to present a valid POST token')
-
-			### the user cannot have accidentally triggered this
-			### so just throw a 403.
-			abort(403)
+				### the user cannot have accidentally triggered this
+				### so just throw a 403.
+				abort(403)
 			
 	## Connect to redis
 	if app.config['REDIS_ENABLED']:
@@ -151,6 +151,10 @@ def before_request():
 			g.redis.get('foo')
 		except Exception as ex:
 			bargate.errors.fatal('Unable to connect to redis',str(ex))
+			
+	## Log user last access time
+	if 'username' in session:
+		set_user_data('last',str(time.time()))
 
 ################################################################################
 

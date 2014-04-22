@@ -17,11 +17,13 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for, render_template, flash
+from flask import Flask, request, session, redirect, url_for, render_template, flash, g, abort
 import kerberos
 import mimetypes
 import os 
 from random import randint
+import time
+import json
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
@@ -32,7 +34,7 @@ def login():
 	if 'username' in session:
 		return redirect(url_for('personal'))
 	else:
-		if request.method == 'GET':
+		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
 			bgnumber = randint(1,17)
 			return render_template('login.html', next=next,bgnumber=bgnumber)
@@ -73,6 +75,9 @@ def login():
 
 			## determine if "next" variable is set (the URL to be sent to)
 			next = request.form.get('next',default=None)
+			
+			## Record the last login time
+			bargate.core.set_user_data('login',str(time.time()))
 
 			if next == None:
 				return redirect(url_for('personal'))
@@ -85,6 +90,8 @@ def login():
 @app.route('/logout')
 @bargate.core.login_required
 def logout():
+	## Record 
+	bargate.core.set_user_data('logout',str(time.time()))
 	bargate.core.session_logout()
 	flash('<strong>Goodbye!</strong> - You were logged out','alert-success')
 	return redirect(url_for('login'))
@@ -121,35 +128,87 @@ def mime():
 @bargate.core.login_required
 @bargate.core.downtime_check
 def bookmarks():
+	bmKey = 'user:' + session['username'] + ':bookmarks'
+	bmPrefix = 'user:' + session['username'] + ':bookmark:'
 
-	ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth)
-	bmPath = u"smb://filestore.soton.ac.uk/Users/" + unicode(session['username']) + '/.fwabookmarks'
+	## todo: much better input verification
 
-	try:
-		bmFile = ctx.open(bmPath, os.O_CREAT | os.O_RDWR)
-	except Exception as ex:
-		 return bargate.errors.smbc_handler(ex)
+	if request.method == 'GET':
+		bmList = list()
+			
+		if g.redis.exists(bmKey):
+			try:
+				bookmarks = g.redis.smembers(bmKey)
+			except Exception as ex:
+				bargate.errors.fatal('Failed to load bookmarks: ',str(ex))
+	
+			if bookmarks != None:
+				if isinstance(bookmarks,set):
+					for bookmark_name in bookmarks:
+			
+						try:
+							function = g.redis.hget(bmPrefix + bookmark_name,'function')
+							path     = g.redis.hget(bmPrefix + bookmark_name,'path')
+						except Exception as ex:
+							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': ', str(ex))
+							
+						if function == None:
+							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': ', 'function was not set')
+						if path == None:
+							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': ', 'path was not set')
+							
+						try:
+							bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
+							bmList.append(bm)
+						except werkzeug.routing.BuildError as ex:
+							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': Invalid bookmark function and/or path - ', str(ex))
+				else:
+					bargate.errors.fatal('Failed to load bookmarks','Invalid redis data type when loading bookmarks set')
 
-	try:
-		jsonData = json.load(bmFile)
-	except TypeError as ex:
-		## no json here, fix later.
-		pass
-	except Exception as ex:
-		return bargate.errors.smbc_handler(ex)
+		return bargate.core.render_page('bookmarks.html', active='user',pwd='',bookmarks = bmList)
+		
+	elif request.method == 'POST':
+		
+		action = request.form['action']
+		
+		if action == 'add':
+		
+			## TODO really need to do some regex on the input here...
+				## and you know, elsewhere? maybe? eugh. what about unicode though?
+				## maybe just check for known invalid chars? eugh.
+				## also check by building the url with url_for first... that'll verify function at least.
+		
+			bookmark_name     = request.form['bookmark_name']
+			bookmark_function = request.form['bookmark_function']
+			bookmark_path     = request.form['bookmark_path']
+		
+			g.redis.hset(bmPrefix + bookmark_name,'function',bookmark_function)
+			g.redis.hset(bmPrefix + bookmark_name,'path',bookmark_path)
+			g.redis.sadd(bmKey,bookmark_name)
+		
+			flash('Bookmark added successfully. <a href="' + url_for('bookmarks') + '">Click here to view your bookmarks.</a>','alert-success')
+			## return the user to the folder they were in
+			return redirect(url_for(bookmark_function,path=bookmark_path))
+			
+		elif action == 'delete':
+			bookmark_name     = request.form['bookmark_name']
+			
+			if g.redis.exists(bmKey):
+				if g.redis.sismember(bmKey,bookmark_name):
+				
+					## Delete from the bookmarks key
+					g.redis.srem(bmKey,bookmark_name)
+					
+					## Delete the bookmark hash
+					g.redis.delete(bmPrefix + bookmark_name)
+					
+					## Let the user know and redirect
+					flash('Bookmark deleted successfully','alert-success')
+					return redirect(url_for('bookmarks'))
 
-	bmList = list()
-
-	if type(jsonData) is dict:
-		if 'bookmarks' in jsonData:
-			#return bargate.errors.debugError(str(type(jsonData['bookmarks'])))
-			for entry in jsonData['bookmarks']:
-				if type(entry) is dict:
-					if 'name' in entry and 'function' in entry and 'path' in entry:
-						listEntry = { 'name': entry['name'], 'url': url_for(entry['function'],path=entry['path']) }
-						bmList.append(listEntry)
-	return bargate.core.render_page('bookmarks.html', active='bookmarks',pwd='',bookmarks = bmList)
-
+			flash('Bookmark not found!','alert-danger')
+			return redirect(url_for('bookmarks'))					
+				
 ################################################################################
 #### THEME CHANGE
 

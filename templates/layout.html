@@ -55,6 +55,7 @@
 							<ul class="dropdown-menu">
 								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php"><i class="fa fa-fw fa-home"></i> Help</a></li>
 								<li><a href="https://github.com/divad/bargate/issues"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
+								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-question-circle fa-fw"></i> Give Feedback</a></li>
 								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-download"></i> About</a></li>
 							</ul>
 						</li>
@@ -64,33 +65,34 @@
 						<li class="dropdown{%if active == 'user'%} active{%endif%}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ session.username }} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="https://subscribe.iss.soton.ac.uk/subscribed.html"><i class="fa fa-key fa-fw"></i> University Account</a></li>
+								<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-bookmark fa-fw"></i> Bookmarks</a></li>
 								<li><a href="{{ url_for('theme') }}"><i class="fa fa-tint fa-fw"></i> Change Theme</a></li>
-								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-question-circle fa-fw"></i> Take the survey</a></li>
-								<li class="divider"></li>
 								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
 							</ul>
 						</li>
 					</ul>
 					
 					<div class="pull-right action-btns">
-						<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i class="fa fa-upload"></i>
+						<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-upload"></i>
 						</a>
-						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i class="fa fa-folder-open"></i>
+						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-folder-open"></i>
+						</a>
+						<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-danger hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Bookmark this folder" {% if not browse_mode %}disabled="disabled"{%endif%} {% if atroot %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-bookmark"></i>
 						</a>
 						{%- if url_switch_hidden %}
 						<a class="btn navbar-btn btn-warning btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="{{switch_hidden_string}}" href="{{url_switch_hidden}}">
 							{%- if hidden_icon == 'show' %}
-							<i class="fa fa-eye"></i>
+							<i class="fa fa-fw fa-eye"></i>
 							{%- else %}
-							<i class="fa fa-eye-slash"></i>
+							<i class="fa fa-fw fa-eye-slash"></i>
 							{% endif %}
 						</a>
 						{%- else %}
 						<a class="btn btn-warning hidden-xs" disabled="disabled" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Show/hide hidden files" href="#">
-							<i class="fa fa-eye"></i>
+							<i class="fa fa-fw fa-eye"></i>
 						</a>
 						{%- endif %}
 					</div>
@@ -131,14 +133,14 @@
 		<div class="navbar navbar-default navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container">
 				<div class="action-btns text-center">
-					<button onclick="document.location.reload();" class="btn navbar-btn btn-danger btn">
-						<i class="fa fa-refresh"></i>
-					</button>
 					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn">
-						<i class="fa fa-upload"></i>
+						<i class="fa fa-fw fa-upload"></i>
 					</a>
 					<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info">
-						<i class="fa fa-folder-open"></i>
+						<i class="fa fa-fw fa-folder-open"></i>
+					</a>
+					<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-danger" {% if atroot %}disabled="disabled"{%endif%}>
+						<i class="fa fa-fw fa-bookmark"></i>
 					</a>
 		
 					{%- if url_switch_hidden %}
@@ -151,7 +153,7 @@
 					</a>
 					{%- else %}
 					<a class="btn btn-warning" disabled="disabled" href="#">
-						<i class="fa fa-eye"></i>
+						<i class="fa fa-fw fa-eye"></i>
 					</a>
 					{%- endif %}
 				</div>

@@ -397,20 +397,22 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			## Load view options from GET variables (if present)
 			hfiles = request.args.get('hfiles','')
 
-			## Flash a message if hidden files mode has changed
+			## Change hidden files mode
 			if hfiles == 'show':
+			
 				# If files are currently hidden
 				if not bargate.core.show_hidden_files():
+					bargate.core.set_user_data('hidden_files','show')
 					flash("Files marked as 'hidden' are now being shown.",'alert-info')
-
-				bargate.core.set_user_data('hidden_files','show')
+					return redirect(url_for(func_name,path=path))
 
 			elif hfiles == 'hide':
-				# If files are currently being sown
+			
+				# If files are currently being shown
 				if bargate.core.show_hidden_files():
+					bargate.core.set_user_data('hidden_files','hide')
 					flash("Files marked as 'hidden' are now not being shown.",'alert-info')
-				# Set files to hidden
-				bargate.core.set_user_data('hidden_files','hide')
+					return redirect(url_for(func_name,path=path))
 
 			## Try getting directory contents
 			try:
@@ -551,13 +553,17 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				entries.append(f)
 
 			## Build the URL to the parent directory
+			## and the current directory name
 			if len(path) > 0:
 				(before,sep,after) = path.rpartition('/')
 				if len(sep) > 0:
+					cwd = after
 					url_parent_dir = url_for(func_name,path=before)
 				else:
+					cwd = path
 					url_parent_dir = url_for(func_name)
 			else:
+				cwd = ''
 				url_parent_dir = ''
 
 			## Build the refresh URL
@@ -599,6 +605,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				atroot = True
 			else:
 				atroot = False
+				
+			## Bookmarks
+			url_bookmark = url_for('bookmarks')
 
 			## Render the template
 			return bargate.core.render_page('directory.html', 
@@ -606,9 +615,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				entries=entries,
 				crumbs=crumbs,
 				pwd=path,
+				cwd=cwd,
 				url_home=url_home,
 				url_parent_dir=url_parent_dir,
 				url_refresh=url_refresh,
+				url_bookmark=url_bookmark,
 				switch_hidden_string=switch_hidden_string,
 				url_switch_hidden=url_switch_hidden,
 				hidden_icon=hidden_new_type,
@@ -623,7 +634,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 	############################################################################
 	## HTTP POST ACTIONS #######################################################
-	# actions: unlink, mkdir, upload, rename
+	# actions: unlink, mkdir, upload, rename, shidden
 	############################################################################
 
 	if request.method == 'POST':

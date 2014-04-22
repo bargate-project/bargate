@@ -1,3 +1,30 @@
+{#- modal popup for when 'add bookmark' is clicked  #}
+<div class="modal" id="add-bookmark">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_bookmark }}" method="POST" enctype="multipart/form-data" autocomplete="off">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" type="hidden" value="add"/>
+				<input name="bookmark_function" type="hidden" value="{{ func_name }}"/>
+				<input name="bookmark_path" type="hidden" value="{{ pwd }}"/>
+								
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">×</button>
+					<h4 class="modal-title">Add Bookmark</h4>
+				</div>
+				<div class="modal-body">
+					<label>Bookmark name:</label>
+					<input class="form-control" type="text" name="bookmark_name" value="{{cwd}}"/>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="uploadbtn" type="submit" class="btn btn-success">Add</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
 {#- modal popup for when upload file is clicked #}
 <div class="modal" id="upload-file">
 	<div class="modal-dialog">
