@@ -45,13 +45,13 @@ def login():
 				## Check password with kerberos
 				kerberos.checkPassword(request.form['username'], request.form['password'], app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
 			except kerberos.BasicAuthError as e:
-				flash('<strong>Error</strong> - Incorrect username and/or password','alert-danger')
+				flash('Incorrect username and/or password','alert-danger')
 				return redirect(url_for('login'))
 			except kerberos.KrbError as e:
-				flash('<strong>Unexpected Error</strong> - Kerberos Error: ' + e.__str__(),'alert-danger')
+				flash('Unexpected Kerberos Error: ' + e.__str__(),'alert-danger')
 				return redirect(url_for('login'))
 			except kerberos.GSSError as e:
-				flash('<strong>Unexpected Error</strong> - GSS Error: ' + e.__str__(),'alert-danger')
+				flash('Unexpected GSS Error: ' + e.__str__(),'alert-danger')
 				return redirect(url_for('login'))
 
 			## Set logged in (if we got this far)
@@ -93,7 +93,7 @@ def logout():
 	## Record 
 	bargate.core.set_user_data('logout',str(time.time()))
 	bargate.core.session_logout()
-	flash('<strong>Goodbye!</strong> - You were logged out','alert-success')
+	flash('You were logged out successfully','alert-success')
 	return redirect(url_for('login'))
 
 ################################################################################
@@ -186,7 +186,7 @@ def bookmarks():
 			g.redis.hset(bmPrefix + bookmark_name,'path',bookmark_path)
 			g.redis.sadd(bmKey,bookmark_name)
 		
-			flash('Bookmark added successfully. <a href="' + url_for('bookmarks') + '">Click here to view your bookmarks.</a>','alert-success')
+			flash('Bookmark added successfully','alert-success')
 			## return the user to the folder they were in
 			return redirect(url_for(bookmark_function,path=bookmark_path))
 			

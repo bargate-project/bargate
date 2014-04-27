@@ -91,7 +91,7 @@ def login_required(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
 		if session.get('logged_in',False) is False:
-			flash('<strong>Oops!</strong> You must login first.','alert-danger')
+			flash('You must login first!','alert-danger')
 			## TODO take the next code from sysman - much improved over this.
 			args = url_encode(request.args)
 			return redirect(url_for('login', next=request.script_root + request.path + "?" + args))
@@ -108,7 +108,7 @@ def downtime_check(f):
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
 		if app.config['DISABLE_APP']:
-			flash('<strong>Service Temporarily Unavailable</strong><br/> Normal service will be restored as soon as possible.','alert-danger')
+			flash('Service Temporarily Unavailable - Normal service will be restored as soon as possible.','alert-warning')
 			bgnumber = randint(1,17)
 			return render_template('login.html', bgnumber=bgnumber)
 		return f(*args, **kwargs)

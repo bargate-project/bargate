@@ -105,7 +105,7 @@ def smbc_PermissionDenied(redirect_to=None):
 		kerberos.checkPassword(session['username'], bargate.core.get_user_password(), app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
 	except Exception as e:
 		bargate.core.session_logout()
-		flash('<strong>Error</strong> - Your password has changed. You must login again.','alert-danger')
+		flash('Your password has changed. You must login again.','alert-danger')
 		return redirect(url_for('login'))
 	
 	return output_error("Permission Denied","You do not have permission to perform the action.",redirect_to)

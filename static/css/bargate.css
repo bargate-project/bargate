@@ -219,6 +219,7 @@ td.dentry
 	text-overflow: ellipsis;
 }
 
+/* Table cell widths for multiple sizes (not tablesorter stuff */
 @media (max-width: 768px)
 {
 	td.dentry
