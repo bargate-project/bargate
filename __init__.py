@@ -48,8 +48,8 @@ KRB5_DOMAIN  = 'localhost.localdomain'
 SMB_WORKGROUP = 'MSHOME'
 
 ## Maximum file upload size
-# 64MB by default
-MAX_CONTENT_LENGTH = 64 * 1024 * 1024
+# 256MB by default
+MAX_CONTENT_LENGTH = 256 * 1024 * 1024
 
 ## File 'types' we don't allow people to upload
 BANNED_EXTENSIONS = set([

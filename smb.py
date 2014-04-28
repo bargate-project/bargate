@@ -19,13 +19,13 @@ from bargate import app
 import bargate.errors
 import string
 from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response
-#from werkzeug import secure_filename
 import os
 import smbc
 import sys
 import stat
 import pprint
 import urllib
+import re
 
 ## NOTE! pysmbc sucks for unicode. See:
 ## https://lists.fedorahosted.org/pipermail/system-config-printer-devel/2011-September/000108.html
@@ -62,6 +62,59 @@ SMB_LINK  = 9
 #00096 #define SMBC_LINK           9
 
 
+################################################################################
+
+def check_name(name):
+	"""This function checks for invalid characters in a folder or file name or similar
+	strings. It checks for a range of characters and invalid conditions as defined 
+	by Microsoft here: http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+	Raises an exception of ValueError if any failure condition is met by the string.
+	"""
+		
+	## File names MUST NOT end in a space or a period (full stop)
+	if name.endswith(' ') or name.endswith('.'):
+		raise ValueError('File and folder names must not end in a space or period (full stop) character')
+		
+	## Run the file/folder name check through the generic path checker
+	bargate.smb.check_path(name)
+	
+	## banned characters which CIFS servers reject!
+	invalidchars = re.compile(r'[<>/\\\":\|\?\*\x00]');
+	
+	## Check for the chars
+	if invalidchars.search(name):
+		raise ValueError('Invalid characters found. You cannot use the following characters in file or folder names: < > \ / : " ? *')
+		
+		
+################################################################################
+
+def check_path(path):
+	"""This function checks for invalid characters in an entire path. It checks to ensure
+	that paths don't contain strings which manipulate the path e.g up path or similar.
+	Raises an exception of ValueError if any failure condition is met by the string.
+	"""
+	
+	if path.startswith(".."):
+		raise ValueError('Invalid path. Paths cannot start with ".."')
+
+	if path.startswith("./"):
+		raise ValueError('Invalid path. Paths cannot start with "./"')
+
+	if path.startswith(".\\"):
+		raise ValueError('Invalid path. Paths cannot start with ".\"')
+
+	if '/../' in path:
+		raise ValueError('Invalid path. Paths cannot contain "/../"')
+
+	if '\\..\\' in path:
+		raise ValueError('Invalid path. Paths cannot contain "\..\"')
+
+	if '\\.\\' in path:
+		raise ValueError('Invalid path. Paths cannot contain "\.\"')
+
+	if '/./' in path:
+		raise ValueError('Invalid path. Paths cannot contain "/./"')
+	
 ################################################################################
 
 def wb_sid_to_name(sid):
@@ -142,32 +195,6 @@ def statToType(fstat):
 		return SMB_LINK
 	else:
 		return -1
-		
-################################################################################
-
-def check_path_security(path):
-	if path.startswith(".."):
-		return (True,bargate.errors.invalid_path())
-
-	if path.startswith("./"):
-		return (True,bargate.errors.invalid_path())
-
-	if path.startswith(".\\"):
-		return (True,bargate.errors.invalid_path())
-
-	if '/../' in path:
-		return (True,bargate.errors.invalid_path())
-
-	if '\\..\\' in path:
-		return (True,bargate.errors.invalid_path())
-
-	if '\\.\\' in path:
-		return (True,bargate.errors.invalid_path())
-
-	if '/./' in path:
-		return (True,bargate.errors.invalid_path())
-	
-	return (False,None)
 
 ################################################################################
 
@@ -188,25 +215,17 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 	############################################################################
 
 	if request.method == 'GET':
-
-		## Load the path
-		#path = request.args.get('path','')
-		
-		#flash("Path 1: " + path,'alert-info')
-
 		## pysmbc needs urllib quoted strings, but urllib can't handle unicode
 		## so convert to str via 'encode utf8' and then urllib quote
-		## it seems pysmbc can't handle unicode strings either anyway (need to confirm!)
+		## it seems pysmbc can't handle unicode strings either anyway
 		Spath = path.encode('utf8')
 		Qpath = urllib.quote(Spath)
-		
-		#flash("Spath: " + Spath.decode('utf8'),'alert-info')
-		#flash("Qpath: " + Qpath.decode('utf8'),'alert-info')
-		
-		## Check path security
-		(error,ret) = check_path_security(path)
-		if error:
-			return ret
+				
+		## Check the path is valid
+		try:
+			bargate.smb.check_path(path)
+		except ValueError as e:
+			return bargate.errors.output_error('Invalid path',str(e))
 
 		## Build the URI
 		# uri is not str, its unicode, so uri must not be given to pysmbc/urllib
@@ -214,14 +233,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		# Suri CAN be given to pysmbc as its a byte string or 'str' in python land
 		Suri = srv_path.encode('utf8') + Qpath
 		
-		#flash("Suri: " + Suri.decode('utf8'),'alert-info')
-
 		## Determine the action type
 		action = request.args.get('action','browse')
 
 		## Debug this in logs
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
-
 
 ################################################################################
 # DOWNLOAD FILE
@@ -645,6 +661,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		## Get the path out of the form
 		## and ignore the 'path' from the url
 		path = request.form['path']
+		
+		## Check the path is valid
+		try:
+			bargate.smb.check_path(path)
+		except ValueError as e:
+			return bargate.errors.output_error('Invalid path',str(e))
 
 		## pysmbc needs urllib quoted, but urllib can't handle unicode
 		## so convert to str via encode utf8 and then urllib quote
@@ -653,11 +675,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		Qpath = urllib.quote(Spath)
 
 		## Build the URI
-		## TODO quote the srv_path too?
 		uri = srv_path + path
 		Suri = srv_path.encode('utf8') + Qpath
-
-		## TODO shouldn't check_path_security be here, like in GET?
 
 		## Debug this for now
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -682,10 +701,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					upload_uri = uri + '/' + filename
 
 					## Check the new file name is valid
-					## Check the path is valid/acceptable
-					## TODO URGENT TODO URGENT 
-					## this is disabled for now because it breaks special filenames with odd chars
-					#bargate.core.checkValidPathName(filename)
+					try:
+						bargate.smb.check_name(filename)
+					except ValueError as e:
+						return bargate.errors.output_error('Invalid file name',str(e),error_redirect)
 
 					## Check to see if the file exists
 					try:
@@ -743,10 +762,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			filename = after
 
-			## Check the path is valid/acceptable
-			## TODO URGENT TODO URGENT 
-			## this is disabled for now because it breaks special filenames with odd chars
-			#bargate.core.checkValidPathName(request.form['newfilename'])
+			## Check the new file name is valid
+			try:
+				bargate.smb.check_name(request.form['newfilename'])
+			except ValueError as e:
+				return bargate.errors.output_error('Invalid file name',str(e))
 
 			## build new URI
 			newPath = request.form['newfilename'].encode('utf8')
@@ -812,7 +832,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			## Get the new filename
 			dest_filename = request.form['filename']
-			## encode it and quote it
+			
+			## Check the new file name is valid
+			try:
+				bargate.smb.check_name(request.form['filename'])
+			except ValueError as e:
+				return bargate.errors.output_error('Invalid file name',str(e),error_redirect)
+			
+			## encode the new filename and quote the new filename
 			dest = before_path + '/' + urllib.quote(dest_filename.encode('utf8'))
 
 			## Make sure the dest file doesn't exist
@@ -856,13 +883,17 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 ################################################################################
 
 		elif action == 'mkdir':
-
-			## Check the path is valid
-			#bargate.core.checkValidPathName(request.form['directory_name'])
-
 			## the place to redirect to on success or failure
 			redirect_path = redirect(url_for(func_name,path=path))
+			
+			## Check the path is valid
+			try:
+				bargate.smb.check_name(request.form['directory_name'])
+			except ValueError as e:
+				return bargate.errors.output_error('Invalid folder name',str(e),redirect_path)
 
+			## Take 'unicode' object and convert it into a byte string ('string' object)
+			## Then quote it ready for SMB usage
 			mkdirname = request.form['directory_name'].encode('utf8')
 			mkdirname = urllib.quote(mkdirname)
 			mkdir_uri = uri + '/' + mkdirname
@@ -872,7 +903,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,redirect_path)
 			else:
-				flash("The directory '" + request.form['directory_name'] + "' was created successfully.",'alert-success')
+				flash("The folder '" + request.form['directory_name'] + "' was created successfully.",'alert-success')
 				return redirect_path
 
 ################################################################################

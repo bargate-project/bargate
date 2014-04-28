@@ -54,20 +54,6 @@ def session_logout():
 
 ################################################################################
 
-def checkValidPathName(name):
-	"""A very strict path checking function. It checks the string passed to it
-	is a valid path - or not. If not it calls abort(400) - it throws a flask
-	exception
-	"""
-
-	## VERY strict path allowed regex
-	## a-z, A-Z, 0-9, _ . $ , [ ] ( )
-	if not re.match('^[ a-zA-Z0-9_\.\%\,\$\(\)\[\]]{1,255}$',name):
-		app.logger.error("checkValidPathName ABORT: " + name)
-		abort(400)
-
-################################################################################
-
 def debugStrType(obj,name):
 	if isinstance(obj, str):
 		app.logger.info(name + " regular string")
@@ -128,6 +114,18 @@ def before_request():
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 6):
 		return render_template('foad.html')
 
+	## Connect to redis
+	if app.config['REDIS_ENABLED']:
+		try:
+			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=0)
+			g.redis.get('foo')
+		except Exception as ex:
+			bargate.errors.fatal('Unable to connect to redis',str(ex))
+			
+	## Log user last access time
+	if 'username' in session:
+		set_user_data('last',str(time.time()))
+
 	## Check CSRF key is valid
 	if request.method == "POST":
 		## login handler shouldn't have to be CSRF protected
@@ -140,21 +138,9 @@ def before_request():
 				else:
 					app.logger.warning('CSRF protection alert: a non-logged in user failed to present a valid POST token')
 
-				### the user cannot have accidentally triggered this
-				### so just throw a 403.
-				abort(403)
-			
-	## Connect to redis
-	if app.config['REDIS_ENABLED']:
-		try:
-			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=0)
-			g.redis.get('foo')
-		except Exception as ex:
-			bargate.errors.fatal('Unable to connect to redis',str(ex))
-			
-	## Log user last access time
-	if 'username' in session:
-		set_user_data('last',str(time.time()))
+				### the user should not have accidentally triggered this
+				### so just throw a 400
+				abort(400)
 
 ################################################################################
 
