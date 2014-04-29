@@ -1,11 +1,42 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div class="panel panel-default">
-	<div class="panel-heading">
-		<h3 class="panel-title">Changelog</h3>
-	</div>
-	<div class="panel-body">
+
+<h3><i class="fa fa-fw fa-list-alt"></i> Bargate Changelog<h3>
+<hr/>
+
+		<h3>0.12</h3>
+		<p>Released 2014-04-29</p>
+		<ul class="changelog">
+			<li><i class="fa fa-fw fa-bolt"></i> 
+				Bargate now supports drag and drop upload within any directory as requested in <a href="https://github.com/divad/bargate/issues/9">Issue 9</a>
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Bargate now shows progress during uploads, multi-file upload at once, upload errors on page, chunked and resumable file uploads.
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Bargate now features a generic account settings page, with several new user settings including Theme, Theme Navbar, Hidden Files, on file click and file upload overwriting.
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Show/hide hidden files moved into 'Account Settings'
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Newly redesigned 'other drives' page which has a column view and removes the unnecessary tables
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Page titles are now slightly larger
+			</li>
+			<li><i class="fa fa-fw fa-wrench"></i>
+				Pop up dialog boxes now all feature the same order for buttons (cancel/do-action)
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Added more themes, including dark background themes
+			</li>
+			<li><i class="fa fa-fw fa-bolt"></i>
+				Changed navbar buttons to the same colour to better work with multiple themes
+			</li>
+		</ul>	
+
 		<h3>0.11.7</h3>
 		<p>Released 2014-04-28</p>
 		<ul class="changelog">
@@ -278,7 +309,5 @@
 		<ul class="changelog">
 			<li><i class="fa fa-fw fa-wrench"></i>  Changed 'cifsbridge' to 'bargate' in python code</li>
 		</ul>
-	</div>
-</div>
 
 {% endblock %}

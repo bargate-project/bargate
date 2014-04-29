@@ -124,7 +124,7 @@ def before_request():
 			
 	## Log user last access time
 	if 'username' in session:
-		set_user_data('last',str(time.time()))
+		bargate.settings.set_user_data('last',str(time.time()))
 
 	## Check CSRF key is valid
 	if request.method == "POST":
@@ -141,44 +141,6 @@ def before_request():
 				### the user should not have accidentally triggered this
 				### so just throw a 400
 				abort(400)
-
-################################################################################
-
-def get_user_theme():
-	if 'username' in session:
-		try:
-			theme = g.redis.get('user:' + session['username'] + ':theme')
-
-			if theme != None:
-				return theme
-		except Exception as ex:
-			## Can't return an error, this function is called from jinja.
-			app.logger.error('Unable to speak to redis: ' + str(ex))
-			return app.config['THEME_DEFAULT']
-
-	## If we didn't return a new theme, return the default from the config file
-	return app.config['THEME_DEFAULT']
-
-################################################################################
-
-def show_hidden_files():
-	if 'username' in session:
-		try:
-			hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
-
-			if hidden_files != None:
-				if hidden_files == 'show':
-					return True
-
-		except Exception as ex:
-			app.logger.error('Unable to speak to redis: ' + str(ex))
-
-	return False
-
-################################################################################
-
-def set_user_data(key,value):
-	g.redis.set('user:' + session['username'] + ':' + key,value)
 
 ################################################################################
 

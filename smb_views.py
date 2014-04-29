@@ -130,12 +130,12 @@ def lampx3(path):
 def lampx4(path):
 	return bargate.smb.connection(u"smb://srv00524.soton.ac.uk/","lampx4","shared","LAMP-X server 4",path)
 
-@app.route('/lampx5', methods=['GET','POST'], defaults={'path': ''})
-@app.route('/lampx5/<path:path>/', methods=['GET','POST'])
+@app.route('/staticweb', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/staticweb/<path:path>/', methods=['GET','POST'])
 @bargate.core.login_required
 @bargate.core.downtime_check
-def lampx5(path):
-	return bargate.smb.connection(u"smb://srv00525.soton.ac.uk/","lampx5","shared","LAMP-X server 5",path)
+def staticweb(path):
+	return bargate.smb.connection(u"smb://srv00525.soton.ac.uk/","staticweb","shared","Static Web Hosting Service",path)
 
 @app.route('/kdrive', methods=['GET','POST'], defaults={'path': ''})
 @app.route('/kdrive/<path:path>/', methods=['GET','POST'])

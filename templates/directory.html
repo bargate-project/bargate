@@ -6,7 +6,7 @@
 
 {%- if func_name == 'webfiles' and atroot == True %}
 <div class="alert alert-info">
-	<strong>Heads up!</strong> Files you place here appear on your personal website: <a target="_blank" href="http://www.southampton.ac.uk/~{{ session.username }}">http://www.southampton.ac.uk/~{{ session.username }}</a>
+	<strong>Heads up!</strong> Files you place here appear on your personal website: <a target="_blank" href="http://www.personal.southampton.ac.uk/{{ session.username }}">http://www.personal.southampton.ac.uk/{{ session.username }}</a>
 </div>
 {% endif %}
 
@@ -63,8 +63,13 @@
 		{%- for entry in entries -%}
 
 		{%- if entry.type == 'file' -%}
-		<tr class="rowclick-tr" data-icon="{{entry.icon}}" {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}" data-path="{{entry.path}}">
-		{%- set rclick = 'mclick-td' -%}
+			{%- if on_file_click == 'ask' %}
+				<tr class="rowclick-tr" data-icon="{{entry.icon}}" {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}" data-path="{{entry.path}}">
+				{%- set rclick = 'mclick-td' -%}
+			{%- else %}
+				<tr class="rowclick-tr" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
+				{%- set rclick = 'rowclick-td' -%}
+			{%- endif %}
 		{%- else -%}
 		<tr class="rowclick-tr" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
 		{%- set rclick = 'rowclick-td' -%}

@@ -138,16 +138,18 @@ app.logger.info('bargate started up')
 # load core functions
 import bargate.core
 
-# load anti csrf function reference into template engine
-app.jinja_env.globals['csrf_token'] = core.generate_csrf_token 
-app.jinja_env.globals['get_user_theme'] = core.get_user_theme
-
 # import modules
 import bargate.smb
 import bargate.errors
 import bargate.views
 import bargate.smb_views
 import bargate.mime
+import bargate.settings
+
+# load anti csrf function reference into template engine
+app.jinja_env.globals['csrf_token']     = core.generate_csrf_token 
+app.jinja_env.globals['get_user_theme'] = settings.get_user_theme
+app.jinja_env.globals['get_user_navbar'] = settings.get_user_navbar
 
 # load jinja functions into scope
 app.jinja_env.globals.update(poperr_get=bargate.core.poperr_get)

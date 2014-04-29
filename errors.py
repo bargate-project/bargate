@@ -249,6 +249,8 @@ def error400(error):
 	else:
 		debug = None
 		
+	app.logger.info('abort400 was called! ' + str(debug))
+		
 	return bargate.core.render_page('error.html',title="Bad Request",message='Your request was invalid, please try again.',debug=debug), 400
 
 @app.errorhandler(403)
@@ -260,6 +262,8 @@ def error403(error):
 		debug = traceback.format_exc()
 	else:
 		debug = None
+		
+	app.logger.info('abort403 was called!')
 	
 	return bargate.core.render_page('error.html',title="Permission Denied",message='You do not have permission to access this resource.',debug=debug), 403
 

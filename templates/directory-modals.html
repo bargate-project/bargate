@@ -26,7 +26,7 @@
 </div>
 
 {#- modal popup for when upload file is clicked #}
-<div class="modal" id="upload-file">
+<div class="modal" id="upload-file-legacy">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
@@ -55,6 +55,85 @@
 		</div>
 	</div>
 </div>
+
+<div class="modal" id="upload-file">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
+				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="action" value="upload" type="hidden"/>
+				<input name="path" type="hidden" value="{{ pwd }}"/>
+				
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">×</button>
+					<h4 class="modal-title">Upload Files</h4>
+				</div>
+				<div class="modal-body">
+					<p>
+					Choose files to upload. You can select more than one file at a time. You can also drag and drop files anywhere on this page to start uploading. The maximum file size is 256MB.
+					</p>
+					
+					<div id="upload-progress" class="progress progress-striped hidden active">
+						<div class="progress-bar progress-bar-info">
+						</div>
+					</div>
+					<div id="upload-files" class="files"></div>    
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-fw fa-times-circle"></i> Close</button>
+					<span class="btn btn-success fileinput-button">
+						<i class="fa fa-fw fa-plus"></i>
+						<span>Select files</span>
+						<input id="fileupload" type="file" name="files[]" multiple>
+					</span>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+$(function ()
+{                
+    $('#fileupload').fileupload(
+    {
+        url: '{{url_home}}',
+        dataType: 'json',
+        formData: [{name: '_csrf_token', value: '{{ csrf_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: '{{pwd}}'}],
+        done: function (e, data)
+        {
+            $.each(data.result.files, function (index, file)
+            {
+                if (file.error)
+                {
+                	$('<div class="alert alert-danger fade in"> <a data-dismiss="alert" class="close" href="#">×</a> ' + file.name + ' was not uploaded: ' + file.error + ' </div>').appendTo('#upload-files');
+        		}
+        		else
+        		{
+                	$('<div class="alert alert-success fade in"> <a data-dismiss="alert" class="close" href="#">×</a> ' + file.name + ' was uploaded succesfully </div>').appendTo('#upload-files');
+        		}
+        		
+        		$('#upload-progress').addClass('hidden');
+            });
+        },
+        progressall: function (e, data)
+        {
+            var progress = parseInt(data.loaded / data.total * 100, 10);
+            $('#upload-progress .progress-bar').css
+            (
+                'width',
+                progress + '%'
+            );
+        },
+        start: function (e)
+        {
+        	$('#upload-file').modal()
+            $('#upload-progress').removeClass('hidden');
+        },
+    }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+</script>
 
 {#- modal popup for when create directory is clicked #}
 <div class="modal" id="create-directory">
@@ -103,8 +182,8 @@
 				</div>
 				
 				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
 					<input type="submit" id="deletebtn" class="btn btn-primary" onclick="$('#deletebtn').button('loading')" data-loading-text="Deleting..." value="Yes"/>
- 					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
 				</div>
 			</form>
 		</div>

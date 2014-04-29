@@ -77,7 +77,7 @@ def login():
 			next = request.form.get('next',default=None)
 			
 			## Record the last login time
-			bargate.core.set_user_data('login',str(time.time()))
+			bargate.settings.set_user_data('login',str(time.time()))
 
 			if next == None:
 				return redirect(url_for('personal'))
@@ -91,7 +91,7 @@ def login():
 @bargate.core.login_required
 def logout():
 	## Record 
-	bargate.core.set_user_data('logout',str(time.time()))
+	bargate.settings.set_user_data('logout',str(time.time()))
 	bargate.core.session_logout()
 	flash('You were logged out successfully','alert-success')
 	return redirect(url_for('login'))
@@ -122,7 +122,7 @@ def mime():
 	return bargate.core.render_page("mime.html",types=mimetypes.types_map,active="help")
 
 ################################################################################
-#### BOOKMARKS (NOT YET IN USE)
+#### BOOKMARKS
 
 @app.route('/bookmarks', methods=['GET','POST'])
 @bargate.core.login_required
@@ -208,36 +208,3 @@ def bookmarks():
 
 			flash('Bookmark not found!','alert-danger')
 			return redirect(url_for('bookmarks'))					
-				
-################################################################################
-#### THEME CHANGE
-
-@app.route('/theme', methods=['GET','POST'])
-@bargate.core.login_required
-@bargate.core.downtime_check
-def theme():
-	## define the themes!
-	themes = []
-	themes.append({'name':'Lumen','value':'lumen'})
-	themes.append({'name':'Journal','value':'journal'})
-	themes.append({'name':'Flatly','value':'flatly'})
-	themes.append({'name':'Readable','value':'readable'})
-	themes.append({'name':'Simplex','value':'simplex'})
-	themes.append({'name':'Spacelab','value':'spacelab'})
-	themes.append({'name':'United','value':'united'})
-	themes.append({'name':'Cerulean','value':'cerulean'})
-
-	if request.method == 'POST':
-		new_theme = request.form['theme']
-		for theme in themes:
-			if new_theme == theme['value']:
-				bargate.core.set_user_data('theme',new_theme)
-				flash('Theme preference changed','alert-success')
-				return redirect(url_for('personal'))
-				
-		flash('Invalid theme choice','alert-danger')
-		return bargate.core.render_page('theme.html', active='user', themes=themes)
-				
-	elif request.method == 'GET':
-		return bargate.core.render_page('theme.html', active='user', themes=themes)
-

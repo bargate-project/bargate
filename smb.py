@@ -18,7 +18,7 @@
 from bargate import app
 import bargate.errors
 import string
-from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response
+from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify
 import os
 import smbc
 import sys
@@ -410,26 +410,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 ################################################################################
 		
 		elif action == 'browse':
-			## Load view options from GET variables (if present)
-			hfiles = request.args.get('hfiles','')
-
-			## Change hidden files mode
-			if hfiles == 'show':
-			
-				# If files are currently hidden
-				if not bargate.core.show_hidden_files():
-					bargate.core.set_user_data('hidden_files','show')
-					flash("Files marked as 'hidden' are now being shown.",'alert-info')
-					return redirect(url_for(func_name,path=path))
-
-			elif hfiles == 'hide':
-			
-				# If files are currently being shown
-				if bargate.core.show_hidden_files():
-					bargate.core.set_user_data('hidden_files','hide')
-					flash("Files marked as 'hidden' are now not being shown.",'alert-info')
-					return redirect(url_for(func_name,path=path))
-
 			## Try getting directory contents
 			try:
 				dentries = ctx.opendir (Suri).getdents ()
@@ -467,8 +447,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				if entry['name'] == '..':
 					continue
 
-				#bargate.core.debugStrType(entry['name'],"entry name 1")
-
 				## getdents returns REGULAR strings, not unicode!...maybe. Who the fuck knows.
 				## Decode into a unicode string for use in templates etc.
 				entry['Sname'] = entry['name']
@@ -485,7 +463,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['path'] = path + '/' + entry['name']
 
 				## Hide hidden files if the user has selected to do so (the default)
-				if not bargate.core.show_hidden_files():
+				if not bargate.settings.show_hidden_files():
 					## check first character for . (unix hidden)
 					if entry['name'][0] == ".":
 						continue
@@ -495,6 +473,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					if entry['name'] == '$RECYCLE.BIN': continue # recycle bin (vista/7)
 					if entry['name'] == 'RECYCLER': continue     # recycle bin (xp)
 					if entry['name'] == 'Thumbs.db': continue    # windows pic/video thumbnails
+					if entry['name'] == 'public_html': continue  # old public_html directories
 					if entry['name'].startswith('~$'): continue  # temp files (office)
 
 				## FILE ########################################################
@@ -529,7 +508,16 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					if bargate.mime.view_in_browser(mtype):
 						entry['bdownload'] = url_for(func_name,path=entry['path'],action='download',inbrowser='True')
 						entry['default_open'] = entry['bdownload']
-
+						
+					## What to do based on 'on_file_click' setting
+					on_file_click = bargate.settings.get_on_file_click()
+					if on_file_click == 'ask':
+						entry['on_file_click'] = ''
+					elif on_file_click == 'default':
+						entry['on_file_click'] = entry['default_open']
+					elif on_file_click == 'download':
+						entry['on_file_click'] = entry['download']
+					
 					## Append the file to the files list				
 					files.append(entry)
 
@@ -602,20 +590,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
 					b4 = b4 + crumb + '/'
 
-			## Build URL for show/hide hidden files
-			if bargate.core.show_hidden_files():
-				hidden_new_type = 'hide'
-				switch_hidden_string = 'Hide Hidden Files'
-				
-			else:
-				hidden_new_type = 'show'
-				switch_hidden_string = 'Show Hidden Files'
-
-			if len(path) > 0:
-				url_switch_hidden = url_for(func_name,path=path,hfiles=hidden_new_type)
-			else:
-				url_switch_hidden = url_for(func_name,hfiles=hidden_new_type)
-
 			## Are we at the root?
 			if len(path) == 0:
 				atroot = True
@@ -636,13 +610,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				url_parent_dir=url_parent_dir,
 				url_refresh=url_refresh,
 				url_bookmark=url_bookmark,
-				switch_hidden_string=switch_hidden_string,
-				url_switch_hidden=url_switch_hidden,
-				hidden_icon=hidden_new_type,
 				browse_mode=True,
 				atroot = atroot,
 				func_name = func_name,
 				root_display_name = display_name,
+				on_file_click=bargate.settings.get_on_file_click(),
 			)
 
 		else:
@@ -650,7 +622,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 	############################################################################
 	## HTTP POST ACTIONS #######################################################
-	# actions: unlink, mkdir, upload, rename, shidden
+	# actions: unlink, mkdir, upload, rename
 	############################################################################
 
 	if request.method == 'POST':
@@ -685,7 +657,73 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 # UPLOAD FILE
 ################################################################################
 
-		if action == 'upload':
+		if action == 'jsonupload':
+		
+			ret = []
+			
+			uploaded_files = request.files.getlist("files[]")
+			
+			for file in uploaded_files:
+			
+				if bargate.core.banned_file(file.filename):
+					ret.append({'name' : file.filename, 'error': 'Filetype not allowed'})
+					continue
+					
+				## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
+				filename = bargate.core.secure_filename(file.filename)
+				filename = filename.encode('utf8')
+				filename = urllib.quote(filename)
+				upload_uri = uri + '/' + filename
+
+				## Check the new file name is valid
+				try:
+					bargate.smb.check_name(filename)
+				except ValueError as e:
+					ret.append({'name' : file.filename, 'error': 'Filename not allowed'})
+					continue
+					
+				## Check to see if the file exists
+				try:
+					fstat = ctx.stat(upload_uri)
+				except smbc.NoEntryError:
+					## It doesn't exist so lets continue to upload
+					pass
+				except Exception as ex:
+					ret.append({'name' : file.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
+					continue
+					
+				else:
+					## If the file did exist, check to see if we should overwrite
+					if fstat:
+						if not bargate.settings.upload_overwrite():
+							ret.append({'name' : file.filename, 'error': 'File already exists. You can enable overwriting files in Account Settings.'})
+							continue
+
+						## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
+						itemType = bargate.smb.getEntryType(ctx,upload_uri)
+						if itemType == bargate.smb.SMB_DIR:
+							ret.append({'name' : file.filename, 'error': "That name already exists and is a directory"})
+							continue
+			
+				## Actual upload
+				try:
+					wfile = ctx.open(upload_uri,os.O_CREAT | os.O_WRONLY)
+					data = file.read()
+					wfile.write(data)
+					wfile.close()
+
+					ret.append({'name' : file.filename})
+
+				except Exception as ex:
+					ret.append({'name' : file.filename, 'error': 'Could not upload file: ' + str(ex)})
+					continue
+					
+			for x in ret:
+				app.logger.info('json stuff: ' + str(x))
+
+			return jsonify({'files': ret})
+
+		elif action == 'upload':
 
 			error_redirect = redirect(url_for(func_name,path=path))
 

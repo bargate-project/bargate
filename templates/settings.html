@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<form action="{{ url_for('settings') }}" method="POST">
+
+
+	<span class="pull-right">
+		<button type="submit" class="btn btn-primary"><i class="fa fa-fw fa-save"></i> Save</button>
+	</span>
+	<h2><i class="fa fa-fw fa-cogs"></i> Settings</h2>
+	<hr/>
+
+	<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+	<div class="row">
+		<div class="col-sm-8">
+			<div class="panel panel-default" style="min-height: 500px">
+				<div class="panel-heading">
+					<h3 class="panel-title">Folder Options</h3>
+				</div>
+				<div class="panel-body">
+    				<legend>Hidden Files</legend>
+    					<div class="checkbox">
+					  <label>
+						<input id="hidden_files" name="hidden_files" type="checkbox" value="show" {%if hidden_files and hidden_files == 'show' %} checked="checked"{%endif%}>
+						Show hidden files and folders
+					  </label>
+					</div>
+					
+					<br/>
+    				<legend>Overwrite on upload</legend>
+					<div class="checkbox">
+					  <label>
+						<input id="upload_overwrite" name="upload_overwrite" type="checkbox" value="yes" {%if upload_overwrite and upload_overwrite == 'yes' %} checked="checked"{%endif%}>
+						Overwrite an existing file when uploading if the name matches
+					  </label>
+					</div>
+			
+					<br/>
+    				<legend>Click to Download</legend>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios1" value="ask" {%if on_file_click and on_file_click == 'ask' %} checked="checked"{%endif%}>
+						Ask before downloading a file
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios2" value="download" {%if on_file_click and on_file_click == 'download' %} checked="checked"{%endif%}>
+						Download files without prompting
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios2" value="default" {%if on_file_click and on_file_click == 'default' %} checked="checked"{%endif%}>
+						View files in browser or download without prompting
+					  </label>
+					</div>
+				</div>
+			</div>		
+		</div>
+		<div class="col-sm-4">
+			<div class="panel panel-default" style="min-height: 500px">
+				<div class="panel-heading">
+					<h3 class="panel-title">Theme
+				</div>
+				<div class="panel-body">
+    				<legend>Theme Pack</legend>
+					{% for theme in themes %}
+					<div class="radio">
+						<label>
+						<input type="radio" name="theme" id="theme_{{theme.value}}" value="{{theme.value}}" {% if get_user_theme() == theme.value%}checked{%endif%}>
+						{{theme.name}}
+						</label>
+					</div>
+					{% endfor %}
+					
+					<br/>
+    				<legend>Inverted Menu Bar</legend>
+					<div class="checkbox">
+					  <label>
+						<input name="navbar_alt" type="checkbox" value="inverse" {%if get_user_navbar() == 'inverse' %} checked="checked" {%endif%}>
+						Use alternative menu bar colour
+					  </label>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+{% endblock %}

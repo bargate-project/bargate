@@ -5,13 +5,13 @@
 		<title>Filestore Web Access</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		{%- include 'header-links.html' %}
+		{% include 'header-links.html' %}
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bargate.css') }}">
-		{%- include 'javascript.html' %}
+		{% include 'javascript.html' %}
 		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
-		<div class="navbar navbar-default navbar-fixed-top" role="navigation">	
+		<div class="navbar navbar-{{get_user_navbar()}} navbar-fixed-top" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
@@ -53,7 +53,7 @@
 						<li class="dropdown{%if active == 'help'%} active{%endif%}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php"><i class="fa fa-fw fa-home"></i> Help</a></li>
+								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php"><i class="fa fa-fw fa-external-link"></i> Filestore Help</a></li>
 								<li><a href="https://github.com/divad/bargate/issues"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
 								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-question-circle fa-fw"></i> Give Feedback</a></li>
 								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-download"></i> About</a></li>
@@ -63,38 +63,26 @@
 					
 					<ul class="nav navbar-nav navbar-right">
 						<li class="dropdown{%if active == 'user'%} active{%endif%}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ session.username }} <b class="caret"></b></a>
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-fw fa-user"></i> {{ session.username }} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-bookmark fa-fw"></i> Bookmarks</a></li>
-								<li><a href="{{ url_for('theme') }}"><i class="fa fa-tint fa-fw"></i> Change Theme</a></li>
+								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Account Settings</a></li>
+								<li class="divider"></li>
 								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
 							</ul>
 						</li>
 					</ul>
 					
 					<div class="pull-right action-btns">
-						<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i class="fa fa-fw fa-upload"></i>
+						<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-lg fa-upload"></i>
 						</a>
-						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i class="fa fa-fw fa-folder-open"></i>
+						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-lg fa-folder-open"></i>
 						</a>
-						<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-danger hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Bookmark this folder" {% if not browse_mode %}disabled="disabled"{%endif%} {% if atroot %}disabled="disabled"{%endif%}>
-							<i class="fa fa-fw fa-bookmark"></i>
+						<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Bookmark this folder" {% if not browse_mode %}disabled="disabled"{%endif%} {% if atroot %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-lg fa-bookmark"></i>
 						</a>
-						{%- if url_switch_hidden %}
-						<a class="btn navbar-btn btn-warning btn-border-white hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="{{switch_hidden_string}}" href="{{url_switch_hidden}}">
-							{%- if hidden_icon == 'show' %}
-							<i class="fa fa-fw fa-eye"></i>
-							{%- else %}
-							<i class="fa fa-fw fa-eye-slash"></i>
-							{% endif %}
-						</a>
-						{%- else %}
-						<a class="btn btn-warning hidden-xs" disabled="disabled" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Show/hide hidden files" href="#">
-							<i class="fa fa-fw fa-eye"></i>
-						</a>
-						{%- endif %}
 					</div>
 				</div>
 				{%- endif %}
@@ -130,32 +118,18 @@
 		</div>
 		
 		{%- if browse_mode %}
-		<div class="navbar navbar-default navbar-fixed-bottom visible-xs" role="navigation">	
+		<div class="navbar navbar-{{get_user_navbar()}} navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container">
 				<div class="action-btns text-center">
-					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-success btn">
+					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">
 						<i class="fa fa-fw fa-upload"></i>
 					</a>
-					<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-info">
+					<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default">
 						<i class="fa fa-fw fa-folder-open"></i>
 					</a>
-					<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-danger" {% if atroot %}disabled="disabled"{%endif%}>
+					<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-default" {% if atroot %}disabled="disabled"{%endif%}>
 						<i class="fa fa-fw fa-bookmark"></i>
 					</a>
-		
-					{%- if url_switch_hidden %}
-					<a class="btn navbar-btn btn-warning" href="{{url_switch_hidden}}">
-						{%- if hidden_icon == 'show' %}
-						<i class="fa fa-eye"></i>
-						{%- else %}
-						<i class="fa fa-eye-slash"></i>
-						{% endif %}
-					</a>
-					{%- else %}
-					<a class="btn btn-warning" disabled="disabled" href="#">
-						<i class="fa fa-fw fa-eye"></i>
-					</a>
-					{%- endif %}
 				</div>
 			</div>
 		</div>

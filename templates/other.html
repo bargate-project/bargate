@@ -1,89 +1,70 @@
 {% extends "layout.html" %}
 {% block body %}
 
-		<h3><i class="fa fa-share-square-o"></i> Other Drives</h3>
-		<table class="table table-striped table-bordered">
-			<tbody class="rowclick-table">
-				<tr class="rowclick-tr" data-url="{{ url_for('medis') }}">
-					<td class="rowclick-td">MEDIS Shared</td>
-					<td class="rowclick-td">Medicine M Drive</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('medis') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
+<h2><i class="fa fa-share-square-o"></i> Other Drives</h2>
+<br/>
 
-				<tr class="rowclick-tr" data-url="{{ url_for('medis_personal') }}">
-					<td class="rowclick-td">MEDIS Users</td>
-					<td class="rowclick-td">Medicine Personal Files</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('medis_personal') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-
-				<tr class="rowclick-tr" data-url="{{ url_for('lamp1') }}">
-					<td class="rowclick-td">LAMP1</td>
-					<td class="rowclick-td">Legacy LAMP web hosting - RHEL5</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lamp1') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lamp2') }}">
-					<td class="rowclick-td">LAMP2</td>
-					<td class="rowclick-td">Legacy LAMP web hosting - RHEL5 with MSSQL</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lamp2') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lamp3') }}">
-					<td class="rowclick-td">LAMP3</td>
-					<td class="rowclick-td">Legacy LAMP web hosting - RHEL6</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lamp3') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lampx1') }}">
-					<td class="rowclick-td">LAMP-X Server 1</td>
-					<td class="rowclick-td">LAMP web hosting server 1</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lampx1') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lampx2') }}">
-					<td class="rowclick-td">LAMP-X Server 2</td>
-					<td class="rowclick-td">LAMP web hosting server 2</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lampx2') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lampx3') }}">
-					<td class="rowclick-td">LAMP-X Server 3</td>
-					<td class="rowclick-td">LAMP web hosting server 3</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lampx3') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lampx4') }}">
-					<td class="rowclick-td">LAMP-X Server 4</td>
-					<td class="rowclick-td">LAMP web hosting server 4</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lampx4') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('lampx5') }}">
-					<td class="rowclick-td">LAMP-X Server 5</td>
-					<td class="rowclick-td">LAMP web hosting server 5</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('lampx5') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-				<tr class="rowclick-tr" data-url="{{ url_for('kdrive') }}">
-					<td class="rowclick-td">K Drive</td>
-					<td class="rowclick-td">Legacy/obsolete shared filestore for staff</td>
-					<td class="rowclick-td">
-						<a href="{{ url_for('kdrive') }}"><button type="submit" class="btn btn-info">Open</button></a>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+<div class="row">
+	<div class="col-sm-4">
+		<div class="list-group">
+			<a href="{{ url_for('medis_personal') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-user-md"></i> MEDIS Personal</h4>
+				<p class="list-group-item-text">MEDIS users personal file store</p>
+			</a>
+			<a href="{{ url_for('medis') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-hospital-o"></i>  MEDIS</h4>
+				<p class="list-group-item-text">MEDIS shared drive ('M Drive')</p>
+			</a>
+			<a href="{{ url_for('kdrive') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-lock"></i> Legacy K Drive</h4>
+				<p class="list-group-item-text">Legacy 'K' Drive Private Drive</p>
+			</a>
+			<a href="{{ url_for('filestore') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-exclamation-triangle"></i> Filestore Root</h4>
+				<p class="list-group-item-text">Advanced view - use with care</p>
+			</a>
+		</div>
+	</div>
+	<div class="col-sm-4">
+		<div class="list-group">
+			<a href="{{ url_for('lampx1') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP-X Server 1</h4>
+				<p class="list-group-item-text">LAMP web hosting server 1</p>
+			</a>
+			<a href="{{ url_for('lampx2') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP-X Server 2</h4>
+				<p class="list-group-item-text">LAMP web hosting server 2</p>
+			</a>
+			<a href="{{ url_for('lampx3') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP-X Server 3</h4>
+				<p class="list-group-item-text">LAMP web hosting server 3</p>
+			</a>
+			<a href="{{ url_for('lampx4') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP-X Server 4</h4>
+				<p class="list-group-item-text">LAMP web hosting server 3</p>
+			</a>
+		</div>
+	</div>
+	<div class="col-sm-4">
+		<div class="list-group">
+			<a href="{{ url_for('staticweb') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-code"></i> Static Web Hosting </h4>
+				<p class="list-group-item-text">Static web hosting service</p>
+			</a>
+			<a href="{{ url_for('lamp1') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP 1</h4>
+				<p class="list-group-item-text">Legacy LAMP web hosting server (RHEL5)</p>
+			</a>
+			<a href="{{ url_for('lamp2') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP 2</h4>
+				<p class="list-group-item-text">Legacy corporate LAMP web hosting server</p>
+			</a>
+			<a href="{{ url_for('lamp3') }}" class="list-group-item">
+				<h4 class="list-group-item-heading"><i class="fa fa-fw fa-linux"></i> LAMP 3</h4>
+				<p class="list-group-item-text">Legacy LAMP web hosting server (RHEL6)</p>
+			</a>
+		</div>
+	</div>
+</div>
 
 {% endblock %}
