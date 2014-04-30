@@ -116,6 +116,15 @@ $(function ()
         		$('#upload-progress').addClass('hidden');
             });
         },
+		fail: function (e, data)
+        {
+			// data.errorThrown
+			// data.textStatus;
+			// data.jqXHR;
+
+			$('<div class="alert alert-danger fade in"> <a data-dismiss="alert" class="close" href="#">×</a> Error! The server said: ' + data.errorThrown + ' </div>').appendTo('#upload-files');
+			$('#upload-progress').addClass('hidden');
+        },
         progressall: function (e, data)
         {
             var progress = parseInt(data.loaded / data.total * 100, 10);
