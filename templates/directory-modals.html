@@ -56,6 +56,18 @@
 	</div>
 </div>
 
+<div class="modal" id="upload-drag-over">
+	<div class="modal-dialog">
+		<div class="modal-content" style="background: rgba(255, 255, 255, 0.8);">
+			<div class="modal-body text-center">
+				<h1><i class="fa fa-fw fa-5x fa-cloud-download"></i></h1>
+				<h2>Drag and drop your files here to upload</h2>
+				<p>You can also drag and drop your files anywhere on the page</p>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="modal" id="upload-file">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -93,6 +105,7 @@
 </div>
 
 <script type="text/javascript">
+var dragTimer = undefined;
 $(function ()
 {                
     $('#fileupload').fileupload(
@@ -110,7 +123,7 @@ $(function ()
         		}
         		else
         		{
-                	$('<div class="alert alert-success fade in"> <a data-dismiss="alert" class="close" href="#">×</a> ' + file.name + ' was uploaded succesfully </div>').appendTo('#upload-files');
+                	$('<div class="alert alert-success fade in"> <a data-dismiss="alert" class="close" href="#">×</a> ' + file.name + ' was uploaded successfully </div>').appendTo('#upload-files');
         		}
         		
         		$('#upload-progress').addClass('hidden');
@@ -118,10 +131,6 @@ $(function ()
         },
 		fail: function (e, data)
         {
-			// data.errorThrown
-			// data.textStatus;
-			// data.jqXHR;
-
 			$('<div class="alert alert-danger fade in"> <a data-dismiss="alert" class="close" href="#">×</a> Error! The server said: ' + data.errorThrown + ' </div>').appendTo('#upload-files');
 			$('#upload-progress').addClass('hidden');
         },
@@ -136,11 +145,24 @@ $(function ()
         },
         start: function (e)
         {
-        	$('#upload-file').modal()
+			$('#upload-drag-over').modal('hide');
+            $('#upload-file').modal()
             $('#upload-progress').removeClass('hidden');
         },
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+
+$('body').dragster(
+{
+    enter: function ()
+	{
+		$('#upload-drag-over').modal()
+    },
+    leave: function ()
+	{
+		$('#upload-drag-over').modal('hide');
+    }
 });
 </script>
 
