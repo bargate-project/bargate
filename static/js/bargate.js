@@ -37,6 +37,19 @@ $(document).ready(function($)
 		$('#file-click-download').attr('href',parent.data('download'));
 		$('#file-click-props').attr('href',parent.data('props'));
 		
+		if (parent.attr('data-imgpreview'))
+		{
+			$('#file-click-preview').attr('src',parent.data('imgpreview'));
+			$('#file-click-preview').removeClass('hidden');
+			$('#file-click-icon').addClass('hidden');
+		}
+		else
+		{
+			$('#file-click-preview').attr('src','');
+			$('#file-click-view').addClass('hidden');
+			$('#file-click-icon').removeClass('hidden');
+		}
+		
 		if (parent.attr('data-view'))
 		{
 			$('#file-click-view').attr('href',parent.data('view'));

@@ -17,15 +17,13 @@
 
 from bargate import app
 import bargate.errors
-import string
+import string, os, smbc, sys, stat, pprint, urllib, re
 from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify
-import os
-import smbc
-import sys
-import stat
-import pprint
-import urllib
-import re
+
+### Python imaging stuff
+from PIL import Image
+import glob
+import StringIO
 
 ## NOTE! pysmbc sucks for unicode. See:
 ## https://lists.fedorahosted.org/pipermail/system-config-printer-devel/2011-September/000108.html
@@ -302,9 +300,66 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				return bargate.errors.smbc_handler(ex,Suri,error_redirect)
 
 ################################################################################
-# FILE PROPERTIES / VIEW FILE
+# IMAGE PREVIEW
 ################################################################################
 		
+		elif action == 'preview':
+			try:
+				fstat = ctx.stat(Suri)
+			except Exception as ex:
+				abort(400)
+
+			stat_type = statToType(fstat)
+			if not stat_type == SMB_FILE:
+				abort(400)
+				
+			## Pull the filename out of the path
+			(before,sep,after) = path.rpartition('/')
+			if len(sep) > 0:
+				filename = after
+
+				## Build a breadcrumbs trail ##
+				crumbs = []
+				parts = before.split('/')
+				b4 = ''
+
+				## Build up a list of dicts, each dict representing a crumb
+				for crumb in parts:
+					if len(crumb) > 0:
+						crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+						b4 = b4 + crumb + '/'
+
+			else:
+				filename = path
+				crumbs = []
+				
+			## guess a mimetype
+			(ftype,mtype) = bargate.mime.filename_to_mimetype(filename)
+			
+			if fstat[6] > 10485760:
+				abort(403)
+
+			if not mtype.startswith('image'):
+				abort(400)
+				
+			cfile = ctx.open(Suri)
+			
+			## Read the file into memory first, because the PIL library sucks ass and tries random shit like readline()
+			## which it claims it won't try, but...does anyway. Pysmbc's File object doesnt, shockingly, have a readline()
+			sfile = StringIO.StringIO(cfile.read())
+			pil_img = Image.open(sfile).convert('RGB')
+			size = 200, 200
+			pil_img.thumbnail(size, Image.ANTIALIAS)
+
+			img_io = StringIO.StringIO()
+			pil_img.save(img_io, 'JPEG', quality=85)
+			img_io.seek(0)
+			return send_file(img_io, mimetype='image/jpeg')
+
+################################################################################
+# VIEW FILE PROPERTIES
+################################################################################
+			
 		elif action == 'view':
 			## Build the URL to the parent directory (for errors, and for the template output)
 			if len(path) > 0:
@@ -503,6 +558,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					(ftype,mtype) = bargate.mime.filename_to_mimetype(entry['name'])
 					entry['icon'] = bargate.mime.mimetype_to_icon(mtype)
 					entry['mtype'] = ftype
+					
+					## Image previews
+					if mtype.startswith('image'):
+						entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
 
 					## View-in-browser download type
 					if bargate.mime.view_in_browser(mtype):
