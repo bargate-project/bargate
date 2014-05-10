@@ -33,7 +33,7 @@ $(document).ready(function($)
 		$('#file-click-size').text(parent.data('size'));
 		$('#file-click-mtime').text(parent.data('mtime'));
 		$('#file-click-mtype').text(parent.data('mtype'));
-		$('#file-click-icon').attr('class','fa fa-2x' + parent.data('icon'));
+		$('#file-click-icon').attr('class',parent.data('icon'));
 		$('#file-click-download').attr('href',parent.data('download'));
 		$('#file-click-props').attr('href',parent.data('props'));
 		

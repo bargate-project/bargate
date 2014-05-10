@@ -96,57 +96,100 @@ def mimetype_to_icon(mtype):
 	"""
 
 	## default type
-	ficon = 'fa fa-file'
+	ficon = 'icomoon-file4'
 
+	## IMAGES, AUDIO, VIDEO
 	if mtype.startswith('image'):
-		ficon = 'fa fa-camera-retro'
+		ficon = 'icomoon-image2'
 		
 	elif mtype.startswith('audio'):
-		ficon = 'fa fa-music'
+		ficon = 'icomoon-music'
 		
 	elif mtype.startswith('video'):
-		ficon = 'fa fa-video-camera'
+		ficon = 'icomoon-film'
 		
 	elif mtype.startswith('message'):
-		ficon = 'fa fa-envelope'
+		ficon = 'icomoon-mail4'
 		
+		
+	## VISIO
 	elif mtype.startswith('application/vnd.visio'):
-		ficon = 'fa fa-sitemap'		
+		ficon = 'icomoon-tree'		
 		
+	## EXECUTABLE FILES
 	elif mtype.startswith('application/octet-stream'):
-		ficon = 'fa fa-gears'
+		ficon = 'icomoon-cog2'
 		
+	## ARCHIVE FILES
 	elif mtype.startswith('application/x-gzip'):
-		ficon = 'fa fa-archive'
+		ficon = 'icomoon-file-zip'
+	elif mtype.startswith('application/x-gtar'):
+		ficon = 'icomoon-file-zip'
 	elif mtype.startswith('application/x-tar'):
-		ficon = 'fa fa-archive'
+		ficon = 'icomoon-file-zip'
 	elif mtype.startswith('application/zip'):
-		ficon = 'fa fa-archive'
+		ficon = 'icomoon-file-zip'
 	elif mtype.startswith('application/vnd.ms-cab-compressed'):
-		ficon = 'fa fa-archive'
+		ficon = 'icomoon-file-zip'
+	elif mtype.startswith('application/x-rpm'):
+		ficon = 'icomoon-file-zip'
 		
+	## SPREADSHEETS
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
-		ficon = 'fa fa-table'
+		ficon = 'icomoon-file-excel'
 	elif mtype.startswith('application/vnd.ms-excel'):
-		ficon = 'fa fa-table'
+		ficon = 'icomoon-file-excel'
 	elif mtype.startswith('application/vnd.oasis.opendocument.spreadsheet'):
-		ficon = 'fa fa-table'
-		
+		ficon = 'icomoon-libreoffice'
+				
+	## WORD / WRITER
+	elif mtype.startswith('application/msword'): 
+		ficon = 'icomoon-file-word'
+	elif mtype.startswith('application/vnd.openxmlformats-officedocument.wordprocessingml.document'): 
+		ficon = 'icomoon-file-word'
+	elif mtype.startswith('application/vnd.oasis.opendocument.text'): 
+		ficon = 'icomoon-libreoffice'		
+			
+	## PRESENTATIONS		
 	elif mtype.startswith('application/vnd.ms-powerpoint'):
-		ficon = 'fa fa-bullhorn'
+		ficon = 'icomoon-file-powerpoint'
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.presentationml.presentation'):
-		ficon = 'fa fa-bullhorn'
+		ficon = 'icomoon-file-powerpoint'
 	elif mtype.startswith('application/vnd.oasis.opendocument.presentation'):
-		ficon = 'fa fa-bullhorn'
-
-	elif mtype.startswith('application/pdf'):
-		ficon = 'fa fa-book'	
-
-	elif mtype.startswith('text/html'):
-		ficon = 'fa fa-globe'
+		ficon = 'icomoon-libreoffice'
 		
+	## PDF
+	elif mtype.startswith('application/pdf'):
+		ficon = 'icomoon-file-pdf'	
+
+	## Text/html
+	elif mtype.startswith('text/html'):
+		ficon = 'icomoon-file-xml'
+	elif mtype.startswith('application/xhtml+xml'):
+		ficon = 'icomoon-file-xml'
+	elif mtype.startswith('text/css'):
+		ficon = 'icomoon-file-css'
+		
+	## XML
+	elif mtype.startswith('text/xml') or mtype.startswith('application/xml'):
+		ficon = 'icomoon-file-xml'
+		
+	## Code
+	elif mtype.startswith('application/x-perl'):
+		ficon = 'icomoon-code'
+	elif mtype.startswith('application/x-python'):
+		ficon = 'icomoon-code'
+	elif mtype.startswith('application/x-perl'):
+		ficon = 'icomoon-code'
+	elif mtype.startswith('application/x-sh'):
+		ficon = 'icomoon-console'
+		
+	elif mtype.startswith('text/plain'):
+		ficon = 'icomoon-file3'
+		
+	## generic application
 	elif mtype.startswith('application'):
-		ficon = 'fa fa-file-text'
+		ficon = 'icomoon-drawer2'
 		
 	return ficon
 

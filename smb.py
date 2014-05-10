@@ -438,7 +438,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				entry = {}
 
 				# Set a default icon and set name
-				entry['icon'] = 'fa fa-file'
+				entry['icon'] = 'icomoon-file3'
 				entry['name'] = dentry.name
 
 				## Skip . and ..
@@ -523,7 +523,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 				## DIRECTORY ###################################################
 				elif dentry.smbc_type == bargate.smb.SMB_DIR:
-					entry['icon'] = 'fa fa-folder'	
+					entry['icon'] = 'icomoon-folder'	
 					entry['type'] = 'dir'
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']

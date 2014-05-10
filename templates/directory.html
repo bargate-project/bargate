@@ -43,8 +43,8 @@
 
 		{%- if atroot == False %}
 		<tr class="tsdisable rowclick-tr" data-url="{{ url_parent_dir }}">
-			<td class="sorter-false text-center rowclick-td">
-				<i class="fa fa-arrow-circle-up fa-2x"></i>
+			<td class="sorter-false text-center rowclick-td" style="padding-left: 8px !important">
+				<i class="icomoon-arrow-up3 icomoon-32"></i>
 			</td>
 			<td class="sorter-false rowclick-td">
 				<a href="{{ url_parent_dir }}">Parent Folder</a>
@@ -76,7 +76,7 @@
 		{%- endif %}
 		
 			<td class="text-center {{rclick}}">
-				<i class="{{ entry.icon }} fa-2x"></i>
+				<span class="{{ entry.icon }} icomoon-32"></span>
 			</td>
 			<td class="{{rclick}} dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm {{rclick}} dentry-mtime">
