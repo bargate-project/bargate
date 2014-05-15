@@ -5,6 +5,8 @@ Bargate is a web interface to CIFS/SMB servers. It is written in Python, uses li
 
 The plan is to add features to Bargate in time to allow other people to use it without having to re-write a lot of code. If you're interested in using or extending Bargate please get in touch, especially if you're a UK academic institution. Development is happening at a rapid pace at the moment, so now is the time to contact us!
 
+![screenshoot](http://davidrichardbell.files.wordpress.com/2014/04/screen-shot-2014-04-21-at-19-30-55.png)
+
 The roadmap is as follows:
 
 * v1.0 - First stable release, entirely focused on Uni Southampton usage
