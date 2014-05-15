@@ -51,13 +51,29 @@
 								<li><a href="{{ url_for('custom_server') }}"><i class="fa fa-fw fa-hdd-o"></i> Custom Server</a></li>
 							</ul>
 						</li>
+
+						
+						<li class="dropdown{%if active == 'bookmarks'%} active{%endif%}">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Bookmarks <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-tags fa-fw"></i> Bookmark Manager</a></li>
+								<li {% if not browse_mode %}class="disabled"{%endif%} {% if atroot %}class="disabled"{%endif%}><a href="#" data-toggle="modal" data-target="#add-bookmark"><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder...</a></li>
+								{% if bookmarks %}
+								<li class="divider"></li>
+									{% for mark in bookmarks %}
+								<li><a href="{{ mark.url }}"><i class="fa fa-arrow-right fa-fw"></i> {{mark.name|truncate(30, True) }}</a></li>
+									{% endfor %}
+								{% endif %}
+							</ul>
+						</li>
+					
 						<li class="dropdown{%if active == 'help'%} active{%endif%}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php"><i class="fa fa-fw fa-external-link"></i> Filestore Help</a></li>
+								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php"><i class="fa fa-fw fa-life-ring"></i> Filestore Help</a></li>
 								<li><a href="https://github.com/divad/bargate/issues"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
-								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-question-circle fa-fw"></i> Give Feedback</a></li>
-								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-download"></i> About</a></li>
+								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-bullhorn fa-fw"></i> Give Feedback</a></li>
+								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
 							</ul>
 						</li>
 					</ul>
@@ -66,9 +82,7 @@
 						<li class="dropdown{%if active == 'user'%} active{%endif%}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-fw fa-user"></i> {{ session.username }} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-bookmark fa-fw"></i> Bookmarks</a></li>
-								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Account Settings</a></li>
-								<li class="divider"></li>
+								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Preferences</a></li>
 								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
 							</ul>
 						</li>
@@ -80,9 +94,6 @@
 						</a>
 						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
 							<i class="fa fa-fw fa-lg fa-folder-open"></i>
-						</a>
-						<a data-toggle="modal" href="#add-bookmark" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Bookmark this folder" {% if not browse_mode %}disabled="disabled"{%endif%} {% if atroot %}disabled="disabled"{%endif%}>
-							<i class="fa fa-fw fa-lg fa-bookmark"></i>
 						</a>
 					</div>
 				</div>

@@ -113,6 +113,49 @@ def get_on_file_click():
 
 def set_user_data(key,value):
 	g.redis.set('user:' + session['username'] + ':' + key,value)
+	
+################################################################################
+
+def get_user_bookmarks():
+	bmKey = 'user:' + session['username'] + ':bookmarks'
+	bmPrefix = 'user:' + session['username'] + ':bookmark:'
+	bmList = list()
+	
+	if g.redis.exists(bmKey):
+		try:
+			bookmarks = g.redis.smembers(bmKey)
+		except Exception as ex:	
+			app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
+			return bmList
+
+		if bookmarks != None:
+			if isinstance(bookmarks,set):
+				for bookmark_name in bookmarks:
+	
+					try:
+						function = g.redis.hget(bmPrefix + bookmark_name,'function')
+						path     = g.redis.hget(bmPrefix + bookmark_name,'path')
+					except Exception as ex:
+						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ' + str(ex))
+						continue
+					
+					if function == None:
+						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'function was not set')
+						continue
+					if path == None:
+						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'path was not set')
+						continue
+					
+					try:
+						bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
+						bmList.append(bm)
+					except werkzeug.routing.BuildError as ex:
+						bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': Invalid bookmark function and/or path - ', str(ex))
+						continue
+			else:
+				app.logger.error('Failed to load bookmarks','Invalid redis data type when loading bookmarks set for ' + session['username'])
+				
+	return bmList
 
 ################################################################################
 #### Account Settings View
@@ -131,9 +174,9 @@ def settings():
 	themes.append({'name':'Spacelab','value':'spacelab'})
 	themes.append({'name':'United','value':'united'})
 	themes.append({'name':'Cerulean','value':'cerulean'})
-	themes.append({'name':'Darkly - may not function correctly','value':'darkly'})
-	themes.append({'name':'Cyborg - may not function correctly','value':'cyborg'})
-	themes.append({'name':'Slate - may not function correctly','value':'slate'})
+	themes.append({'name':'Darkly','value':'darkly'})
+	themes.append({'name':'Cyborg','value':'cyborg'})
+	themes.append({'name':'Slate','value':'slate'})
 
 	
 	if request.method == 'POST':

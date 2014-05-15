@@ -24,6 +24,8 @@ import os
 from random import randint
 import time
 import json
+import re
+import werkzeug
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
@@ -124,6 +126,9 @@ def test():
 def mime():
 	mimetypes.init()
 	return bargate.core.render_page("mime.html",types=mimetypes.types_map,active="help")
+	
+#################
+
 
 ################################################################################
 #### BOOKMARKS
@@ -135,57 +140,30 @@ def bookmarks():
 	bmKey = 'user:' + session['username'] + ':bookmarks'
 	bmPrefix = 'user:' + session['username'] + ':bookmark:'
 
-	## todo: much better input verification
-
 	if request.method == 'GET':
-		bmList = list()
-			
-		if g.redis.exists(bmKey):
-			try:
-				bookmarks = g.redis.smembers(bmKey)
-			except Exception as ex:
-				bargate.errors.fatal('Failed to load bookmarks: ',str(ex))
-	
-			if bookmarks != None:
-				if isinstance(bookmarks,set):
-					for bookmark_name in bookmarks:
-			
-						try:
-							function = g.redis.hget(bmPrefix + bookmark_name,'function')
-							path     = g.redis.hget(bmPrefix + bookmark_name,'path')
-						except Exception as ex:
-							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': ', str(ex))
-							
-						if function == None:
-							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': ', 'function was not set')
-						if path == None:
-							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': ', 'path was not set')
-							
-						try:
-							bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
-							bmList.append(bm)
-						except werkzeug.routing.BuildError as ex:
-							bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': Invalid bookmark function and/or path - ', str(ex))
-				else:
-					bargate.errors.fatal('Failed to load bookmarks','Invalid redis data type when loading bookmarks set')
-
-		return bargate.core.render_page('bookmarks.html', active='user',pwd='',bookmarks = bmList)
+		bookmarks = bargate.settings.get_user_bookmarks()
+		return bargate.core.render_page('bookmarks.html', active='user',pwd='',bookmarks = bookmarks)
 		
 	elif request.method == 'POST':
-		
 		action = request.form['action']
 		
 		if action == 'add':
 		
-			## TODO really need to do some regex on the input here...
-				## and you know, elsewhere? maybe? eugh. what about unicode though?
-				## maybe just check for known invalid chars? eugh.
-				## also check by building the url with url_for first... that'll verify function at least.
-		
-			bookmark_name     = request.form['bookmark_name']
-			bookmark_function = request.form['bookmark_function']
-			bookmark_path     = request.form['bookmark_path']
-		
+			try:
+				bookmark_name     = request.form['bookmark_name']
+				bookmark_function = bargate.smb.check_name(request.form['bookmark_function'])
+				bookmark_path     = bargate.smb.check_path(request.form['bookmark_path'])
+				
+			except KeyError as e:
+				bargate.errors.fatal('Invalid Bookmark','You missed something on the previous page!')
+			except ValueError as e:
+				bargate.errors.fatal('Invalid Bookmark','Invalid bookmark name or bookmark value: ' + str(e))
+				
+			try:
+				test_name = url_for(str(bookmark_function),path=bookmark_path)
+			except werkzeug.routing.BuildError as ex:
+				bargate.errors.fatal('Invalid Bookmark','Invalid function and/or path: ' + str(ex))
+
 			g.redis.hset(bmPrefix + bookmark_name,'function',bookmark_function)
 			g.redis.hset(bmPrefix + bookmark_name,'path',bookmark_path)
 			g.redis.sadd(bmKey,bookmark_name)

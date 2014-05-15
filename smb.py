@@ -83,6 +83,7 @@ def check_name(name):
 	if invalidchars.search(name):
 		raise ValueError('Invalid characters found. You cannot use the following characters in file or folder names: < > \ / : " ? *')
 		
+	return name
 		
 ################################################################################
 
@@ -112,6 +113,8 @@ def check_path(path):
 
 	if '/./' in path:
 		raise ValueError('Invalid path. Paths cannot contain "/./"')
+		
+	return path
 	
 ################################################################################
 
