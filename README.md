@@ -13,4 +13,4 @@ The roadmap is as follows:
 * v2.x - Switch to a partial-JSON output with rendering done on the client side
 * v3.x - Introduce near-entirely JSON output mode, to allow for Android and iOS client apps to be written
 
-This os only a rough plan.
+This is only a rough plan.
