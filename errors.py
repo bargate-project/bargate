@@ -296,8 +296,7 @@ def error405(error):
 
 @app.route('/err/<int:number>')
 def error_test(number):
-	abort(number)
-	
-@app.route('/error')
-def error_gen():
-	return bargate.errors.smbc_NoSpaceError()
+	if app.debug:
+		abort(number)
+	else:
+		return redirect(url_for('login'))

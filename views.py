@@ -92,10 +92,16 @@ def login():
 @app.route('/logout')
 @bargate.core.login_required
 def logout():
-	## Record 
+	## Record the logout
 	bargate.settings.set_user_data('logout',str(time.time()))
+	
+	## Log out of the session
 	bargate.core.session_logout()
+	
+	## Tell the user
 	flash('You were logged out successfully','alert-success')
+	
+	## redirect the user to the logon page
 	return redirect(url_for('login'))
 
 ################################################################################

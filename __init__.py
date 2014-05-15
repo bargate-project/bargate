@@ -29,6 +29,7 @@ from datetime import timedelta
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
+DEBUG_TOOLBAR = False
 
 ## Session signing key
 # Key used to sign/encrypt session data stored in cookies.
@@ -162,6 +163,13 @@ Further Details:
 """))
 
 	app.logger.addHandler(mail_handler)
+	
+## Debug Toolbar
+if app.config['DEBUG_TOOLBAR']:
+	app.debug = True
+	from flask_debugtoolbar import DebugToolbarExtension
+	toolbar = DebugToolbarExtension(app)
+	app.logger.info('bargate debug toolbar enabled')
 
 ################################################################################
 

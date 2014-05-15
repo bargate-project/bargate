@@ -467,7 +467,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 # BROWSE / DIRECTORY / LIST FILES
 ################################################################################
 		
-		elif action == 'browse':
+		elif action == 'browse':		
 			## Try getting directory contents
 			try:
 				dentries = ctx.opendir (Suri).getdents ()

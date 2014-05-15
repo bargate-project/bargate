@@ -28,7 +28,7 @@ import json
 ################################################################################
 
 def get_user_theme():
-	if 'username' in session:
+	if 'username' in session: 
 		try:
 			theme = g.redis.get('user:' + session['username'] + ':theme')
 
@@ -64,16 +64,24 @@ def get_user_navbar():
 
 def show_hidden_files():
 	if 'username' in session:
-		try:
-			hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
+	
+		## Get a cached response rather than asking REDIS every time
+		hidden_files = g.get('hidden_files', None)
+		if not hidden_files == None:
+			return hidden_files
+		else:
+			try:
+				hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
 
-			if hidden_files != None:
-				if hidden_files == 'show':
-					return True
+				if hidden_files != None:
+					if hidden_files == 'show':
+						g.hidden_files = True
+						return True
 
-		except Exception as ex:
-			app.logger.error('Unable to speak to redis: ' + str(ex))
+			except Exception as ex:
+				app.logger.error('Unable to speak to redis: ' + str(ex))
 
+	g.hidden_files = False
 	return False
 	
 ################################################################################
@@ -96,17 +104,26 @@ def upload_overwrite():
 
 def get_on_file_click():
 	if 'username' in session:
-		try:
-			on_file_click = g.redis.get('user:' + session['username'] + ':on_file_click')
+	
+		## Get a cached response rather than asking REDIS every time
+		on_file_click = g.get('on_file_click', None)
+		if not on_file_click == None:
+			return on_file_click
+		else:
+			try:
+				on_file_click = g.redis.get('user:' + session['username'] + ':on_file_click')
 
-			if on_file_click != None:
-				return on_file_click
-			else:
-				return 'ask'
+				if on_file_click != None:
+					g.on_file_click = on_file_click
+					return on_file_click
+				else:
+					g.on_file_click = 'ask'
+					return 'ask'
 
-		except Exception as ex:
-			app.logger.error('Unable to speak to redis: ' + str(ex))
+			except Exception as ex:
+				app.logger.error('Unable to speak to redis: ' + str(ex))
 
+	g.on_file_click = 'ask'
 	return 'ask'
 	
 ################################################################################
