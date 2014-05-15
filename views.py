@@ -110,6 +110,10 @@ def changelog():
 @app.route('/nojs')
 def nojs():
 	return bargate.core.render_page('nojs.html')
+	
+@app.route('/test')
+def test():
+	return bargate.core.render_page('test.html')
 
 ################################################################################
 #### MIME MAP (DEVELOPER FUNCTION)
