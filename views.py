@@ -126,9 +126,6 @@ def test():
 def mime():
 	mimetypes.init()
 	return bargate.core.render_page("mime.html",types=mimetypes.types_map,active="help")
-	
-#################
-
 
 ################################################################################
 #### BOOKMARKS

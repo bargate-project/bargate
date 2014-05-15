@@ -16,30 +16,33 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from bargate import app
-import bargate.errors
-import random
-import string
+import bargate.errors     
 from werkzeug.urls import url_encode
 from flask import Flask, request, redirect, session, url_for, abort, render_template, flash, g
-from functools import wraps
-from Crypto.Cipher import AES
-import base64
-import os
-import datetime
-import re
-import redis
-from random import randint
-import time
+from functools import wraps   ## used for login_required and downtime_check
+from Crypto.Cipher import AES ## used for crypto of password
+import base64                 ## used for crypto of password
+import os                     ## used throughout
+import datetime               ## used in ut_to_string
+import re                     ## used in secure_filename
+import redis                  ## used in before_request
+from random import randint    ## used in before_request
+import time                   ## used in before_request
+import random                 ## used in pwgen            
+import string                 ## used in pwgen
 
 ################################################################################
 
 def render_page(template_name, **kwargs):
+	"""A wrapper around Flask's render_template that adds commonly used variables to the page"""
+	
 	## Send the standard urls required on all pages
 	url_personal    = url_for('personal')
 	url_mydocuments = url_for('personal',path='mydocuments')
 	url_mydesktop   = url_for('personal',path='mydesktop')
 	url_website     = url_for('webfiles')
 	
+	## Standard bookmarks needed on nearly all pages
 	if not 'bookmarks' in kwargs:
 		if 'username' in session:
 			kwargs['bookmarks'] = bargate.settings.get_user_bookmarks()
@@ -52,17 +55,11 @@ def render_page(template_name, **kwargs):
 ################################################################################
 
 def session_logout():
+	"""Ends the logged in user's login session. The session remains but it is marked as being not logged in."""
+
 	app.logger.info('User "' + session['username'] + '" logged out from "' + request.remote_addr + '" using ' + request.user_agent.string)
 	session.pop('logged_in', None)
 	session.pop('username', None)
-
-################################################################################
-
-def debugStrType(obj,name):
-	if isinstance(obj, str):
-		app.logger.info(name + " regular string")
-	elif isinstance(obj, unicode):	
-		app.logger.info(name + " unicode string")
 
 ################################################################################
 
@@ -160,7 +157,7 @@ def generate_csrf_token():
 ################################################################################
 
 def pwgen(length=16):
-	"""This is crude password generator. It is currently only used to generate
+	"""This is very crude password generator. It is currently only used to generate
 	a CSRF token.
 	"""
 
@@ -181,7 +178,6 @@ def aes_encrypt(s,key):
 	## 32-bit key is required (AES256)
 	
 	if len(key) != 32:
-		## TODO raise a custom exception?
 		bargate.errors.fatal('Configuration Error','The Bargate configuration is invalid. The ENCRYPT_KEY must be exactly 32-bytes long.')
 
 	# Create the IV (Initialization Vector)
@@ -222,8 +218,15 @@ def aes_decrypt(s,key):
 	
 	# return decrypted data
 	return c.decrypt(e)
+	
+################################################################################
+
 
 def get_user_password():
+	"""This function returns the user's decrypted password
+	so as to use to authenticate somewhere else, e.g. to Kerberos
+	to ensure that a permission denied error isn't caused by the user's password changing.
+	"""
 	return bargate.core.aes_decrypt(session['id'],app.config['ENCRYPT_KEY'])
 
 ################################################################################
@@ -238,7 +241,7 @@ def get_smbc_auth(server,share,workgroup,username,password):
 
 def sort_by_name(left,right):
 	"""A cmp function for the python sorted() function. Use to sort
-	a list by name.
+	a list by name. Used by smb.py directory entry sorting.
 	"""
 	return cmp(left['name'].lower(),right['name'].lower())
 

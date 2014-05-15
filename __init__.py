@@ -17,15 +17,17 @@
 
 from flask import Flask
 import logging
+import os.path
 from logging.handlers import SMTPHandler
 from logging.handlers import RotatingFileHandler
 from logging import Formatter
 from bargate.fapp import BargateFlask
+from datetime import timedelta
 
 ################################################################################
 #### Default config options
 
-## Debug mode. This engages the web-based debug and disables logging.
+## Debug mode. This engages the web-based debug mode
 DEBUG = False
 
 ## Session signing key
@@ -59,13 +61,17 @@ BANNED_EXTENSIONS = set([
 "vbs", "vxd", "wsc", "wsf", "wsh"
 ])
 
-## Logging and alerts
+## File logging
+LOG_FILE='/tmp/bargate.log'
 LOG_DIR='logs'
-LOG_FILE='bargate.log'
+LOG_FILE_MAX_SIZE=1 * 1024 * 1024
+LOG_FILE_MAX_FILES=10
+
 EMAIL_ALERTS=False
 ADMINS=['root']
 SMTP_SERVER='localhost'
 EMAIL_FROM='root'
+EMAIL_SUBJECT='Bargate Runtime Error'
 
 ## Redis
 REDIS_ENABLED=True
@@ -79,8 +85,17 @@ DISABLE_APP=True
 ## Default bootstrap theme
 THEME_DEFAULT='lumen'
 
-################################################################################
+## Bargate internal version number
+VERSION='1.0 Beta 2'
 
+## Flask defaults (change to what we prefer)
+SESSION_COOKIE_SECURE=True
+SESSION_COOKIE_HTTPONLY=True
+PREFERRED_URL_SCHEME='https'
+USE_X_SENDFILE=False
+PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+
+################################################################################
 
 # set up our application
 app = BargateFlask(__name__)
@@ -89,21 +104,45 @@ app = BargateFlask(__name__)
 app.config.from_object(__name__)
 
 # try to load config from various paths 
-app.config.from_pyfile('/etc/bargate.conf', silent=True)
-app.config.from_pyfile('/etc/bargate/bargate.conf', silent=True)
-app.config.from_pyfile('/opt/bargate/bargate.conf', silent=True)
-app.config.from_pyfile('/data/bargate/bargate.conf', silent=True)
-app.config.from_pyfile('/data/fwa/bargate.conf', silent=True)
+if os.path.isfile('/etc/bargate.conf'):
+	app.config.from_pyfile('/etc/bargate.conf')
+elif os.path.isfile('/etc/bargate/bargate.conf'): 	
+	app.config.from_pyfile('/etc/bargate/bargate.conf')
+elif os.path.isfile('/data/fwa/bargate.conf'): 	
+	app.config.from_pyfile('/data/fwa/bargate.conf')
+elif os.path.isfile('/data/bargate/bargate.conf'): 	
+	app.config.from_pyfile('/data/bargate/bargate.conf')	
+	
+## Set up logging to file
+file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', app.config['LOG_FILE_MAX_SIZE'], app.config['LOG_FILE_MAX_FILES'])
+file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+app.logger.addHandler(file_handler)
+
+## Set up the max log level
+if app.debug:
+	app.logger.setLevel(logging.DEBUG)
+	file_handler.setLevel(logging.DEBUG)
+else:
+	app.logger.setLevel(logging.INFO)
+	file_handler.setLevel(logging.INFO)
+
+## Output some startup info
+app.logger.info('bargate version ' + app.config['VERSION'] + ' initialised')
+app.logger.info('bargate debug status: ' + str(app.config['DEBUG']))
+
+## Log if the app is disabled at startup
+if app.config['DISABLE_APP']:
+	app.logger.info('bargate is currently disabled')
 
 # set up e-mail alert logging
-#if not app.debug:
 if app.config['EMAIL_ALERTS'] == True:
+	## Log to file where e-mail alerts are going to
+	app.logger.info('bargate e-mail alerts are enabled and being sent to: ' + str(app.config['ADMINS']))
 
-	mail_handler = SMTPHandler(app.config['SMTP_SERVER'],
-		app.config['EMAIL_FROM'],
-		app.config['ADMINS'], 
-		'Bargate Application Error')
+	## Create the mail handler
+	mail_handler = SMTPHandler(app.config['SMTP_SERVER'], app.config['EMAIL_FROM'], app.config['ADMINS'], app.config['EMAIL_SUBJECT'])
 
+	## Set the minimum log level (errors) and set a formatter
 	mail_handler.setLevel(logging.ERROR)
 	mail_handler.setFormatter(Formatter("""
 A fatal error occured in Bargate.
@@ -123,15 +162,6 @@ Further Details:
 """))
 
 	app.logger.addHandler(mail_handler)
-	
-## Set up file logging as well
-file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', 1 * 1024 * 1024, 10)
-file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-app.logger.setLevel(logging.INFO)
-file_handler.setLevel(logging.INFO)
-app.logger.addHandler(file_handler)
-app.logger.info('bargate started up')
-
 
 ################################################################################
 
