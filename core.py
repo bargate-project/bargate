@@ -41,7 +41,8 @@ def render_page(template_name, **kwargs):
 	url_website     = url_for('webfiles')
 	
 	if not 'bookmarks' in kwargs:
-		kwargs['bookmarks'] = bargate.settings.get_user_bookmarks()
+		if 'username' in session:
+			kwargs['bookmarks'] = bargate.settings.get_user_bookmarks()
 
 	return render_template(template_name, url_personal=url_personal,
 		url_mydocuments=url_mydocuments,
