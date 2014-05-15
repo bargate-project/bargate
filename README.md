@@ -1,4 +1,4 @@
-bargate
+Bargate
 =======
 
 Bargate is a web interface to CIFS/SMB servers. It is written in Python, uses libsmbclient for talking to file servers (specifically, pysmbc) and the user interface is based on Twitter Bootstrap. Bargate has been developed to provide the 'Filestore Web Access' application at the University of Southampton: https://fwa.soton.ac.uk. As such the code currently here is entirely written for Southampton and currently would require quite a lot of re-writing to work elsewhere.
