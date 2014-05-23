@@ -87,7 +87,7 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.0 Beta 2'
+VERSION='1.0 Beta 3'
 
 ## Flask defaults (change to what we prefer)
 SESSION_COOKIE_SECURE=True

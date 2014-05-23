@@ -598,7 +598,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					if last == "$":
 						continue
 
-					entry['icon'] = 'icomoon-disk'
+					entry['icon'] = 'icomoon-storage'
 					entry['type'] = 'share'
 
 					## url to view the share
