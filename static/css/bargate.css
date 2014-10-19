@@ -12,6 +12,11 @@ body
 	}
 }
 
+.fcog
+{
+	text-decoration: none !important;
+}
+
 /* don't put a margin on directory view table at the bottom */
 #dir
 {
@@ -147,7 +152,7 @@ body
 /* Make sure no underlines on a's in tables pls - For flatly theme mostly */
 .table a, table a
 {
-	text-decoration: none;
+	text-decoration: none !important;
 }
 
 .action-btns
