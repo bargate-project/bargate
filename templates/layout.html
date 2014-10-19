@@ -89,8 +89,8 @@
 					</ul>
 					
 					<div class="pull-right action-btns">
-						<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i class="fa fa-fw fa-lg fa-upload"></i>
+						<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
 						</a>
 						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
 							<i class="fa fa-fw fa-lg fa-folder-open"></i>

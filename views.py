@@ -58,7 +58,7 @@ def login():
 
 			## Set logged in (if we got this far)
 			session['logged_in'] = True
-			session['username'] = request.form['username']
+			session['username']  = request.form['username']
 
 			## Check if the user selected "Log me out when I close the browser"
 			permanent = request.form.get('sec',default="")

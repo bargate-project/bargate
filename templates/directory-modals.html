@@ -75,7 +75,35 @@
 </div>
 
 <script type="text/javascript">
-var dragTimer = undefined;
+$('#upload-file').on('hidden.bs.modal', function (e)
+{
+	if (window.uploadinprogress)
+	{
+		return;
+	}
+	else
+	{
+		location.reload(1);
+	}
+})
+
+$('#fileupload').bind('fileuploadstop', function (e)
+{ 
+	window.uploadinprogress = 0;
+	$('#upload-button-icon').addClass('fa-upload');
+	$('#upload-button-icon').removeClass('fa-spin');
+	$('#upload-button-icon').removeClass('fa-cog');
+	
+	if ($("#upload-file").data('bs.modal').isShown)
+	{
+		/* do nothing */
+	}
+	else
+	{
+		location.reload(1);
+	}
+})
+
 $(function ()
 {                
     $('#fileupload').fileupload(
@@ -135,10 +163,15 @@ $(function ()
 		},
         start: function (e)
         {
+			window.uploadinprogress = 1;
 			$('#upload-drag-over').modal('hide');
             $('#upload-file').modal()
             $('#upload-progress').removeClass('hidden');
             $('#upload-cancel').removeClass('hidden');
+			
+			$('#upload-button-icon').removeClass('fa-upload');
+			$('#upload-button-icon').addClass('fa-spin');
+			$('#upload-button-icon').addClass('fa-cog');
         },
     }).prop('disabled', !$.support.fileInput)
         .parent().addClass($.support.fileInput ? undefined : 'disabled');

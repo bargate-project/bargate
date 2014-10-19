@@ -87,7 +87,7 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.0 Beta 3'
+VERSION='1.0 Beta 4'
 
 ## Flask defaults (change to what we prefer)
 SESSION_COOKIE_SECURE=True
@@ -185,8 +185,8 @@ import bargate.mime
 import bargate.settings
 
 # load anti csrf function reference into template engine
-app.jinja_env.globals['csrf_token']     = core.generate_csrf_token 
-app.jinja_env.globals['get_user_theme'] = settings.get_user_theme
+app.jinja_env.globals['csrf_token']      = core.generate_csrf_token 
+app.jinja_env.globals['get_user_theme']  = settings.get_user_theme
 app.jinja_env.globals['get_user_navbar'] = settings.get_user_navbar
 
 # load jinja functions into scope
