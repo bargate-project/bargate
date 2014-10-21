@@ -186,6 +186,7 @@ def settings():
 	themes.append({'name':'Lumen','value':'lumen'})
 	themes.append({'name':'Journal','value':'journal'})
 	themes.append({'name':'Flatly','value':'flatly'})
+	themes.append({'name':'Sandstone','value':'sandstone'})
 	themes.append({'name':'Readable','value':'readable'})
 	themes.append({'name':'Simplex','value':'simplex'})
 	themes.append({'name':'Spacelab','value':'spacelab'})
