@@ -199,11 +199,25 @@ def statToType(fstat):
 
 ################################################################################
 
+		
+@bargate.core.login_required
+@bargate.core.downtime_check
+def share_handler(path):
+	svrpath = app.sharesConfig.get(request.endpoint,'path')
+	svrpath = svrpath.replace("%USERNAME%",session['username'])
+	svrpath = svrpath.replace("%USER%",session['username'])
+	display = app.sharesConfig.get(request.endpoint,'display')
+	menu = app.sharesConfig.get(request.endpoint,'menu')
+	return bargate.smb.connection(svrpath,request.endpoint,menu,display,path)
+
+		
+################################################################################
+
 def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 	## ensure srv_path ends with a trailing slash
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
-
+	
 	if active == None:
 		active = func_name
 
@@ -238,7 +252,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		action = request.args.get('action','browse')
 
 		## Debug this in logs
-		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
+		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
 ################################################################################
 # DOWNLOAD FILE

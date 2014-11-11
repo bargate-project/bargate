@@ -23,6 +23,7 @@ from logging.handlers import RotatingFileHandler
 from logging import Formatter
 from bargate.fapp import BargateFlask
 from datetime import timedelta
+from ConfigParser import RawConfigParser
 
 ################################################################################
 #### Default config options
@@ -95,6 +96,9 @@ SESSION_COOKIE_HTTPONLY=True
 PREFERRED_URL_SCHEME='https'
 USE_X_SENDFILE=False
 PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+
+## Shares config file
+SHARES_CONFIG='/data/fwa/shares.conf'
 
 ################################################################################
 
@@ -171,7 +175,6 @@ if app.config['DEBUG_TOOLBAR']:
 	toolbar = DebugToolbarExtension(app)
 	app.logger.info('bargate debug toolbar enabled')
 
-################################################################################
 
 # load core functions
 import bargate.core
@@ -191,3 +194,14 @@ app.jinja_env.globals['get_user_navbar'] = settings.get_user_navbar
 
 # load jinja functions into scope
 app.jinja_env.globals.update(poperr_get=bargate.core.poperr_get)
+
+## Get the sections of the config file
+app.load_share_config()
+sharesList = app.sharesConfig.sections()
+
+for section in sharesList:
+	app.logger.info("Creating share entry '" + str(section) + "'")
+	app.add_url_rule(app.sharesConfig.get(section,'url'),endpoint=section,view_func=bargate.smb.share_handler,methods=['GET','POST'], defaults={'path': ''})
+	app.add_url_rule(app.sharesConfig.get(section,'url') + '/<path:path>/',endpoint=section,view_func=bargate.smb.share_handler,methods=['GET','POST'])
+
+app.sharesList = sharesList

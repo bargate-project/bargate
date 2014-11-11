@@ -16,8 +16,16 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import Flask, request, session
+from ConfigParser import RawConfigParser
+
 
 class BargateFlask(Flask):
+	sharesConfig = RawConfigParser()
+	
+	def load_share_config(self):
+		with open(self.config['SHARES_CONFIG'], 'r') as f:
+			self.sharesConfig.readfp(f)
+
 	def log_exception(self, exc_info):
 		"""Logs an exception.  This is called by :meth:`handle_exception`
 		if debugging is disabled and right before the handler is called.
