@@ -84,11 +84,11 @@ REDIS_PORT=6379
 # Default to true if no config file to make sure a config file has been found.
 DISABLE_APP=True
 
-## Default bootstrap theme
-THEME_DEFAULT='lumen'
+## Default bootstrap/bootswatch theme
+THEME_DEFAULT='paper'
 
 ## Bargate internal version number
-VERSION='1.0 Beta 6'
+VERSION='1.0 Beta 7'
 
 ## Flask defaults (change to what we prefer)
 SESSION_COOKIE_SECURE=True
