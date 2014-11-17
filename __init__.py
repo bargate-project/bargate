@@ -30,7 +30,12 @@ from ConfigParser import RawConfigParser
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
+
+## Enable the debug toolbar. DO NOT DO THIS ON A PRODUCTION SYSTEM. EVER. It exposes SECRET_KEY and ENCRYPT_KEY.
 DEBUG_TOOLBAR = False
+
+## Many errors don't show a full stack trace as they show a redirected 'error popup'. Set this to True to disable that behaviour and show full errors.
+DEBUG_FULL_ERRORS = True
 
 ## Session signing key
 # Key used to sign/encrypt session data stored in cookies.
