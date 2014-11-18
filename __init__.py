@@ -104,6 +104,7 @@ PERMANENT_SESSION_LIFETIME=timedelta(days=7)
 
 ## Shares config file
 SHARES_CONFIG='/data/fwa/shares.conf'
+SHARES_DEFAULT='personal'
 
 ################################################################################
 

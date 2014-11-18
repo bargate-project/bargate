@@ -34,7 +34,7 @@ import werkzeug
 @bargate.core.downtime_check
 def login():
 	if 'username' in session:
-		return redirect(url_for('personal'))
+		return redirect(url_for(app.config['SHARES_DEFAULT']))
 	else:
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
@@ -82,7 +82,7 @@ def login():
 			bargate.settings.set_user_data('login',str(time.time()))
 
 			if next == None:
-				return redirect(url_for('personal'))
+				return redirect(url_for(app.config['SHARES_DEFAULT']))
 			else:
 				return redirect(next)
 
