@@ -24,6 +24,7 @@ import os
 from random import randint
 import time
 import json
+import werkzeug
 
 ################################################################################
 
@@ -167,7 +168,7 @@ def get_user_bookmarks():
 						bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
 						bmList.append(bm)
 					except werkzeug.routing.BuildError as ex:
-						bargate.errors.fatal('Failed to load bookmark ' + bookmark_name + ': Invalid bookmark function and/or path - ', str(ex))
+						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function and/or path - ', str(ex))
 						continue
 			else:
 				app.logger.error('Failed to load bookmarks','Invalid redis data type when loading bookmarks set for ' + session['username'])
