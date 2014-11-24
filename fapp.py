@@ -17,10 +17,20 @@
 
 from flask import Flask, request, session
 from ConfigParser import RawConfigParser
-
+import jinja2 
 
 class BargateFlask(Flask):
 	sharesConfig = RawConfigParser()
+
+	def load_user_templates(self):
+		if self.config['LOCAL_TEMPLATE_DIR']:
+			choice_loader = jinja2.ChoiceLoader(
+			[
+				jinja2.FileSystemLoader(self.config['LOCAL_TEMPLATE_DIR']),
+				self.jinja_loader,
+			])
+			self.jinja_loader = choice_loader
+			self.logger.info('bargate will load templates from local source: ' + str(self.config['LOCAL_TEMPLATE_DIR']))
 	
 	def load_share_config(self):
 		with open(self.config['SHARES_CONFIG'], 'r') as f:

@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>Filestore Web Access</title>
+		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		{% include 'header-links.html' %}
@@ -22,9 +22,8 @@
 						<span class="icon-bar"></span>
 					</button>
 					{%- if session.logged_in %}
-					<a href="{{ url_personal }}" class="navbar-brand visible-xs">Filestore Web Access</a>
-					<a href="{{ url_personal }}" class="navbar-brand visible-sm">Filestore</a>
-					<a href="{{ url_personal }}" class="navbar-brand visible-md visible-lg">Filestore Web Access</a>
+					<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand visible-xs visible-md visible-lg">{{ config['APP_DISPLAY_NAME'] }}</a>
+					<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand visible-sm">{{ config['APP_DISPLAY_NAME_SHORT'] }}</a>
 					{%- else %}
 					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fa fa-arrow-circle-o-left"></i> Back to Login</a>
 					{%- endif %}
@@ -33,49 +32,7 @@
 				{%- if session.logged_in %}
 				<div class="navbar-collapse collapse" id="navbar-collapse-1">	
 					<ul class="nav navbar-nav">
-						<li class="dropdown{%if active == 'home'%} active{%endif%}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">My Files <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="{{ url_personal }}"><i class="fa fa-fw fa-home"></i> Home</a></li>
-								<li><a href="{{ url_mydocuments }}"><i class="fa fa-fw fa-files-o"></i> My Documents</a></li>
-								<li><a href="{{ url_mydesktop }}"><i class="fa fa-fw fa-desktop"></i> My Desktop</a></li>
-								<li><a href="{{ url_website }}"><i class="fa fa-fw fa-globe"></i> My Website</a></li>
-							</ul>
-						</li>
-						<li class="dropdown{%if active == 'shared'%} active{%endif%}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Shared Files <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="{{ url_for('resource') }}"><i class="fa fa-fw fa-group"></i> Resource Drive</a></li>
-								<li><a href="{{ url_for('linuxresearch') }}"><i class="fa fa-fw fa-linux"></i> Linux Research</a></li>
-								<li><a href="{{ url_for('other') }}"><i class="fa fa-fw fa-share-square-o"></i> Other Drives</a></li>
-								<li><a href="{{ url_for('custom_server') }}"><i class="fa fa-fw fa-hdd-o"></i> Custom Server</a></li>
-							</ul>
-						</li>
-
-						
-						<li class="dropdown{%if active == 'bookmarks'%} active{%endif%}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Bookmarks <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-tags fa-fw"></i> Bookmark Manager</a></li>
-								<li {% if not browse_mode %}class="disabled"{%endif%} {% if atroot %}class="disabled"{%endif%}><a href="#" data-toggle="modal" data-target="#add-bookmark"><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder...</a></li>
-								{% if bookmarks %}
-								<li class="divider"></li>
-									{% for mark in bookmarks %}
-								<li><a href="{{ mark.url }}"><i class="fa fa-arrow-right fa-fw"></i> {{mark.name|truncate(30, True) }}</a></li>
-									{% endfor %}
-								{% endif %}
-							</ul>
-						</li>
-					
-						<li class="dropdown{%if active == 'help'%} active{%endif%}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Help <b class="caret"></b></a>
-							<ul class="dropdown-menu">
-								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php"><i class="fa fa-fw fa-life-ring"></i> Filestore Help</a></li>
-								<li><a href="https://github.com/divad/bargate/issues"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
-								<li><a href="https://www.isurvey.soton.ac.uk/8771"><i class="fa fa-bullhorn fa-fw"></i> Give Feedback</a></li>
-								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
-							</ul>
-						</li>
+					{%- include 'dropdown-menus.html' %}
 					</ul>
 					
 					<ul class="nav navbar-nav navbar-right">
@@ -83,6 +40,7 @@
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-fw fa-user"></i> {{ session.username }} <b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Preferences</a></li>
+								{%- include 'user-menu.html' %}
 								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
 							</ul>
 						</li>
@@ -102,24 +60,24 @@
 		</div>
 
 		{%- if session.popup_error -%}
-		{%- with poperr = poperr_get() -%}
-		<div class="modal fade" id="popup-error">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal">×</button>
-						<h4 class="modal-title">{{ poperr.0 }}</h4>
-					</div>
-					<div class="modal-body">
-						{{ poperr.1 }}
-					</div>
-					<div class="modal-footer">
-						<a href="#" class="btn btn-default"  data-dismiss="modal">OK</a>
+			{%- with poperr = poperr_get() -%}
+			<div class="modal fade" id="popup-error">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">×</button>
+							<h4 class="modal-title">{{ poperr.0 }}</h4>
+						</div>
+						<div class="modal-body">
+							{{ poperr.1 }}
+						</div>
+						<div class="modal-footer">
+							<a href="#" class="btn btn-default"  data-dismiss="modal">OK</a>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		{%- endwith -%}
+			{%- endwith -%}
 		{%- endif %}
 
 		<div class="{% if browse_mode %}container container-directory{%else%}container{%endif%}">

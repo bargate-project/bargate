@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for, render_template, flash, g, abort
+from flask import Flask, request, session, redirect, url_for, flash, g, abort
 import kerberos
 import mimetypes
 import os 
@@ -39,7 +39,7 @@ def login():
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
 			bgnumber = randint(1,17)
-			return render_template('login.html', next=next,bgnumber=bgnumber)
+			return bargate.core.render_page('login.html', next=next,bgnumber=bgnumber)
 
 		elif request.method == 'POST':
 

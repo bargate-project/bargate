@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for, render_template, flash, g, abort
+from flask import Flask, request, session, redirect, url_for, flash, g, abort
 import kerberos
 import mimetypes
 import os 

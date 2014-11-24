@@ -106,6 +106,13 @@ PERMANENT_SESSION_LIFETIME=timedelta(days=7)
 SHARES_CONFIG='/data/fwa/shares.conf'
 SHARES_DEFAULT='personal'
 
+## Local templates to override built in ones
+LOCAL_TEMPLATE_DIR=False
+
+# Name of the app to display everywhere
+APP_DISPLAY_NAME='Filestore Web Access'
+APP_DISPLAY_NAME_SHORT='FWA'
+
 ################################################################################
 
 # set up our application
@@ -136,6 +143,9 @@ if app.debug:
 else:
 	app.logger.setLevel(logging.INFO)
 	file_handler.setLevel(logging.INFO)
+
+# load user defined templates 
+app.load_user_templates()
 
 ## Output some startup info
 app.logger.info('bargate version ' + app.config['VERSION'] + ' initialised')

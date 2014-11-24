@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
 		<meta charset="utf-8">
-		<title>Filestore Web Access</title>
+		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
 		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
@@ -52,7 +52,7 @@
 				<img src="{{ url_for('static', filename='images/uoslogowhite.png') }}"></img>
 			</div>
 			<div class="loginbox">
-				<h1>Filestore Web Access</h1>
+				<h1>{{ config['APP_DISPLAY_NAME'] }}</h1>
 				{% for category, message in get_flashed_messages(with_categories=true) %}
 				<div class="alert {{ category }} fade in">
 					<a data-dismiss="alert" class="close" href="#">×</a>

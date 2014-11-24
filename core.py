@@ -35,22 +35,13 @@ import string                 ## used in pwgen
 
 def render_page(template_name, **kwargs):
 	"""A wrapper around Flask's render_template that adds commonly used variables to the page"""
-	
-	## Send the standard urls required on all pages
-	url_personal    = url_for('personal')
-	url_mydocuments = url_for('personal',path='mydocuments')
-	url_mydesktop   = url_for('personal',path='mydesktop')
-	url_website     = url_for('webfiles')
-	
+
 	## Standard bookmarks needed on nearly all pages
 	if not 'bookmarks' in kwargs:
 		if 'username' in session:
 			kwargs['bookmarks'] = bargate.settings.get_user_bookmarks()
 
-	return render_template(template_name, url_personal=url_personal,
-		url_mydocuments=url_mydocuments,
-		url_mydesktop=url_mydesktop,
-		url_website=url_website, **kwargs)
+	return render_template(template_name, **kwargs)
 
 ################################################################################
 
@@ -97,6 +88,7 @@ def downtime_check(f):
 		if app.config['DISABLE_APP']:
 			flash('Service Temporarily Unavailable - Normal service will be restored as soon as possible.','alert-warning')
 			bgnumber = randint(1,17)
+			## don't use render_page as it loads bookmarks and that might not work
 			return render_template('login.html', bgnumber=bgnumber)
 		return f(*args, **kwargs)
 	return decorated_function
