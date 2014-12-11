@@ -59,6 +59,9 @@ def login():
 			## Set logged in (if we got this far)
 			session['logged_in'] = True
 			session['username']  = request.form['username']
+			
+			## Lower case all usernames so that keys in redis always match no matter what case-value the user enters
+			session['username'] = session['username'].lower()
 
 			## Check if the user selected "Log me out when I close the browser"
 			permanent = request.form.get('sec',default="")
