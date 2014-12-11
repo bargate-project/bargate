@@ -425,7 +425,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				net_sec_desc_owner = bargate.smb.wb_sid_to_name(ctx.getxattr(Suri,smbc.XATTR_OWNER))
 				net_sec_desc_group = bargate.smb.wb_sid_to_name(ctx.getxattr(Suri,smbc.XATTR_GROUP))
 			except Exception as ex:
-				net_sec_desc_owner, net_sec_desc_group = "Error reading extended attributes: " + str(ex)
+				net_sec_desc_owner = "Error reading extended attributes: " + str(ex)
+				net_sec_desc_group = "Error reading extended attributes: " + str(ex)
 				
 				#return bargate.errors.smbc_handler(ex,uri,redirect(url_parent_dir))
 
