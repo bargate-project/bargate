@@ -59,7 +59,8 @@
 						</div>
 					</div>
 					<button id="upload-cancel" type="button" class="btn btn-danger hidden"><i class="fa fa-fw fa-times"></i> Cancel upload</button>
-					<div id="upload-files" class="files"></div>    
+					<ul id="upload-files" class="files list-unstyled" style="max-height: 250px; overflow-y: scroll">
+					</ul>  
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-fw fa-times-circle"></i> Close</button>
@@ -117,11 +118,11 @@ $(function ()
             {
                 if (file.error)
                 {
-                	$('<div class="alert alert-danger fade in"> <a data-dismiss="alert" class="close" href="#">×</a> ' + file.name + ' was not uploaded: ' + file.error + ' </div>').appendTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded: ' + file.error + ' </li>').appendTo('#upload-files');
         		}
         		else
         		{
-                	$('<div class="alert alert-success fade in"> <a data-dismiss="alert" class="close" href="#">×</a> ' + file.name + ' was uploaded successfully </div>').appendTo('#upload-files');
+					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; ' + file.name + ' was uploaded successfully </li>').appendTo('#upload-files');
         		}
         		
         		$('#upload-progress').addClass('hidden');
@@ -132,11 +133,11 @@ $(function ()
         {
         	if (data.errorThrown === 'abort')
         	{
-    			$('<div class="alert alert-warning fade in"> <a data-dismiss="alert" class="close" href="#">×</a> Upload cancelled by user </div>').appendTo('#upload-files');
+				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').appendTo('#upload-files');
 			}
 			else
 			{    		
-				$('<div class="alert alert-danger fade in"> <a data-dismiss="alert" class="close" href="#">×</a> Error! The server said: ' + data.errorThrown + ' </div>').appendTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded. The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
 			}
 			
 			$('#upload-progress').addClass('hidden');
