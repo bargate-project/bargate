@@ -90,10 +90,10 @@ REDIS_PORT=6379
 DISABLE_APP=True
 
 ## Default bootstrap/bootswatch theme
-THEME_DEFAULT='paper'
+THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.0 Beta 7'
+VERSION='1.0 Beta 8'
 
 ## Flask defaults (change to what we prefer)
 SESSION_COOKIE_SECURE=True

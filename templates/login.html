@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
 		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
 
 		<!--[if lt IE 9]>
@@ -75,7 +75,7 @@
 					</div>
 					<div class="checkbox">
 						<label>
-							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Remember me
+							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this computer <span class="glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-content="If you are on a secure private computer then clicking this will keep you logged in for a month. Do not use this on public or shared computers."></span>
 						</label>
 					</div>
 					<div class="form-group text-center">

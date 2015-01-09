@@ -6,3 +6,9 @@ window.onload = function()
   text_input.focus();
   text_input.select();
 }
+
+/* Tooltip */
+$(document).ready(function ()
+{
+  $('[data-toggle="popover"]').popover()
+});
