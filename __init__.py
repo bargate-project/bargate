@@ -113,6 +113,13 @@ LOCAL_TEMPLATE_DIR=False
 APP_DISPLAY_NAME='Filestore Web Access'
 APP_DISPLAY_NAME_SHORT='FWA'
 
+## LDAP
+LDAP_ENABLED=False
+LDAP_URI='ldaps://localhost.localdomain'
+LDAP_SEARCH_BASE=''
+LDAP_BIND_USER=''
+LDAP_BIND_PW=''
+
 ################################################################################
 
 # set up our application
