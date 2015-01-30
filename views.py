@@ -26,6 +26,7 @@ import time
 import json
 import re
 import werkzeug
+import ldap
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
@@ -78,6 +79,10 @@ def login():
 			## Log a successful login
 			app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
+			## IF LDAP is enabled attempt to log the LDAP home
+			if app.config['LDAP_ENABLED'] == True:
+				app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + str(ldap_get_homedir(session['username'])))
+
 			## determine if "next" variable is set (the URL to be sent to)
 			next = request.form.get('next',default=None)
 			
@@ -88,6 +93,36 @@ def login():
 				return redirect(url_for(app.config['SHARES_DEFAULT']))
 			else:
 				return redirect(next)
+
+################################################################################
+#### LDAP Home
+
+def ldap_get_homedir(username):
+
+	## connect to LDAP, turn off referals...
+	l = ldap.initialize(app.config['LDAP_URI'])
+	l.set_option(ldap.OPT_REFERRALS, 0)
+	## and bind to the server, perform a search. May be safer to use something
+	## other than cn against AD in the long term
+	try:
+		l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
+		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,"(cn=" + request.form['username'] +")")
+	except ldap.LDAPError as e:
+		flash('LDAP Bind error: ' + e.__str__(),'alert-danger')
+		return redirect(url_for('login'))
+	
+	## handle the search results and pull out the value of homeDirectory
+	for result in results:
+		dn	= result[0]
+		attrs	= result[1]
+
+		if not dn == None:
+			if "homeDirectory" in attrs:
+				if type(attrs['homeDirectory']) is list:
+					return attrs['homeDirectory'][0]
+				else:
+					return str(attrs['homeDirectory'])
+		return None
 
 ################################################################################
 #### LOGOUT

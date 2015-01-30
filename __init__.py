@@ -117,6 +117,8 @@ APP_DISPLAY_NAME_SHORT='FWA'
 LDAP_ENABLED=False
 LDAP_URI='ldaps://localhost.localdomain'
 LDAP_SEARCH_BASE=''
+LDAP_BIND_USER=''
+LDAP_BIND_PW=''
 
 ################################################################################
 
