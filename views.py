@@ -80,7 +80,7 @@ def login():
 			app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
 			## IF LDAP is enabled attempt to log the LDAP home
-			if app.config['LDAP_ENABLED'] == True:
+			if app.config['LDAP_HOMEDIR'] == True:
 				app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + str(ldap_get_homedir(session['username'])))
 
 			## determine if "next" variable is set (the URL to be sent to)
@@ -106,7 +106,7 @@ def ldap_get_homedir(username):
 	## other than cn against AD in the long term
 	try:
 		l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
-		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,"(cn=" + request.form['username'] +")")
+		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + request.form['username'])
 	except ldap.LDAPError as e:
 		flash('LDAP Bind error: ' + e.__str__(),'alert-danger')
 		return redirect(url_for('login'))
@@ -117,11 +117,11 @@ def ldap_get_homedir(username):
 		attrs	= result[1]
 
 		if not dn == None:
-			if "homeDirectory" in attrs:
-				if type(attrs['homeDirectory']) is list:
-					return attrs['homeDirectory'][0]
+			if (app.config['LDAP_HOME_ATTRIBUTE']) in attrs:
+				if type(attrs[app.config['LDAP_HOME_ATTRIBUTE']]) is list:
+					return attrs[app.config['LDAP_HOME_ATTRIBUTE']][0]
 				else:
-					return str(attrs['homeDirectory'])
+					return str(attrs[app.config['LDAP_HOME_ATTRIBUTE']])
 		return None
 
 ################################################################################
