@@ -212,8 +212,9 @@ def share_handler(path):
 
 	## LDAP home dir substitution support
 	if app.config['LDAP_HOMEDIR']:
-		if not session['ldap_homedir'] == None:
-			svrpath = svrpath.replace("%LDAP_HOMEDIR%",session['ldap_homedir'])
+		if 'ldap_homedir' in session:
+			if not session['ldap_homedir'] == None:
+				svrpath = svrpath.replace("%LDAP_HOMEDIR%",session['ldap_homedir'])
 
 	## Get the display name
 	display = app.sharesConfig.get(request.endpoint,'display')
