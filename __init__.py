@@ -114,9 +114,12 @@ APP_DISPLAY_NAME='Filestore Web Access'
 APP_DISPLAY_NAME_SHORT='FWA'
 
 ## LDAP
-LDAP_ENABLED=False
+LDAP_HOMEDIR=False
 LDAP_URI='ldaps://localhost.localdomain'
 LDAP_SEARCH_BASE=''
+# Default to homeDirectory as most people are using AD
+LDAP_HOME_ATTRIBUTE='homeDirectory'
+LDAP_USER_ATTRIBUTE='sAMAccountName'
 LDAP_BIND_USER=''
 LDAP_BIND_PW=''
 
