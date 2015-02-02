@@ -113,6 +113,16 @@ LOCAL_TEMPLATE_DIR=False
 APP_DISPLAY_NAME='Filestore Web Access'
 APP_DISPLAY_NAME_SHORT='FWA'
 
+## LDAP
+LDAP_HOMEDIR=False
+LDAP_URI='ldaps://localhost.localdomain'
+LDAP_SEARCH_BASE=''
+# Default to homeDirectory as most people are using AD
+LDAP_HOME_ATTRIBUTE='homeDirectory'
+LDAP_USER_ATTRIBUTE='sAMAccountName'
+LDAP_BIND_USER=''
+LDAP_BIND_PW=''
+
 ################################################################################
 
 # set up our application
@@ -121,16 +131,16 @@ app = BargateFlask(__name__)
 # load default config
 app.config.from_object(__name__)
 
-# try to load config from various paths 
+# try to load config from various paths
 if os.path.isfile('/etc/bargate.conf'):
 	app.config.from_pyfile('/etc/bargate.conf')
-elif os.path.isfile('/etc/bargate/bargate.conf'): 	
+elif os.path.isfile('/etc/bargate/bargate.conf'):
 	app.config.from_pyfile('/etc/bargate/bargate.conf')
-elif os.path.isfile('/data/fwa/bargate.conf'): 	
+elif os.path.isfile('/data/fwa/bargate.conf'):
 	app.config.from_pyfile('/data/fwa/bargate.conf')
-elif os.path.isfile('/data/bargate/bargate.conf'): 	
-	app.config.from_pyfile('/data/bargate/bargate.conf')	
-	
+elif os.path.isfile('/data/bargate/bargate.conf'):
+	app.config.from_pyfile('/data/bargate/bargate.conf')
+
 ## Set up logging to file
 file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', app.config['LOG_FILE_MAX_SIZE'], app.config['LOG_FILE_MAX_FILES'])
 file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
@@ -144,7 +154,7 @@ else:
 	app.logger.setLevel(logging.INFO)
 	file_handler.setLevel(logging.INFO)
 
-# load user defined templates 
+# load user defined templates
 app.load_user_templates()
 
 ## Output some startup info
@@ -183,7 +193,7 @@ Further Details:
 """))
 
 	app.logger.addHandler(mail_handler)
-	
+
 ## Debug Toolbar
 if app.config['DEBUG_TOOLBAR']:
 	app.debug = True
@@ -204,7 +214,7 @@ import bargate.mime
 import bargate.settings
 
 # load anti csrf function reference into template engine
-app.jinja_env.globals['csrf_token']      = core.generate_csrf_token 
+app.jinja_env.globals['csrf_token']      = core.generate_csrf_token
 app.jinja_env.globals['get_user_theme']  = settings.get_user_theme
 app.jinja_env.globals['get_user_navbar'] = settings.get_user_navbar
 
