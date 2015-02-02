@@ -93,7 +93,7 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.0 Beta 8'
+VERSION='1.0 Beta 9'
 
 ## Flask defaults (change to what we prefer)
 SESSION_COOKIE_SECURE=True
@@ -120,6 +120,7 @@ LDAP_SEARCH_BASE=''
 # Default to homeDirectory as most people are using AD
 LDAP_HOME_ATTRIBUTE='homeDirectory'
 LDAP_USER_ATTRIBUTE='sAMAccountName'
+LDAP_ANON_BIND=True
 LDAP_BIND_USER=''
 LDAP_BIND_PW=''
 
@@ -201,7 +202,6 @@ if app.config['DEBUG_TOOLBAR']:
 	toolbar = DebugToolbarExtension(app)
 	app.logger.info('bargate debug toolbar enabled')
 
-
 # load core functions
 import bargate.core
 
@@ -226,7 +226,7 @@ app.load_share_config()
 sharesList = app.sharesConfig.sections()
 
 for section in sharesList:
-	app.logger.info("Creating share entry '" + str(section) + "'")
+	app.logger.debug("Creating share entry '" + str(section) + "'")
 	app.add_url_rule(app.sharesConfig.get(section,'url'),endpoint=section,view_func=bargate.smb.share_handler,methods=['GET','POST'], defaults={'path': ''})
 	app.add_url_rule(app.sharesConfig.get(section,'url') + '/<path:path>/',endpoint=section,view_func=bargate.smb.share_handler,methods=['GET','POST'])
 

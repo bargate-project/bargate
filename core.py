@@ -30,6 +30,7 @@ from random import randint    ## used in before_request
 import time                   ## used in before_request
 import random                 ## used in pwgen            
 import string                 ## used in pwgen
+import ldap
 
 ################################################################################
 
@@ -362,3 +363,47 @@ def poperr_get():
 	session['popup_error_message'] = ""
 	
 	return (title,message)
+
+################################################################################
+#### LDAP Home
+
+def ldap_get_homedir(username):
+	"""This function tries to obtain a user's home directory
+	from an LDAP directory source. It is configured via the main
+	bargate config file.
+	"""
+
+	## connect to LDAP, turn off referals
+	l = ldap.initialize(app.config['LDAP_URI'])
+	l.set_option(ldap.OPT_REFERRALS, 0)
+
+	## and bind to the server if needed
+	if not app.config['LDAP_ANON_BIND']:
+		try:
+			l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
+		except ldap.LDAPError as e:
+			flash('Internal Error - Could not connect to LDAP directory with bind: ' + e.__str__(),'alert-danger')
+			app.logger.error("Could not bind to LDAP: " + e.__str__())
+			return redirect(url_for('login'))
+
+	## Now search for the user object
+	try:
+		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + username)
+	except ldap.LDAPError as e:
+		flash('Internal Error - Could not connect to LDAP directory with bind: ' + e.__str__(),'alert-danger')
+		app.logger.error("Could not search the LDAP directory: " + e.__str__())
+		return redirect(url_for('login'))
+	
+	## handle the search results and pull out the value of homeDirectory
+	for result in results:
+		dn	= result[0]
+		attrs	= result[1]
+
+		if not dn == None:
+			if (app.config['LDAP_HOME_ATTRIBUTE']) in attrs:
+				if type(attrs[app.config['LDAP_HOME_ATTRIBUTE']]) is list:
+					return attrs[app.config['LDAP_HOME_ATTRIBUTE']][0]
+				else:
+					return str(attrs[app.config['LDAP_HOME_ATTRIBUTE']])
+		return None
+

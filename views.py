@@ -26,7 +26,6 @@ import time
 import json
 import re
 import werkzeug
-import ldap
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
@@ -80,8 +79,17 @@ def login():
 			app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
 			## IF LDAP is enabled attempt to log the LDAP home
-			if app.config['LDAP_HOMEDIR'] == True:
-				app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + str(ldap_get_homedir(session['username'])))
+			if app.config['LDAP_HOMEDIR']:
+			
+				## Try to get the home directory path for this user
+				session['ldap_homedir'] = bargate.core.ldap_get_homedir(session['username'])
+
+				if session['ldap_homedir'] == None:
+					app.logger.error('ldap_get_homedir returned None for user ' + session['username'])
+					flash("Internal Error: I could not find your home directory!","alert-danger")
+					return redirect(url_for('login'))
+				else:
+					app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + str(ldap_get_homedir(session['username'])))
 
 			## determine if "next" variable is set (the URL to be sent to)
 			next = request.form.get('next',default=None)
@@ -93,36 +101,6 @@ def login():
 				return redirect(url_for(app.config['SHARES_DEFAULT']))
 			else:
 				return redirect(next)
-
-################################################################################
-#### LDAP Home
-
-def ldap_get_homedir(username):
-
-	## connect to LDAP, turn off referals...
-	l = ldap.initialize(app.config['LDAP_URI'])
-	l.set_option(ldap.OPT_REFERRALS, 0)
-	## and bind to the server, perform a search. May be safer to use something
-	## other than cn against AD in the long term
-	try:
-		l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
-		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + request.form['username'])
-	except ldap.LDAPError as e:
-		flash('LDAP Bind error: ' + e.__str__(),'alert-danger')
-		return redirect(url_for('login'))
-	
-	## handle the search results and pull out the value of homeDirectory
-	for result in results:
-		dn	= result[0]
-		attrs	= result[1]
-
-		if not dn == None:
-			if (app.config['LDAP_HOME_ATTRIBUTE']) in attrs:
-				if type(attrs[app.config['LDAP_HOME_ATTRIBUTE']]) is list:
-					return attrs[app.config['LDAP_HOME_ATTRIBUTE']][0]
-				else:
-					return str(attrs[app.config['LDAP_HOME_ATTRIBUTE']])
-		return None
 
 ################################################################################
 #### LOGOUT

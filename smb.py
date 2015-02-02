@@ -198,18 +198,31 @@ def statToType(fstat):
 		return -1
 
 ################################################################################
-
+#### SHARE HANDLER
 		
 @bargate.core.login_required
 @bargate.core.downtime_check
 def share_handler(path):
+	## Get the path variable
 	svrpath = app.sharesConfig.get(request.endpoint,'path')
+
+	## Variable substition for username
 	svrpath = svrpath.replace("%USERNAME%",session['username'])
 	svrpath = svrpath.replace("%USER%",session['username'])
-	display = app.sharesConfig.get(request.endpoint,'display')
-	menu = app.sharesConfig.get(request.endpoint,'menu')
-	return bargate.smb.connection(svrpath,request.endpoint,menu,display,path)
 
+	## LDAP home dir substitution support
+	if app.config['LDAP_HOMEDIR']:
+		if not session['ldap_homedir'] == None:
+			svrpath = svrpath.replace("%LDAP_HOMEDIR%",session['ldap_homedir'])
+
+	## Get the display name
+	display = app.sharesConfig.get(request.endpoint,'display')
+
+	## What menu is active?
+	menu = app.sharesConfig.get(request.endpoint,'menu')
+
+	## Run the page!
+	return bargate.smb.connection(svrpath,request.endpoint,menu,display,path)
 		
 ################################################################################
 
