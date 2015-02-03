@@ -89,7 +89,7 @@ def login():
 					flash("Internal Error: I could not find your home directory!","alert-danger")
 					return redirect(url_for('login'))
 				else:
-					app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + str(ldap_get_homedir(session['username'])))
+					app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + session['ldap_homedir'])
 
 			## determine if "next" variable is set (the URL to be sent to)
 			next = request.form.get('next',default=None)
