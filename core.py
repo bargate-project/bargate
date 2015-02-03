@@ -390,7 +390,7 @@ def ldap_get_homedir(username):
 	try:
 		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + username)
 	except ldap.LDAPError as e:
-		flash('Internal Error - Could not connect to LDAP directory with bind: ' + str(e),'alert-danger')
+		flash('Internal Error - Could not search the LDAP directory: ' + str(e),'alert-danger')
 		app.logger.error("Could not search the LDAP directory: " + str(e))
 		return redirect(url_for('login'))
 	

@@ -123,6 +123,7 @@ LDAP_USER_ATTRIBUTE='sAMAccountName'
 LDAP_ANON_BIND=True
 LDAP_BIND_USER=''
 LDAP_BIND_PW=''
+LDAP_HOMEDIR_IS_UNC=True
 
 ################################################################################
 
