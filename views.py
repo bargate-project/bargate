@@ -82,7 +82,10 @@ def login():
 			if app.config['LDAP_HOMEDIR']:
 			
 				## Try to get the home directory path for this user
-				session['ldap_homedir'] = bargate.core.ldap_get_homedir(session['username'])
+				session['ldap_homedir'] = "smb:" + (bargate.core.ldap_get_homedir(session['username'])).replace("\\","/")
+
+				## Translate the LDAP path into a path useable by libsmb
+				session ['ldap_homedir'].replace("\\","/")
 
 				if session['ldap_homedir'] == None:
 					app.logger.error('ldap_get_homedir returned None for user ' + session['username'])
