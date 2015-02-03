@@ -382,16 +382,16 @@ def ldap_get_homedir(username):
 		try:
 			l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
 		except ldap.LDAPError as e:
-			flash('Internal Error - Could not connect to LDAP directory with bind: ' + e.__str__(),'alert-danger')
-			app.logger.error("Could not bind to LDAP: " + e.__str__())
+			flash('Internal Error - Could not connect to LDAP directory with bind: ' + str(e),'alert-danger')
+			app.logger.error("Could not bind to LDAP: " + str(e))
 			return redirect(url_for('login'))
 
 	## Now search for the user object
 	try:
 		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + username)
 	except ldap.LDAPError as e:
-		flash('Internal Error - Could not connect to LDAP directory with bind: ' + e.__str__(),'alert-danger')
-		app.logger.error("Could not search the LDAP directory: " + e.__str__())
+		flash('Internal Error - Could not connect to LDAP directory with bind: ' + str(e),'alert-danger')
+		app.logger.error("Could not search the LDAP directory: " + str(e))
 		return redirect(url_for('login'))
 	
 	## handle the search results and pull out the value of homeDirectory
