@@ -80,13 +80,16 @@ def login():
 
 			## IF LDAP is enabled attempt to log the LDAP home
 			if app.config['LDAP_HOMEDIR']:
+
+				homedir = bargate.core.ldap_get_homedir(session['username'])
 			
 				## Try to get the home directory path for this user
-				if session['ldap_homedir'] == None:
+				if homedir == None:
 					app.logger.error('ldap_get_homedir returned None for user ' + session['username'])
 					flash("Internal Error: I could not find your home directory!","alert-danger")
 					return redirect(url_for('login'))
 				else:
+					session['ldap_homedir'] = homedir
 					app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + session['ldap_homedir'])
 
 					if app.config['LDAP_HOMEDIR_IS_UNC']:

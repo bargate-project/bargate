@@ -384,7 +384,7 @@ def ldap_get_homedir(username):
 		except ldap.LDAPError as e:
 			flash('Internal Error - Could not connect to LDAP directory with bind: ' + str(e),'alert-danger')
 			app.logger.error("Could not bind to LDAP: " + str(e))
-			return redirect(url_for('login'))
+			abort(500)
 
 	## Now search for the user object
 	try:
@@ -392,7 +392,7 @@ def ldap_get_homedir(username):
 	except ldap.LDAPError as e:
 		flash('Internal Error - Could not search the LDAP directory: ' + str(e),'alert-danger')
 		app.logger.error("Could not search the LDAP directory: " + str(e))
-		return redirect(url_for('login'))
+		abort(500)
 	
 	## handle the search results and pull out the value of homeDirectory
 	for result in results:
