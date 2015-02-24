@@ -94,7 +94,7 @@ def login():
 
 					if app.config['LDAP_HOMEDIR_IS_UNC']:
 						if session['ldap_homedir'].startswith('\\\\'):
-							session['ldap_homedir'] = session['ldap_homedir'].replace('\\\\','smb://',1)
+							session['ldap_homedir'] = session['ldap_homedir'].replace('\\','smb://',1)
 				
 			## determine if "next" variable is set (the URL to be sent to)
 			next = request.form.get('next',default=None)
