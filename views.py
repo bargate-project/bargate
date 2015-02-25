@@ -215,3 +215,26 @@ def bookmarks():
 
 			flash('Bookmark not found!','alert-danger')
 			return redirect(url_for('bookmarks'))					
+
+################################################################################
+#### Who is online?
+
+@app.route('/online/<last>')
+@bargate.core.login_required
+@bargate.core.downtime_check
+def online(last=5):
+	last = int(last)
+
+	if last == 1440:
+		last_str = "24 hours"
+	elif last == 60:
+		last_str = "hour"
+	elif last == 120:
+		last_str = "2 hours"
+	elif last == 180:
+		last_str = "3 hours"
+	else:
+		last_str = str(last) + " minutes"			
+
+	usernames = bargate.core.list_online_users(last)
+	return 	bargate.core.render_page('online.html',online=usernames,active="help",last=last_str)

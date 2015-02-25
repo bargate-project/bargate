@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<h2><i class="fa fa-user"></i> Online Users in the last {{last}}</h2>
+<hr/>
+<table class="table table-striped table-bordered table-hover">
+	<tbody>
+		{% for username in online %}
+		<tr>
+			<td><i class="fa fa-fw fa-arrow-right"></i> {{username}}</td>
+		</tr>
+		{%- endfor %}
+	</tbody>
+</table>
+		
+
+{% endblock %}
