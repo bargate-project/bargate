@@ -69,8 +69,9 @@ BANNED_EXTENSIONS = set([
 ])
 
 ## File logging
-LOG_FILE='/tmp/bargate.log'
-LOG_DIR='logs'
+FILE_LOG=True
+LOG_FILE='bargate.log'
+LOG_DIR='/tmp'
 LOG_FILE_MAX_SIZE=1 * 1024 * 1024
 LOG_FILE_MAX_FILES=10
 
@@ -144,9 +145,10 @@ elif os.path.isfile('/data/bargate/bargate.conf'):
 	app.config.from_pyfile('/data/bargate/bargate.conf')
 
 ## Set up logging to file
-file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', app.config['LOG_FILE_MAX_SIZE'], app.config['LOG_FILE_MAX_FILES'])
-file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-app.logger.addHandler(file_handler)
+if app.config['FILE_LOG'] == True:
+	file_handler = RotatingFileHandler(app.config['LOG_DIR'] + '/' + app.config['LOG_FILE'], 'a', app.config['LOG_FILE_MAX_SIZE'], app.config['LOG_FILE_MAX_FILES'])
+	file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
+	app.logger.addHandler(file_handler)
 
 ## Set up the max log level
 if app.debug:
