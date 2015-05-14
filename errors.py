@@ -106,11 +106,9 @@ def smbc_PermissionDenied(redirect_to=None):
 	"""Prints out a nice error for smbc.PermissionDenied exceptions
 	"""
 	
-	## check password with LDAP to see if it has changed
-	try:
-		## Check password again with kerberos, in case what we have in the cookie is now wrong
-		kerberos.checkPassword(session['username'], bargate.core.get_user_password(), app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
-	except Exception as e:
+	## Test to see if the password has changed since logon which would mean perm denied was password related
+	result = bargate.core.auth_user(session['username'], bargate.core.get_user_password())
+	if not result:
 		bargate.core.session_logout()
 		flash('Your password has changed. You must login again.','alert-danger')
 		return redirect(url_for('login'))

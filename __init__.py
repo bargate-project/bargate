@@ -49,10 +49,6 @@ SECRET_KEY = ''
 # web servers.
 ENCRYPT_KEY = ''
 
-## Kerberos configuration
-KRB5_SERVICE = 'krbtgt/localdomain'
-KRB5_DOMAIN  = 'localhost.localdomain'
-
 ## The 'workgroup' that SMBC should use for auth
 SMB_WORKGROUP = 'MSHOME'
 
@@ -94,7 +90,7 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.0 Beta 9'
+VERSION='1.1'
 
 ## Flask defaults (change to what we prefer)
 SESSION_COOKIE_SECURE=True
@@ -114,17 +110,26 @@ LOCAL_TEMPLATE_DIR=False
 APP_DISPLAY_NAME='Filestore Web Access'
 APP_DISPLAY_NAME_SHORT='FWA'
 
+## Default to LDAP auth - PLEASE DO NOT USE KERBEROS unless you don't have LDAP (?!?!)
+AUTH_TYPE='ldap'
+
 ## LDAP
-LDAP_HOMEDIR=False
 LDAP_URI='ldaps://localhost.localdomain'
 LDAP_SEARCH_BASE=''
-# Default to homeDirectory as most people are using AD
-LDAP_HOME_ATTRIBUTE='homeDirectory'
-LDAP_USER_ATTRIBUTE='sAMAccountName'
+LDAP_USER_ATTRIBUTE='sAMAccountName' ## default to AD style as lets face it, sadly, most people use i
 LDAP_ANON_BIND=True
 LDAP_BIND_USER=''
 LDAP_BIND_PW=''
+
+## LDAP homedir attribute support
+# You MUST use AUTH_TYPE 'ldap' or this setting will be ignored
+LDAP_HOMEDIR=False
+LDAP_HOME_ATTRIBUTE='homeDirectory' ## default to AD style as lets face it, sadly, most people use it
 LDAP_HOMEDIR_IS_UNC=True
+
+## Kerberos configuration
+KRB5_SERVICE = 'krbtgt/localdomain'
+KRB5_DOMAIN  = 'localhost.localdomain'
 
 ################################################################################
 
