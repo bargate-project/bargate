@@ -513,6 +513,8 @@ def get_user_last_activity(user_id):
     return datetime.utcfromtimestamp(int(last_active))
 
 def list_online_users(minutes=15):
+    if minutes > 86400:
+        minutes = 86400
     current = int(time.time()) // 60
     minutes = xrange(minutes)
     return g.redis.sunion(['online-users/%d' % (current - x)
