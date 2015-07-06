@@ -32,6 +32,13 @@ import random                 ## used in pwgen
 import string                 ## used in pwgen
 import ldap
 
+# For cookie decode
+from base64 import b64decode
+from itsdangerous import base64_decode
+import zlib
+import json
+import uuid
+
 ################################################################################
 
 def render_page(template_name, **kwargs):
@@ -88,7 +95,7 @@ def downtime_check(f):
 	def decorated_function(*args, **kwargs):
 		if app.config['DISABLE_APP']:
 			flash('Service Temporarily Unavailable - Normal service will be restored as soon as possible.','alert-warning')
-			bgnumber = randint(1,17)
+			bgnumber = randint(1,2)
 			## don't use render_page as it loads bookmarks and that might not work
 			return render_template('login.html', bgnumber=bgnumber)
 		return f(*args, **kwargs)
@@ -123,8 +130,8 @@ def before_request():
 
 	## Check CSRF key is valid
 	if request.method == "POST":
-		## login handler shouldn't have to be CSRF protected
-		if not request.endpoint == 'login':
+		## login handler and portal page shouldn't have to be CSRF protected
+		if not request.endpoint in ('login', 'portallogin'):
 			## check csrf token is valid
 			token = session.get('_csrf_token')
 			if not token or token != request.form.get('_csrf_token'):
@@ -434,3 +441,40 @@ def list_online_users(minutes=15):
     minutes = xrange(minutes)
     return g.redis.sunion(['online-users/%d' % (current - x)
                          for x in minutes])
+
+################################################################################
+#### Cookie decode for portal login
+
+def decode_session_cookie(cookie_data):
+	compressed = False
+	payload = cookie_data
+
+	if payload.startswith(b'.'):
+		compressed = True
+		payload = payload[1:]
+
+	data = payload.split(".")[0]
+	data = base64_decode(data)
+	if compressed:
+		data = zlib.decompress(data)
+
+	return data
+
+def flask_load_session_json(value):
+	def object_hook(obj):
+		if (len(obj) != 1):
+			return obj
+		the_key, the_value = next(obj.iteritems())
+		if the_key == 't':
+			return str(tuple(the_value))
+		elif the_key == 'u':
+			return str(uuid.UUID(the_value))
+		elif the_key == 'b':
+			return str(b64decode(the_value))
+		elif the_key == 'm':
+			return str(Markup(the_value))
+		elif the_key == 'd':
+			return str(parse_date(the_value))
+		return obj
+	return json.loads(value, object_hook=object_hook)
+

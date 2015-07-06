@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for, flash, g, abort
+from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response
 import kerberos
 import mimetypes
 import os 
@@ -26,6 +26,8 @@ import time
 import json
 import re
 import werkzeug
+# testing
+from itsdangerous import base64_decode
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
@@ -38,7 +40,7 @@ def login():
 	else:
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
-			bgnumber = randint(1,17)
+			bgnumber = randint(1,2)
 			return bargate.core.render_page('login.html', next=next,bgnumber=bgnumber)
 
 		elif request.method == 'POST':
@@ -241,3 +243,31 @@ def online(last=5):
 
 	usernames = bargate.core.list_online_users(last)
 	return 	bargate.core.render_page('online.html',online=usernames,active="help",last=last_str)
+
+#################################################################################
+### Portal login
+
+@app.route('/portallogin', methods=['POST', 'GET'])
+def portallogin():
+	cookie_name = request.args.get('cookie0')
+	cookie_content = request.args.get('cookie1').split(';')[0]
+
+	decoded_cookie_content = bargate.core.decode_session_cookie(cookie_content)
+	json_cookie_content = bargate.core.flask_load_session_json(decoded_cookie_content)
+
+	app.logger.info('Decoded cookie username ' + json_cookie_content['username'])
+
+	session['username'] = json_cookie_content['username']
+	session['id'] = json_cookie_content['id']
+	session['logged_in'] = json_cookie_content['logged_in']
+	session['ldap_homedir'] = json_cookie_content['ldap_homedir']
+
+	return redirect(url_for(app.config['SHARES_DEFAULT']))
+
+@app.route('/portallogin2', methods=['POST', 'GET'])
+def portallogin2():
+	username = request.cookies.get('username')
+
+	app.logger.info('Getting username ' + username)
+	response = make_response(redirect(url_for(app.config['SHARES_DEFAULT'])))
+	return response
