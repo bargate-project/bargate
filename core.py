@@ -373,47 +373,130 @@ def poperr_get():
 	return (title,message)
 
 ################################################################################
-#### LDAP Home
+#### Authentication
 
-def ldap_get_homedir(username):
-	"""This function tries to obtain a user's home directory
-	from an LDAP directory source. It is configured via the main
-	bargate config file.
-	"""
+def auth_user(username, password):
+	app.logger.debug("bargate.core.auth_user " + username)
 
-	## connect to LDAP, turn off referals
-	l = ldap.initialize(app.config['LDAP_URI'])
-	l.set_option(ldap.OPT_REFERRALS, 0)
+	if len(username) == 0:
+		app.logger.debug("bargate.core.auth_user empty username")
+		return False
+	if len(password) == 0:
+		app.logger.debug("bargate.core.auth_user empty password")
+		return False
 
-	## and bind to the server if needed
-	if not app.config['LDAP_ANON_BIND']:
+	if app.config['AUTH_TYPE'] == 'kerberos':
+		app.logger.debug("bargate.core.auth_user auth type kerberos")
+
+		## Kerberos authentication.
+		## As of May 2015, DO NOT USE THIS. checkPassword does not verify the KDC is the right one.
+		## Of course, this can only be verified if the local machine is actually joined to the domain? and thus has a local host/ principal?
 		try:
-			l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
+			kerberos.checkPassword(request.form['username'], request.form['password'], app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
+		except kerberos.BasicAuthError as e:
+			return False
+		except kerberos.KrbError as e:
+			flash('Unexpected kerberos authentication error: ' + e.__str__(),'alert-danger')
+			return False
+		except kerberos.GSSError as e:
+			flash('Unexpected kerberos gss authentication error: ' + e.__str__(),'alert-danger')
+			return False
+
+		return True
+
+	elif app.config['AUTH_TYPE'] == 'ldap':
+		app.logger.debug("bargate.core.auth_user auth type ldap")
+
+		## LDAP auth. This is preferred as of May 2015 due to issues with python-kerberos.
+
+		## connect to LDAP and turn off referals
+		l = ldap.initialize(app.config['LDAP_URI'])
+		l.set_option(ldap.OPT_REFERRALS, 0)
+
+		## and bind to the server with a username/password if needed in order to search for the full DN for the user who is logging in.
+		try:
+			if app.config['LDAP_ANON_BIND']:
+				l.simple_bind_s()
+			else:
+				l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
 		except ldap.LDAPError as e:
-			flash('Internal Error - Could not connect to LDAP directory with bind: ' + str(e),'alert-danger')
+			flash('Internal Error - Could not connect to LDAP directory: ' + str(e),'alert-danger')
 			app.logger.error("Could not bind to LDAP: " + str(e))
 			abort(500)
 
-	## Now search for the user object
-	try:
-		results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + username)
-	except ldap.LDAPError as e:
-		flash('Internal Error - Could not search the LDAP directory: ' + str(e),'alert-danger')
-		app.logger.error("Could not search the LDAP directory: " + str(e))
-		abort(500)
-	
-	## handle the search results and pull out the value of homeDirectory
-	for result in results:
-		dn	= result[0]
-		attrs	= result[1]
 
-		if not dn == None:
-			if (app.config['LDAP_HOME_ATTRIBUTE']) in attrs:
-				if type(attrs[app.config['LDAP_HOME_ATTRIBUTE']]) is list:
-					return attrs[app.config['LDAP_HOME_ATTRIBUTE']][0]
-				else:
-					return str(attrs[app.config['LDAP_HOME_ATTRIBUTE']])
-		return None
+		app.logger.debug("bargate.core.auth_user ldap searching for username in base " + app.config['LDAP_SEARCH_BASE'] + " looking for attribute " + app.config['LDAP_USER_ATTRIBUTE'])
+
+		## Now search for the user object to bind as
+		try:
+			results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,(app.config['LDAP_USER_ATTRIBUTE']) + "=" + username)
+		except ldap.LDAPError as e:
+			app.logger.debug("bargate.core.auth_user no object found in ldap")
+			return False
+
+		app.logger.debug("bargate.core.auth_user ldap found results from dn search")
+	
+		## handle the search results
+		for result in results:
+			dn	= result[0]
+			attrs	= result[1]
+
+			if dn == None:
+				## No dn returned. Return false.
+				return False
+
+			else:
+				app.logger.debug("bargate.core.auth_user ldap found dn " + str(dn))
+
+				## Found the DN. Yay! Now bind with that DN and the password the user supplied
+				try:
+					app.logger.debug("bargate.core.auth_user ldap attempting ldap simple bind as " + str(dn))
+					lauth = ldap.initialize(app.config['LDAP_URI'])
+					lauth.set_option(ldap.OPT_REFERRALS, 0)
+					lauth.simple_bind_s( (dn), (password) )
+				except ldap.LDAPError as e:
+					## password was wrong
+					app.logger.debug("bargate.core.auth_user ldap bind failed as " + str(dn))
+					return False
+
+				app.logger.debug("bargate.core.auth_user ldap bind succeeded as " + str(dn))
+
+				## Should we use the ldap home dir attribute?
+				if app.config['LDAP_HOMEDIR']:
+					## Now look up the LDAP HOME ATTRIBUTE as well
+					if (app.config['LDAP_HOME_ATTRIBUTE']) in attrs:
+						if type(attrs[app.config['LDAP_HOME_ATTRIBUTE']]) is list:
+							homedir_attribute = attrs[app.config['LDAP_HOME_ATTRIBUTE']][0]
+						else:
+							homedir_attribute = str(attrs[app.config['LDAP_HOME_ATTRIBUTE']	])
+
+						if homedir_attribute == None:
+							app.logger.error('ldap_get_homedir returned None for user ' + session['username'])
+							flash("Profile Error: I could not find your home directory location","alert-danger")
+							abort(500)
+						else:
+							session['ldap_homedir'] = homedir_attribute
+							app.logger.debug('User "' + session['username'] + '" LDAP home attribute ' + session['ldap_homedir'])
+
+							if app.config['LDAP_HOMEDIR_IS_UNC']:
+								if session['ldap_homedir'].startswith('\\\\'):
+									session['ldap_homedir'] = session['ldap_homedir'].replace('\\\\','smb://',1)
+								session['ldap_homedir'] = session['ldap_homedir'].replace('\\','/')
+					
+							## Overkill but log it again anyway just to make sure we really have the value we think we should
+							app.logger.debug('User "' + session['username'] + '" home SMB path ' + session['ldap_homedir'])		
+
+				## Return that LDAP auth succeeded
+				return True
+
+		## Catch all return false for LDAP auth
+		return False
+
+	else:
+		flash('Internal Error - Unknown or incorrect authentication type configured','alert-danger')
+		app.logger.error("Critical Error - Unknown or incorrect authentication type configured")
+		abort(500)
+
 
 ################################################################################
 
@@ -437,6 +520,8 @@ def get_user_last_activity(user_id):
     return datetime.utcfromtimestamp(int(last_active))
 
 def list_online_users(minutes=15):
+    if minutes > 86400:
+        minutes = 86400
     current = int(time.time()) // 60
     minutes = xrange(minutes)
     return g.redis.sunion(['online-users/%d' % (current - x)

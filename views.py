@@ -26,8 +26,8 @@ import time
 import json
 import re
 import werkzeug
-# testing
 from itsdangerous import base64_decode
+import ldap
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
@@ -45,20 +45,13 @@ def login():
 
 		elif request.method == 'POST':
 
-			try:
-				## Check password with kerberos
-				kerberos.checkPassword(request.form['username'], request.form['password'], app.config['KRB5_SERVICE'], app.config['KRB5_DOMAIN'])
-			except kerberos.BasicAuthError as e:
+			result = bargate.core.auth_user(request.form['username'], request.form['password'])
+
+			if not result:
 				flash('Incorrect username and/or password','alert-danger')
 				return redirect(url_for('login'))
-			except kerberos.KrbError as e:
-				flash('Unexpected Kerberos Error: ' + e.__str__(),'alert-danger')
-				return redirect(url_for('login'))
-			except kerberos.GSSError as e:
-				flash('Unexpected GSS Error: ' + e.__str__(),'alert-danger')
-				return redirect(url_for('login'))
-
-			## Set logged in (if we got this far)
+				
+			## Set logged in
 			session['logged_in'] = True
 			session['username']  = request.form['username']
 			
@@ -74,38 +67,16 @@ def login():
 			else:
 				session.permanent = False
 
-			## Encrypt the password and store in the session!
+			## Encrypt the password and store in the session
 			session['id'] = bargate.core.aes_encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
 
-			## Log a successful login
-			app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
-
-			## IF LDAP is enabled attempt to log the LDAP home
-			if app.config['LDAP_HOMEDIR']:
-
-				homedir = bargate.core.ldap_get_homedir(session['username'])
-			
-				## Try to get the home directory path for this user
-				if homedir == None:
-					app.logger.error('ldap_get_homedir returned None for user ' + session['username'])
-					flash("Internal Error: I could not find your home directory!","alert-danger")
-					return redirect(url_for('login'))
-				else:
-					session['ldap_homedir'] = homedir
-					app.logger.info('User "' + session['username'] + '" LDAP home attribute ' + session['ldap_homedir'])
-
-					if app.config['LDAP_HOMEDIR_IS_UNC']:
-						if session['ldap_homedir'].startswith('\\\\'):
-							session['ldap_homedir'] = session['ldap_homedir'].replace('\\\\','smb://',1)
-						session['ldap_homedir'] = session['ldap_homedir'].replace('\\','/')
-					
-					## Overkill but log it again anyway just to make sure we really have the value we think we should
-					app.logger.info('User "' + session['username'] + '" home SMB path ' + session['ldap_homedir'])
+			## Log a successful login on debug facility
+			app.logger.debug('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
 				
 			## determine if "next" variable is set (the URL to be sent to)
 			next = request.form.get('next',default=None)
 			
-			## Record the last login time
+			## Record the last login time 
 			bargate.settings.set_user_data('login',str(time.time()))
 
 			if next == None:
