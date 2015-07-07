@@ -235,10 +235,3 @@ def portallogin():
 
 	return redirect(url_for(app.config['SHARES_DEFAULT']))
 
-@app.route('/portallogin2', methods=['POST', 'GET'])
-def portallogin2():
-	username = request.cookies.get('username')
-
-	app.logger.info('Getting username ' + username)
-	response = make_response(redirect(url_for(app.config['SHARES_DEFAULT'])))
-	return response
