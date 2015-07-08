@@ -471,12 +471,12 @@ def auth_user(username, password):
 							homedir_attribute = str(attrs[app.config['LDAP_HOME_ATTRIBUTE']	])
 
 						if homedir_attribute == None:
-							app.logger.error('ldap_get_homedir returned None for user ' + session['username'])
+							app.logger.error('ldap_get_homedir returned None for user ' + username)
 							flash("Profile Error: I could not find your home directory location","alert-danger")
 							abort(500)
 						else:
 							session['ldap_homedir'] = homedir_attribute
-							app.logger.debug('User "' + session['username'] + '" LDAP home attribute ' + session['ldap_homedir'])
+							app.logger.debug('User "' + username + '" LDAP home attribute ' + session['ldap_homedir'])
 
 							if app.config['LDAP_HOMEDIR_IS_UNC']:
 								if session['ldap_homedir'].startswith('\\\\'):
@@ -484,7 +484,7 @@ def auth_user(username, password):
 								session['ldap_homedir'] = session['ldap_homedir'].replace('\\','/')
 					
 							## Overkill but log it again anyway just to make sure we really have the value we think we should
-							app.logger.debug('User "' + session['username'] + '" home SMB path ' + session['ldap_homedir'])		
+							app.logger.debug('User "' + username + '" home SMB path ' + session['ldap_homedir'])		
 
 				## Return that LDAP auth succeeded
 				return True
