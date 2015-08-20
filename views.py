@@ -40,7 +40,7 @@ def login():
 	else:
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
-			bgnumber = randint(1,2)
+			bgnumber = randint(1,app.config['LOGIN_IMAGE_RANDOM_MAX'])
 			return bargate.core.render_page('login.html', next=next,bgnumber=bgnumber)
 
 		elif request.method == 'POST':
@@ -216,22 +216,29 @@ def online(last=5):
 	return 	bargate.core.render_page('online.html',online=usernames,active="help",last=last_str)
 
 #################################################################################
-### Portal login
+### Portal login support (added for University of Sheffield)
 
 @app.route('/portallogin', methods=['POST', 'GET'])
 def portallogin():
-	cookie_name = request.args.get('cookie0')
+	cookie_name    = request.args.get('cookie0')
 	cookie_content = request.args.get('cookie1').split(';')[0]
 
 	decoded_cookie_content = bargate.core.decode_session_cookie(cookie_content)
-	json_cookie_content = bargate.core.flask_load_session_json(decoded_cookie_content)
+	json_cookie_content    = bargate.core.flask_load_session_json(decoded_cookie_content)
 
 	app.logger.info('Decoded cookie username ' + json_cookie_content['username'])
 
-	session['username'] = json_cookie_content['username']
-	session['id'] = json_cookie_content['id']
-	session['logged_in'] = json_cookie_content['logged_in']
-	session['ldap_homedir'] = json_cookie_content['ldap_homedir']
+	session['username']     = json_cookie_content['username']
+	session['id']           = json_cookie_content['id']
 
-	return redirect(url_for(app.config['SHARES_DEFAULT']))
+	## verify this username and password we've been told to accept via cookie
+	result = bargate.core.auth_user(session['username'], bargate.core.get_user_password())
+
+	if not result:
+		flash('Incorrect username and/or password','alert-danger')
+		bargate.core.session_logout()
+		return redirect(url_for('login'))
+	else:
+		session['logged_in']    = True
+		return redirect(url_for(app.config['SHARES_DEFAULT']))
 

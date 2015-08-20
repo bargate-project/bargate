@@ -59,6 +59,8 @@ def session_logout():
 	app.logger.info('User "' + session['username'] + '" logged out from "' + request.remote_addr + '" using ' + request.user_agent.string)
 	session.pop('logged_in', None)
 	session.pop('username', None)
+	session.pop('id', None)
+	session.pop('ldap_homedir', None)
 
 ################################################################################
 
@@ -78,7 +80,6 @@ def login_required(f):
 	def decorated_function(*args, **kwargs):
 		if session.get('logged_in',False) is False:
 			flash('You must login first!','alert-danger')
-			## TODO take the next code from sysman - much improved over this.
 			args = url_encode(request.args)
 			return redirect(url_for('login', next=request.script_root + request.path + "?" + args))
 		return f(*args, **kwargs)
@@ -532,7 +533,7 @@ def list_online_users(minutes=15):
 
 def decode_session_cookie(cookie_data):
 	compressed = False
-	payload = cookie_data
+	payload    = cookie_data
 
 	if payload.startswith(b'.'):
 		compressed = True
@@ -546,6 +547,7 @@ def decode_session_cookie(cookie_data):
 	return data
 
 def flask_load_session_json(value):
+
 	def object_hook(obj):
 		if (len(obj) != 1):
 			return obj
@@ -561,5 +563,6 @@ def flask_load_session_json(value):
 		elif the_key == 'd':
 			return str(parse_date(the_value))
 		return obj
+
 	return json.loads(value, object_hook=object_hook)
 

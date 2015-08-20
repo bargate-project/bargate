@@ -131,6 +131,9 @@ LDAP_HOMEDIR_IS_UNC=True
 KRB5_SERVICE = 'krbtgt/localdomain'
 KRB5_DOMAIN  = 'localhost.localdomain'
 
+## login background random int.
+LOGIN_IMAGE_RANDOM_MAX = 17
+
 ################################################################################
 
 # set up our application
