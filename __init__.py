@@ -90,7 +90,7 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.2'
+VERSION='1.3'
 
 ## Flask defaults (changed to what we prefer)
 SESSION_COOKIE_SECURE      = True
@@ -110,10 +110,10 @@ LOCAL_TEMPLATE_DIR=False
 APP_DISPLAY_NAME='Filestore Web Access'
 APP_DISPLAY_NAME_SHORT='FWA'
 
-## Default to LDAP auth - PLEASE DO NOT USE KERBEROS unless you don't have LDAP (?!?!)
+## What auth method. "ldap", "kerberos", 'krb5' (alias) or 'smb'
 AUTH_TYPE='ldap'
 
-## LDAP
+## LDAP AUTH
 LDAP_URI            = 'ldaps://localhost.localdomain'
 LDAP_SEARCH_BASE    = ''
 LDAP_USER_ATTRIBUTE = 'sAMAccountName' ## default to AD style as lets face it, sadly, most people use it :'(
@@ -127,10 +127,14 @@ LDAP_HOMEDIR        = False
 LDAP_HOME_ATTRIBUTE = 'homeDirectory' ## default to AD style as lets face it, sadly, most people use it :'(
 LDAP_HOMEDIR_IS_UNC = True
 
-## Kerberos configuration
+## KERBEROS AUTH
 # you should probably use LDAP auth...
 KRB5_SERVICE = 'krbtgt/localdomain'
 KRB5_DOMAIN  = 'localhost.localdomain'
+
+## SMB AUTH
+# only use this if you don't have LDAP or kerberos
+SMB_AUTH_URI = "smb://yourdomain.tld/NETLOGON/"
 
 ## login background random int.
 LOGIN_IMAGE_RANDOM_MAX = 17
@@ -138,6 +142,9 @@ LOGIN_IMAGE_RANDOM_MAX = 17
 ## TOTP 2-factor auth
 TOTP_ENABLED = False
 TOTP_IDENT   = 'bargate'
+
+## REMEMBER_ME_ENABLED - "Remember me on this computer" enabled or not.
+REMEMBER_ME_ENABLED = True
 
 ################################################################################
 

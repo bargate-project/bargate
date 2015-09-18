@@ -32,6 +32,7 @@ import random                 ## used in pwgen
 import string                 ## used in pwgen
 import ldap
 from random import randint
+import smbc
 
 # For cookie decode
 from base64 import b64decode
@@ -248,6 +249,14 @@ def get_smbc_auth(server,share,workgroup,username,password):
 
 ################################################################################
 
+def get_smbc_auth_logon(server,share,workgroup,username,password):
+	"""Returns authentication information for SMB/CIFS as required
+	by the pysmbc module for SMB auth.
+	"""
+	return (app.config['SMB_WORKGROUP'],g.smb_username,g.smb_password)
+
+################################################################################
+
 def sort_by_name(left,right):
 	"""A cmp function for the python sorted() function. Use to sort
 	a list by name. Used by smb.py directory entry sorting.
@@ -416,7 +425,7 @@ def auth_user(username, password):
 		app.logger.debug("bargate.core.auth_user empty password")
 		return False
 
-	if app.config['AUTH_TYPE'] == 'kerberos':
+	if app.config['AUTH_TYPE'] == 'kerberos' or app.config['AUTH_TYPE'] == 'krb5':
 		app.logger.debug("bargate.core.auth_user auth type kerberos")
 
 		## Kerberos authentication.
@@ -433,6 +442,27 @@ def auth_user(username, password):
 			flash('Unexpected kerberos gss authentication error: ' + e.__str__(),'alert-danger')
 			return False
 
+		app.logger.debug("bargate.core.auth_user auth kerberos success")
+		return True
+
+	elif app.config['AUTH_TYPE'] == 'smb':
+		app.logger.debug("bargate.core.auth_user auth type smb")
+
+		## "SMB" auth. This is a bit odd. It just tries to connect to an SMB share and list the contents. If this succeeds, assume SUCCESS!
+		try:
+			g.smb_username = username
+			g.smb_password = password
+			ctx = smbc.Context(auth_fn=bargate.core.get_smbc_auth_logon)
+			ctx.opendir(app.config['SMB_AUTH_URI']).getdents()
+		except smbc.PermissionError:
+			app.logger.debug("bargate.core.auth_user smb permission denied")
+			return False
+		except Exception as ex:
+			app.logger.debug("bargate.core.auth_user smb exception: " + str(ex))
+			flash('Unexpected SMB authentication error: ' + str(ex),'alert-danger')
+			return False
+
+		app.logger.debug("bargate.core.auth_user auth smb success")
 		return True
 
 	elif app.config['AUTH_TYPE'] == 'ldap':
@@ -518,6 +548,7 @@ def auth_user(username, password):
 							app.logger.debug('User "' + username + '" home SMB path ' + session['ldap_homedir'])		
 
 				## Return that LDAP auth succeeded
+				app.logger.debug("bargate.core.auth_user ldap success")
 				return True
 
 		## Catch all return false for LDAP auth

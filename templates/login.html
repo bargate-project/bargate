@@ -73,11 +73,13 @@
 						<label>Password:</label>
 						<input type="password" class="login-input form-control" id="loginPassword" name="password">
 					</div>
+					{% if config['REMEMBER_ME_ENABLED'] %}
 					<div class="checkbox">
 						<label>
 							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this computer <span class="glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-trigger="hover" data-content="If you are on a private computer you trust then selecting this option will keep you logged in even if you close the browser window. Do not use this on public or shared computers."></span>
 						</label>
 					</div>
+					{% endif %}
 					<div class="form-group text-center">
 						<button class="btn btn-default btn-lg" type="submit">Login</button>
 					</div>

@@ -53,11 +53,14 @@ def login():
 			session['username']  = request.form['username'].lower()
 			
 			## Check if the user selected "Log me out when I close the browser"
-			permanent = request.form.get('sec',default="")
+			if app.config['REMEMBER_ME_ENABLED']:
+				permanent = request.form.get('sec',default="")
 
-			## Set session as permanent or not
-			if permanent == 'sec':
-				session.permanent = True
+				## Set session as permanent or not
+				if permanent == 'sec':
+					session.permanent = True
+				else:
+					session.permanent = False
 			else:
 				session.permanent = False
 
