@@ -60,28 +60,27 @@
 				</div>
 				{% endfor %}
 
-				<form role="form" action="{{ url_for('login') }}" method="POST" class="text-left">
+				<form role="form" method="POST">
 					<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 					{% if next %}
 					<input name="next" type="hidden" value="{{next}}"/>
 					{% endif %}
-					<div class="form-group">
-						<label>Username:</label>
-						<input type="text" class="login-input form-control" id="loginUsername" name="username">
-					</div>
-					<div class="form-group">
-						<label>Password:</label>
-						<input type="password" class="login-input form-control" id="loginPassword" name="password">
-					</div>
-					<div class="checkbox">
-						<label>
-							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this computer <span class="glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-trigger="hover" data-content="If you are on a private computer you trust then selecting this option will keep you logged in even if you close the browser window. Do not use this on public or shared computers."></span>
-						</label>
-					</div>
+
+					<p>					
+					<strong>Your account is protected by Two Step</strong>
+					</p>
+					<p>Please enter the number from the authenticator app on your smartphone to continue:</p>
+
+				  <div class="form-group">
+						<input name="totp_token" type="text" class="form-control" placeholder="Number">
+				  </div>
+
 					<div class="form-group text-center">
-						<button class="btn btn-default btn-lg" type="submit">Login</button>
+						<button class="btn btn-default btn-lg" type="submit">Continue</button>
 					</div>
+
 				</form>
+
 				<p class="text-center">
 					<a href="https://www.southampton.ac.uk/about/conditions-policies.page">Terms and Conditions</a> - <a href="{{ url_for('about') }}">About</a>
 				</p>

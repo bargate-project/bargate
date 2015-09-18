@@ -21,7 +21,6 @@ from flask import Flask, request, session, redirect, url_for, flash, g, abort, m
 import kerberos
 import mimetypes
 import os 
-from random import randint
 import time
 import json
 import re
@@ -35,13 +34,12 @@ import ldap
 @app.route('/', methods=['GET', 'POST'])
 @bargate.core.downtime_check
 def login():
-	if 'username' in session:
+	if bargate.core.is_user_logged_in():
 		return redirect(url_for(app.config['SHARES_DEFAULT']))
 	else:
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
-			bgnumber = randint(1,app.config['LOGIN_IMAGE_RANDOM_MAX'])
-			return bargate.core.render_page('login.html', next=next,bgnumber=bgnumber)
+			return bargate.core.render_page('login.html', next=next)
 
 		elif request.method == 'POST':
 
@@ -50,14 +48,10 @@ def login():
 			if not result:
 				flash('Incorrect username and/or password','alert-danger')
 				return redirect(url_for('login'))
-				
-			## Set logged in
-			session['logged_in'] = True
-			session['username']  = request.form['username']
 			
-			## Lower case all usernames so that keys in redis always match no matter what case-value the user enters
-			session['username'] = session['username'].lower()
-
+			## Set the username in the session
+			session['username']  = request.form['username'].lower()
+			
 			## Check if the user selected "Log me out when I close the browser"
 			permanent = request.form.get('sec',default="")
 
@@ -70,19 +64,16 @@ def login():
 			## Encrypt the password and store in the session
 			session['id'] = bargate.core.aes_encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
 
-			## Log a successful login on debug facility
-			app.logger.debug('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
-				
-			## determine if "next" variable is set (the URL to be sent to)
-			next = request.form.get('next',default=None)
-			
-			## Record the last login time 
-			bargate.settings.set_user_data('login',str(time.time()))
+			## Check if two-factor is enabled for this account
+			## TWO STEP LOGONS
+			if app.config['TOTP_ENABLED']:
+				if bargate.totp.totp_user_enabled(session['username']):
+					app.logger.debug('User "' + session['username'] + '" has two step enabled. Redirecting to two-step handler')
+					return redirect(url_for('totp_logon_view',next=request.form.get('next',default=None)))
 
-			if next == None:
-				return redirect(url_for(app.config['SHARES_DEFAULT']))
-			else:
-				return redirect(next)
+			## Successful logon without 2-step needed
+			return bargate.core.logon_ok()
+
 
 ################################################################################
 #### LOGOUT

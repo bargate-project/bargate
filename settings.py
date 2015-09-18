@@ -29,16 +29,17 @@ import werkzeug
 ################################################################################
 
 def get_user_theme():
-	if 'username' in session: 
-		try:
-			theme = g.redis.get('user:' + session['username'] + ':theme')
+	if bargate.core.is_user_logged_in():
+		if app.config['REDIS_ENABLED']:
+			try:
+				theme = g.redis.get('user:' + session['username'] + ':theme')
 
-			if theme != None:
-				return theme
+				if theme != None:
+					return theme
 				
-		except Exception as ex:
-			## Can't return an error, this function is called from jinja.
-			app.logger.error('Unable to speak to redis: ' + str(ex))
+			except Exception as ex:
+				## Can't return an error, this function is called from jinja.
+				app.logger.error('Unable to speak to redis: ' + str(ex))
 
 	## If we didn't return a new theme, return the default from the config file
 	return app.config['THEME_DEFAULT']
@@ -46,18 +47,19 @@ def get_user_theme():
 ################################################################################
 
 def get_user_navbar():
-	if 'username' in session:
-		try:
-			navbar = g.redis.get('user:' + session['username'] + ':navbar_alt')
+	if bargate.core.is_user_logged_in():
+		if app.config['REDIS_ENABLED']:
+			try:
+				navbar = g.redis.get('user:' + session['username'] + ':navbar_alt')
 
-			if navbar != None:
-				return navbar
-			else:
-				return 'default'
+				if navbar != None:
+					return navbar
+				else:
+					return 'default'
 					
-		except Exception as ex:
-			## Can't return an error, this function is called from jinja.
-			app.logger.error('Unable to speak to redis: ' + str(ex))
+			except Exception as ex:
+				## Can't return an error, this function is called from jinja.
+				app.logger.error('Unable to speak to redis: ' + str(ex))
 
 	return 'default'
 

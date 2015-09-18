@@ -31,6 +31,7 @@ import time                   ## used in before_request
 import random                 ## used in pwgen            
 import string                 ## used in pwgen
 import ldap
+from random import randint
 
 # For cookie decode
 from base64 import b64decode
@@ -40,6 +41,9 @@ import json
 import uuid
 
 ################################################################################
+
+def getrandnum():
+	return randint(1,app.config['LOGIN_IMAGE_RANDOM_MAX'])
 
 def render_page(template_name, **kwargs):
 	"""A wrapper around Flask's render_template that adds commonly used variables to the page"""
@@ -78,12 +82,15 @@ def login_required(f):
 	"""
 	@wraps(f)
 	def decorated_function(*args, **kwargs):
-		if session.get('logged_in',False) is False:
+		if not is_user_logged_in():
 			flash('You must login first!','alert-danger')
 			args = url_encode(request.args)
 			return redirect(url_for('login', next=request.script_root + request.path + "?" + args))
 		return f(*args, **kwargs)
 	return decorated_function
+
+def is_user_logged_in():
+	return session.get('logged_in',False)
 
 ################################################################################
 
@@ -372,6 +379,29 @@ def poperr_get():
 	session['popup_error_message'] = ""
 	
 	return (title,message)
+
+################################################################################
+
+def logon_ok():
+	"""This function is called post-logon or post TOTP logon to complete the logon sequence
+	"""
+
+	## Mark as logged on
+	session['logged_in']  = True
+
+	## Log a successful login
+	app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr + '" using ' + request.user_agent.string)
+		
+	## determine if "next" variable is set (the URL to be sent to)
+	next = request.form.get('next',default=None)
+	
+	## Record the last login time
+	bargate.settings.set_user_data('login',str(time.time()))
+
+	if next == None:
+		return redirect(url_for(app.config['SHARES_DEFAULT']))
+	else:
+		return redirect(next)
 
 ################################################################################
 #### Authentication

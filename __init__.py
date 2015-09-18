@@ -90,14 +90,14 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Bargate internal version number
-VERSION='1.1'
+VERSION='1.2'
 
-## Flask defaults (change to what we prefer)
-SESSION_COOKIE_SECURE=True
-SESSION_COOKIE_HTTPONLY=True
-PREFERRED_URL_SCHEME='https'
-USE_X_SENDFILE=False
-PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+## Flask defaults (changed to what we prefer)
+SESSION_COOKIE_SECURE      = True
+SESSION_COOKIE_HTTPONLY    = True
+PREFERRED_URL_SCHEME       = 'https'
+USE_X_SENDFILE             = False
+PERMANENT_SESSION_LIFETIME = timedelta(days=7)
 
 ## Shares config file
 SHARES_CONFIG='/data/fwa/shares.conf'
@@ -114,25 +114,30 @@ APP_DISPLAY_NAME_SHORT='FWA'
 AUTH_TYPE='ldap'
 
 ## LDAP
-LDAP_URI='ldaps://localhost.localdomain'
-LDAP_SEARCH_BASE=''
-LDAP_USER_ATTRIBUTE='sAMAccountName' ## default to AD style as lets face it, sadly, most people use i
-LDAP_ANON_BIND=True
-LDAP_BIND_USER=''
-LDAP_BIND_PW=''
+LDAP_URI            = 'ldaps://localhost.localdomain'
+LDAP_SEARCH_BASE    = ''
+LDAP_USER_ATTRIBUTE = 'sAMAccountName' ## default to AD style as lets face it, sadly, most people use it :'(
+LDAP_ANON_BIND      = True
+LDAP_BIND_USER      = ''
+LDAP_BIND_PW        = ''
 
 ## LDAP homedir attribute support
 # You MUST use AUTH_TYPE 'ldap' or this setting will be ignored
-LDAP_HOMEDIR=False
-LDAP_HOME_ATTRIBUTE='homeDirectory' ## default to AD style as lets face it, sadly, most people use it
-LDAP_HOMEDIR_IS_UNC=True
+LDAP_HOMEDIR        = False
+LDAP_HOME_ATTRIBUTE = 'homeDirectory' ## default to AD style as lets face it, sadly, most people use it :'(
+LDAP_HOMEDIR_IS_UNC = True
 
 ## Kerberos configuration
+# you should probably use LDAP auth...
 KRB5_SERVICE = 'krbtgt/localdomain'
 KRB5_DOMAIN  = 'localhost.localdomain'
 
 ## login background random int.
 LOGIN_IMAGE_RANDOM_MAX = 17
+
+## TOTP 2-factor auth
+TOTP_ENABLED = False
+TOTP_IDENT   = 'bargate'
 
 ################################################################################
 
@@ -211,7 +216,7 @@ if app.config['DEBUG_TOOLBAR']:
 	app.debug = True
 	from flask_debugtoolbar import DebugToolbarExtension
 	toolbar = DebugToolbarExtension(app)
-	app.logger.info('bargate debug toolbar enabled')
+	app.logger.info('bargate debug toolbar enabled - DO NOT USE THIS ON PRODUCTION SYSTEMS!')
 
 # load core functions
 import bargate.core
@@ -224,10 +229,17 @@ import bargate.smb_views
 import bargate.mime
 import bargate.settings
 
+if app.config['TOTP_ENABLED']:
+	if app.config['REDIS_ENABLED']:
+		import bargate.totp
+	else:
+		app.logger.error("Cannot enable TOTP 2-factor auth because REDIS is not enabled")
+
 # load anti csrf function reference into template engine
 app.jinja_env.globals['csrf_token']      = core.generate_csrf_token
 app.jinja_env.globals['get_user_theme']  = settings.get_user_theme
 app.jinja_env.globals['get_user_navbar'] = settings.get_user_navbar
+app.jinja_env.globals['getrandnum']      = core.getrandnum
 
 # load jinja functions into scope
 app.jinja_env.globals.update(poperr_get=bargate.core.poperr_get)
