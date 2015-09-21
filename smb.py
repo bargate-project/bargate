@@ -584,10 +584,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					dstat = statURI(ctx,entry['Suri'])
 
 					if 'mtime' in dstat:
-						entry['mtime'] = bargate.core.ut_to_string(dstat['mtime'])
+						entry['mtime_raw'] = dstat['mtime']
+						entry['mtime']     = bargate.core.ut_to_string(dstat['mtime'])
 					else:
-						### BUG BUG BUG
-						entry['mtime'] = '-'
+						### No mtime?!?! wot.
+						entry['mtime_raw'] = 0
+						entry['mtime']     = '-'
 
 					## URL to view the file, and downlad the file
 					entry['view']     = url_for(func_name,path=entry['path'],action='view')
@@ -595,7 +597,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['default_open'] = entry['download']
 					
 					if 'size' in dstat:
-						entry['size'] = bargate.core.str_size(dstat['size'])
+						entry['size_raw'] = dstat['size']
+						entry['size']     = bargate.core.str_size(dstat['size'])
+					else:
+						entry['size']     = '-'
+						entry['size_raw'] = 0
 
 					## File icon
 					(ftype,mtype) = bargate.mime.filename_to_mimetype(entry['name'])
