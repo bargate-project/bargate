@@ -536,7 +536,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				entry = {}
 
 				# Set a default icon and set name
-				entry['icon'] = 'icomoon-file3'
+				entry['icon'] = 'fa fa-fw fa-file-text-o'
 				entry['name'] = dentry.name
 
 				## Skip . and ..
@@ -631,7 +631,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 				## DIRECTORY ###################################################
 				elif dentry.smbc_type == bargate.smb.SMB_DIR:
-					entry['icon'] = 'icomoon-folder'	
+					entry['icon'] = 'fa fa-fw fa-folder-open'	
 					entry['type'] = 'dir'
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']
@@ -644,7 +644,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					if last == "$":
 						continue
 
-					entry['icon'] = 'icomoon-storage'
+					entry['icon'] = 'fa fa-fw fa-archive'
 					entry['type'] = 'share'
 
 					## url to view the share
@@ -707,8 +707,13 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			## Bookmarks
 			url_bookmark = url_for('bookmarks')
 
+			if app.debug:
+				filename = "directory-grid.html"
+			else:
+				filename = "directory.html"
+
 			## Render the template
-			return bargate.core.render_page('directory.html', 
+			return bargate.core.render_page(filename, 
 				active=active,
 				entries=entries,
 				crumbs=crumbs,
