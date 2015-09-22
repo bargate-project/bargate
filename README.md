@@ -16,13 +16,8 @@ Screenshots
 Roadmap
 -----------
 
-The roadmap is as follows:
+The next few features being worked on are:
 
-* v1.0 - First stable release
-* v1.1 - Introduce Isoptope based directory view
-* v1.2 - Fully remove all UoS custom templates from github release
-* v1.3 - Add native PDF support via pdf.js
-* v2.x - Switch to a partial-JSON output with rendering done on the client side
-* v3.x - Introduce near-entirely JSON output mode, to allow for Android and iOS client apps to be written
-
-This plan will be updated on a regular basis.
+* Removal of all Southampton specific bits
+* Icon/tile layout mode
+* Dropoff-style features
