@@ -259,8 +259,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		## Build the URI
 		# uri is not str, its unicode, so uri must not be given to pysmbc/urllib
 		uri = srv_path + path
-		# Suri CAN be given to pysmbc as its a byte string or 'str' in python land
-		Suri = srv_path.encode('utf8') + Qpath
+		# uri_as_str CAN be given to pysmbc/urllib as its a byte string or 'str' in python land
+		uri_as_str = srv_path.encode('utf8') + Qpath
 		
 		## Determine the action type
 		action = request.args.get('action','browse')
@@ -289,7 +289,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			try:
 				## stat the file first
-				fstat = ctx.stat(Suri)
+				fstat = ctx.stat(uri_as_str)
 
 				## determine item type
 				itemType = bargate.smb.statToType(fstat)
@@ -299,11 +299,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					return bargate.errors.invalid_item_download(error_redirect)
 
 			except Exception as ex:
-				return bargate.errors.smbc_handler(ex,Suri,error_redirect)
+				return bargate.errors.smbc_handler(ex,uri_as_str,error_redirect)
 
 			try:		
 				## Assuming we got here without an exception, open the file
-				cfile = ctx.open(Suri)
+				cfile = ctx.open(uri_as_str)
 
 				## don't set as attachment for certain file types!
 				attach = True
@@ -328,7 +328,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				return resp
 	
 			except Exception as ex:
-				return bargate.errors.smbc_handler(ex,Suri,error_redirect)
+				return bargate.errors.smbc_handler(ex,uri_as_str,error_redirect)
 
 ################################################################################
 # IMAGE PREVIEW
@@ -336,7 +336,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		
 		elif action == 'preview':
 			try:
-				fstat = ctx.stat(Suri)
+				fstat = ctx.stat(uri_as_str)
 			except Exception as ex:
 				abort(400)
 
@@ -373,7 +373,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			if not mtype.startswith('image'):
 				abort(400)
 				
-			cfile = ctx.open(Suri)
+			cfile = ctx.open(uri_as_str)
 			
 			## Read the file into memory first, because the PIL library sucks ass and tries random shit like readline()
 			## which it claims it won't try, but...does anyway. Pysmbc's File object doesnt, shockingly, have a readline()
@@ -405,7 +405,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				
 			## try to stat the file
 			try:
-				fstat = ctx.stat(Suri)
+				fstat = ctx.stat(uri_as_str)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,redirect(url_parent_dir))
 
@@ -437,10 +437,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				
 			try:
 				if app.debug:
-					flash("debug: " + ctx.getxattr(Suri,smbc.XATTR_ALL),'alert-danger')
+					flash("debug: " + ctx.getxattr(uri_as_str,smbc.XATTR_ALL),'alert-danger')
                                 
-				net_sec_desc_owner = bargate.smb.wb_sid_to_name(ctx.getxattr(Suri,smbc.XATTR_OWNER))
-				net_sec_desc_group = bargate.smb.wb_sid_to_name(ctx.getxattr(Suri,smbc.XATTR_GROUP))
+				net_sec_desc_owner = bargate.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_OWNER))
+				net_sec_desc_group = bargate.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_GROUP))
 
 			except Exception as ex:
 				## If we're in debug mode then print the error
@@ -510,7 +510,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		elif action == 'browse':		
 			## Try getting directory contents
 			try:
-				dentries = ctx.opendir (Suri).getdents ()
+				dentries = ctx.opendir (uri_as_str).getdents ()
 			except Exception as ex:
 				# Place to redirect to, if any
 				redir = None
@@ -545,14 +545,26 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				if entry['name'] == '..':
 					continue
 
-				## getdents returns REGULAR strings, not unicode!...maybe. Who the fuck knows.
-				## Decode into a unicode string for use in templates etc.
-				entry['Sname'] = entry['name']
-				entry['name'] = entry['name'].decode("utf-8")
+
+				## In earlier versions of pysmbc getdents returns regular python str objects
+				## and not unicode, so we have to convert to unicode via .decode. However, from
+				## 1.0.15.1 onwards pysmbc returns unicode (i.e. its probably doing a .decode for us)
+				## so we need to check what we get back and act correctly based on that.
+				## SADLY! urllib2 needs str objects, not unicode objects, so we also have to maintain
+				## a copy of a str object *and* a unicode object.
+
+				if isinstance(entry['name'], str):
+					## str object
+					entry['name_as_str'] = entry['name']
+					## unicode object
+					entry['name'] = entry['name'].decode("utf-8")
+				else:
+					## str object
+					entry['name_as_str'] = entry['name'].encode("utf-8")
 
 				## Create a REGULAR str urllib quoted string for use to send back to ctx calls (only in python)
 				## path is UNICODE. urllib needs string. Use Spath and Sname.
-				entry['Suri'] = srv_path + urllib.quote(Spath) + '/' + urllib.quote(entry['Sname'])
+				entry['uri_as_str'] = srv_path + urllib.quote(Spath) + '/' + urllib.quote(entry['name_as_str'])
 
 				## Add the URI (the full path) as an element to the entry dict
 				if len(path) == 0:
@@ -581,7 +593,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['type'] = 'file'
 
 					## Stat the file so we get file size and other bits. 
-					dstat = statURI(ctx,entry['Suri'])
+					dstat = statURI(ctx,entry['uri_as_str'])
 
 					if 'mtime' in dstat:
 						entry['mtime_raw'] = dstat['mtime']
@@ -761,7 +773,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 		## Build the URI
 		uri = srv_path + path
-		Suri = srv_path.encode('utf8') + Qpath
+		uri_as_str = srv_path.encode('utf8') + Qpath
 
 		## Debug this for now
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -873,7 +885,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 								return bargate.errors.smbc_ExistsError(filename,error_redirect)
 
 							## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
-							itemType = bargate.smb.getEntryType(ctx,Suri)
+							itemType = bargate.smb.getEntryType(ctx,uri_as_str)
 							if itemType == bargate.smb.SMB_DIR:
 								return bargate.errors.upload_overwrite_directory(error_redirect)
 				
@@ -928,7 +940,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			redirect_path = redirect(url_for(func_name,path=parent_path))
 
 			## get the item type of the existing 'filename'
-			itemType = bargate.smb.getEntryType(ctx,Suri)
+			itemType = bargate.smb.getEntryType(ctx,uri_as_str)
 
 			if itemType == bargate.smb.SMB_FILE:
 				typemsg = "The file"
@@ -938,9 +950,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				return bargate.errors.invalid_item_type(redirect_path)
 
 			try:
-				## Suri is the existing quoted-encoded URI
+				## uri_as_str is the existing quoted-encoded URI
 				## newURI is the new URI which has been quoted-encoded
-				ctx.rename(Suri,newURI)
+				ctx.rename(uri_as_str,newURI)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,redirect_path)
 			else:
@@ -966,7 +978,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			try:
 				## stat the source file first
-				source_stat = ctx.stat(Suri)
+				source_stat = ctx.stat(uri_as_str)
 
 				## size of source
 				source_size = source_stat[6]
@@ -1004,7 +1016,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			## Assuming we got here without an exception, open the source file
 			try:		
-				source_fh = ctx.open(Suri)
+				source_fh = ctx.open(uri_as_str)
 			except Exception as ex:
 				return bargate.errors.smbc_handler(ex,uri,error_redirect)
 
@@ -1090,11 +1102,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				pass
 
 			## get the item type of the existing 'filename'
-			itemType = bargate.smb.getEntryType(ctx,Suri)
+			itemType = bargate.smb.getEntryType(ctx,uri_as_str)
 
 			if itemType == bargate.smb.SMB_FILE:
 				try:
-					ctx.unlink(Suri)
+					ctx.unlink(uri_as_str)
 				except Exception as ex:
 					return bargate.errors.smbc_handler(ex,uri,error_return_path)
 				else:
@@ -1102,7 +1114,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					return return_path
 			elif itemType == bargate.smb.SMB_DIR:
 				try:
-					ctx.rmdir(Suri)
+					ctx.rmdir(uri_as_str)
 				except Exception as ex:
 					return bargate.errors.smbc_handler(ex,uri,error_return_path)
 				else:
