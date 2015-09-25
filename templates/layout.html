@@ -49,6 +49,17 @@
 					</ul>
 					
 					<div class="pull-right action-btns">
+						<a id="dSort" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="dropdown" data-placement="left" title="Sort options" aria-haspopup="true" aria-expanded="false" {% if not browse_mode %}disabled="disabled"{%endif%}>
+							<i class="fa fa-fw fa-lg fa-sort"></i>
+						</a>
+						<ul class="dropdown-menu" aria-labelledby="dSort" style="right: auto;">
+							<li style="cursor: pointer"><a class="isotope-sortby-orig">Standard</a></li>
+							<li style="cursor: pointer"><a class="isotope-sortby-name">Name</a></li>
+							<li style="cursor: pointer"><a class="isotope-sortby-type">Type</a></li>
+							<li style="cursor: pointer"><a class="isotope-sortby-mtime">Modified</a></li>
+							<li style="cursor: pointer"><a class="isotope-sortby-size">Size</a></li>
+						</ul>
+
 						<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
 							<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
 						</a>

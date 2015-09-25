@@ -161,22 +161,28 @@ $(document).ready(function ()
 			size: false
 		}
 	});
-	$('#sorts').on( 'click', 'button', function()
+	$('.isotope-sortby-name').on( 'click', function()
 	{
-		var sortByValue = $(this).attr('data-sort-by');
-		$container.isotope({ sortBy: sortByValue });
+		$container.isotope({ sortBy: 'name' });
+	});
+	$('.isotope-sortby-type').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'type' });
+	});
+	$('.isotope-sortby-mtime').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'mtime' });
+	});
+	$('.isotope-sortby-size').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'size' });
+	});
+	$('.isotope-sortby-orig').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'original-order' });
 	});
 });
 </script>
-
-<div id="sorts" class="button-group btn-group">  
-  <button class="button is-checked btn btn-default" data-sort-by="original-order">original order</button>
-  <button class="button btn btn-default" data-sort-by="name">name</button>
-  <button class="button btn btn-default" data-sort-by="type">type</button>
-  <button class="button btn btn-default" data-sort-by="mtime">mtime</button>
-  <button class="button btn btn-default" data-sort-by="size">size</button>
-</div>
-
 
 <div id="directory">
 
