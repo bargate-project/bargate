@@ -98,6 +98,7 @@ SESSION_COOKIE_HTTPONLY    = True
 PREFERRED_URL_SCHEME       = 'https'
 USE_X_SENDFILE             = False
 PERMANENT_SESSION_LIFETIME = timedelta(days=7)
+SEND_FILE_MAX_AGE_DEFAULT  = 0
 
 ## Shares config file
 SHARES_CONFIG='/data/fwa/shares.conf'

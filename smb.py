@@ -776,14 +776,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			
 			uploaded_files = request.files.getlist("files[]")
 			
-			for file in uploaded_files:
+			for ufile in uploaded_files:
 			
-				if bargate.core.banned_file(file.filename):
-					ret.append({'name' : file.filename, 'error': 'Filetype not allowed'})
+				if bargate.core.banned_file(ufile.filename):
+					ret.append({'name' : ufile.filename, 'error': 'Filetype not allowed'})
 					continue
 					
 				## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
-				filename = bargate.core.secure_filename(file.filename)
+				filename = bargate.core.secure_filename(ufile.filename)
 				filename = filename.encode('utf8')
 				filename = urllib.quote(filename)
 				upload_uri = uri + '/' + filename
@@ -792,7 +792,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				try:
 					bargate.smb.check_name(filename)
 				except ValueError as e:
-					ret.append({'name' : file.filename, 'error': 'Filename not allowed'})
+					ret.append({'name' : ufile.filename, 'error': 'Filename not allowed'})
 					continue
 					
 				## Check to see if the file exists
@@ -802,37 +802,43 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					## It doesn't exist so lets continue to upload
 					pass
 				except Exception as ex:
-					ret.append({'name' : file.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
+					ret.append({'name' : ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
 					continue
 					
 				else:
 					## If the file did exist, check to see if we should overwrite
 					if fstat:
 						if not bargate.settings.upload_overwrite():
-							ret.append({'name' : file.filename, 'error': 'File already exists. You can enable overwriting files in Account Settings.'})
+							ret.append({'name' : ufile.filename, 'error': 'File already exists. You can enable overwriting files in Account Settings.'})
 							continue
 
 						## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
 						itemType = bargate.smb.getEntryType(ctx,upload_uri)
 						if itemType == bargate.smb.SMB_DIR:
-							ret.append({'name' : file.filename, 'error': "That name already exists and is a directory"})
+							ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
 							continue
 			
 				## Actual upload
 				try:
-					wfile = ctx.open(upload_uri,os.O_CREAT | os.O_WRONLY)
-					data = file.read()
-					wfile.write(data)
+					wfile = ctx.open(upload_uri,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+
+					while True:
+						buff = ufile.read(8192)
+						if not buff:
+							break
+						wfile.write(buff)
+
 					wfile.close()
 
-					ret.append({'name' : file.filename})
+
+					ret.append({'name' : ufile.filename})
 
 				except Exception as ex:
-					ret.append({'name' : file.filename, 'error': 'Could not upload file: ' + str(ex)})
+					ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
 					continue
 					
-			for x in ret:
-				app.logger.info('json stuff: ' + str(x))
+#			for x in ret:
+#				app.logger.info('json stuff: ' + str(x))
 
 			return jsonify({'files': ret})
 
@@ -879,9 +885,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				
 					## Actual upload
 					try:
-						wfile = ctx.open(upload_uri,os.O_CREAT | os.O_WRONLY)
-						data = ufile.read()
-						wfile.write(data)
+						wfile = ctx.open(upload_uri,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+
+						while True:
+							buff = ufile.read(8192)
+							if not buff:
+								break
+							wfile.write(buff)
+
 						wfile.close()
 
 						flash("The file '" + ufile.filename + "' was uploaded successfully.",'alert-success')
