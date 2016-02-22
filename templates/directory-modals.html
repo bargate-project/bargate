@@ -111,7 +111,7 @@ $(function ()
     {
         url: '{{url_home}}',
         dataType: 'json',
-        formData: [{name: '_csrf_token', value: '{{ csrf_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: '{{pwd}}'}],
+        formData: [{name: '_csrf_token', value: '{{ csrf_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{pwd|tojson|safe}}}],
         done: function (e, data)
         {
             $.each(data.result.files, function (index, file)
