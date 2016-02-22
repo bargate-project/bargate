@@ -120,6 +120,7 @@ $(document).ready(function() {
 	{
 		var parentRow = $(this).closest(".rowclick-tr");
 		$('#delete_path').val(parentRow.attr('data-path'));
+		$('#delete_filename').html(parentRow.attr('data-filename'));		
 		$('#delete-confirm').modal({show: true});
 		event.preventDefault();
 		event.stopPropagation();
