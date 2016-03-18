@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response
+from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response, render_template
 import kerberos
 import mimetypes
 import os 
@@ -39,7 +39,7 @@ def login():
 	else:
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next',default=None)
-			return bargate.core.render_page('login.html', next=next)
+			return render_template('login.html', next=next)
 
 		elif request.method == 'POST':
 
@@ -101,15 +101,15 @@ def logout():
 
 @app.route('/about')
 def about():
-	return bargate.core.render_page('about.html', active='help')
+	return render_template('about.html', active='help')
 
 @app.route('/about/changelog')
 def changelog():
-	return bargate.core.render_page('changelog.html', active='help')
+	return render_template('changelog.html', active='help')
 
 @app.route('/nojs')
 def nojs():
-	return bargate.core.render_page('nojs.html')
+	return render_template('nojs.html')
 	
 ################################################################################
 #### BOOKMARKS
@@ -127,7 +127,7 @@ def bookmarks():
 
 	if request.method == 'GET':
 		bookmarks = bargate.settings.get_user_bookmarks()
-		return bargate.core.render_page('bookmarks.html', active='user',pwd='',bookmarks = bookmarks)
+		return render_template('bookmarks.html', active='user',pwd='',bookmarks = bookmarks)
 		
 	elif request.method == 'POST':
 		action = request.form['action']
@@ -197,7 +197,7 @@ def online(last=5):
 		last_str = str(last) + " minutes"			
 
 	usernames = bargate.core.list_online_users(last)
-	return 	bargate.core.render_page('online.html',online=usernames,active="help",last=last_str)
+	return render_template('online.html',online=usernames,active="help",last=last_str)
 
 #################################################################################
 ### Portal login support (added for University of Sheffield)

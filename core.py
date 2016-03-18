@@ -46,15 +46,15 @@ import uuid
 def getrandnum():
 	return randint(1,app.config['LOGIN_IMAGE_RANDOM_MAX'])
 
-def render_page(template_name, **kwargs):
-	"""A wrapper around Flask's render_template that adds commonly used variables to the page"""
+################################################################################
 
-	## Standard bookmarks needed on nearly all pages
-	if not 'bookmarks' in kwargs:
-		if 'username' in session:
-			kwargs['bookmarks'] = bargate.settings.get_user_bookmarks()
+@app.context_processor
+def context_processor():
+	data = dict()
+	if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
+		data['bookmarks'] = bargate.settings.get_user_bookmarks()
 
-	return render_template(template_name, **kwargs)
+	return data
 
 ################################################################################
 
@@ -105,7 +105,6 @@ def downtime_check(f):
 		if app.config['DISABLE_APP']:
 			flash('Service Temporarily Unavailable - Normal service will be restored as soon as possible.','alert-warning')
 			bgnumber = randint(1,2)
-			## don't use render_page as it loads bookmarks and that might not work
 			return render_template('login.html', bgnumber=bgnumber)
 		return f(*args, **kwargs)
 	return decorated_function

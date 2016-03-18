@@ -18,15 +18,12 @@
 from bargate import app
 import bargate.errors
 import string, os, smbc, sys, stat, pprint, urllib, re
-from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify
+from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify, render_template
 
 ### Python imaging stuff
 from PIL import Image
 import glob
 import StringIO
-
-## NOTE! pysmbc sucks for unicode. See:
-## https://lists.fedorahosted.org/pipermail/system-config-printer-devel/2011-September/000108.html
 
 #### SMB entry types
 SMB_ERR   = -1
@@ -492,7 +489,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				url_bdownload = None
 
 			## Render the template
-			return bargate.core.render_page('view.html', active=active,
+			return render_template('view.html', active=active,
 				crumbs=crumbs,
 				path=path,
 				url_home=url_home,
@@ -741,7 +738,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			url_bookmark = url_for('bookmarks')
 
 			## Render the template
-			return bargate.core.render_page('directory.html', 
+			return render_template('directory.html', 
 				active=active,
 				entries=entries,
 				crumbs=crumbs,

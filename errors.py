@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, g, redirect, url_for, abort, flash
+from flask import Flask, request, session, g, redirect, url_for, abort, flash, render_template
 import smbc
 import traceback
 import kerberos
@@ -45,7 +45,7 @@ def output_error(title,message,redirect_to=None):
 			
 	if redirect_to == None:
 		## Render an error page
-		return bargate.core.render_page('error.html',title=title,message=message,debug=debug), 200
+		return render_template('error.html',title=title,message=message,debug=debug), 200
 	else:
 		## Set error popup and return
 		bargate.core.poperr_set(title,message)
@@ -243,7 +243,7 @@ Traceback:
 			debug,	
 		))
 		
-	return bargate.core.render_page('error.html',title=err_title,message=err_msg,debug=debug), 500
+	return render_template('error.html',title=err_title,message=err_msg,debug=debug), 500
 
 @app.errorhandler(400)
 def error400(error):
@@ -256,7 +256,7 @@ def error400(error):
 		
 	app.logger.info('abort400 was called! ' + str(debug))
 		
-	return bargate.core.render_page('error.html',title="Bad Request",message='Your request was invalid, please try again.',debug=debug), 400
+	return render_template('error.html',title="Bad Request",message='Your request was invalid, please try again.',debug=debug), 400
 
 @app.errorhandler(403)
 def error403(error):
@@ -270,7 +270,7 @@ def error403(error):
 		
 	app.logger.info('abort403 was called!')
 	
-	return bargate.core.render_page('error.html',title="Permission Denied",message='You do not have permission to access this resource.',debug=debug), 403
+	return render_template('error.html',title="Permission Denied",message='You do not have permission to access this resource.',debug=debug), 403
 
 @app.errorhandler(404)
 def error404(error):
@@ -282,7 +282,7 @@ def error404(error):
 	else:
 		debug = None
 
-	return bargate.core.render_page('error.html',title="Not found",message="Sorry, I couldn't find what you requested.",debug=debug), 404
+	return render_template('error.html',title="Not found",message="Sorry, I couldn't find what you requested.",debug=debug), 404
 
 @app.errorhandler(405)
 def error405(error):
@@ -294,7 +294,7 @@ def error405(error):
 	else:
 		debug = None
 	
-	return bargate.core.render_page('error.html',title="Not allowed",message="Method not allowed. This usually happens when your browser sent a POST rather than a GET, or vice versa.",debug=debug), 405
+	return render_template('error.html',title="Not allowed",message="Method not allowed. This usually happens when your browser sent a POST rather than a GET, or vice versa.",debug=debug), 405
 
 ################################################################################
 #### TEST ERROR PAGES

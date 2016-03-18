@@ -17,19 +17,19 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for
+from flask import Flask, request, session, redirect, url_for, render_template
 
 @app.route('/other')
 @bargate.core.login_required
 @bargate.core.downtime_check
 def other():
-	return bargate.core.render_page('other.html', active='shared',pwd='')
+	return render_template('other.html', active='shared',pwd='')
 
 @app.route('/custom')
 @bargate.core.login_required
 @bargate.core.downtime_check
 def custom_server():
-	return bargate.core.render_page('custom.html', active='shared',pwd='')
+	return render_template('custom.html', active='shared',pwd='')
 
 @app.route('/c', methods=['GET','POST'], defaults={'path': ''})
 @app.route('/c/<path:path>/', methods=['GET','POST'])

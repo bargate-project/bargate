@@ -17,7 +17,7 @@
 
 from bargate import app
 import bargate.core
-from flask import Flask, request, session, redirect, url_for, flash, g, abort
+from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template
 import kerberos
 import mimetypes
 import os 
@@ -220,7 +220,7 @@ def settings():
 				
 		if not theme_set:
 			flash('Invalid theme choice','alert-danger')
-			return bargate.core.render_page('settings.html', active='user', themes=themes)
+			return render_template('settings.html', active='user', themes=themes)
 			
 		## navbar inverse/alt
 		if 'navbar_alt' in request.form:
@@ -281,7 +281,7 @@ def settings():
 		else:
 			upload_overwrite = 'no'
 	
-		return bargate.core.render_page('settings.html', 
+		return render_template('settings.html', 
 			active='user',
 			themes=themes, 
 			hidden_files=hidden_files,
