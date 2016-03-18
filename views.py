@@ -111,20 +111,6 @@ def changelog():
 def nojs():
 	return bargate.core.render_page('nojs.html')
 	
-@app.route('/test')
-def test():
-	return bargate.core.render_page('test.html')
-
-################################################################################
-#### MIME MAP (DEVELOPER FUNCTION)
-
-@app.route('/mime')
-@bargate.core.downtime_check
-@bargate.core.login_required
-def mime():
-	mimetypes.init()
-	return bargate.core.render_page("mime.html",types=mimetypes.types_map,active="help")
-
 ################################################################################
 #### BOOKMARKS
 

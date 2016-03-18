@@ -102,100 +102,102 @@ def mimetype_to_icon(mtype):
 	"""
 
 	## default type
-	ficon = 'icomoon-file4'
+	ficon = 'fa fa-fw fa-file-o'
 
 	## IMAGES, AUDIO, VIDEO
 	if mtype.startswith('image'):
-		ficon = 'icomoon-image2'
+		ficon = 'fa fa-fw fa-image-o'
 		
 	elif mtype.startswith('audio'):
-		ficon = 'icomoon-music'
+		ficon = 'fa fa-fw fa-audio-o'
 		
 	elif mtype.startswith('video'):
-		ficon = 'icomoon-film'
+		ficon = 'fa fa-fw fa-video-o'
 		
 	elif mtype.startswith('message'):
-		ficon = 'icomoon-mail4'
+		ficon = 'fa fa-fw fa-envelope'
 		
 		
 	## VISIO
 	elif mtype.startswith('application/vnd.visio'):
-		ficon = 'icomoon-tree'		
+		ficon = 'fa fa-fw fa-sitemap'		
 		
 	## EXECUTABLE FILES
 	elif mtype.startswith('application/octet-stream'):
-		ficon = 'icomoon-cog2'
+		ficon = 'fa fa-fw fa-cogs'
 		
 	## ARCHIVE FILES
 	elif mtype.startswith('application/x-gzip'):
-		ficon = 'icomoon-file-zip'
+		ficon = 'fa fa-fw fa-file-archive-o'
 	elif mtype.startswith('application/x-gtar'):
-		ficon = 'icomoon-file-zip'
+		ficon = 'fa fa-fw fa-file-archive-o'
 	elif mtype.startswith('application/x-tar'):
-		ficon = 'icomoon-file-zip'
+		ficon = 'fa fa-fw fa-file-archive-o'
 	elif mtype.startswith('application/zip'):
-		ficon = 'icomoon-file-zip'
+		ficon = 'fa fa-fw fa-file-archive-o'
 	elif mtype.startswith('application/vnd.ms-cab-compressed'):
-		ficon = 'icomoon-file-zip'
+		ficon = 'fa fa-fw fa-file-archive-o'
 	elif mtype.startswith('application/x-rpm'):
-		ficon = 'icomoon-file-zip'
+		ficon = 'fa fa-fw fa-file-archive-o'
 		
 	## SPREADSHEETS
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
-		ficon = 'icomoon-file-excel'
+		ficon = 'fa fa-fw fa-file-excel-o'
 	elif mtype.startswith('application/vnd.ms-excel'):
-		ficon = 'icomoon-file-excel'
+		ficon = 'fa fa-fw fa-file-excel-o'
 	elif mtype.startswith('application/vnd.oasis.opendocument.spreadsheet'):
-		ficon = 'icomoon-libreoffice'
+		ficon = 'fa fa-fw fa-table'
 				
 	## WORD / WRITER
 	elif mtype.startswith('application/msword'): 
-		ficon = 'icomoon-file-word'
+		ficon = 'fa fa-fw fa-file-word-o'
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.wordprocessingml.document'): 
-		ficon = 'icomoon-file-word'
+		ficon = 'fa fa-fw fa-file-word-o'
 	elif mtype.startswith('application/vnd.oasis.opendocument.text'): 
-		ficon = 'icomoon-libreoffice'		
+		ficon = 'fa fa-fw fa-file-text-o'		
 			
 	## PRESENTATIONS		
 	elif mtype.startswith('application/vnd.ms-powerpoint'):
-		ficon = 'icomoon-file-powerpoint'
+		ficon = 'fa fa-fw fa-file-powerpoint-o'
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.presentationml.presentation'):
-		ficon = 'icomoon-file-powerpoint'
+		ficon = 'fa fa-fw fa-file-powerpoint-o'
 	elif mtype.startswith('application/vnd.oasis.opendocument.presentation'):
-		ficon = 'icomoon-libreoffice'
+		ficon = 'fa fa-fw fa-slideshare'
 		
 	## PDF
 	elif mtype.startswith('application/pdf'):
-		ficon = 'icomoon-file-pdf'	
+		ficon = 'fa fa-fw fa-file-pdf-o'	
 
 	## Text/html
 	elif mtype.startswith('text/html'):
-		ficon = 'icomoon-file-xml'
+		ficon = 'fa fa-fw fa-file-code-o'
 	elif mtype.startswith('application/xhtml+xml'):
-		ficon = 'icomoon-file-xml'
+		ficon = 'fa fa-fw fa-file-code-o'
 	elif mtype.startswith('text/css'):
-		ficon = 'icomoon-file-css'
+		ficon = 'fa fa-fw fa-file-code-o'
 		
 	## XML
 	elif mtype.startswith('text/xml') or mtype.startswith('application/xml'):
-		ficon = 'icomoon-file-xml'
+		ficon = 'fa fa-fw fa-code-o'
 		
 	## Code
 	elif mtype.startswith('application/x-perl'):
-		ficon = 'icomoon-code'
+		ficon = 'fa fa-fw fa-file-code-o'
 	elif mtype.startswith('application/x-python'):
-		ficon = 'icomoon-code'
+		ficon = 'fa fa-fw fa-file-code-o'
+	elif mtype.startswith('text/x-python'):
+		ficon = 'fa fa-fw fa-file-code-o'
 	elif mtype.startswith('application/x-perl'):
-		ficon = 'icomoon-code'
+		ficon = 'fa fa-fw fa-file-code-o'
 	elif mtype.startswith('application/x-sh'):
-		ficon = 'icomoon-console'
+		ficon = 'fa fa-fw fa-terminal'
 		
 	elif mtype.startswith('text/plain'):
-		ficon = 'icomoon-file3'
+		ficon = 'fa fa-fw fa-file-text-o'
 		
 	## generic application
 	elif mtype.startswith('application'):
-		ficon = 'icomoon-drawer2'
+		ficon = 'fa fa-fw fa-cog'
 		
 	return ficon
 
@@ -204,9 +206,6 @@ def filename_to_mimetype(filename):
 	upon the file extension only.
 	"""
 	
-	## Load in /etc/mime.types on Linux
-	#mimetypes.init()
-
 	## guess a mimetype from python mime types
 	(mtype,enc) = mimetypes.guess_type(filename,strict=False)
 
