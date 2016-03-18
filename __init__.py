@@ -147,6 +147,11 @@ TOTP_IDENT   = 'bargate'
 ## REMEMBER_ME_ENABLED - "Remember me on this computer" enabled or not.
 REMEMBER_ME_ENABLED = True
 
+## Image previews
+IMAGE_PREVIEW=True
+## Max image preview size in bytes
+IMAGE_PREVIEW_MAX_SIZE=30*1024*1024
+
 ################################################################################
 
 # set up our application

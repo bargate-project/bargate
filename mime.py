@@ -17,6 +17,12 @@
 
 import mimetypes
 
+pillow_supported = ['image/bmp', 'image/x-windows-bmp', 'application/postscript', 
+	'image/gif', 'image/jpeg', 'image/x-pcx', 'image/png', 'image/x-portable-pixmap',
+	'image/tiff', 'image/x-tiff', 'image/x-xbitmap', 'image/x-xbm', 'image/xbm', 
+	'image/x-xpixmap', 'image/xpm'
+]
+
 mimemap = {
 	'application/msword' : 'Microsoft Word Document',
 	'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'Microsoft Word Document XML',

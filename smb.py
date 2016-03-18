@@ -335,6 +335,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 ################################################################################
 		
 		elif action == 'preview':
+			if not app.config['IMAGE_PREVIEW']:
+				abort(400)
+
 			try:
 				fstat = ctx.stat(uri_as_str)
 			except Exception as ex:
@@ -367,25 +370,32 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			## guess a mimetype
 			(ftype,mtype) = bargate.mime.filename_to_mimetype(filename)
 			
-			if fstat[6] > 10485760:
+			if fstat[6] > app.config['IMAGE_PREVIEW_MAX_SIZE']:
 				abort(403)
 
 			if not mtype.startswith('image'):
 				abort(400)
+
+			## Only preview files that Pillow supports
+			if not mtype in bargate.mime.pillow_supported:
+				abort(400)
 				
 			cfile = ctx.open(uri_as_str)
 			
-			## Read the file into memory first, because the PIL library sucks ass and tries random shit like readline()
-			## which it claims it won't try, but...does anyway. Pysmbc's File object doesnt, shockingly, have a readline()
-			sfile = StringIO.StringIO(cfile.read())
-			pil_img = Image.open(sfile).convert('RGB')
-			size = 200, 200
-			pil_img.thumbnail(size, Image.ANTIALIAS)
+			## Read the file into memory first because PIL/Pillow tries readline()
+			## on pysmbc's File like objects which it doesn't support
+			try:
+				sfile = StringIO.StringIO(cfile.read())
+				pil_img = Image.open(sfile).convert('RGB')
+				size = 200, 200
+				pil_img.thumbnail(size, Image.ANTIALIAS)
 
-			img_io = StringIO.StringIO()
-			pil_img.save(img_io, 'JPEG', quality=85)
-			img_io.seek(0)
-			return send_file(img_io, mimetype='image/jpeg')
+				img_io = StringIO.StringIO()
+				pil_img.save(img_io, 'JPEG', quality=85)
+				img_io.seek(0)
+				return send_file(img_io, mimetype='image/jpeg')
+			except Exception as ex:
+				abort(400)
 
 ################################################################################
 # VIEW FILE PROPERTIES
@@ -597,26 +607,26 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					if 'mtime' in dstat:
 						entry['mtime'] = bargate.core.ut_to_string(dstat['mtime'])
 					else:
-						### BUG BUG BUG
-						entry['mtime'] = '-'
+						entry['mtime'] = 'Unknown'
 
 					## URL to view the file, and downlad the file
 					entry['view']     = url_for(func_name,path=entry['path'],action='view')
 					entry['download'] = url_for(func_name,path=entry['path'],action='download')
 					entry['default_open'] = entry['download']
-					
-					if 'size' in dstat:
-						entry['size'] = bargate.core.str_size(dstat['size'])
-
+				
 					## File icon
 					(ftype,mtype) = bargate.mime.filename_to_mimetype(entry['name'])
 					entry['icon'] = bargate.mime.mimetype_to_icon(mtype)
 					entry['mtype'] = ftype
-					
-					## Image previews
-					if mtype.startswith('image'):
-						entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+	
+					if 'size' in dstat:
+						entry['size'] = bargate.core.str_size(dstat['size'])
 
+						## Image previews
+						if app.config['IMAGE_PREVIEW'] and mtype in bargate.mime.pillow_supported:
+							if int(dstat['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
+								entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+					
 					## View-in-browser download type
 					if bargate.mime.view_in_browser(mtype):
 						entry['bdownload'] = url_for(func_name,path=entry['path'],action='download',inbrowser='True')
