@@ -303,17 +303,19 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			try:		
 				## Assuming we got here without an exception, open the file
-				cfile = ctx.open(uri_as_str)
+				file_object = ctx.open(uri_as_str)
 
-				## don't set as attachment for certain file types!
+				## Default to sending files as an 'attachment' ("Content-Disposition: attachment")
 				attach = True
 
 				## Check to see if the user wants a in-browser view
 				inbrowser = request.args.get('inbrowser',False)
 
+				## Guess the mime type 
+				(ftype,mtype) = bargate.mime.filename_to_mimetype(filename)
+
 				## If the user requested in-browser view (rather than download), make sure we allow it for that filetype
 				if inbrowser:
-					(ftype,mtype) = bargate.mime.filename_to_mimetype(filename)
 					if bargate.mime.view_in_browser(mtype):
 						attach = False
 
@@ -322,8 +324,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				## see the mime module for more
 
 				## Download the file
-
-				resp = make_response(send_file(cfile,add_etags=False,as_attachment=attach,attachment_filename=filename))
+				# etags are unreliable and deprecated in Flask send_file
+				resp = make_response(send_file(file_object,add_etags=False,as_attachment=attach,attachment_filename=filename,mimetype=mtype))
 				resp.headers['content-length'] = str(fstat[6])
 				return resp
 	
@@ -393,7 +395,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				img_io = StringIO.StringIO()
 				pil_img.save(img_io, 'JPEG', quality=85)
 				img_io.seek(0)
-				return send_file(img_io, mimetype='image/jpeg')
+				return send_file(img_io, mimetype='image/jpeg',add_etags=False)
 			except Exception as ex:
 				abort(400)
 
@@ -520,7 +522,23 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		elif action == 'browse':		
 			## Try getting directory contents
 			try:
-				dentries = ctx.opendir (uri_as_str).getdents ()
+				directory_entries = ctx.opendir(uri_as_str).getdents()
+			except smbc.NotDirectoryError as ex:
+				## Go to the directory above then
+
+				# Path has been set, so we might be able to get to a parent dir,
+				# which lets us set a redirect path
+				if len(path) > 0:
+					(before,sep,after) = path.rpartition('/')
+					if len(sep) > 0:
+						redir = redirect(url_for(func_name,path=before))
+					else:
+						redir = redirect(url_for(func_name))
+
+					return redir
+				else:
+					abort(400)
+
 			except Exception as ex:
 				# Place to redirect to, if any
 				redir = None
@@ -541,7 +559,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			files = []
 
 			## List each entry and build up a list of dictionarys
-			for dentry in dentries:
+			for dentry in directory_entries:
 				# Create a new dict for the entry
 				entry = {}
 
