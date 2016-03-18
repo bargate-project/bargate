@@ -106,13 +106,13 @@ def mimetype_to_icon(mtype):
 
 	## IMAGES, AUDIO, VIDEO
 	if mtype.startswith('image'):
-		ficon = 'fa fa-fw fa-image-o'
+		ficon = 'fa fa-fw fa-file-image-o'
 		
 	elif mtype.startswith('audio'):
-		ficon = 'fa fa-fw fa-audio-o'
+		ficon = 'fa fa-fw fa-file-audio-o'
 		
 	elif mtype.startswith('video'):
-		ficon = 'fa fa-fw fa-video-o'
+		ficon = 'fa fa-fw fa-file-video-o'
 		
 	elif mtype.startswith('message'):
 		ficon = 'fa fa-fw fa-envelope'
