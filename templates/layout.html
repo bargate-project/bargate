@@ -99,9 +99,11 @@
 					<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default">
 						<i class="fa fa-fw fa-folder-open"></i>
 					</a>
+					{%- if config['REDIS_ENABLED'] %}
 					<a href="#" class="btn navbar-btn btn-default" {% if atroot %}disabled="disabled"{%else%} data-toggle="modal" data-target="#add-bookmark" {%endif%}>
 						<i class="fa fa-fw fa-bookmark"></i>
 					</a>
+					{%- endif %}
 				</div>
 			</div>
 		</div>

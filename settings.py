@@ -73,16 +73,17 @@ def show_hidden_files():
 		if not hidden_files == None:
 			return hidden_files
 		else:
-			try:
-				hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
+			if app.config['REDIS_ENABLED']:
+				try:
+					hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
 
-				if hidden_files != None:
-					if hidden_files == 'show':
-						g.hidden_files = True
-						return True
+					if hidden_files != None:
+						if hidden_files == 'show':
+							g.hidden_files = True
+							return True
 
-			except Exception as ex:
-				app.logger.error('Unable to speak to redis: ' + str(ex))
+				except Exception as ex:
+					app.logger.error('Unable to speak to redis: ' + str(ex))
 
 	g.hidden_files = False
 	return False
@@ -91,15 +92,16 @@ def show_hidden_files():
 
 def upload_overwrite():
 	if 'username' in session:
-		try:
-			upload_overwrite = g.redis.get('user:' + session['username'] + ':upload_overwrite')
+		if app.config['REDIS_ENABLED']:
+			try:
+				upload_overwrite = g.redis.get('user:' + session['username'] + ':upload_overwrite')
 
-			if upload_overwrite != None:
-				if upload_overwrite == 'yes':
-					return True
+				if upload_overwrite != None:
+					if upload_overwrite == 'yes':
+						return True
 
-		except Exception as ex:
-			app.logger.error('Unable to speak to redis: ' + str(ex))
+			except Exception as ex:
+				app.logger.error('Unable to speak to redis: ' + str(ex))
 
 	return False
 	
@@ -113,18 +115,19 @@ def get_on_file_click():
 		if not on_file_click == None:
 			return on_file_click
 		else:
-			try:
-				on_file_click = g.redis.get('user:' + session['username'] + ':on_file_click')
+			if app.config['REDIS_ENABLED']:
+				try:
+					on_file_click = g.redis.get('user:' + session['username'] + ':on_file_click')
 
-				if on_file_click != None:
-					g.on_file_click = on_file_click
-					return on_file_click
-				else:
-					g.on_file_click = 'ask'
-					return 'ask'
+					if on_file_click != None:
+						g.on_file_click = on_file_click
+						return on_file_click
+					else:
+						g.on_file_click = 'ask'
+						return 'ask'
 
-			except Exception as ex:
-				app.logger.error('Unable to speak to redis: ' + str(ex))
+				except Exception as ex:
+					app.logger.error('Unable to speak to redis: ' + str(ex))
 
 	g.on_file_click = 'ask'
 	return 'ask'
@@ -132,7 +135,8 @@ def get_on_file_click():
 ################################################################################
 
 def set_user_data(key,value):
-	g.redis.set('user:' + session['username'] + ':' + key,value)
+	if app.config['REDIS_ENABLED']:
+		g.redis.set('user:' + session['username'] + ':' + key,value)
 	
 ################################################################################
 
@@ -140,40 +144,41 @@ def get_user_bookmarks():
 	bmKey = 'user:' + session['username'] + ':bookmarks'
 	bmPrefix = 'user:' + session['username'] + ':bookmark:'
 	bmList = list()
-	
-	if g.redis.exists(bmKey):
-		try:
-			bookmarks = g.redis.smembers(bmKey)
-		except Exception as ex:	
-			app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
-			return bmList
 
-		if bookmarks != None:
-			if isinstance(bookmarks,set):
-				for bookmark_name in bookmarks:
+	if app.config['REDIS_ENABLED']:	
+		if g.redis.exists(bmKey):
+			try:
+				bookmarks = g.redis.smembers(bmKey)
+			except Exception as ex:	
+				app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
+				return bmList
+
+			if bookmarks != None:
+				if isinstance(bookmarks,set):
+					for bookmark_name in bookmarks:
 	
-					try:
-						function = g.redis.hget(bmPrefix + bookmark_name,'function')
-						path     = g.redis.hget(bmPrefix + bookmark_name,'path')
-					except Exception as ex:
-						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ' + str(ex))
-						continue
+						try:
+							function = g.redis.hget(bmPrefix + bookmark_name,'function')
+							path     = g.redis.hget(bmPrefix + bookmark_name,'path')
+						except Exception as ex:
+							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ' + str(ex))
+							continue
 					
-					if function == None:
-						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'function was not set')
-						continue
-					if path == None:
-						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'path was not set')
-						continue
+						if function == None:
+							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'function was not set')
+							continue
+						if path == None:
+							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'path was not set')
+							continue
 					
-					try:
-						bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
-						bmList.append(bm)
-					except werkzeug.routing.BuildError as ex:
-						app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function and/or path - ', str(ex))
-						continue
-			else:
-				app.logger.error('Failed to load bookmarks','Invalid redis data type when loading bookmarks set for ' + session['username'])
+						try:
+							bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
+							bmList.append(bm)
+						except werkzeug.routing.BuildError as ex:
+							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function and/or path - ', str(ex))
+							continue
+				else:
+					app.logger.error('Failed to load bookmarks','Invalid redis data type when loading bookmarks set for ' + session['username'])
 				
 	return bmList
 

@@ -118,6 +118,10 @@ def nojs():
 @bargate.core.login_required
 @bargate.core.downtime_check
 def bookmarks():
+	## Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
+	if not app.config['REDIS_ENABLED']:
+		abort(404)
+
 	bmKey = 'user:' + session['username'] + ':bookmarks'
 	bmPrefix = 'user:' + session['username'] + ':bookmark:'
 
