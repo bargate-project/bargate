@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import Flask, request, session, g, abort
+from flask import Flask, request, session, g, abort, flash, redirect, url_for
 from ConfigParser import RawConfigParser
 import jinja2 
 import logging
@@ -163,7 +163,7 @@ Further Details:
 
 			if not self.is_user_logged_in():
 				flash('You must be logged in to do that','alert-danger')
-				session.set('next',request.script_root + request.path + "?" + request.args)
+				session['next'] = request.url ## store the current url we're on
 				return redirect(url_for('login'))
 
 			return f(*args, **kwargs)
