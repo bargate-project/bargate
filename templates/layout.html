@@ -11,7 +11,7 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
-		<div class="navbar navbar-{{get_user_navbar()}} navbar-fixed-top" role="navigation">
+		<div class="navbar navbar-{{navbar}} navbar-fixed-top" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
@@ -61,17 +61,17 @@
 			</div>
 		</div>
 
-		{%- if session.popup_error -%}
-			{%- with poperr = poperr_get() -%}
+		{%- if session.modal_error -%}
+			{%- with modal_error = get_modal_error() -%}
 			<div class="modal fade" id="popup-error">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
 							<button type="button" class="close" data-dismiss="modal">×</button>
-							<h4 class="modal-title">{{ poperr.0 }}</h4>
+							<h4 class="modal-title">{{ modal_error.0 }}</h4>
 						</div>
 						<div class="modal-body">
-							{{ poperr.1 }}
+							{{ modal_error.1 }}
 						</div>
 						<div class="modal-footer">
 							<a href="#" class="btn btn-default"  data-dismiss="modal">OK</a>
@@ -90,7 +90,7 @@
 		</div>
 		
 		{%- if browse_mode %}
-		<div class="navbar navbar-{{get_user_navbar()}} navbar-fixed-bottom visible-xs" role="navigation">	
+		<div class="navbar navbar-{{navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container">
 				<div class="action-btns text-center">
 					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">

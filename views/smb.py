@@ -15,26 +15,60 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
+import bargate
 from bargate import app
-import bargate.core
 from flask import Flask, request, session, redirect, url_for, render_template
 
+################################################################################
+#### SHARE HANDLER
+		
+@app.login_required
+@app.allow_disable
+def share_handler(path):
+	## Get the path variable
+	svrpath = app.sharesConfig.get(request.endpoint,'path')
+
+	## Variable substition for username
+	svrpath = svrpath.replace("%USERNAME%",session['username'])
+	svrpath = svrpath.replace("%USER%",session['username'])
+
+	## LDAP home dir substitution support
+	if app.config['LDAP_HOMEDIR']:
+		if 'ldap_homedir' in session:
+			if not session['ldap_homedir'] == None:
+				svrpath = svrpath.replace("%LDAP_HOMEDIR%",session['ldap_homedir'])
+
+	## Get the display name
+	display = app.sharesConfig.get(request.endpoint,'display')
+
+	## What menu is active?
+	menu = app.sharesConfig.get(request.endpoint,'menu')
+
+	## Run the page!
+	return bargate.lib.smb.connection(svrpath,request.endpoint,menu,display,path)
+
+################################################################################
+
 @app.route('/other')
-@bargate.core.login_required
-@bargate.core.downtime_check
+@app.login_required
+@app.allow_disable
 def other():
 	return render_template('other.html', active='shared',pwd='')
 
+################################################################################
+
 @app.route('/custom')
-@bargate.core.login_required
-@bargate.core.downtime_check
+@app.login_required
+@app.allow_disable
 def custom_server():
 	return render_template('custom.html', active='shared',pwd='')
 
+################################################################################
+
 @app.route('/c', methods=['GET','POST'], defaults={'path': ''})
 @app.route('/c/<path:path>/', methods=['GET','POST'])
-@bargate.core.login_required
-@bargate.core.downtime_check
+@app.login_required
+@app.allow_disable
 def custom(path):
 
 	if request.method == 'POST':
@@ -58,4 +92,4 @@ def custom(path):
 	else:
 		return redirect(url_for('custom_server'))
 
-	return bargate.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],path)
+	return bargate.lib.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],path)

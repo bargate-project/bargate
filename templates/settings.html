@@ -30,7 +30,7 @@
     				<legend>Overwrite on upload</legend>
 					<div class="checkbox">
 					  <label>
-						<input id="upload_overwrite" name="upload_overwrite" type="checkbox" value="yes" {%if upload_overwrite and upload_overwrite == 'yes' %} checked="checked"{%endif%}>
+						<input id="overwrite_on_upload" name="overwrite_on_upload" type="checkbox" value="yes" {%if overwrite_on_upload and overwrite_on_upload == 'yes' %} checked="checked"{%endif%}>
 						Overwrite an existing file when uploading if the name matches
 					  </label>
 					</div>
@@ -65,11 +65,11 @@
 				</div>
 				<div class="panel-body">
     				<legend>Theme Pack</legend>
-					{% for theme in themes %}
+					{% for bootstrap_theme in themes %}
 					<div class="radio">
 						<label>
-						<input type="radio" name="theme" id="theme_{{theme.value}}" value="{{theme.value}}" {% if get_user_theme() == theme.value%}checked{%endif%}>
-						{{theme.name}}
+						<input type="radio" name="theme" id="theme_{{bootstrap_theme.value}}" value="{{bootstrap_theme.value}}" {% if theme == bootstrap_theme.value%}checked{%endif%}>
+						{{bootstrap_theme.name}}
 						</label>
 					</div>
 					{% endfor %}
@@ -78,7 +78,7 @@
     				<legend>Inverted Menu Bar</legend>
 					<div class="checkbox">
 					  <label>
-						<input name="navbar_alt" type="checkbox" value="inverse" {%if get_user_navbar() == 'inverse' %} checked="checked" {%endif%}>
+						<input name="navbar_alt" type="checkbox" value="inverse" {%if navbar == 'inverse' %} checked="checked" {%endif%}>
 						Use alternative menu bar colour
 					  </label>
 					</div>

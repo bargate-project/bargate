@@ -66,7 +66,7 @@
 			{#- FILE TR -#}
 			{%- if on_file_click == 'ask' %}
 				{#- POPUP DIALOG FOR FILES TR -#}
-				<tr class="rowclick-tr" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size}}" data-path="{{entry.path}}">
+				<tr class="rowclick-tr" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat}}" data-path="{{entry.path}}">
 				{%- set rclick = 'mclick-td' -%}
 			{%- else %}
 				{#- INSTANTLY VIEW/DOWNLOAD TR -#}
