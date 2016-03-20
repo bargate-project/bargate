@@ -610,6 +610,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 						if app.config['IMAGE_PREVIEW'] and mtype in bargate.lib.mime.pillow_supported:
 							if int(dstat['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 								entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+					else:
+						entry['size'] = 0
 					
 					## View-in-browser download type
 					if bargate.lib.mime.view_in_browser(mtype):
@@ -831,9 +833,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
 					continue
 					
-#			for x in ret:
-#				app.logger.info('json stuff: ' + str(x))
-
 			return jsonify({'files': ret})
 
 		elif action == 'upload':
