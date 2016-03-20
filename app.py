@@ -222,9 +222,6 @@ Further Details:
 			if not view_location in self._exempt_views:
 				token = session.get('_csrfp_token')
 
-				print token
-				print request.form.get('_csrfp_token')
-
 				if not token or token != request.form.get('_csrfp_token'):
 					if 'username' in session:
 						self.logger.warning('CSRF Protection alert: %s failed to present a valid POST token', session['username'])

@@ -7,7 +7,7 @@
 	<span class="pull-right">
 		<button type="submit" class="btn btn-primary"><i class="fa fa-fw fa-save"></i> Save</button>
 	</span>
-	<h2><i class="fa fa-fw fa-cogs"></i> Preferences</h2>
+	<h2><i class="fa fa-fw fa-cogs"></i> Settings</h2>
 	<hr/>
 
 	<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
@@ -18,8 +18,8 @@
 					<h3 class="panel-title">Folder Options</h3>
 				</div>
 				<div class="panel-body">
-    				<legend>Hidden Files</legend>
-    					<div class="checkbox">
+					<legend>Hidden Files</legend>
+						<div class="checkbox">
 					  <label>
 						<input id="hidden_files" name="hidden_files" type="checkbox" value="show" {%if hidden_files and hidden_files == 'show' %} checked="checked"{%endif%}>
 						Show hidden files and folders
@@ -64,7 +64,7 @@
 					<h3 class="panel-title">Theme
 				</div>
 				<div class="panel-body">
-    				<legend>Theme Pack</legend>
+					<legend>Theme Pack</legend>
 					{% for bootstrap_theme in themes %}
 					<div class="radio">
 						<label>
@@ -75,7 +75,7 @@
 					{% endfor %}
 					
 					<br/>
-    				<legend>Inverted Menu Bar</legend>
+					<legend>Inverted Menu Bar</legend>
 					<div class="checkbox">
 					  <label>
 						<input name="navbar_alt" type="checkbox" value="inverse" {%if navbar == 'inverse' %} checked="checked" {%endif%}>

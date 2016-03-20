@@ -36,6 +36,9 @@ import werkzeug
 @app.login_required
 @app.allow_disable
 def settings():
+	## Settings need redis storage, if redis is disabled we can't do settings :(
+	if not app.config['REDIS_ENABLED']:
+		abort(404)
 
 	themes = []
 	themes.append({'name':'Lumen','value':'lumen'})
