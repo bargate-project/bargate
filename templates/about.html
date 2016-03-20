@@ -16,7 +16,18 @@
 		width: 100%;
 	}
 }
+.logo
+{
+	font-family: 'Oswald', sans-serif;
+	margin: 0px;
+	font-size: 8em;
+}
+.fa-fort-awesome
+{
+	line-height: 20px;
+}
 </style>
+<link href='https://fonts.googleapis.com/css?family=Oswald:700' rel='stylesheet' type='text/css'>
 
 <div class="row equal">
 	<div class="col-sm-8">
@@ -26,7 +37,8 @@
 			</div>
 			<div class="panel-body">
 				<div class="text-center">	
-					<h1 style="font-size: 8em; margin: 0px"><i class="fa fa-fort-awesome fa-fw"></i><strong>bargate</strong></h1>
+					<h1 class="logo"><i class="fa fa-fort-awesome fa-fw"></i></h1>
+					<h1 class="logo"><strong>bargate</strong></h1>
 					<h3>A lightweight web based CIFS/SMB client</h3>
 					<h3>Version {{ config.VERSION }}</h3>
 				</div>				
