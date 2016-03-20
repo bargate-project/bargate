@@ -61,7 +61,6 @@
 				{% endfor %}
 
 				<form role="form" action="{{ url_for('login') }}" method="POST" class="text-left">
-					<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
 					{% if next %}
 					<input name="next" type="hidden" value="{{next}}"/>
 					{% endif %}

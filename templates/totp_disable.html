@@ -11,7 +11,7 @@
 <p>If you wish to disable two step logons enter the number from your two step application on your smart phone and click Disable:</p>
 
 <form method="POST" role="form" class="form-inline">
-<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
   <div class="form-group">
     <input type="text" class="form-control" id="totp_token" name="totp_token" placeholder="Number">
   </div>

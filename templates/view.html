@@ -6,7 +6,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="unlink" type="hidden"/>
 				<input name="path" type="hidden" value="{{ path }}"/>
 				<input name="mode" type="hidden" value="view"/>
@@ -34,7 +34,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_rename }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="rename" type="hidden"/>
 				<input name="path" type="hidden" value="{{ path }}"/>
 					

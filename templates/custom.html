@@ -2,15 +2,15 @@
 {% block body %}
 
 
-<h2><i class="fa fa-hdd-o"></i> Custom Server</h2>
+<h2><i class="fa fa-hdd-o"></i> Connect to server</h2>
 <hr/>
-<p>You can use this to connect to file servers on the University Network such as your own personal file servers in Labs or old school computer rooms. The server must support CIFS/SMB and if authentication is required must use University Authentication.</p>
+<p>You can use this to connect to other file servers available on the network. The computers must be part of the {{config['SMB_WORKGROUP']}} domain.</p>
 <form action="{{ url_for('custom') }}" method="POST">
-	<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+	<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 	<fieldset>
 		<label>Server URL</label>
 		<input type="text" class="form-control" name="open_server_uri" value="smb://">
-		<span class="help-block">e.g. smb://fileserver.soton.ac.uk/share/</span>
+		<span class="help-block">e.g. smb://fileserver.address/share/</span>
 		<button type="submit" class="btn btn-default">Connect</button>
 	</fieldset>
 </form>

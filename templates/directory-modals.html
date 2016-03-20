@@ -3,7 +3,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_bookmark }}" method="POST" enctype="multipart/form-data" autocomplete="off">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" type="hidden" value="add"/>
 				<input name="bookmark_function" type="hidden" value="{{ func_name }}"/>
 				<input name="bookmark_path" type="hidden" value="{{ pwd }}"/>
@@ -41,7 +41,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="upload" type="hidden"/>
 				<input name="path" type="hidden" value="{{ pwd }}"/>
 				
@@ -111,7 +111,7 @@ $(function ()
     {
         url: '{{url_home}}',
         dataType: 'json',
-        formData: [{name: '_csrf_token', value: '{{ csrf_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{pwd|tojson|safe}}}],
+        formData: [{name: '_csrfp_token', value: '{{ csrfp_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{pwd|tojson|safe}}}],
         done: function (e, data)
         {
             $.each(data.result.files, function (index, file)
@@ -198,7 +198,7 @@ $('body').dragster(
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="mkdir" type="hidden"/>
 				<input name="path" type="hidden" value="{{ pwd }}"/>
 					
@@ -226,7 +226,7 @@ $('body').dragster(
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="unlink" type="hidden"/>
 				<input name="path" type="hidden" value="" id="delete_path"/>
 					
@@ -253,7 +253,7 @@ $('body').dragster(
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="unlink" type="hidden"/>
 				<input name="path" type="hidden" value="" id="delete_dir_path"/>
 					
@@ -281,7 +281,7 @@ $('body').dragster(
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="rename" type="hidden"/>
   				<input id="rename_path" name="path" type="hidden" value=""/>
 					
@@ -309,7 +309,7 @@ $('body').dragster(
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
-				<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="copy" type="hidden"/>
   				<input id="copy_path" name="path" type="hidden" value=""/>
 					

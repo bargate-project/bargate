@@ -61,7 +61,7 @@
 				{% endfor %}
 
 				<form role="form" method="POST">
-					<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+					<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 					{% if next %}
 					<input name="next" type="hidden" value="{{next}}"/>
 					{% endif %}

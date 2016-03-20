@@ -4,9 +4,9 @@
 	<ul class="dropdown-menu">
 		<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-tags fa-fw"></i> Bookmark Manager</a></li>
 		<li {% if not browse_mode %}class="disabled"{%endif%} {% if atroot %}class="disabled"{%endif%}><a href="#" {% if not atroot %}data-toggle="modal" data-target="#add-bookmark"{%endif%}><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder...</a></li>
-		{% if bookmarks %}
+		{% if user_bookmarks %}
 		<li class="divider"></li>
-			{% for mark in bookmarks %}
+			{% for mark in user_bookmarks %}
 		<li><a href="{{ mark.url }}"><i class="fa fa-arrow-right fa-fw"></i> {{mark.name|truncate(30, True) }}</a></li>
 			{% endfor %}
 		{% endif %}

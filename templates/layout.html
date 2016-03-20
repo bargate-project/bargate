@@ -11,7 +11,7 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
-		<div class="navbar navbar-{{navbar}} navbar-fixed-top" role="navigation">
+		<div class="navbar navbar-{{user_navbar}} navbar-fixed-top" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
@@ -90,7 +90,7 @@
 		</div>
 		
 		{%- if browse_mode %}
-		<div class="navbar navbar-{{navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
+		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container">
 				<div class="action-btns text-center">
 					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">

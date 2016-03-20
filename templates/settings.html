@@ -10,7 +10,7 @@
 	<h2><i class="fa fa-fw fa-cogs"></i> Preferences</h2>
 	<hr/>
 
-	<input name="_csrf_token" type="hidden" value="{{ csrf_token() }}"/>
+	<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 	<div class="row">
 		<div class="col-sm-8">
 			<div class="panel panel-default" style="min-height: 500px">
@@ -68,7 +68,7 @@
 					{% for bootstrap_theme in themes %}
 					<div class="radio">
 						<label>
-						<input type="radio" name="theme" id="theme_{{bootstrap_theme.value}}" value="{{bootstrap_theme.value}}" {% if theme == bootstrap_theme.value%}checked{%endif%}>
+						<input type="radio" name="theme" id="theme_{{bootstrap_theme.value}}" value="{{bootstrap_theme.value}}" {% if user_theme == bootstrap_theme.value%}checked{%endif%}>
 						{{bootstrap_theme.name}}
 						</label>
 					</div>

@@ -136,6 +136,19 @@ def error405(error):
 	
 	return render_template('error.html',title="Not allowed",message="Method not allowed. This usually happens when your browser sent a POST rather than a GET, or vice versa.",debug=debug), 405
 
+
+@app.errorhandler(app.CsrfpException)
+def csrfp_error(error):
+	"""Handles CSRF protection exceptions"""
+
+	if app.debug:
+		debug = traceback.format_exc()
+	else:
+		debug = None
+	
+	return render_template('error.html',title="Security Error",message="Your browser failed to present a valid security token (CSRF protection token).",debug=debug), 400
+	
+
 ################################################################################
 
 @app.errorhandler(Exception)

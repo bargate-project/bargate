@@ -20,7 +20,6 @@ import bargate.lib.user
 import bargate.lib.userdata
 import bargate.lib.totp
 from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response, render_template
-import kerberos
 import mimetypes
 import os 
 import time
@@ -33,6 +32,7 @@ import ldap
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
 
+@app.csrfp_exempt
 @app.route('/', methods=['GET', 'POST'])
 @app.allow_disable
 def login():
@@ -110,6 +110,7 @@ def nojs():
 #################################################################################
 ### Portal login support (added for University of Sheffield)
 
+@app.csrfp_exempt
 @app.route('/portallogin', methods=['POST', 'GET'])
 def portallogin():
 	cookie_name    = request.args.get('cookie0')

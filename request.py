@@ -63,19 +63,15 @@ def context_processor():
 	"""This function injects additional variables into Jinja's context"""
 
 	data = {}
+	data['bookmarks']   = []
+	data['user_theme']  = app.config['THEME_DEFAULT']
+	data['user_navbar'] = 'default'
 
 	if app.is_user_logged_in():
 		if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
-
-			## List of bookmarks for the user
-			data['bookmarks'] = bargate.lib.userdata.get_bookmarks()
-			data['theme']     = bargate.lib.userdata.get_theme()
-			data['navbar']    = bargate.lib.userdata.get_navbar()		
-
-	else:
-		data['bookmarks']   = []
-		data['user_theme']  = app.config['THEME_DEFAULT']
-		data['user_navbar'] = 'default'
+			data['user_bookmarks'] = bargate.lib.userdata.get_bookmarks()
+			data['user_theme']     = bargate.lib.userdata.get_theme()
+			data['user_navbar']    = bargate.lib.userdata.get_navbar()	
 
 	return data
 

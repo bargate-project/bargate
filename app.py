@@ -29,6 +29,9 @@ from functools import wraps   ## used for login_required and downtime_check
 
 class Bargate(Flask):
 
+	class CsrfpException(Exception):
+		pass
+
 	def __init__(self, init_object_name):
 		super(Bargate, self).__init__(init_object_name)
 
@@ -36,17 +39,13 @@ class Bargate(Flask):
 		self._init_logging()
 		self._init_templates()
 		self._init_debug()
+		self._init_csrfp()
 
 		## Get the sections of the shares config file
 		self.sharesConfig = RawConfigParser()
 		with open(self.config['SHARES_CONFIG'], 'r') as f:
 			self.sharesConfig.readfp(f)
 		self.sharesList = self.sharesConfig.sections()
-
-		## CSRF Protection
-		self.add_template_global(self.csrfp_token)
-		self.add_template_global(self.csrf_token)
-		self.before_request(self.csrfp_before_request)
 
 		## Modal errors
 		self.add_template_global(self.get_modal_error)
@@ -152,6 +151,13 @@ Further Details:
 			self.logger.info('debug toolbar enabled - DO NOT USE THIS ON PRODUCTION SYSTEMS!')
 
 ################################################################################
+
+	def _init_csrfp(self):
+		self._exempt_views = set()
+		self.add_template_global(self.csrfp_token)
+		self.before_request(self.csrfp_before_request)
+
+################################################################################
 ## User session/login functions
 
 	def login_required(self,f):
@@ -201,16 +207,52 @@ Further Details:
 		return session['_csrfp_token']
 
 	def csrfp_before_request(self):
-		if request.method == "POST":
-			if not request.endpoint in ('login', 'portallogin'):
-				token = session.get('_csrfp_token')
-				if not token or token != request.form.get('_csrf_token'):
-					if 'username' in session:
-						self.logger.warning('CSRF protection alert: %s failed to present a valid POST token',session['username'])
-					else:
-						self.logger.warning('CSRF protection alert: a non-logged in user failed to present a valid POST token')
+		"""Performs the checking of CSRF tokens. This check is skipped for the 
+		GET, HEAD, OPTIONS and TRACE methods within HTTP, and is also skipped
+		for any function that has been added to _exempt_views by use of the
+		disable_csrf_check decorator."""
 
-					abort(400)
+		# For methods that require CSRF checking
+		if request.method not in ('GET', 'HEAD', 'OPTIONS', 'TRACE'):
+			# Get the function that is rendering the current view
+			view = self.view_functions.get(request.endpoint)
+			view_location = view.__module__ + '.' + view.__name__
+
+			# If the view is not exempt
+			if not view_location in self._exempt_views:
+				token = session.get('_csrfp_token')
+
+				print token
+				print request.form.get('_csrfp_token')
+
+				if not token or token != request.form.get('_csrfp_token'):
+					if 'username' in session:
+						self.logger.warning('CSRF Protection alert: %s failed to present a valid POST token', session['username'])
+					else:
+			 			self.logger.warning('CSRF Protection alert: a non-logged in user failed to present a valid POST token')
+
+					# The user should not have accidentally triggered this
+					raise self.CsrfpException()
+
+			else:
+				self.logger.debug('View ' + view_location + ' is exempt from CSRF Protection')
+
+################################################################################
+
+	def csrfp_exempt(self, view):
+		"""A decorator that can be used to exclude a view from CSRF validation.
+		Example usage of disable_csrf_check might look something like this:
+			@app.disable_csrf_check
+			@app.route('/some_view')
+			def some_view():
+				return render_template('some_view.html')
+		:param view: The view to be wrapped by the decorator.
+		"""
+
+		view_location = view.__module__ + '.' + view.__name__
+		self._exempt_views.add(view_location)
+		self.logger.debug('Added CSRF Protection exemption for ' + view_location)
+		return view
 
 ################################################################################
 
