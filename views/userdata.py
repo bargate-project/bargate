@@ -42,6 +42,9 @@ def settings():
 
 	themes = []
 	themes.append({'name':'Lumen','value':'lumen'})
+	themes.append({'name':'Cerulean','value':'cerulean'})
+	themes.append({'name':'Cosmo','value':'cosmo'})
+	themes.append({'name':'Cyborg','value':'cyborg'})
 	themes.append({'name':'Journal','value':'journal'})
 	themes.append({'name':'Flatly','value':'flatly'})
 	themes.append({'name':'Sandstone','value':'sandstone'})
@@ -50,10 +53,10 @@ def settings():
 	themes.append({'name':'Simplex','value':'simplex'})
 	themes.append({'name':'Spacelab','value':'spacelab'})
 	themes.append({'name':'United','value':'united'})
-	themes.append({'name':'Cerulean','value':'cerulean'})
 	themes.append({'name':'Darkly','value':'darkly'})
-	themes.append({'name':'Cyborg','value':'cyborg'})
 	themes.append({'name':'Slate','value':'slate'})
+	themes.append({'name':'Superhero','value':'superhero'})
+	themes.append({'name':'Yeti','value':'yeti'})
 
 
 	if request.method == 'GET':

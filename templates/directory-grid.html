@@ -1,0 +1,244 @@
+{%- extends "layout.html" -%}
+{%- block body -%}
+
+{#- POP UP MODALS FOR FILE ACTIONS -#}
+{%- include 'directory-modals.html' -%}
+
+{%- if func_name == 'webfiles' and atroot == True %}
+<div class="alert alert-info">
+	<strong>Heads up!</strong> Files you place here appear on your personal website: <a target="_blank" href="http://www.personal.southampton.ac.uk/{{ session.username }}">http://www.personal.southampton.ac.uk/{{ session.username }}</a>
+</div>
+{% endif %}
+
+{#- BREADCRUMB NAVIGATION #}
+<ol class="breadcrumb">
+		<li>
+			<i class="fa fa-home"></i>
+			<a href="{{ url_home }}">
+			{{ root_display_name }}
+			</a>
+		</li>
+		{%- for dir in crumbs %}
+		<li{% if loop.last %} class="active"{%endif%}>
+			{%- if not loop.last %}
+			<a href="{{ dir.url }}">
+			{{ dir.name }}
+			</a>
+			{%- else %}
+			{{ dir.name }}
+			{%- endif %}
+		</li>
+		{%- endfor %}
+</ol>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$(".dentry").click(function()
+	{
+		window.document.location = $(this).data('url');
+	});
+	$(".fentry-open").click(function()
+	{
+		window.document.location = $(this).data('url');
+	});
+	
+	$(".fentry-preview").click(function()
+	{
+		var parent = $(this)
+		
+		$('#file-click-filename').text(parent.data('filename'));
+		$('#file-click-size').text(parent.data('size'));
+		$('#file-click-mtime').text(parent.data('mtime'));
+		$('#file-click-mtype').text(parent.data('mtype'));
+		$('#file-click-icon').attr('class',parent.data('icon'));
+		$('#file-click-download').attr('href',parent.data('download'));
+		$('#file-click-props').attr('href',parent.data('props'));
+		
+		if (parent.attr('data-imgpreview'))
+		{
+			$('#file-click-preview').attr('src',parent.data('imgpreview'));
+			$('#file-click-preview').removeClass('hidden');
+			$('#file-click-icon').addClass('hidden');
+		}
+		else
+		{
+			$('#file-click-preview').attr('src','');
+			$('#file-click-view').addClass('hidden');
+			$('#file-click-icon').removeClass('hidden');
+		}
+		
+		if (parent.attr('data-view'))
+		{
+			$('#file-click-view').attr('href',parent.data('view'));
+			$('#file-click-view').removeClass('hidden');
+		}
+		else
+		{
+			$('#file-click-view').addClass('hidden');
+		}
+		
+		$('#file-click').modal();
+	});
+	  
+});
+</script>
+
+<style type="text/css">
+.dentry
+{
+	position: relative;
+	float: left;
+	width: 140px;
+	height: 30px;
+	margin: 10px;
+	text-align: left;
+	cursor: pointer;
+}
+.dentry-icon
+{
+	-webkit-box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+	-moz-box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+	box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+	border-radius: 3px;
+	width: 140px;
+	padding-left: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+	
+.fentry {
+  position: relative;
+  float: left;
+  width: 140px;
+  height: 140px;
+  margin: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+.fentry-img
+{
+  color: #262524;
+-webkit-box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+-moz-box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+  width: 140px;
+  height: 120px;
+}
+.img-responsive
+{
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+.fentry-icon
+{
+  /*color: #262524;*/
+-webkit-box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+-moz-box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.22);
+border-radius: 3px;
+  width: 140px;
+  height: 120px;
+	padding-left: 30px;
+	padding-right: 30px;
+	/*padding-top: 30px;
+	padding-bottom: 25px;*/
+	font-size: 50px;
+	line-height: 120px;
+}
+.fentry-label
+{
+  padding: 1px;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function ()
+{
+	var $container = $('#files').isotope(
+	{
+		getSortData:
+		{
+			name: '[data-filename]',
+			type: '[data-raw-mtype]',
+			mtime: '[data-raw-mtime] parseInt',
+			size: '[data-raw-size] parseInt',
+		},
+		transitionDuration: '0',
+		sortAscending:
+		{
+			name: true,
+			type: true,
+			mtime: false,
+			size: false
+		}
+	});
+
+
+	$('.dir-sortby-name').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'name' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-name span').removeClass('invisible');
+	});
+	$('.dir-sortby-type').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'type' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-type span').removeClass('invisible');
+	});
+	$('.dir-sortby-mtime').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'mtime' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-mtime span').removeClass('invisible');
+	});
+	$('.dir-sortby-size').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'size' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-size span').removeClass('invisible');
+	});
+});
+</script>
+
+<div id="dirs">
+	{%- for entry in dirs -%}
+	<div class="dentry" data-url="{{ entry.default_open }}">
+		<div class="dentry-icon"><i class="{{entry.icon}}"></i> {{ entry.name|truncate(12,killwords=True)}}</div>
+		<div class="name fentry-label"></div>
+	</div>
+	{%- endfor -%}
+</div>
+
+<div style="clear: both"></div>
+
+<div id="files">
+	{%- for entry in files -%}
+	{%- if on_file_click == 'ask' -%}
+	<div class="fentry fentry-preview" data-raw-mtype="{{entry.mtype_raw}}" data-raw-mtime="{{ entry.mtime_raw }}" data-raw-size="{{ entry.size }}" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat}}" data-path="{{entry.path}}" data-url="{{ entry.default_open}}">
+	{%- else %}
+	<div class="fentry fentry-open" data-raw-mtype="{{entry.mtype_raw}}" data-raw-mtime="{{ entry.mtime_raw }}" data-raw-size="{{ entry.size }}" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
+	{%- endif %}
+
+		{%- if entry.img_preview -%}
+		<div class="fentry-img" style="overflow: hidden; background-image: url('{{ entry.img_preview }}'); background-size: cover;">
+		</div>
+		{%- else -%}
+		<div class="fentry-icon"><span class="{{ entry.icon }}"></span></div>
+		{%- endif -%}
+		<div class="name fentry-label">{{ entry.name|truncate(15,killwords=True)}}</div>
+	</div>
+	{%- endfor -%}
+</div>
+
+{%- if no_items -%}
+<p>
+<div class="alert alert-info">There are no items in this directory</div>
+</p>
+{%- endif -%}		
+
+{% endblock %}

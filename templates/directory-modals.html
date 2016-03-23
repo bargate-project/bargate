@@ -75,124 +75,6 @@
 	</div>
 </div>
 
-<script type="text/javascript">
-$('#upload-file').on('hidden.bs.modal', function (e)
-{
-	if (window.uploadinprogress)
-	{
-		return;
-	}
-	else
-	{
-		location.reload(1);
-	}
-})
-
-$('#fileupload').bind('fileuploadstop', function (e)
-{ 
-	window.uploadinprogress = 0;
-	$('#upload-button-icon').addClass('fa-upload');
-	$('#upload-button-icon').removeClass('fa-spin');
-	$('#upload-button-icon').removeClass('fa-cog');
-	
-	if ($("#upload-file").data('bs.modal').isShown)
-	{
-		/* do nothing */
-	}
-	else
-	{
-		location.reload(1);
-	}
-})
-
-$(function ()
-{                
-    $('#fileupload').fileupload(
-    {
-        url: '{{url_home}}',
-        dataType: 'json',
-        formData: [{name: '_csrfp_token', value: '{{ csrfp_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{pwd|tojson|safe}}}],
-        done: function (e, data)
-        {
-            $.each(data.result.files, function (index, file)
-            {
-                if (file.error)
-                {
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded: ' + file.error + ' </li>').appendTo('#upload-files');
-        		}
-        		else
-        		{
-					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; ' + file.name + ' was uploaded successfully </li>').appendTo('#upload-files');
-        		}
-        		
-        		$('#upload-progress').addClass('hidden');
-        		$('#upload-cancel').addClass('hidden');
-            });
-        },
-		fail: function (e, data)
-        {
-        	if (data.errorThrown === 'abort')
-        	{
-				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').appendTo('#upload-files');
-			}
-			else
-			{    		
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded. The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
-			}
-			
-			$('#upload-progress').addClass('hidden');
-			$('#upload-cancel').addClass('hidden');
-
-        },
-        progressall: function (e, data)
-        {
-            var progress = parseInt(data.loaded / data.total * 100, 10);
-            $('#upload-progress .progress-bar').css
-            (
-                'width',
-                progress + '%'
-            );
-        },
-		add: function (e, data)
-		{
-        	jqXHR = data.submit();
-        	
-			$('#upload-cancel').click(function (e)
-			{
-				jqXHR.abort();
-			});
-		},
-        start: function (e)
-        {
-			window.uploadinprogress = 1;
-			$('#upload-drag-over').modal('hide');
-            $('#upload-file').modal()
-            $('#upload-progress').removeClass('hidden');
-            $('#upload-cancel').removeClass('hidden');
-			
-			$('#upload-button-icon').removeClass('fa-upload');
-			$('#upload-button-icon').addClass('fa-spin');
-			$('#upload-button-icon').addClass('fa-cog');
-        },
-    }).prop('disabled', !$.support.fileInput)
-        .parent().addClass($.support.fileInput ? undefined : 'disabled');
-});
-
-
-
-$('body').dragster(
-{
-    enter: function ()
-	{
-		$('#upload-drag-over').modal()
-    },
-    leave: function ()
-	{
-		$('#upload-drag-over').modal('hide');
-    }
-});
-</script>
-
 {#- modal popup for when create directory is clicked #}
 <div class="modal" id="create-directory">
 	<div class="modal-dialog">
@@ -283,7 +165,7 @@ $('body').dragster(
 			<form action="{{ url_home }}" method="POST">
 				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="rename" type="hidden"/>
-  				<input id="rename_path" name="path" type="hidden" value=""/>
+				<input id="rename_path" name="path" type="hidden" value=""/>
 					
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -370,3 +252,119 @@ $('body').dragster(
 		</div>
 	</div>
 </div>
+
+<script type="text/javascript">
+$('#upload-file').on('hidden.bs.modal', function (e)
+{
+	if (window.uploadsuccess)
+	{
+		/* reload the window if the upload was a success */
+		location.reload(1);
+	}
+})
+
+$(function ()
+{
+	$('#fileupload').fileupload(
+	{
+		url: '{{url_home}}',
+		dataType: 'json',
+		formData: [{name: '_csrfp_token', value: '{{ csrfp_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{pwd|tojson|safe}}}],
+		start: function (e)
+		{
+			$('#upload-drag-over').modal('hide');
+			$('#upload-file').modal()
+			$('#upload-progress').removeClass('hidden');
+			$('#upload-cancel').removeClass('hidden');
+			
+			$('#upload-button-icon').removeClass('fa-upload');
+			$('#upload-button-icon').addClass('fa-spin');
+			$('#upload-button-icon').addClass('fa-cog');
+		},
+		stop: function (e, data)
+		{
+			$('#upload-button-icon').addClass('fa-upload');
+			$('#upload-button-icon').removeClass('fa-spin');
+			$('#upload-button-icon').removeClass('fa-cog');
+
+			if (!($("#upload-file").data('bs.modal').isShown))
+			{
+				/* if something finished then show the modal if it wasnt already */
+				$('#upload-file').modal('show');
+			}
+		},
+		done: function (e, data)
+		{
+			window.uploadsuccess = 1;
+			$.each(data.result.files, function (index, file)
+			{
+				if (file.error)
+				{
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded: ' + file.error + ' </li>').appendTo('#upload-files');
+				}
+				else
+				{
+					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; ' + file.name + ' was uploaded successfully </li>').appendTo('#upload-files');
+				}
+				
+				$('#upload-progress').addClass('hidden');
+				$('#upload-cancel').addClass('hidden');
+			});
+		},
+		fail: function (e, data)
+		{
+			window.uploadsuccess = 0;
+
+			if (data.errorThrown === 'abort')
+			{
+				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').appendTo('#upload-files');
+			}
+			else
+			{		
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded. The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
+			}
+			
+			$('#upload-progress').addClass('hidden');
+			$('#upload-cancel').addClass('hidden');
+
+		},
+		progressall: function (e, data)
+		{
+			var progress = parseInt(data.loaded / data.total * 100, 10);
+			$('#upload-progress .progress-bar').css('width', progress + '%');
+		},
+		add: function (e, data)
+		{
+			jqXHR = data.submit();
+			$('#upload-cancel').click(function (e)
+			{
+				jqXHR.abort();
+			});
+		},
+	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
+});
+
+$('body').dragster(
+{
+	enter: function ()
+	{
+		$('#upload-drag-over').modal()
+	},
+	leave: function ()
+	{
+		$('#upload-drag-over').modal('hide');
+	}
+});
+
+$('#create-directory').on('shown.bs.modal', function(e)
+{
+	$('#create-directory-button').one('focus', function(e){$(this).blur();});
+});
+
+$('#upload-file').on('shown.bs.modal', function(e)
+{
+	$('#upload-button').one('focus', function(e){$(this).blur();});
+});
+</script>
+
+

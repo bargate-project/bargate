@@ -8,7 +8,7 @@ body
 {
 	body
 	{
-		padding-top: 70px;
+		padding-top: 80px;
 	}
 }
 
@@ -34,79 +34,6 @@ body
 	background-color: #f5f5f5;
 }
 
-@media (min-width: 768px)
-{
-	.error-block
-	{
-		padding-top: 80px;
-	
-		position:fixed !important;
-		position:absolute;
-		top:0;
-		right:0;
-		bottom:0;
-		left:0;
-	
-		background-image: url("/static/images/fire.jpg");
-		background-size: cover;
-		color: #fffff;
-		text-align: center;
-	
-		overflow: auto;
-	}
-	
-	.error-text
-	{
-		color: #ffffff;
-		text-shadow:
-		   3px 3px 0 #000,
-		 -1px -1px 0 #000,  
-		  1px -1px 0 #000,
-		  -1px 1px 0 #000,
-		   1px 1px 0 #000;
-	}
-	.error-img
-	{
-		font-size: 10em;
-	}
-	.error-header
-	{
-		font-size: 3em;
-	}
-	.error-body
-	{
-		font-size: 1.5em;
-		margin-left: 10%;
-		margin-right: 10%;
-	}
-}
-@media (max-width: 767px)
-{
-	.error-block
-	{
-		padding-top: 80px;
-		text-align: center;
-	}
-	.error-text
-	{
-		color: #000000;
-	}
-	.error-img
-	{
-		font-size: 5em;
-	}
-	.error-header
-	{
-		font-size: 2em;
-	}
-	.error-body
-	{
-		font-size: 1.2em;
-		margin-left: 5%;
-		margin-right: 5%;
-	}
-}
-
 .error-debug pre
 {
 	margin-top: 10px;
@@ -118,23 +45,6 @@ body
 }
 	
 
-
-/* horrible modal center 'hack' -  but its so simple that is just DELICIOUS */
-@media (max-height: 768px)
-{
-	.modal
-	{
-		padding-top: 3%;
-	}
-}
-
-@media (min-height: 769px)
-{
-	.modal
-	{
-		padding-top: 6%;
-	}
-}
 
 /* MAKE BOOTSTRAP DO VERTICAL ALIGN IN TABLES, DUH? */
 .table td
@@ -155,11 +65,6 @@ body
 	text-decoration: none !important;
 }
 
-.action-btns
-{
-	margin-right: 15px;
-}
-
 /* The changelog list type */
 ul.changelog
 {
@@ -168,9 +73,15 @@ ul.changelog
 }
 
 /* Get rid of padding when we're in browse mode so directories go right up to screen edge */
-.container-directory
+.container-directory-list
 {
 	padding: 0px;
+}
+
+.container-directory-grid
+{
+	padding-left: 30px;
+	padding-right: 30px;
 }
 
 /* Use a custom icon from FontAwesome for the breadcrumb separator */
@@ -267,11 +178,13 @@ td.dentry
 /** FILE UPLOAD **/
 
 
-.fileinput-button {
+.fileinput-button 
+{
   position: relative;
   overflow: hidden;
 }
-.fileinput-button input {
+.fileinput-button input 
+{
   position: absolute;
   top: 0;
   right: 0;
@@ -283,12 +196,28 @@ td.dentry
   cursor: pointer;
 }
 
-/* Fixes for IE < 8 */
-@media screen\9 {
-  .fileinput-button input {
-    filter: alpha(opacity=0);
-    font-size: 100%;
-    height: 100%;
-  }
+/* buttons on toolbar top right */
+.inline-block
+{
+	display: inline-block;
 }
 
+.bargate-navbar-btn
+{
+	padding-right: 5px;
+}
+
+.navbar-right .dropdown-menu-auto, .dropdown-menu-auto
+{
+	left: auto;
+	right: auto;
+}
+
+/* Error pages error in middle of screen */
+.jumbotron-alert
+{
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}

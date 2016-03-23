@@ -12,11 +12,11 @@ $(document).ready(function()
     } 
 );
 
-/* Tooltip */
+/* Tooltip
 $(document).ready(function ()
 {
 	$("[rel=tooltip]").tooltip();
-});
+});*/
 
 $(document).ready(function($)
 {
@@ -158,4 +158,14 @@ $(function() {
 		$('.modal:visible').each(reposition);
 	});
 
+});
+
+// Hiding tooltips when buttons are pressed (on navbar)
+$(document).ready(function()
+{
+	$('[rel="tooltip"]').tooltip();
+	$('[rel="tooltip').on('mouseup', function ()
+	{
+		$(this).tooltip('hide');
+	});
 });

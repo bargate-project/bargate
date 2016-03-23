@@ -28,6 +28,8 @@ from PIL import Image
 import glob
 import StringIO
 
+import traceback
+
 #### SMB entry types
 SMB_ERR   = -1
 SMB_SHARE = 3
@@ -589,9 +591,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					dstat = statURI(ctx,entry['uri_as_str'])
 
 					if 'mtime' in dstat:
-						entry['mtime'] = bargate.lib.core.ut_to_string(dstat['mtime'])
+						entry['mtime_raw'] = dstat['mtime']
+						entry['mtime']     = bargate.lib.core.ut_to_string(dstat['mtime'])
 					else:
 						entry['mtime'] = 'Unknown'
+						entry['mtime_raw'] = 0
 
 					## URL to view the file, and downlad the file
 					entry['view']     = url_for(func_name,path=entry['path'],action='view')
@@ -599,22 +603,21 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['default_open'] = entry['download']
 				
 					## File icon
-					(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry['name'])
-					entry['icon'] = bargate.lib.mime.mimetype_to_icon(mtype)
-					entry['mtype'] = ftype
+					(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
+					entry['icon'] = bargate.lib.mime.mimetype_to_icon(entry['mtype_raw'])
 	
 					if 'size' in dstat:
 						entry['size'] = dstat['size']
 
 						## Image previews
-						if app.config['IMAGE_PREVIEW'] and mtype in bargate.lib.mime.pillow_supported:
+						if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
 							if int(dstat['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 								entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
 					else:
 						entry['size'] = 0
 					
 					## View-in-browser download type
-					if bargate.lib.mime.view_in_browser(mtype):
+					if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
 						entry['bdownload'] = url_for(func_name,path=entry['path'],action='download',inbrowser='True')
 						entry['default_open'] = entry['bdownload']
 						
@@ -652,18 +655,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']
 
-					files.append(entry)
+					dirs.append(entry)
 
 			## Sort the directories and files by name
-			dirs = sorted(dirs,cmp = bargate.lib.core.sort_by_name)
+			dirs  = sorted(dirs,cmp  = bargate.lib.core.sort_by_name)
 			files = sorted(files,cmp = bargate.lib.core.sort_by_name)
-
-			## Combine dirs and files into one list
-			entries = []
-			for d in dirs:
-				entries.append(d)
-			for f in files:
-				entries.append(f)
 
 			## Build the URL to the parent directory
 			## and the current directory name
@@ -708,10 +704,16 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			## Bookmarks
 			url_bookmark = url_for('bookmarks')
 
+			## are there any items?
+			no_items = False
+			if len(files) == 0 and len(dirs) == 0:
+				no_items = True
+
 			## Render the template
-			return render_template('directory.html', 
+			return render_template('directory-grid.html', 
 				active=active,
-				entries=entries,
+				dirs=dirs,
+				files=files,
 				crumbs=crumbs,
 				pwd=path,
 				cwd=cwd,
@@ -724,6 +726,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				func_name = func_name,
 				root_display_name = display_name,
 				on_file_click=bargate.lib.userdata.get_on_file_click(),
+				no_items = no_items,
 			)
 
 		else:
@@ -782,7 +785,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				filename = bargate.lib.core.secure_filename(ufile.filename)
 				filename = filename.encode('utf8')
 				filename = urllib.quote(filename)
-				upload_uri = uri + '/' + filename
+				upload_uri = uri_as_str + '/' + filename
 
 				## Check the new file name is valid
 				try:
@@ -798,6 +801,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					## It doesn't exist so lets continue to upload
 					pass
 				except Exception as ex:
+					app.logger.error("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 					ret.append({'name' : ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
 					continue
 					

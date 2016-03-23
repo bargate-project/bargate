@@ -12,7 +12,7 @@
 	</head>
 	<body>
 		<div class="navbar navbar-{{user_navbar}} navbar-fixed-top" role="navigation">
-			<div class="container">
+			<div class="container-fluid">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
 						<span class="sr-only">Toggle navigation</span>
@@ -33,11 +33,18 @@
 					<ul class="nav navbar-nav">
 					{%- include 'dropdown-menus.html' %}
 					</ul>
-					
-					<ul class="nav navbar-nav navbar-right">
+					<!--<ul class="nav navbar-nav navbar-right">
 						<li class="dropdown{%if active == 'user'%} active{%endif%}">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-fw fa-user"></i> {{ session.username }} <b class="caret"></b></a>
-							<ul class="dropdown-menu">
+
+						</li>
+					</ul>-->
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" data-placement="bottom" title="Menu" aria-haspopup="true" aria-expanded="false">
+								<i class="fa fa-bars fa-fw fa-lg"></i>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-right">
 								{% if config['REDIS_ENABLED'] %}
 								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Settings</a></li>
 								{% endif %}
@@ -45,19 +52,40 @@
 								<li><a href="{{ url_for('totp_user_view') }}"><i class="fa fa-lock fa-fw"></i> Two Step Protection</a></li>
 								{% endif %}
 								{%- include 'user-menu.html' %}
+								<li class="divider"></li>
+								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php" target="_blank"><i class="fa fa-fw fa-life-ring"></i> Filestore Help</a></li>
+								<li><a href="https://github.com/divad/bargate/issues" target="_blank"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
+								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
+								<li class="divider"></li>
 								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
 							</ul>
-						</li>
-					</ul>
+						</div>
 					
-					<div class="pull-right action-btns">
-						<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Upload a file" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
-						</a>
-						<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default hidden-xs" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder" {% if not browse_mode %}disabled="disabled"{%endif%}>
-							<i class="fa fa-fw fa-lg fa-folder-open"></i>
-						</a>
-					</div>
+					{% if browse_mode %}
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="create-directory-button" data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="Create a folder">
+								<i class="fa fa-fw fa-lg fa-folder-open"></i>
+							</a>
+						</div>
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn" rel="tooltip" title="Upload a file" data-placement="bottom" data-trigger="hover">
+								<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
+							</a>
+						</div>
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="sortby-button" class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-placement="bottom" title="Sort by" rel="tooltip">
+								<i class="fa fa-fw fa-lg fa-sort"></i>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-auto">
+								<li style="cursor: pointer"><a class="dir-sortby-name"><span class="sortby-check"><i class="fa fa-fw fa-check"></i></span> Name</a></li>
+								<li style="cursor: pointer"><a class="dir-sortby-type"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Type</a></li>
+								<li style="cursor: pointer"><a class="dir-sortby-mtime"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Modified</a></li>
+								<li style="cursor: pointer"><a class="dir-sortby-size"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Size</a></li>
+							</ul>
+						</div>
+					{% endif %}
 				</div>
 				{%- endif %}
 			</div>
@@ -84,9 +112,14 @@
 			{%- endwith -%}
 		{%- endif %}
 
-		<div class="{% if browse_mode %}container container-directory{%else%}container{%endif%}">
+
+		{% if browse_mode %}
+		<div class="container-fluid container-directory-grid">
+		{% else %}
+		<div class="container-fluid">
+		{% endif %}
 			{% for category, message in get_flashed_messages(with_categories=true) %}
-              <div class="alert alert-dismissable {{category}}"><button type="button" class="close" data-dismiss="alert">×</button>{{message}}</div>
+				<div class="alert alert-dismissable {{category}}"><button type="button" class="close" data-dismiss="alert">×</button>{{message}}</div>
 			{% endfor %}
 			{% block body %}{% endblock -%}
 		</div>
@@ -94,7 +127,7 @@
 		{%- if browse_mode %}
 		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container">
-				<div class="action-btns text-center">
+				<div class="action-btns text-center dropup">
 					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">
 						<i class="fa fa-fw fa-upload"></i>
 					</a>
