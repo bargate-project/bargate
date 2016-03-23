@@ -448,22 +448,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				crumbs = []
 				
 			try:
-				if app.debug:
-					## Debugging; show what attributes were returned
-					flash(ctx.getxattr(uri_as_str,smbc.XATTR_ALL),'alert-danger')
-
-					net_sec_desc_owner = bargate.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_OWNER))
-					net_sec_desc_group = bargate.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_GROUP))
+				net_sec_desc_owner = bargate.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_OWNER))
+				net_sec_desc_group = bargate.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_GROUP))
 
 			except Exception as ex:
-				## If we're in debug mode then print the error
-				if app.debug:
-					net_sec_desc_owner = "Error reading attributes: " + str(ex)	
-					net_sec_desc_group = "Error reading attributes: " + str(ex)
-				## In normal usage, just set user and group to unknown if we get an exception
-				else:
-					net_sec_desc_owner = "Unknown"
-					net_sec_desc_group = "Unknown"
+				net_sec_desc_owner = "Unknown"
+				net_sec_desc_group = "Unknown"
 				
 			## URLs
 			url_home=url_for(func_name)
@@ -814,7 +804,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				filename = bargate.core.secure_filename(ufile.filename)
 				filename = filename.encode('utf8')
 				filename = urllib.quote(filename)
-				upload_uri = uri + '/' + filename
+				upload_uri = uri_as_str + '/' + filename
 
 				## Check the new file name is valid
 				try:
@@ -858,16 +848,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 					wfile.close()
 
-
 					ret.append({'name' : ufile.filename})
 
 				except Exception as ex:
 					ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
 					continue
 					
-#			for x in ret:
-#				app.logger.info('json stuff: ' + str(x))
-
 			return jsonify({'files': ret})
 
 		elif action == 'upload':
@@ -883,7 +869,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					filename = bargate.core.secure_filename(ufile.filename)
 					filename = filename.encode('utf8')
 					filename = urllib.quote(filename)
-					upload_uri = uri + '/' + filename
+					upload_uri = uri_as_str + '/' + filename
 
 					## Check the new file name is valid
 					try:
@@ -1086,7 +1072,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			## Then quote it ready for SMB usage
 			mkdirname = request.form['directory_name'].encode('utf8')
 			mkdirname = urllib.quote(mkdirname)
-			mkdir_uri = uri + '/' + mkdirname
+			mkdir_uri = uri_as_str + '/' + mkdirname
 
 			try:
 				ctx.mkdir(mkdir_uri,0755)
