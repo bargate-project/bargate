@@ -635,7 +635,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 				## DIRECTORY ###################################################
 				elif dentry.smbc_type == bargate.lib.smb.SMB_DIR:
-					entry['icon'] = 'fa fa-fw fa-folder-open'	
+					entry['icon'] = 'fa fa-fw fa-folder'	
 					entry['type'] = 'dir'
 					entry['view'] = url_for(func_name,path=entry['path'])
 					entry['default_open'] = entry['view']
@@ -709,8 +709,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			if len(files) == 0 and len(dirs) == 0:
 				no_items = True
 
+			## What layout does the user want?
+			layout = bargate.lib.userdata.get_layout()
+
 			## Render the template
-			return render_template('directory-grid.html', 
+			return render_template('directory-' + layout + '.html', 
 				active=active,
 				dirs=dirs,
 				files=files,

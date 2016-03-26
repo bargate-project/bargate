@@ -1,37 +1,8 @@
 {%- extends "layout.html" -%}
 {%- block body -%}
-
-{#- POP UP MODALS FOR FILE ACTIONS -#}
 {%- include 'directory-modals.html' -%}
+{%- include 'breadcrumbs.html' -%}
 
-{%- if func_name == 'webfiles' and atroot == True %}
-<div class="alert alert-info">
-	<strong>Heads up!</strong> Files you place here appear on your personal website: <a target="_blank" href="http://www.personal.southampton.ac.uk/{{ session.username }}">http://www.personal.southampton.ac.uk/{{ session.username }}</a>
-</div>
-{% endif %}
-
-{#- BREADCRUMB NAVIGATION #}
-<ol class="breadcrumb">
-		<li>
-			<i class="fa fa-home"></i>
-			<a href="{{ url_home }}">
-			{{ root_display_name }}
-			</a>
-		</li>
-		{%- for dir in crumbs %}
-		<li{% if loop.last %} class="active"{%endif%}>
-			{%- if not loop.last %}
-			<a href="{{ dir.url }}">
-			{{ dir.name }}
-			</a>
-			{%- else %}
-			{{ dir.name }}
-			{%- endif %}
-		</li>
-		{%- endfor %}
-</ol>
-
-{#- MAIN DIRECTORY LISTING #}
 <table id="dir" class="table table-striped table-hover tablesorter">
 	<thead>
 		<tr>

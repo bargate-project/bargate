@@ -277,7 +277,7 @@ Further Details:
 	
 		return (title,message)
 
-	def set_modal_error(title,message):
+	def set_modal_error(self,title,message):
 		"""This function will create and show a
 		popup dialog error on the next time a page
 		is loaded. Use this before running a redirect.

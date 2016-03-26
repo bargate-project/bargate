@@ -1,5 +1,5 @@
 {#- modal popup for when 'add bookmark' is clicked  #}
-<div class="modal" id="add-bookmark">
+<div class="modal" id="add-bookmark" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_bookmark }}" method="POST" enctype="multipart/form-data" autocomplete="off">
@@ -37,7 +37,7 @@
 	</div>
 </div>
 
-<div class="modal" id="upload-file">
+<div class="modal" id="upload-file" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
@@ -76,7 +76,7 @@
 </div>
 
 {#- modal popup for when create directory is clicked #}
-<div class="modal" id="create-directory">
+<div class="modal" id="create-directory" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
@@ -104,7 +104,7 @@
 </div>
 
 {#- modal to delete a file #}
-<div class="modal" id="delete-confirm">
+<div class="modal" id="delete-confirm" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
@@ -131,7 +131,7 @@
 </div>
 
 {#- modal to delete a directory #}
-<div class="modal" id="delete-dir-confirm">
+<div class="modal" id="delete-dir-confirm" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
@@ -159,7 +159,7 @@
 </div>
 
 {#- modal for rename #}
-<div class="modal" id="rename-file">
+<div class="modal" id="rename-file" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
@@ -187,7 +187,7 @@
 </div>
 
 {#- modal popup for when copy file is clicked #}
-<div class="modal" id="copy-file">
+<div class="modal" id="copy-file" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<form action="{{ url_home }}" method="POST">
@@ -215,7 +215,7 @@
 </div>
 
 {#- modal for file click #}
-<div class="modal" id="file-click">
+<div class="modal" id="file-click" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">

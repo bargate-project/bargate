@@ -1,0 +1,15 @@
+@import url("https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/yeti/bootstrap.min.css");
+
+body
+{
+	padding-top: 55px;
+	padding-bottom: 0px;
+}
+
+@media (min-width: 768px)
+{
+	body
+	{
+		padding-top: 65px;
+	}
+}

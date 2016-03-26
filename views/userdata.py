@@ -55,7 +55,6 @@ def settings():
 	themes.append({'name':'United','value':'united'})
 	themes.append({'name':'Darkly','value':'darkly'})
 	themes.append({'name':'Slate','value':'slate'})
-	themes.append({'name':'Superhero','value':'superhero'})
 	themes.append({'name':'Yeti','value':'yeti'})
 
 
@@ -138,6 +137,17 @@ def settings():
 				bargate.lib.userdata.save('on_file_click','ask')
 		else:
 			bargate.lib.userdata.save('on_file_click','ask')
+
+		## Layout
+		if 'layout' in request.form:
+			layout = request.form['layout']
+			
+			if layout == 'grid':
+				bargate.lib.userdata.save('layout','grid')
+			elif layout == 'list':
+				bargate.lib.userdata.save('layout','list')
+		else:
+			bargate.lib.userdata.save('layout','list')
 						
 		flash('Settings saved','alert-success')
 		return redirect(url_for('settings'))

@@ -24,7 +24,7 @@ DEBUG = False
 DEBUG_TOOLBAR = False
 
 ## Many errors don't show a full stack trace as they show a redirected 'error popup'. Set this to True to disable that behaviour and show full errors.
-DEBUG_FULL_ERRORS = True
+DEBUG_FULL_ERRORS = False
 
 ## Session signing key
 # Key used to sign/encrypt session data stored in cookies.
@@ -77,6 +77,9 @@ DISABLE_APP=True
 
 ## Default bootstrap/bootswatch theme
 THEME_DEFAULT='lumen'
+
+## Default directory layout mode
+LAYOUT_DEFAULT='list'
 
 ## Bargate internal version number
 VERSION='1.4-dev'

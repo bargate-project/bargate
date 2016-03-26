@@ -1,0 +1,20 @@
+{#- BREADCRUMB NAVIGATION #}
+<ol class="breadcrumb">
+		<li>
+			<i class="fa fa-home"></i>
+			<a href="{{ url_home }}">
+			{{ root_display_name }}
+			</a>
+		</li>
+		{%- for dir in crumbs %}
+		<li{% if loop.last %} class="active"{%endif%}>
+			{%- if not loop.last %}
+			<a href="{{ dir.url }}">
+			{{ dir.name }}
+			</a>
+			{%- else %}
+			{{ dir.name }}
+			{%- endif %}
+		</li>
+		{%- endfor %}
+</ol>

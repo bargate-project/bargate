@@ -72,6 +72,7 @@ def context_processor():
 			data['user_bookmarks'] = bargate.lib.userdata.get_bookmarks()
 			data['user_theme']     = bargate.lib.userdata.get_theme()
 			data['user_navbar']    = bargate.lib.userdata.get_navbar()	
+			data['user_layout']    = bargate.lib.userdata.get_layout()	
 
 	return data
 

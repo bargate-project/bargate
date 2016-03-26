@@ -1,22 +1,14 @@
-/* BARGATE LOCAL JAVASCRIPT */
-
 /* Popup error modal show, if any */
-$(document).ready(function(){
+$(document).ready(function()
+{
 	$('#popup-error').modal('show');
 });
 
 /* Tablesorter enable */
 $(document).ready(function() 
-    { 
-        $("#dir").tablesorter();
-    } 
-);
-
-/* Tooltip
-$(document).ready(function ()
 {
-	$("[rel=tooltip]").tooltip();
-});*/
+	$("#dir").tablesorter();
+});
 
 $(document).ready(function($)
 {
@@ -82,10 +74,8 @@ $(document).ready(function($)
 	{
 		$(this).parent().removeClass('dropup');
 	});
-	  
-});
 
-$(document).ready(function() {
+	/* modal focuses */
 	$('#create-directory').on('shown.bs.modal', function() {
 		$('#create-directory input[type="text"]').focus();
 	});
@@ -136,7 +126,9 @@ $(document).ready(function() {
 	});
 });
 
-$(function() {
+/* Center modals */
+$(function()
+{
 
 	function reposition()
 	{
@@ -145,27 +137,18 @@ $(function() {
 		modal.css('display', 'block');
 		// Dividing by two centers the modal exactly, but dividing by three 
 		// or four works better for larger screens.
-		dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 4));
+		dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 3));
 
 	}
 
-	// Reposition when a modal is shown
 	$('.modal').on('show.bs.modal', reposition);
-
-	// Reposition when the window is resized
-	$(window).on('resize', function()
-	{
-		$('.modal:visible').each(reposition);
-	});
-
+	$(window).on('resize', function(){$('.modal:visible').each(reposition);});
 });
 
-// Hiding tooltips when buttons are pressed (on navbar)
+// Activate tooltips and...
+// ...hide tooltips when buttons are pressed (on navbar)
 $(document).ready(function()
 {
 	$('[rel="tooltip"]').tooltip();
-	$('[rel="tooltip').on('mouseup', function ()
-	{
-		$(this).tooltip('hide');
-	});
+	$('[rel="tooltip').on('mouseup', function () {$(this).tooltip('hide');});
 });

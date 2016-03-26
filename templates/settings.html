@@ -18,6 +18,18 @@
 					<h3 class="panel-title">Folder Options</h3>
 				</div>
 				<div class="panel-body">
+					<legend>Layout</legend>
+					<div class="radio">
+						<label>
+						<input type="radio" name="layout" id="layout_grid" value="grid" {%if user_layout == 'grid' %} checked="checked" {%endif%}> View items as a grid of icons
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+						<input type="radio" name="layout" id="layout_list" value="list" {%if user_layout == 'list' %} checked="checked" {%endif%}> View items as a list
+						</label>
+					</div>
+
 					<legend>Hidden Files</legend>
 						<div class="checkbox">
 					  <label>

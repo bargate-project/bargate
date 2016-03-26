@@ -106,6 +106,13 @@ def changelog():
 @app.route('/nojs')
 def nojs():
 	return render_template('nojs.html')
+
+@app.route('/css')
+def css():
+
+	## Work out body padding based on the theme
+
+	return render_template('bargate.css')
 	
 #################################################################################
 ### Portal login support (added for University of Sheffield)

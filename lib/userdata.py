@@ -94,6 +94,25 @@ def get_bookmarks():
 
 ################################################################################
 
+def get_layout():
+	if 'redis' in g:
+		try:
+			layout = g.redis.get('user:' + session['username'] + ':layout')
+			if layout == 'grid':
+				return 'grid'
+			elif layout == 'list':
+				return 'list'
+			else:
+				return app.config['LAYOUT_DEFAULT']
+		
+		except Exception as ex:
+			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
+
+	## If we didn't return a new theme, return the default from the config file
+	return app.config['LAYOUT_DEFAULT']
+
+################################################################################
+
 def get_theme():
 	if 'redis' in g:
 		try:
