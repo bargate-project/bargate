@@ -1,7 +1,8 @@
 /* browse mode (directory listings) javascript */
 $(document).ready(function()
 {
-	/* context menus */
+
+	/* context (right click) menus */
 	(function ($, window)
 	{
 		$.fn.contextMenu = function (settings)
@@ -29,7 +30,7 @@ $(document).ready(function()
 
 					/* Extra code to show/hide view option based on type */
 					$invokedOn = $menu.data("invokedOn");
-					if ($invokedOn.closest(".entry").attr('data-view'))
+					if ($invokedOn.closest(".entry-click").attr('data-view'))
 					{
 						$('#contextmenu_view').removeClass('hidden');
 					}
@@ -64,16 +65,10 @@ $(document).ready(function()
 	})(jQuery, window);
 
 	/**************************************************************************/
-
-
-	$(".entry-open").click(function()
-	{
-		window.document.location = $(this).data('url');
-	});
 	
 	$(".entry-preview").click(function()
 	{
-		var parent = $(this)
+		var parent = $(this).closest('.entry-click');
 		
 		$('#file-click-filename').text(parent.data('filename'));
 		$('#file-click-size').text(parent.data('size'));
@@ -129,6 +124,7 @@ $(document).ready(function()
 	});
 
 
+	/* sort entries in a directory */
 	$('.dir-sortby-name').on( 'click', function()
 	{
 		$container.isotope({ sortBy: 'name' });
@@ -154,13 +150,13 @@ $(document).ready(function()
 		$('.dir-sortby-size span').removeClass('invisible');
 	});
 
-
+	/* right click menu for files */
 	$(".entry-file").contextMenu(
 	{
 		menuSelector: "#fileContextMenu",
 		menuSelected: function (invokedOn, selectedMenu)
 		{
-			var parentRow = invokedOn.closest(".entry");
+			var parentRow = invokedOn.closest(".entry-click");
 
 			if (selectedMenu.data('action') == 'view')
 			{
@@ -200,12 +196,13 @@ $(document).ready(function()
 		}
 	});
 
-	$(".entry-directory").contextMenu(
+	/* right click menu for directories */
+	$(".entry-dir").contextMenu(
 	{
 		menuSelector: "#dirContextMenu",
 		menuSelected: function (invokedOn, selectedMenu)
 		{
-			var parentRow = invokedOn.closest(".entry");
+			var parentRow = invokedOn.closest(".entry-click");
 
 			if (selectedMenu.data('action') == 'open')
 			{
@@ -229,4 +226,12 @@ $(document).ready(function()
 		}
 	});
 
+	/* focus on inputs when modals open */
+	$('#create-directory').on('shown.bs.modal', function() {
+		$('#create-directory input[type="text"]').focus();
+	});
+	
+	$('#add-bookmark').on('shown.bs.modal', function() {
+		$('#add-bookmark input[type="text"]').focus();
+	});
 });

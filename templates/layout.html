@@ -9,20 +9,20 @@
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 		<link rel="stylesheet" href="{{ url_for('static', filename='themes/' + user_theme + '/' + user_theme + '.css') }}">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/bargate.css') }}">
+		{%- if browse_mode %}
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.11/datatables.min.css"/>
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse.css') }}">
+		{%- endif %}
 		{% include 'javascript.html' %}
-
-		{% if browse_mode %}
-		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.tablesorter.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.visible.min.js') }}"></script>
+		{%- if browse_mode %}
 		<script type="text/javascript" src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/upload/jquery.iframe-transport.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/upload/jquery.dragster.js') }}"></script>
-
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.min.js"></script>
+		<script type="text/javascript" src="https://cdn.datatables.net/t/bs/dt-1.10.11/datatables.min.js"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='js/browse.js') }}"></script>
-		{% endif %}	
-
+		{%- endif %}	
 		<script type="text/javascript" src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
@@ -48,13 +48,6 @@
 					<ul class="nav navbar-nav">
 					{%- include 'dropdown-menus.html' %}
 					</ul>
-					<!--<ul class="nav navbar-nav navbar-right">
-						<li class="dropdown{%if active == 'user'%} active{%endif%}">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-fw fa-user"></i> {{ session.username }} <b class="caret"></b></a>
-
-						</li>
-					</ul>-->
-
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" data-placement="bottom" title="Menu" aria-haspopup="true" aria-expanded="false">
 								<i class="fa fa-bars fa-fw fa-lg"></i>

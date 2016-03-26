@@ -1,0 +1,137 @@
+.files-grid .entry-file {
+	text-align: center;
+}
+
+.entry {
+	width: 200px;
+	position: relative;
+	float: left;
+	margin: 12px;
+}
+@media (max-width: 768px) {
+	.container-browse {
+		padding: 0px;
+	}
+	.entry {
+		margin: 2px;
+	}
+}
+.panel {
+	margin-bottom: 0px;
+}
+.panel-body {
+	height: 160px;
+	padding: 0px;
+}
+.panel-icon {
+	font-size: 6em;
+	line-height: 150px;
+}
+.panel-img {
+	background-size: cover;
+	overflow: hidden;
+}
+
+.fileinput-button {
+	position: relative;
+	overflow: hidden;
+}
+.fileinput-button input {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 0;
+	opacity: 0;
+	-ms-filter: 'alpha(opacity=0)';
+	font-size: 200px;
+	direction: ltr;
+	cursor: pointer;
+}
+
+/* REVIEW ALL OF THIS */
+/* don't put a margin on directory view table at the bottom */
+#dir
+{
+	margin-bottom: 0px;
+}
+
+.table-hover thead tr:hover td
+{
+	background-color: #f5f5f5;
+}
+
+/* MAKE BOOTSTRAP DO VERTICAL ALIGN IN TABLES, DUH? */
+/*.table td
+{
+	vertical-align: middle !important;
+}*/
+
+/* Prevent themes from putting borders on tables */ 
+.table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td
+{
+	border-bottom: none;
+	border-top: none;
+}
+
+/* Make sure no underlines on a's in tables pls - For flatly theme mostly */
+.table a, table a
+{
+	text-decoration: none !important;
+}
+
+/* Use a custom icon from FontAwesome for the breadcrumb separator 
+.breadcrumb > li + li:before {
+padding: 0 5px;
+color: #cccccc;
+font-family: FontAwesome;
+content: "\f061";
+}*/
+
+
+/* Browse mode (list) */
+td.dentry
+{
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Table cell widths for multiple sizes */
+@media (max-width: 768px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+}
+
+@media (min-width: 768px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+}
+
+@media (min-width: 992px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+	td.dentry-mtime
+	{
+		width: 15em;
+	}
+}
+
+@media (min-width: 1200px)
+{
+	td.dentry
+	{
+		max-width: 200px;
+	}
+	td.dentry-mtime
+	{
+		width: 15em;
+	}
+}

@@ -4,85 +4,64 @@
 {%- include 'directory-menus.html' -%}
 {%- include 'breadcrumbs.html' -%}
 
-<table id="dir" class="table table-striped table-hover tablesorter">
+<table id="dir" class="table table-striped table-hover">
 	<thead>
 		<tr>
 			<th class="tsdisable" style="width: 1px"></th>
 			<th>Name</th>
 			<th class="hidden-xs hidden-sm">Modified</th>
-			<th class="tsdisable"></th>
 		</tr>
 
 		{%- if atroot == False %}
-		<tr class="tsdisable rowclick-tr" data-url="{{ url_parent_dir }}">
-			<td class="sorter-false text-center rowclick-td" style="padding-left: 8px !important">
+		<tr class="tsdisable entry-click" data-url="{{ url_parent_dir }}">
+			<td class="sorter-false text-center entry-open" style="padding-left: 8px !important">
 				<i class="fa fa-fw fa-arrow-up"></i>
 			</td>
-			<td class="sorter-false rowclick-td">
+			<td class="sorter-false entry-open">
 				<a href="{{ url_parent_dir }}">Parent Folder</a>
 			</td>
-			<td class="sorter-false rowclick-td hidden-xs hidden-sm">
-				
-			</td>
-			<td class="sorter-false rowclick-td">
+			<td class="sorter-false entry-open hidden-xs hidden-sm">
 				
 			</td>
 		</td>
 		{% endif -%}
 	</thead>
 
-	<tbody class="rowclick-table" style="text-decoration: none;">
+	<tbody style="text-decoration: none;">
 		{%- for entry in dirs -%}
-		<tr class="rowclick-tr" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
-			<td class="text-center rowclick-td"><span class="{{ entry.icon }}"></span></td>
-			<td class="rowclick-td dentry">{{ entry.name}}</td>
-			<td class="hidden-xs hidden-sm rowclick-td dentry-mtime">-</td>
-			<td class="text-right" style="width: 56px">					
-				<div class="btn-group fcog">
-					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"></i></button>
-					<ul class="dropdown-menu pull-right text-left">
-						<li><a href="{{ entry.view }}"><i class="fa fa-eye fa-fw"></i> Open</a></li>
-						<li class="divider"></li>
-						<li><a href="#" class="rename"><i class="fa fa-arrows fa-fw"></i> Rename</a></li>
-						<li><a href="#" class="delDir"><i class="fa fa-trash-o fa-fw"></i> Delete</a></li>
-					</ul>
-				</div>
-			</td>
+		<tr class="entry-click entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.default_open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
+			<td class="text-center entry-open"><span class="{{ entry.icon }}"></span></td>
+			<td class="entry-open dentry">{{ entry.name}}</td>
+			<td class="hidden-xs hidden-sm entry-open dentry-mtime">-</td>
 		</tr>
 		{%- endfor -%}
 
 		{%- for entry in files -%}
 		{%- if on_file_click == 'ask' %}
 			{#- POPUP DIALOG FOR FILES TR -#}
-			<tr class="rowclick-tr" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat}}" data-path="{{entry.path}}">
-			{%- set rclick = 'mclick-td' -%}
+			<tr class="entry-click entry-file" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.bdownload %}data-view="{{ entry.bdownload }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-props="{{ entry.view }}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat}}" data-path="{{entry.path}}">
+			{%- set rclick = 'entry-preview' -%}
 		{%- else %}
 			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
-			<tr class="rowclick-tr" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
-			{%- set rclick = 'rowclick-td' -%}
+			<tr class="entry-click entry-file" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" data-props="{{ entry.view }}">
+			{%- set rclick = 'entry-open' -%}
 		{%- endif %}
 
 			<td class="text-center {{rclick}}"><span class="{{ entry.icon }}"></span></td>
 			<td class="{{rclick}} dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm {{rclick}} dentry-mtime">{{ entry.mtime }}</td>
-			<td class="text-right" style="width: 56px">
-				<div class="btn-group fcog">
-					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"></i></button>
-					<ul class="dropdown-menu pull-right text-left">
-						{%- if entry.bdownload %}
-						<li class="hidden-xs"><a href="{{ entry.bdownload }}"><i class="fa fa-eye fa-fw"></i> View</a></li>
-						{%- endif %}
-						<li><a href="{{ entry.download }}"><i class="fa fa-download fa-fw"></i> Download</a></li>
-						<li><a href="#" class="copy"><i class="fa fa-copy fa-fw"></i> Copy</a></li>
-						<li><a href="#" class="rename"><i class="fa fa-arrows fa-fw"></i> Rename</a></li>
-						<li><a href="#" class="del"><i class="fa fa-trash-o fa-fw"></i> Delete</a></li>
-						<li class="divider"></li>
-						<li><a href="{{ entry.view }}"><i class="fa fa-info-circle fa-fw"></i> Properties</a></li>
-					</ul>
-				</div>
-			</td>
 		</tr>
 		{%- endfor -%}
 	</tbody>
 </table>
+<script type="text/javascript">
+$(document).ready(function()
+{
+	$('#dir').DataTable( {
+	paging: false,
+	searching: false,
+	info: false,
+	} );
+});
+</script>
 {% endblock %}
