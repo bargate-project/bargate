@@ -79,7 +79,8 @@ DISABLE_APP=True
 THEME_DEFAULT='lumen'
 
 ## Default directory layout mode
-LAYOUT_DEFAULT='list'
+## either 'grid' or 'list'
+LAYOUT_DEFAULT='grid'
 
 ## Bargate internal version number
 VERSION='1.4-dev'

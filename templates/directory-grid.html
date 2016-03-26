@@ -1,27 +1,10 @@
 {%- extends "layout.html" -%}
 {%- block body -%}
 {%- include 'directory-modals.html' -%}
+{%- include 'directory-menus.html' -%}
 {%- include 'breadcrumbs.html' -%}
 
-<ul id="fileContextMenu" class="dropdown-menu" role="menu" style="display:none">
-	<li id="contextmenu_view" class="hidden"><a tabindex="-1" href="#" data-action="view"><i class="fa fa-fw fa-eye"></i> View</a></li>
-	<li><a tabindex="-1" href="#" data-action="download"><i class="fa fa-fw fa-download"></i> Download</a></li>
-	<li><a tabindex="-1" href="#" data-action="copy"><i class="fa fa-fw fa-clipboard"></i> Copy</a></li>
-	<li><a tabindex="-1" href="#" data-action="rename"><i class="fa fa-fw fa-pencil-square-o"></i> Rename</a></li>
-	<li><a tabindex="-1" href="#" data-action="delete"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
-	<li class="divider"></li>
-	<li><a tabindex="-1" href="#" data-action="properties"><i class="fa fa-fw fa-eye"></i> Properties</a></li>
-</ul>
-
-<ul id="dirContextMenu" class="dropdown-menu" role="menu" style="display:none">
-	<li><a tabindex="-1" href="#" data-action="open"><i class="fa fa-fw fa-folder-open"></i> Open</a></li>
-	<li><a tabindex="-1" href="#" data-action="rename"><i class="fa fa-fw fa-pencil-square-o"></i> Rename</a></li>
-	<li><a tabindex="-1" href="#" data-action="delete"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
-</ul>
-
 <style type="text/css">
-
-
 .entry-file
 {
 	text-align: center;
@@ -33,6 +16,18 @@
 	float: left;
 	margin: 12px;
 	cursor: pointer;
+}
+
+@media (max-width: 768px)
+{
+	.container-browse
+	{
+		padding: 0px;
+	}
+	.entry
+	{
+		margin: 2px;
+	}
 }
 .panel
 {

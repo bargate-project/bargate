@@ -58,18 +58,6 @@ ul.changelog
 	margin: 0 0 10px 10px;
 }
 
-/* Get rid of padding when we're in browse mode so directories go right up to screen edge */
-.container-directory-list
-{
-	padding: 0px;
-}
-
-.container-directory-grid
-{
-	padding-left: 30px;
-	padding-right: 30px;
-	background-color: #b1b1b1;
-}
 
 /* Use a custom icon from FontAwesome for the breadcrumb separator */
 .breadcrumb > li + li:before {
