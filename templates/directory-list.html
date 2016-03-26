@@ -10,6 +10,10 @@
 			<th class="tsdisable" style="width: 1px"></th>
 			<th>Name</th>
 			<th class="hidden-xs hidden-sm">Modified</th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
 		</tr>
 
 		{%- if atroot == False %}
@@ -23,6 +27,10 @@
 			<td class="sorter-false entry-open hidden-xs hidden-sm">
 				
 			</td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
 		</td>
 		{% endif -%}
 	</thead>
@@ -33,6 +41,10 @@
 			<td class="text-center entry-open"><span class="{{ entry.icon }}"></span></td>
 			<td class="entry-open dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm entry-open dentry-mtime">-</td>
+			<td>1111{{entry.name}}</td>
+			<td>-1</td>
+			<td>111adir</td>
+			<td>-1</td>
 		</tr>
 		{%- endfor -%}
 
@@ -43,13 +55,17 @@
 			{%- set rclick = 'entry-preview' -%}
 		{%- else %}
 			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
-			<tr class="entry-click entry-file" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" data-props="{{ entry.view }}">
+			<tr class="entry-click entry-file" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" {% if entry.bdownload %}data-view="{{ entry.bdownload }}"{%endif%} data-props="{{ entry.view }}">
 			{%- set rclick = 'entry-open' -%}
 		{%- endif %}
 
 			<td class="text-center {{rclick}}"><span class="{{ entry.icon }}"></span></td>
 			<td class="{{rclick}} dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm {{rclick}} dentry-mtime">{{ entry.mtime }}</td>
+			<td>{{ entry.name }}</td>
+			<td>{{ entry.mtime_raw }}</td>
+			<td>{{ entry.mtype_raw }}</td>
+			<td>{{ entry.size }}</td>
 		</tr>
 		{%- endfor -%}
 	</tbody>
@@ -58,10 +74,20 @@
 $(document).ready(function()
 {
 	$('#dir').DataTable( {
-	paging: false,
-	searching: false,
-	info: false,
-	} );
+		"paging": false,
+		"searching": false,
+		"info": false,
+		"columns": [
+			{ "orderable": false },
+			{ "orderable": false },
+			{ "orderable": false },
+			{ "visible": false},
+			{ "visible": false},
+			{ "visible": false},
+			{ "visible": false},
+		],
+		"order": [[3,"asc"]],
+	});
 });
 </script>
 {% endblock %}
