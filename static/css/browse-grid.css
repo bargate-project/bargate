@@ -1,0 +1,33 @@
+.entry-file {
+	text-align: center;
+}
+
+.entry {
+	width: 200px;
+	position: relative;
+	float: left;
+	margin: 12px;
+}
+@media (max-width: 768px) {
+	.container-browse {
+		padding: 0px;
+	}
+	.entry {
+		margin: 2px;
+	}
+}
+.panel {
+	margin-bottom: 0px;
+}
+.panel-body {
+	height: 160px;
+	padding: 0px;
+}
+.panel-icon {
+	font-size: 6em;
+	line-height: 150px;
+}
+.panel-img {
+	background-size: cover;
+	overflow: hidden;
+}

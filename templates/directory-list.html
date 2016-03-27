@@ -4,7 +4,7 @@
 {%- include 'directory-menus.html' -%}
 {%- include 'breadcrumbs.html' -%}
 
-<table id="dir" class="table table-striped table-hover">
+<table id="dir" class="table table-striped table-hover" style="width: 100%">
 	<thead>
 		<tr>
 			<th class="tsdisable" style="width: 1px"></th>
@@ -70,24 +70,4 @@
 		{%- endfor -%}
 	</tbody>
 </table>
-<script type="text/javascript">
-$(document).ready(function()
-{
-	$('#dir').DataTable( {
-		"paging": false,
-		"searching": false,
-		"info": false,
-		"columns": [
-			{ "orderable": false },
-			{ "orderable": false },
-			{ "orderable": false },
-			{ "visible": false},
-			{ "visible": false},
-			{ "visible": false},
-			{ "visible": false},
-		],
-		"order": [[3,"asc"]],
-	});
-});
-</script>
 {% endblock %}

@@ -1,63 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<!-- modal to delete a file -->
-<div class="modal" id="delete-confirm">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_home }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="unlink" type="hidden"/>
-				<input name="path" type="hidden" value="{{ path }}"/>
-				<input name="mode" type="hidden" value="view"/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-					<h4 class="modal-title">Delete file</h4>
-				</div>
-
-				<div class="modal-body">
-					<p>Are you sure you want to permanently delete the file?</p>
-				</div>
-				
-				<div class="modal-footer">
- 					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-					<input type="submit" class="btn btn-primary" value="Yes"/>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-<!-- modal for rename -->
-<div class="modal" id="rename-file">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_rename }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="rename" type="hidden"/>
-				<input name="path" type="hidden" value="{{ path }}"/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-					<h4 class="modal-title">Rename</h4>
-				</div>
-
-				<div class="modal-body">
-					<label>New file name:</label>
-      				<input class="form-control" id="newfilename" type="text" name="newfilename" value="{{filename}}"/>
-				</div>
-				
-				<div class="modal-footer">
- 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-					<input type="submit" class="btn btn-primary" value="Rename"/>				
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-
 <div class="row" style="padding-bottom: 15px">
 	<div class="col-sm-12">
 		<ol class="breadcrumb">
@@ -80,53 +23,9 @@
 </div>
  
  
-<div class="row">
- 	<div class="col-sm-4">
- 		<div class="panel panel-default">
-			<div class="panel-heading">Options</div>
-			<div class="panel-body">
-				<ul class="nav nav-list">
-					{% if url_bdownload is not none %}
-					<li class="hidden-xs">
-						<a href="{{ url_bdownload }}"><i class="fa fa-eye fa-fw"></i> View</a>
-					</li>
-					{% endif %}
-					<li>
-						<a href="{{ url_download }}"><i class="fa fa-download fa-fw"></i> Download</a>
-					</li>
-					<li>
-						<a href="#rename-file" data-toggle="modal"><i class="fa fa-arrows fa-fw"></i> Rename</a>
-					</li>
-					<li>
-						<a href="#delete-confirm" data-toggle="modal"><i class="fa fa-trash-o fa-fw"></i> Delete</a>
-					</li>
-				</ul>
-			</div>
-		</div>
-		<div class="panel panel-default">
-			<div class="panel-heading">Permissions</div>
-			<div class="panel-body">
-				<form class="form" role="form">
-					<div class="form-group">
-					  <label class=" control-label">Owner:</label>
-					  <div >
-						<input class="form-control" type="text" readonly="readonly" value="{{ net_sec_desc_owner }}"/>
-						<p class="help-block">The user the file belongs to</p>
-					  </div>
-					</div>
-					<div class="form-group">
-					  <label class="control-label">Group:</label>
-					  <div>
-						<input class="form-control" type="text" readonly="readonly" value="{{ net_sec_desc_group }}"/>
-						<p class="help-block">The group the file belongs to</p>
-					  </div>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
- 	<div class="col-sm-8">
- 		<div class="panel panel-default">
+<div class="row equal">
+ 	<div class="col-md-8">
+ 		<div class="panel panel-equal panel-default">
 			<div class="panel-heading">File Metadata</div>
  			<div class="panel-body">
 				<form class="form" role="form">
@@ -157,6 +56,29 @@
 						<input class="form-control" type="text" readonly="readonly" value="{{ ftype }}"/>
 						<input type="hidden" name="mime-type" value="{{ mtype }}"/>
 						<p class="help-block">The file type, or MIME type, based on file extension.</p>
+					  </div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+ 	<div class="col-md-4">
+		<div class="panel panel-equal panel-default">
+			<div class="panel-heading">Permissions</div>
+			<div class="panel-body">
+				<form class="form" role="form">
+					<div class="form-group">
+					  <label class=" control-label">Owner:</label>
+					  <div >
+						<input class="form-control" type="text" readonly="readonly" value="{{ net_sec_desc_owner }}"/>
+						<p class="help-block">The user the file belongs to</p>
+					  </div>
+					</div>
+					<div class="form-group">
+					  <label class="control-label">Group:</label>
+					  <div>
+						<input class="form-control" type="text" readonly="readonly" value="{{ net_sec_desc_group }}"/>
+						<p class="help-block">The group the file belongs to</p>
 					  </div>
 					</div>
 				</form>

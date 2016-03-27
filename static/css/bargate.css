@@ -41,3 +41,36 @@ ul.changelog
 .entry-click {
 	cursor: pointer;
 }
+
+/* file uploads */
+.fileinput-button {
+	position: relative;
+	overflow: hidden;
+}
+.fileinput-button input {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 0;
+	opacity: 0;
+	-ms-filter: 'alpha(opacity=0)';
+	font-size: 200px;
+	direction: ltr;
+	cursor: pointer;
+}
+
+/* flexbox based same-size panel in columns */
+@media (min-width: 992px)
+{
+	.equal, .equal > div[class*='col-']
+	{
+		display: -webkit-flex;
+		display: flex;
+		flex: 1 1 auto;
+	}
+
+	.panel-equal
+	{
+		width: 100%;
+	}
+}

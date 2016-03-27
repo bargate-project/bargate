@@ -11,9 +11,9 @@
 	<hr/>
 
 	<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-	<div class="row">
+	<div class="row equal">
 		<div class="col-sm-8">
-			<div class="panel panel-default" style="min-height: 500px">
+			<div class="panel panel-equal panel-default" style="min-height: 500px">
 				<div class="panel-heading">
 					<h3 class="panel-title">Folder Options</h3>
 				</div>
@@ -29,7 +29,7 @@
 						<input type="radio" name="layout" id="layout_list" value="list" {%if user_layout == 'list' %} checked="checked" {%endif%}> View items as a list
 						</label>
 					</div>
-
+					<br/>
 					<legend>Hidden Files</legend>
 						<div class="checkbox">
 					  <label>
@@ -71,7 +71,7 @@
 			</div>		
 		</div>
 		<div class="col-sm-4">
-			<div class="panel panel-default" style="min-height: 500px">
+			<div class="panel panel-equal panel-default" style="min-height: 500px">
 				<div class="panel-heading">
 					<h3 class="panel-title">Theme
 				</div>
