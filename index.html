@@ -1,51 +1,82 @@
 <!DOCTYPE html>
 <html>
-
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="bargate : A modern web interface for CIFS/SMB file servers. Developed for use at the University of Southampton.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-    <title>bargate</title>
+    <title>bargate by divad</title>
   </head>
 
   <body>
+    <header>
+      <div class="inner">
+        <h1>bargate</h1>
+        <h2>A lightweight modern web interface to CIFS/SMB file servers, allowing you to provide web access to your existing file servers.</h2>
+        <a href="https://github.com/divad/bargate" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/divad/bargate">View on GitHub</a>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="bargate" class="anchor" href="#bargate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Bargate</h1>
 
-          <h1 id="project_title">bargate</h1>
-          <h2 id="project_tagline">A modern web interface for CIFS/SMB file servers. Developed for use at the University of Southampton.</h2>
+<p>Bargate is a web interface to CIFS/SMB servers. It is written in Python, uses libsmbclient for talking to file servers (specifically, pysmbc) and the user interface is based on Twitter Bootstrap. Bargate has been developed to provide the 'Filestore Web Access' application at the University of Southampton: <a href="https://fwa.soton.ac.uk">https://fwa.soton.ac.uk</a>, however it has been written to allow third parties (especially other Universities) to utilise the application themselves.</p>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/divad/bargate/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/divad/bargate/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+<p>If you're interested in using or extending Bargate please get in touch, especially if you're a UK academic institution. Development is happening at a rapid pace at the moment, so now is the time to contact us!</p>
+
+<p>Because Bargate is written using Bootstrap 3 it is 'mobile first' and features a responsive design, making Bargate work equally well on phones, tablets or desktops. Bargate works with any SMB server that libsmbclient supports (essentially anything standards compliant).</p>
+
+<h2>
+<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Screenshots</h2>
+
+<p><img src="http://davidrichardbell.files.wordpress.com/2014/04/screen-shot-2014-04-21-at-19-30-55.png" alt="screenshoot">
+<img src="http://davidrichardbell.files.wordpress.com/2014/04/screen-shot-2014-04-21-at-19-36-28.png" alt="screenshoot"></p>
+
+<h2>
+<a id="roadmap" class="anchor" href="#roadmap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Roadmap</h2>
+
+<p>The roadmap is as follows:</p>
+
+<ul>
+<li>v1.0 - First stable release</li>
+<li>v1.1 - Introduce Isoptope based directory view</li>
+<li>v1.2 - Fully remove all UoS custom templates from github release</li>
+<li>v1.3 - Add native PDF support via pdf.js</li>
+<li>v2.x - Switch to a partial-JSON output with rendering done on the client side</li>
+<li>v3.x - Introduce near-entirely JSON output mode, to allow for Android and iOS client apps to be written</li>
+</ul>
+
+<p>This plan will be updated on a regular basis.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/divad/bargate/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/divad/bargate/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/divad/bargate"></a> is maintained by <a href="https://github.com/divad">divad</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <p>Bargate is a web interface to CIFS/SMB servers. It is written in Python, uses libsmbclient for talking to file servers (specifically, pysmbc) and the user interface is based on Twitter Bootstrap. Bargate has been developed to provide the 'Filestore Web Access' application at the University of Southampton: <a href="https://fwa.soton.ac.uk">https://fwa.soton.ac.uk</a>. </p>
-
-<p>If you're interested in using or extending Bargate please get in touch, especially if you're a UK academic institution. </p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">bargate maintained by <a href="https://github.com/divad">divad</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
+  
   </body>
 </html>
