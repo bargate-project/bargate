@@ -20,9 +20,14 @@ from bargate import app
 import bargate.lib.userdata
 import bargate.lib.aes
 import os
-import ldap
 import smbc
 import time
+
+## load kerberos or ldap auth if needed
+if app.config['AUTH_TYPE'] == 'kerberos' or app.config['AUTH_TYPE'] == 'krb5':
+	import kerberos
+elif app.config['AUTH_TYPE'] == 'ldap':
+	import ldap
 
 def get_password():
 	"""This function returns the user's decrypted password

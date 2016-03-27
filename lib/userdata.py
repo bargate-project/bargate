@@ -18,7 +18,6 @@
 import bargate
 from bargate import app
 from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template
-import kerberos
 import mimetypes
 import os
 from random import randint

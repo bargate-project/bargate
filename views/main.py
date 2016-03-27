@@ -27,7 +27,6 @@ import json
 import re
 import werkzeug
 from itsdangerous import base64_decode
-import ldap
 
 ################################################################################
 #### HOME PAGE / LOGIN PAGE
