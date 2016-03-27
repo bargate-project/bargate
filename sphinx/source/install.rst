@@ -1,0 +1,89 @@
+Installation
+===================================
+
+Requirements
+-------------------
+
+- Linux
+
+- Python 2.6 or 2.7 (Python 3 is not yet supported)
+
+- A WSGI capable web server (e.g. nginx+uwsgi or apache+mod_wsgi)
+
+- Python modules:
+
+  - Flask
+  - pysmbc
+  - pycrypto
+  - Pillow
+  - ldap (optional)
+  - kerberos (optional)
+  - redis-py (optional)
+  - onetimepass (optional)
+  - pyqrcode (optional)
+
+- libsmbclient
+
+- Redis (optional)
+
+Install system packages
+-----------------------
+
+On Red Hat Enterprise Linux or Fedora::
+
+  yum install python-pip redis git
+
+You will want to enable the redis server on RHEL6::
+
+  chkconfig redis on
+  service redis start
+
+...or on RHEL7::
+
+  systemctl enable redis
+  systemctl start redis
+
+On Debian or Ubuntu::
+
+  apt-get install python-pip redis-server git
+
+Install development packages
+----------------------------
+
+To install the pip modules you will need to install some development packages - these can be removed once you've installed the python packages if you desire.
+
+On Red Hat Enterprise Linux or Fedora::
+
+  yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel openjpeg-devel openjpeg2-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel
+
+On Debian or Ubuntu::
+
+  apt-get install build-essential python-dev libsmbclient-dev samba-dev zlib1g libopenjpeg-dev libopenjpeg2 libtiff5-dev libfreetype6-dev libwebp-dev liblcms2-dev libldap2-dev libsasl2-dev libkrb5-dev
+
+Install python packages
+-----------------------
+
+Install the packages with pip::
+
+  pip install Flask pysmbc pycrypto Pillow redis python-ldap kerberos onetimepass pyqrcode
+
+Install bargate 
+---------------
+
+Choose a directory to install bargate to. This guide assumes /opt/bargate::
+
+  cd /opt/
+  git clone https://github.com/divad/bargate.git
+
+You will need to create bargate's configuration file. On startup bargate looks in the following locations:
+
+- /etc/bargate.conf
+- /etc/bargate/bargate.conf
+
+Copy the sample config file to get started::
+
+  cp /opt/bargate/etc/bargate.conf /etc/bargate.conf
+
+Edit the file to suit your needs. See :doc:`config` for more information.
+
+You now need to deploy bargate inside a webserver. See :doc:`deploy` on how to do that.
