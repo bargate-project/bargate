@@ -4,7 +4,7 @@ $(document).ready(function($)
 	$('#popup-error').modal('show');
 
 	/* Activate tooltips and enable hiding on clicking */
-	$('[rel="tooltip"]').tooltip();
+	$('[rel="tooltip"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
 	$('[rel="tooltip').on('mouseup', function () {$(this).tooltip('hide');});
 
 	/* allow clickable opens without an <a> */

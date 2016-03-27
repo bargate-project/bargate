@@ -8,7 +8,7 @@
 	{%- for entry in dirs -%}
 	<div class="entry entry-click entry-dir entry-open" data-url="{{ entry.default_open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}">
 		<div class="panel panel-default">
-			<div class="panel-footer"><i class="{{entry.icon}}"></i> {{ entry.name|truncate(18,killwords=True)}}</div>
+			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="{{entry.icon}}"></i> {{ entry.name|truncate(18,killwords=True)}}</div>
 		</div>
 	</div>
 	{%- endfor -%}
@@ -31,7 +31,7 @@
 		<div class="panel panel-default">
 			<div class="panel-body panel-icon"><span class="{{ entry.icon }}"></span></div>
 		{%- endif -%}
-			<div class="panel-footer">{{ entry.name|truncate(18,killwords=True)}}</div>
+			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}>{{ entry.name|truncate(18,killwords=True)}}</div>
 		</div>
 
 	</div>
