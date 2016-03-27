@@ -1,0 +1,4 @@
+Welcome to bargate's documentation!
+===================================
+
+Bargate

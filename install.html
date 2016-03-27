@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation &mdash; bargate 1.3.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="bargate 1.3.4 documentation" href="index.html"/>
+        <link rel="next" title="Deployment" href="deploy.html"/>
+        <link rel="prev" title="Welcome to bargate’s documentation!" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> bargate
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-system-packages">Install system packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-development-packages">Install development packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-python-packages">Install python packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-bargate">Install bargate</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrades</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Main configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security.html">Security considerations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">bargate</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/install.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Linux</li>
+<li>Python 2.6 or 2.7 (Python 3 is not yet supported)</li>
+<li>A WSGI capable web server (e.g. nginx+uwsgi or apache+mod_wsgi)</li>
+<li>Python modules:<ul>
+<li>Flask</li>
+<li>pysmbc</li>
+<li>pycrypto</li>
+<li>Pillow</li>
+<li>ldap (optional)</li>
+<li>kerberos (optional)</li>
+<li>redis-py (optional)</li>
+<li>onetimepass (optional)</li>
+<li>pyqrcode (optional)</li>
+</ul>
+</li>
+<li>libsmbclient</li>
+<li>Redis (optional)</li>
+</ul>
+</div>
+<div class="section" id="install-system-packages">
+<h2>Install system packages<a class="headerlink" href="#install-system-packages" title="Permalink to this headline">¶</a></h2>
+<p>On Red Hat Enterprise Linux or Fedora:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>yum install python-pip redis git
+</pre></div>
+</div>
+<p>You will want to enable the redis server on RHEL6:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>chkconfig redis on
+service redis start
+</pre></div>
+</div>
+<p>...or on RHEL7:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>systemctl enable redis
+systemctl start redis
+</pre></div>
+</div>
+<p>On Debian or Ubuntu:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>apt-get install python-pip redis-server git
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-development-packages">
+<h2>Install development packages<a class="headerlink" href="#install-development-packages" title="Permalink to this headline">¶</a></h2>
+<p>To install the pip modules you will need to install some development packages - these can be removed once you&#8217;ve installed the python packages if you desire.</p>
+<p>On Red Hat Enterprise Linux or Fedora:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel openjpeg-devel openjpeg2-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel
+</pre></div>
+</div>
+<p>On Debian or Ubuntu:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>apt-get install build-essential python-dev libsmbclient-dev samba-dev zlib1g libopenjpeg-dev libopenjpeg2 libtiff5-dev libfreetype6-dev libwebp-dev liblcms2-dev libldap2-dev libsasl2-dev libkrb5-dev
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-python-packages">
+<h2>Install python packages<a class="headerlink" href="#install-python-packages" title="Permalink to this headline">¶</a></h2>
+<p>Install the packages with pip:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>pip install Flask pysmbc pycrypto Pillow redis python-ldap kerberos onetimepass pyqrcode
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-bargate">
+<h2>Install bargate<a class="headerlink" href="#install-bargate" title="Permalink to this headline">¶</a></h2>
+<p>Choose a directory to install bargate to. This guide assumes /opt/bargate:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd /opt/
+git clone https://github.com/divad/bargate.git
+</pre></div>
+</div>
+<p>You will need to create bargate&#8217;s configuration file. On startup bargate looks in the following locations:</p>
+<ul class="simple">
+<li>/etc/bargate.conf</li>
+<li>/etc/bargate/bargate.conf</li>
+</ul>
+<p>Copy the sample config file to get started:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>Edit the file to suit your needs. See <a class="reference internal" href="config.html"><em>Main configuration options</em></a> for more information.</p>
+<p>You now need to deploy bargate inside a webserver. See <a class="reference internal" href="deploy.html"><em>Deployment</em></a> on how to do that.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="deploy.html" class="btn btn-neutral float-right" title="Deployment" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to bargate’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, David Bell.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

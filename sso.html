@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Single sign on &mdash; bargate 1.3.4 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="bargate 1.3.4 documentation" href="index.html"/>
+        <link rel="prev" title="Security considerations" href="security.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> bargate
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrades</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Main configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security.html">Security considerations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Single sign on</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">bargate</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Single sign on</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/sso.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="single-sign-on">
+<h1>Single sign on<a class="headerlink" href="#single-sign-on" title="Permalink to this headline">¶</a></h1>
+<p>The most asked question for Bargate is &#8220;Does it support SSO?&#8221;. By this it is
+meant can you logon to bargate with an existing SAML token or CAS token or
+similar. The short answer is no. This page serves to explain why, and how
+bargate uses the password given to it.</p>
+<p>Bargate is essentially a CIFS to HTTP gateway. It authenticates to CIFS servers
+as the user who is logged in and with their password. It does this by encrypting
+the user&#8217;s password upon logon and storing it in the user&#8217;s session (which is
+signed to prevent tampering) in the browser (via a cookie).</p>
+<p>Since Bargate talks to CIFS servers it must authenticate using CIFS
+authentication methods. At present this is either password (via NLTMv2/NTLMSSP)
+or Kerberos (SPNEGO). So we have to send the password to the CIFS server,
+or use a kerberos ticket.</p>
+<p>The latter isn&#8217;t an option for two reasons. First of all Bargate is designed
+for users away from the corporate network - thats why it was written. Away from
+the corporate network, and on devices not configured by central IT, Kerberos
+isn&#8217;t an option (thats why SAML exists).</p>
+<p>Sadly, this means Bargate still needs your password. Long term the idea is to
+switch to using websockets, and thus remove the need to store a password
+on the client, but it will still need the password for the initial connection.</p>
+<p>A limited form of &#8216;Single Sign On&#8217; is being prototyped by the University of
+Sheffield where a central portal maintains a copy of the user&#8217;s password and is
+thus able to sign the user into bargate.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="security.html" class="btn btn-neutral" title="Security considerations" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, David Bell.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.4',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
