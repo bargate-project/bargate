@@ -122,13 +122,10 @@ def check_path(path):
 
 def wb_sid_to_name(sid):
 	import subprocess
-	process = subprocess.Popen(['/usr/bin/wbinfo', '--sid-to-name',sid], stdout=subprocess.PIPE)
+	process = subprocess.Popen([app.config['WBINFO_BINARY'], '--sid-to-name',sid], stdout=subprocess.PIPE)
 	sout, serr = process.communicate()
-	
 	sout = sout.rstrip()
 
-	## TODO better error handling!!!
-	
 	if sout.endswith(' 1') or sout.endswith(' 2'):
 		return sout[:-2]
 	else:
@@ -421,20 +418,24 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			else:
 				filename = path
 				crumbs = []
-				
-			try:
-				net_sec_desc_owner = bargate.lib.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_OWNER))
-				net_sec_desc_group = bargate.lib.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_GROUP))
+			
+			if app.config['WBINFO_LOOKUP']:
+				try:
+					net_sec_desc_owner = bargate.lib.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_OWNER))
+					net_sec_desc_group = bargate.lib.smb.wb_sid_to_name(ctx.getxattr(uri_as_str,smbc.XATTR_GROUP))
 
-			except Exception as ex:
-				## If we're in debug mode then print the error
-				if app.debug:
-					net_sec_desc_owner = "Error reading attributes: " + str(ex)	
-					net_sec_desc_group = "Error reading attributes: " + str(ex)
-				## In normal usage, just set user and group to unknown if we get an exception
-				else:
-					net_sec_desc_owner = "Unknown"
-					net_sec_desc_group = "Unknown"
+				except Exception as ex:
+					## If we're in debug mode then print the error
+					if app.debug:
+						net_sec_desc_owner = "Error reading attributes: " + str(ex)	
+						net_sec_desc_group = "Error reading attributes: " + str(ex)
+					## In normal usage, just set user and group to unknown if we get an exception
+					else:
+						net_sec_desc_owner = "Unknown"
+						net_sec_desc_group = "Unknown"
+			else:
+				net_sec_desc_owner = "N/A"
+				net_sec_desc_group = "N/A"
 				
 			## URLs
 			url_home=url_for(func_name)
