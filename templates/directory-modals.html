@@ -51,7 +51,7 @@
 				</div>
 				<div class="modal-body">
 					<p>
-					Choose files to upload. You can select more than one file at a time. You can also drag and drop files anywhere on this page to start uploading. The maximum file size is 256MB.
+					Choose files to upload. You can select more than one file at a time. You can also drag and drop files anywhere on this page to start uploading. The maximum file size is {{config['MAX_CONTENT_LENGTH']|filesizeformat(binary=True)}}.
 					</p>
 					
 					<div id="upload-progress" class="progress progress-striped hidden active">

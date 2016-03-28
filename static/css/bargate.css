@@ -74,3 +74,10 @@ ul.changelog
 		width: 100%;
 	}
 }
+
+/* Prevent themes from putting borders on tables */ 
+.table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td
+{
+	border-bottom: none;
+	border-top: none;
+}

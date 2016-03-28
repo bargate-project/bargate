@@ -20,13 +20,6 @@
 	vertical-align: middle !important;
 }
 
-/* Prevent themes from putting borders on tables */ 
-.table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td
-{
-	border-bottom: none;
-	border-top: none;
-}
-
 /* Make sure no underlines on a's in tables pls - For flatly theme mostly */
 .table a, table a
 {

@@ -17,6 +17,9 @@
 
 from datetime import timedelta
 
+## Bargate internal version number
+VERSION='1.4-beta1'
+
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
 
@@ -75,15 +78,12 @@ REDIS_PORT=6379
 # Default to true if no config file to make sure a config file has been found.
 DISABLE_APP=True
 
-## Default bootstrap/bootswatch theme
+## Default bootstrap/bootswatch theme=
 THEME_DEFAULT='lumen'
 
 ## Default directory layout mode
 ## either 'grid' or 'list'
 LAYOUT_DEFAULT='grid'
-
-## Bargate internal version number
-VERSION='1.4-dev'
 
 ## Flask defaults (changed to what we prefer)
 SESSION_COOKIE_SECURE      = True
