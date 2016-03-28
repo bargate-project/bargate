@@ -9,7 +9,7 @@
 				<input name="bookmark_path" type="hidden" value="{{ pwd }}"/>
 								
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal">×</button>
+					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Add Bookmark</h4>
 				</div>
 				<div class="modal-body">
@@ -46,7 +46,7 @@
 				<input name="path" type="hidden" value="{{ pwd }}"/>
 				
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal">×</button>
+					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Upload Files</h4>
 				</div>
 				<div class="modal-body">
@@ -85,7 +85,7 @@
 				<input name="path" type="hidden" value="{{ pwd }}"/>
 					
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Create folder</h4>
 				</div>
 
@@ -113,17 +113,19 @@
 				<input name="path" type="hidden" value="" id="delete_path"/>
 					
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Delete file</h4>
 				</div>
 
-				<div class="modal-body">
+				<div class="modal-body text-center">
+					<p><i class="fa fa-fw fa-exclamation-triangle fa-5x"></i></p>
+
 					<p>Are you sure you want to permanently delete '<span id="delete_filename" style="word-wrap: break-word;"></span>'?</p>
 				</div>
 				
 				<div class="modal-footer">
  					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-					<input type="submit" id="deletebtn" class="btn btn-primary" onclick="$('#deletebtn').button('loading')" data-loading-text="Deleting..." value="Yes"/>
+					<input type="submit" id="deletebtn" class="btn btn-danger" onclick="$('#deletebtn').button('loading')" data-loading-text="Deleting..." value="Yes"/>
 				</div>
 			</form>
 		</div>
@@ -140,7 +142,7 @@
 				<input name="path" type="hidden" value="" id="delete_dir_path"/>
 					
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Delete directory</h4>
 				</div>
 
@@ -168,7 +170,7 @@
 				<input id="rename_path" name="path" type="hidden" value=""/>
 					
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Rename</h4>
 				</div>
 
@@ -196,7 +198,7 @@
   				<input id="copy_path" name="path" type="hidden" value=""/>
 					
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 					<h4 class="modal-title">Copy</h4>
 				</div>
 
@@ -219,14 +221,14 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-click-filename">Unknown</h4>
 			</div>
 
 			<div class="modal-body text-center">
 				<img src="" id="file-click-preview" class="hidden"></img>
 				<span id="file-click-icon" style="font-size: 128px"></span>
-				<table class="table table-condensed text-left table-nl">
+				<table class="table table-condensed text-left table-nl table-file-click">
 					<tr>
 						<th class="text-right">Size:</th>
 						<td id="file-click-size"></td>
@@ -240,11 +242,15 @@
 						<td id="file-click-mtype"></td>
 					</tr>
 				</table>
-				<div class="btn-group">
-					<a href="#" id="file-click-download" class="btn btn-primary">Download</a>
-					<a href="#" id="file-click-view" class="btn btn-success hidden hidden-xs">View</a>
-					<a href="#" id="file-click-props" class="btn btn-info">Properties</a>
-				</div>	
+				<div class="btn-group btn-group-justified">
+					<a href="#" id="file-click-download" class="btn btn-default"><i class="fa fa-fw fa-2x fa-download"></i><br/>Download</a>
+					<a href="#" id="file-click-view" class="btn btn-default hidden hidden-xs"><i class="fa fa-fw fa-2x fa-eye"></i><br/>View</a>
+					<a href="#" id="file-click-props" class="btn btn-default"><i class="fa fa-fw fa-2x fa-info-circle"></i><br/>Details</a>
+
+					<a href="#copy-file" data-dismiss="modal"  data-toggle="modal" id="file-click-copy" class="btn btn-default"><i class="fa fa-fw fa-2x fa-clipboard"></i><br/>Copy</a>
+					<a href="#rename-file" data-dismiss="modal"  data-toggle="modal" id="file-click-rename" class="btn btn-default"><i class="fa fa-fw fa-2x fa-pencil-square-o"></i><br/>Rename</a>
+					<a href="#delete-confirm" data-dismiss="modal" data-toggle="modal" id="file-click-delete" class="btn btn-default"><i class="fa fa-fw fa-2x fa-trash"></i><br/>Delete</a>
+				</div>
 			</div>
 			<div class="modal-footer">	
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>	

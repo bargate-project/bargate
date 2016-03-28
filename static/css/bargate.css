@@ -81,3 +81,9 @@ ul.changelog
 	border-bottom: none;
 	border-top: none;
 }
+
+/* On the popup dialog for file clicking the table needs padding above it */
+.table-file-click
+{
+	margin-top: 20px;
+}

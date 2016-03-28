@@ -86,9 +86,7 @@ def view_in_browser(mtype):
 	means that the file should be shown 'in browser'
 	"""
 	if mtype == 'application/pdf':
-		## changed in oct 2013 becasue browsers like firefox dont have in-browser
-		## pdf viewers and so the filename is barfed up - problem with flask's send_file
-		return False
+		return True
 	elif mtype == 'text/plain':
 		return True
 	elif mtype.startswith('image'):

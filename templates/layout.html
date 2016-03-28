@@ -1,3 +1,29 @@
+{%- macro logoutmenu(class) -%}
+	<li class="{{class}}"><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
+{%- endmacro -%}
+{%- macro bargatemenu() -%}
+	{% if config['REDIS_ENABLED'] %}
+	<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Settings</a></li>
+	{% endif %}
+	{% if config['TOTP_ENABLED'] %}
+	<li><a href="{{ url_for('totp_user_view') }}"><i class="fa fa-lock fa-fw"></i> Two Step Protection</a></li>
+	{% endif %}
+	{%- include 'user-menu.html' %}
+	<li class="divider"></li>
+	{%- include 'help-menu.html' %}
+	<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
+{%- endmacro -%}
+{%- macro sortmenu() -%}
+<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-title="Sort by" rel="tooltip">
+	<i class="fa fa-fw fa-lg fa-sort"></i>
+</a>
+<ul class="dropdown-menu dropdown-menu-auto">
+	<li style="cursor: pointer"><a class="dir-sortby-name"><span class="sortby-check"><i class="fa fa-fw fa-check"></i></span> Name</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-type"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Type</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-mtime"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Modified</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-size"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Size</a></li>
+</ul>
+{%- endmacro -%}
 <!doctype html>
 <html lang="en">
 	<head>
@@ -60,13 +86,23 @@
 					<ul class="nav navbar-nav">
 						{%- include 'dropdown-menus.html' %}
 						{%- include 'bookmarks-menu.html' %}
+						<li class="dropdown visible-xs">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								{{ bargatemenu() }}
+							</ul>
+						</li>
+						{{ logoutmenu('visible-xs') }}
 					</ul>
+
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" title="Menu" aria-haspopup="true" aria-expanded="false">
 								<i class="fa fa-bars fa-fw fa-lg"></i>
 							</a>
 							<ul class="dropdown-menu dropdown-menu-right">
-							{%- include 'bargate-menu.html' %}
+							{{ bargatemenu() }}
+							<li class="divider"></li>
+							{{ logoutmenu() }}
 							</ul>
 						</div>
 					
@@ -84,15 +120,7 @@
 						</div>
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
-							<a id="sortby-button" class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-title="Sort by" rel="tooltip">
-								<i class="fa fa-fw fa-lg fa-sort"></i>
-							</a>
-							<ul class="dropdown-menu dropdown-menu-auto">
-								<li style="cursor: pointer"><a class="dir-sortby-name"><span class="sortby-check"><i class="fa fa-fw fa-check"></i></span> Name</a></li>
-								<li style="cursor: pointer"><a class="dir-sortby-type"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Type</a></li>
-								<li style="cursor: pointer"><a class="dir-sortby-mtime"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Modified</a></li>
-								<li style="cursor: pointer"><a class="dir-sortby-size"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Size</a></li>
-							</ul>
+							{{ sortmenu() }}
 						</div>
 					{% endif %}
 				</div>
@@ -106,7 +134,7 @@
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal">×</button>
+							<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
 							<h4 class="modal-title">{{ modal_error.0 }}</h4>
 						</div>
 						<div class="modal-body">
@@ -129,9 +157,12 @@
 			{% block body %}{% endblock -%}
 		</div>
 		
+		{% if browse_mode %}
 		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container text-center">
-				{% if browse_mode %}
+				<div class="text-center inline-block dropup">
+					{{ sortmenu() }}
+				</div>
 				<div class="text-center inline-block">
 					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">
 						<i class="fa fa-fw fa-upload"></i>
@@ -142,25 +173,16 @@
 						<i class="fa fa-fw fa-folder-open"></i>
 					</a>
 				</div>
-					{%- if config['REDIS_ENABLED'] %}
+				{%- if config['REDIS_ENABLED'] %}
 				<div class="text-center inline-block">
 					<a href="#" class="btn navbar-btn btn-default" {% if atroot %}disabled="disabled"{%else%} data-toggle="modal" data-target="#add-bookmark" {%endif%}>
 						<i class="fa fa-fw fa-bookmark"></i>
 					</a>
 				</div>
-					{%- endif %}
-				{%endif%}
-				<div class="text-center inline-block dropup">
-					<a class="btn navbar-btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<i class="fa fa-bars fa-fw fa-lg"></i>
-					</a>
-					<ul class="dropdown-menu dropdown-menu-auto">
-						{%- include 'bargate-menu.html' %}
-					</ul>
-				</div>
-
+				{%- endif %}
 			</div>
 		</div>
+		{%endif%}
 
 	</body>
 </html>

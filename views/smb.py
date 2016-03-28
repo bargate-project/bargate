@@ -24,7 +24,7 @@ from flask import Flask, request, session, redirect, url_for, render_template
 		
 @app.login_required
 @app.allow_disable
-def share_handler(path):
+def share_handler(path, action="browse"):
 	## Get the path variable
 	svrpath = app.sharesConfig.get(request.endpoint,'path')
 
@@ -45,7 +45,7 @@ def share_handler(path):
 	menu = app.sharesConfig.get(request.endpoint,'menu')
 
 	## Run the page!
-	return bargate.lib.smb.connection(svrpath,request.endpoint,menu,display,path)
+	return bargate.lib.smb.connection(svrpath,request.endpoint,menu,display,action,path)
 
 ################################################################################
 

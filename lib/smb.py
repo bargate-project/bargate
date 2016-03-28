@@ -199,20 +199,21 @@ def statToType(fstat):
 	
 ################################################################################
 
-def connection(srv_path,func_name,active=None,display_name="Home",path=''):
-	## ensure srv_path ends with a trailing slash
+def connection(srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
+	## ensure srv_path (the server URI and share) ends with a trailing slash
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
 	
+	## default the 'active' variable to the function name
 	if active == None:
 		active = func_name
 
-	## Load the SMB engine
+	## Prepare to talk to the file server
 	ctx = smbc.Context(auth_fn=bargate.lib.user.get_smbc_auth)
 
 	############################################################################
 	## HTTP GET ACTIONS ########################################################
-	# actions: download, browse, view
+	# actions: download/view, browse, properties
 	############################################################################
 
 	if request.method == 'GET':
@@ -234,17 +235,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		# uri_as_str CAN be given to pysmbc as its a byte string or 'str' in python land
 		uri_as_str = srv_path.encode('utf8') + path_quoted
 		
-		## Determine the action type
-		action = request.args.get('action','browse')
-
-		## Debug this in logs
+		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
 ################################################################################
-# DOWNLOAD FILE
+# DOWNLOAD OR 'VIEW' FILE
 ################################################################################
 
-		if action == 'download':
+		if action == 'download' or action == 'view':
 
 			## Pull the filename out of the path
 			(before,sep,after) = path.rpartition('/')
@@ -280,20 +278,13 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				## Default to sending files as an 'attachment' ("Content-Disposition: attachment")
 				attach = True
 
-				## Check to see if the user wants a in-browser view
-				inbrowser = request.args.get('inbrowser',False)
-
 				## Guess the mime type 
 				(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(filename)
 
 				## If the user requested in-browser view (rather than download), make sure we allow it for that filetype
-				if inbrowser:
+				if action == 'view':
 					if bargate.lib.mime.view_in_browser(mtype):
 						attach = False
-
-				## TODO BUG HERE WITH web browsers without PDF viewers.
-				## if you set attach = False, then the filename is not sent correctly...
-				## see the mime module for more
 
 				## Download the file
 				# etags are unreliable and deprecated in Flask send_file
@@ -375,7 +366,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 # VIEW FILE PROPERTIES
 ################################################################################
 			
-		elif action == 'view':
+		elif action == 'properties':
 			## Build the URL to the parent directory (for errors, and for the template output)
 			if len(path) > 0:
 				(before,sep,after) = path.rpartition('/')
@@ -437,12 +428,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				net_sec_desc_owner = "N/A"
 				net_sec_desc_group = "N/A"
 				
-			## URLs
-			url_home=url_for(func_name)
-			url_download = url_for(func_name,path=path,action='download')
-			url_view = url_for(func_name,path=path,action='view')
-			url_rename = url_for(func_name,action='rename')
-
 			## stat translation into useful stuff
 			stat_atime = bargate.lib.core.ut_to_string(fstat[7])
 			stat_mtime = bargate.lib.core.ut_to_string(fstat[8])
@@ -454,27 +439,15 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 			## pick a representative file icon
 			ficon = bargate.lib.mime.mimetype_to_icon(mtype)
 
-			## View-in-browser download type
-			if bargate.lib.mime.view_in_browser(mtype):
-				url_bdownload = url_for(func_name,path=path,action='download',inbrowser='True')
-			else:
-				url_bdownload = None
-
 			## Render the template
-			return render_template('view.html', active=active,
-				crumbs=crumbs,
-				path=path,
-				url_home=url_home,
-				url_parent_dir=url_parent_dir,
-				url_download=url_download,
-				url_bdownload=url_bdownload,
-				url_view=url_view,
-				url_rename=url_rename,
-				filename=filename,
-				stat=fstat,
-				atime=stat_atime,
-				mtime=stat_mtime,
-				ctime=stat_ctime,
+			return render_template('properties.html', active=active,
+				crumbs = crumbs,
+				url_home = url_for(func_name),
+				filename = filename,
+				stat  = fstat,
+				atime = stat_atime,
+				mtime = stat_mtime,
+				ctime = stat_ctime,
 				mtype = mtype,
 				ftype = ftype,
 				ficon = ficon,
@@ -599,7 +572,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 						entry['mtime_raw'] = 0
 
 					## URL to view the file, and downlad the file
-					entry['view']     = url_for(func_name,path=entry['path'],action='view')
+					entry['view']     = url_for(func_name,path=entry['path'],action='properties')
 					entry['download'] = url_for(func_name,path=entry['path'],action='download')
 					entry['default_open'] = entry['download']
 				
@@ -619,7 +592,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 					
 					## View-in-browser download type
 					if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
-						entry['bdownload'] = url_for(func_name,path=entry['path'],action='download',inbrowser='True')
+						entry['bdownload'] = url_for(func_name,path=entry['path'],action='view')
 						entry['default_open'] = entry['bdownload']
 						
 					## What to do based on 'on_file_click' setting
@@ -741,14 +714,16 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 	# actions: unlink, mkdir, upload, rename
 	############################################################################
 
-	if request.method == 'POST':
+	elif request.method == 'POST':
 
-		## Get the action requested
+		## We ignore an action and/or path sent in the URL
+		## this is because we send them both via form variables
+		## we do this because we need, in javascript, to be able to change these
+		## without having to regenerate the URL in the <form>
+
+		## Get the action and path
 		action = request.form['action']
-
-		## Get the path out of the form
-		## and ignore the 'path' from the url
-		path = request.form['path']
+		path   = request.form['path']
 		
 		## Check the path is valid
 		try:
@@ -766,7 +741,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 		uri = srv_path + path
 		uri_as_str = srv_path.encode('utf8') + path_quoted
 
-		## Debug this for now
+		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 		
 ################################################################################
@@ -925,16 +900,19 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 
 			filename = after
 
+			## Get the new requested file name
+			new_filename = request.form['newfilename']
+
 			## Check the new file name is valid
 			try:
-				bargate.lib.smb.check_name(request.form['newfilename'])
+				bargate.lib.smb.check_name(new_filename)
 			except ValueError as e:
 				return bargate.lib.errors.invalid_name()
 
 			## build new URI
-			newPath = request.form['newfilename'].encode('utf8')
-			newPath = urllib.quote(newPath)
-			newURI = srv_path + parent_path + '/' + newPath
+			new_filename_as_str = new_filename.encode('utf8')
+			new_filename_as_str = urllib.quote(new_filename_as_str)
+			new_uri_as_str      = srv_path + parent_path + '/' + new_filename_as_str
 
 			## the place to redirect to on success or failure
 			redirect_path = redirect(url_for(func_name,path=parent_path))
@@ -950,9 +928,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				return bargate.lib.errors.invalid_item_type(redirect_path)
 
 			try:
-				## uri_as_str is the existing quoted-encoded URI
-				## newURI is the new URI which has been quoted-encoded
-				ctx.rename(uri_as_str,newURI)
+				ctx.rename(uri_as_str,new_uri_as_str)
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri,redirect_path)
 			else:
@@ -1093,13 +1069,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",path=''):
 				return_path = redirect(url_for(func_name))
 
 			error_return_path = return_path
-
-			## was unlink called from view mode?
-			try:
-				if request.form['mode'] == 'view':
-					error_return_path = redirect(url_for(func_name,action='view',path=path))
-			except KeyError:
-				pass
 
 			## get the item type of the existing 'filename'
 			itemType = bargate.lib.smb.getEntryType(ctx,uri_as_str)

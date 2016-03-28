@@ -9,7 +9,8 @@ $(document).ready(function()
 			mtime: '[data-raw-mtime] parseInt',
 			size: '[data-raw-size] parseInt',
 		},
-		transitionDuration: '0',
+		transitionDuration: '0.2s',
+		percentPosition: true,
 		sortAscending:
 		{
 			name: true,

@@ -99,6 +99,16 @@ $(document).ready(function()
 		{
 			$('#file-click-view').addClass('hidden');
 		}
+
+		/* We also prime the 'rename', 'delete' and 'copy' modals as if they have
+			been clicked because they can be clicked from this modal */
+
+		$('#copy_path').val(parent.data('path'));
+		$('#copyfilename').attr('value',"Copy of " + parent.data('filename'));		
+		$('#rename_path').val(parent.data('path'));
+		$('#newfilename').attr('value',parent.data('filename'));
+		$('#delete_path').val(parent.data('path'));
+		$('#delete_filename').html(parent.data('filename'));	
 		
 		$('#file-click').modal();
 	});

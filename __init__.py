@@ -37,7 +37,24 @@ if app.config['TOTP_ENABLED']:
 
 # add url rules for the shares/functions defined in shares.conf
 for section in app.sharesList:
-	app.logger.debug("Creating share entry '" + str(section) + "'")
-	app.add_url_rule(app.sharesConfig.get(section,'url'),endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': ''})
-	app.add_url_rule(app.sharesConfig.get(section,'url') + '/<path:path>/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'])
+	try:
+		url = app.sharesConfig.get(section,'url')
+		if not url.startswith('/'):
+			url = "/" + url
 
+		# If the user goes to /endpoint or /endpoint/ - .e.g the default for GET, and all POST requests (action and path are sent as form variables in POSTS)
+		app.add_url_rule(url,endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
+		app.add_url_rule(url + '/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
+
+		# If the user goes to /endpoint/browse/path/
+		app.add_url_rule(url + '/browse/<path:path>',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'action': 'browse'})
+		app.add_url_rule(url + '/browse/<path:path>/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'action': 'browse'})
+
+		# If the user goes to /endpoint/action/path/
+		app.add_url_rule(url + '/<string:action>/<path:path>',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'])
+		app.add_url_rule(url + '/<string:action>/<path:path>/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'])
+
+		app.logger.debug("Created share entry '" + section + "' available at " + url)
+
+	except Exception as ex:
+		app.logger.error("Could not create file share '" + section + "':" + str(type(ex)) + ":" + str(ex))
