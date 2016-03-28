@@ -13,3 +13,11 @@ body
 		padding-top: 55px;
 	}
 }
+
+@media (max-width: 768px)
+{
+	.container-body
+	{
+		padding-bottom: 50px;
+	}
+}

@@ -7,35 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
-
-		<!--[if lt IE 9]>
-		<style type="text/css">
-		.form-control
-		{
-			width: 95% !important;
-		}
-		body
-		{
-			background-color: none;
-			background-image: url('/static/images/login/bgimage{{getrandnum()}}.jpg');
-			background-size: cover;	
-		}
-		</style>
-		<![endif]-->
-
-		<style type="text/css">
-		@media (min-width: 768px)
-		{
-			body
-			{
-				background-color: none;
-				background-image: url('/static/images/login/bgimage{{getrandnum()}}.jpg');
-				background-size: cover;	
-			}
-		}
-
-		</style>
-
+		{% include 'login-head.html' ignore missing %}
 		<noscript>
 			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
 		</noscript>
@@ -43,14 +15,9 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
 	</head>
 	<body>
-		<div class="hidden-xs uoslogo">
-			<img src="{{ url_for('static', filename='images/uoslogowhite.png') }}"></img>
-		</div>
-
+		{% include 'login-body.html' ignore missing %}
 		<div class="container">
-			<div class="visible-xs mobilelogo">
-				<img src="{{ url_for('static', filename='images/uoslogowhite.png') }}"></img>
-			</div>
+			{% include 'login-container.html' ignore missing %}
 			<div class="loginbox">
 				<h1>{{ config['APP_DISPLAY_NAME'] }}</h1>
 				{% for category, message in get_flashed_messages(with_categories=true) %}
@@ -75,7 +42,7 @@
 					{% if config['REMEMBER_ME_ENABLED'] %}
 					<div class="checkbox">
 						<label>
-							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this computer <span class="glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-trigger="hover" data-content="If you are on a private computer you trust then selecting this option will keep you logged in even if you close the browser window. Do not use this on public or shared computers."></span>
+							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this device <span class="hidden-xs glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-trigger="hover" data-content="If you are on a private computer you trust then selecting this option will keep you logged in even if you close the browser window. Do not use this on public or shared computers."></span>
 						</label>
 					</div>
 					{% endif %}
@@ -84,9 +51,9 @@
 					</div>
 				</form>
 				<p class="text-center">
-					<a href="https://www.southampton.ac.uk/about/conditions-policies.page">Terms and Conditions</a> - <a href="{{ url_for('about') }}">About</a>
+					{% include 'login-footer.html' ignore missing %}
 				</p>
 			</div>
 		</div>
-    </body>
+	</body>
 </html>

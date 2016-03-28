@@ -57,14 +57,12 @@ class Bargate(Flask):
 		self.config.from_object("bargate.defaultcfg")
 
 		# try to load config from various paths
-		if os.path.isfile('/etc/bargate.conf'):
-			self.config.from_pyfile('/etc/bargate.conf')
-		elif os.path.isfile('/etc/bargate/bargate.conf'):
+		if os.path.isfile('/etc/bargate/bargate.conf'):
 			self.config.from_pyfile('/etc/bargate/bargate.conf')
-		elif os.path.isfile('/data/bargate/bargate.conf'):
-			self.config.from_pyfile('/data/bargate/bargate.conf')
-		elif os.path.isfile('/data/fwa/bargate.conf'):
-			self.config.from_pyfile('/data/fwa/bargate.conf')
+		elif os.path.isfile('/etc/bargate.conf'):
+			self.config.from_pyfile('/etc/bargate.conf')
+		elif os.path.isfile('/opt/bargate/bargate.conf'):
+			self.config.from_pyfile('/opt/bargate/bargate.conf')
 
 ################################################################################
 

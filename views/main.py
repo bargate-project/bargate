@@ -87,7 +87,7 @@ def logout():
 	if app.is_user_logged_in():
 		bargate.lib.userdata.save('logout',str(time.time()))
 		bargate.lib.user.logout()
-		flash('You were logged out successfully','alert-success')
+		flash('You have logged out successfully','alert-success')
 
 	return redirect(url_for('login'))
 
@@ -106,13 +106,6 @@ def changelog():
 def nojs():
 	return render_template('nojs.html')
 
-@app.route('/css')
-def css():
-
-	## Work out body padding based on the theme
-
-	return render_template('bargate.css')
-	
 #################################################################################
 ### Portal login support (added for University of Sheffield)
 
@@ -140,4 +133,3 @@ def portallogin():
 	else:
 		session['logged_in']    = True
 		return redirect(url_for(app.config['SHARES_DEFAULT']))
-

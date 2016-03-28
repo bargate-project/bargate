@@ -1,23 +1,6 @@
-{#- My Files menu #}
-<li class="dropdown{%if active == 'home'%} active{%endif%}">
-	<a href="#" class="dropdown-toggle" data-toggle="dropdown">My Files <b class="caret"></b></a>
+<li class="dropdown">
+	<a href="#" class="dropdown-toggle" data-toggle="dropdown">Servers <b class="caret"></b></a>
 	<ul class="dropdown-menu">
-		<li><a href="{{ url_for('personal') }}"><i class="fa fa-fw fa-home"></i> Home</a></li>
-		<li><a href="{{ url_for('personal',path='mydocuments') }}"><i class="fa fa-fw fa-files-o"></i> My Documents</a></li>
-		<li><a href="{{ url_for('personal',path='mydesktop') }}"><i class="fa fa-fw fa-desktop"></i> My Desktop</a></li>
-		<li><a href="{{ url_for('webfiles') }}"><i class="fa fa-fw fa-globe"></i> My Website</a></li>
+		<li><a href="{{ url_for('custom') }}"><i class="fa fa-fw fa-home"></i> Connect to server</a></li>
 	</ul>
 </li>
-
-{#- Shared Files menu #}
-<li class="dropdown{%if active == 'shared'%} active{%endif%}">
-	<a href="#" class="dropdown-toggle" data-toggle="dropdown">Shared Files <b class="caret"></b></a>
-	<ul class="dropdown-menu">
-		<li><a href="{{ url_for('resource') }}"><i class="fa fa-fw fa-group"></i> Resource Drive</a></li>
-		<li><a href="{{ url_for('linuxresearch') }}"><i class="fa fa-fw fa-linux"></i> Linux Research</a></li>
-		<li><a href="{{ url_for('other') }}"><i class="fa fa-fw fa-share-square-o"></i> Other Drives</a></li>
-		<li><a href="{{ url_for('custom_server') }}"><i class="fa fa-fw fa-hdd-o"></i> Connect to server</a></li>
-	</ul>
-</li>
-
-{%- include 'bookmarks-menu.html' %}

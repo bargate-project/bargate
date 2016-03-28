@@ -74,7 +74,7 @@ def custom(path):
 	if request.method == 'POST':
 		try:
 			server_uri = request.form['open_server_uri']
-			## TODO validate the path...somehow?
+			## validate the path...somehow?
 
 			session['custom_uri'] = server_uri
 			session.modified = True

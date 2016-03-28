@@ -58,26 +58,15 @@
 				{%- if session.logged_in %}
 				<div class="navbar-collapse collapse" id="navbar-collapse-1">	
 					<ul class="nav navbar-nav">
-					{%- include 'dropdown-menus.html' %}
+						{%- include 'dropdown-menus.html' %}
+						{%- include 'bookmarks-menu.html' %}
 					</ul>
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" title="Menu" aria-haspopup="true" aria-expanded="false">
 								<i class="fa fa-bars fa-fw fa-lg"></i>
 							</a>
 							<ul class="dropdown-menu dropdown-menu-right">
-								{% if config['REDIS_ENABLED'] %}
-								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Settings</a></li>
-								{% endif %}
-								{% if config['TOTP_ENABLED'] %}
-								<li><a href="{{ url_for('totp_user_view') }}"><i class="fa fa-lock fa-fw"></i> Two Step Protection</a></li>
-								{% endif %}
-								{%- include 'user-menu.html' %}
-								<li class="divider"></li>
-								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php" target="_blank"><i class="fa fa-fw fa-life-ring"></i> Filestore Help</a></li>
-								<li><a href="https://github.com/divad/bargate/issues" target="_blank"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
-								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
-								<li class="divider"></li>
-								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
+							{%- include 'bargate-menu.html' %}
 							</ul>
 						</div>
 					
@@ -132,21 +121,17 @@
 			{%- endwith -%}
 		{%- endif %}
 
-
-		{% if browse_mode %}
-		<div class="container-fluid container-browse">
-		{% else %}
-		<div class="container-fluid">
-		{% endif %}
+		
+		<div class="container-fluid{% if browse_mode %} container-browse{%endif%} container-body">
 			{% for category, message in get_flashed_messages(with_categories=true) %}
 				<div class="alert alert-dismissable {{category}}"><button type="button" class="close" data-dismiss="alert">×</button>{{message}}</div>
 			{% endfor %}
 			{% block body %}{% endblock -%}
 		</div>
 		
-		{%- if browse_mode %}
 		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
 			<div class="container text-center">
+				{% if browse_mode %}
 				<div class="text-center inline-block">
 					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">
 						<i class="fa fa-fw fa-upload"></i>
@@ -164,30 +149,18 @@
 					</a>
 				</div>
 					{%- endif %}
+				{%endif%}
 				<div class="text-center inline-block dropup">
-
-							<a class="btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<i class="fa fa-bars fa-fw fa-lg"></i>
-							</a>
-							<ul class="dropdown-menu dropdown-menu-auto">
-								{% if config['REDIS_ENABLED'] %}
-								<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Settings</a></li>
-								{% endif %}
-								{% if config['TOTP_ENABLED'] %}
-								<li><a href="{{ url_for('totp_user_view') }}"><i class="fa fa-lock fa-fw"></i> Two Step Protection</a></li>
-								{% endif %}
-								{%- include 'user-menu.html' %}
-								<li class="divider"></li>
-								<li><a href="http://www.southampton.ac.uk/isolutions/services/personal_files_my_documents/index.php" target="_blank"><i class="fa fa-fw fa-life-ring"></i> Filestore Help</a></li>
-								<li><a href="https://github.com/divad/bargate/issues" target="_blank"><i class="fa fa-fw fa-bug"></i> Report a bug</a></li>
-								<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
-								<li class="divider"></li>
-								<li><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
-							</ul>
-					</div>
+					<a class="btn navbar-btn btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="fa fa-bars fa-fw fa-lg"></i>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-auto">
+						{%- include 'bargate-menu.html' %}
+					</ul>
 				</div>
+
 			</div>
 		</div>
-		{%- endif %}
+
 	</body>
 </html>

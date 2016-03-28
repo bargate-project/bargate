@@ -94,15 +94,15 @@ PERMANENT_SESSION_LIFETIME = timedelta(days=7)
 SEND_FILE_MAX_AGE_DEFAULT  = 0
 
 ## Shares config file
-SHARES_CONFIG='/data/fwa/shares.conf'
-SHARES_DEFAULT='personal'
+SHARES_CONFIG='/etc/bargate/shares.conf'
+SHARES_DEFAULT='custom'
 
 ## Local templates to override built in ones
 LOCAL_TEMPLATE_DIR=False
 
 # Name of the app to display everywhere
-APP_DISPLAY_NAME='Filestore Web Access'
-APP_DISPLAY_NAME_SHORT='FWA'
+APP_DISPLAY_NAME='Bargate'
+APP_DISPLAY_NAME_SHORT='Bargate'
 
 ## What auth method. "ldap", "kerberos", 'krb5' (alias) or 'smb'
 AUTH_TYPE='ldap'
