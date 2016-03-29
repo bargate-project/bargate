@@ -83,12 +83,11 @@
                 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrades</a></li>
-<li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Main configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="security.html">Security considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
 </ul>
 
@@ -124,8 +123,6 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
   </ul>
@@ -153,10 +150,13 @@
 <div class="logo">
 <h1 class="logo"><i class="fa fa-university"></i></h1>
 <h1 class="logo">bargate</h1>
-</div><p>bargate is an open source modern web interface for CIFS/SMB file servers.</p>
+</div><p>bargate is an open source modern web interface for SMB/CIFS file servers.</p>
 <div class="section" id="download">
 <h1>Download<a class="headerlink" href="#download" title="Permalink to this headline">¶</a></h1>
-<p>The latest stable version is: <a class="reference external" href="https://github.com/divad/bargate/releases/tag/v1.3.4/">1.3.4</a></p>
+<ul class="simple">
+<li>The latest stable version is: <a class="reference external" href="https://github.com/divad/bargate/releases/tag/v1.3.4/">1.3.4</a></li>
+<li>The latest development version is: <a class="reference external" href="https://github.com/divad/bargate/releases/tag/v1.4-beta2/">1.4-beta2</a></li>
+</ul>
 </div>
 <div class="section" id="github">
 <h1>GitHub<a class="headerlink" href="#github" title="Permalink to this headline">¶</a></h1>
@@ -188,6 +188,7 @@ to access. bargate supports either LDAP, Kerberos or &#8216;SMB&#8217; authentic
 <li class="toctree-l2"><a class="reference internal" href="install.html#install-development-packages">Install development packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#install-python-packages">Install python packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#install-bargate">Install bargate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#next-steps">Next steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a><ul>
@@ -195,104 +196,112 @@ to access. bargate supports either LDAP, Kerberos or &#8216;SMB&#8217; authentic
 <li class="toctree-l2"><a class="reference internal" href="deploy.html#apache-and-mod-wsgi">apache and mod_wsgi</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrades</a></li>
-<li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Main configuration options</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="config.html#required-options">Required options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#secret-key">SECRET_KEY</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#encrypt-key">ENCRYPT_KEY</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#disable-app">DISABLE_APP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config.html#bargate-conf">bargate.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html#shares-conf">shares.conf</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#core-options">Core options</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#smb-workgroup">SMB_WORKGROUP</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#auth-type">AUTH_TYPE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#theme-default">THEME_DEFAULT</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#preferred-url-scheme">PREFERRED_URL_SCHEME</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#remember-me-enabled">REMEMBER_ME_ENABLED</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#permanent-session-lifetime">PERMANENT_SESSION_LIFETIME</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#shares-config">SHARES_CONFIG</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#shares-default">SHARES_DEFAULT</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#local-template-dir">LOCAL_TEMPLATE_DIR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#app-display-name">APP_DISPLAY_NAME</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#app-display-name-short">APP_DISPLAY_NAME_SHORT</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#login-image-random-max">LOGIN_IMAGE_RANDOM_MAX</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#image-preview">IMAGE_PREVIEW</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#image-preview-max-size">IMAGE_PREVIEW_MAX_SIZE</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#required-options">Required options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#secret-key">SECRET_KEY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#encrypt-key">ENCRYPT_KEY</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#disable-app">DISABLE_APP</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#file-uploads">File uploads</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#max-content-length">MAX_CONTENT_LENGTH</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#banned-extensions">BANNED_EXTENSIONS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#core-options">Core options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#smb-workgroup">SMB_WORKGROUP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#auth-type">AUTH_TYPE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#theme-default">THEME_DEFAULT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#layout-default">LAYOUT_DEFAULT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#preferred-url-scheme">PREFERRED_URL_SCHEME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#remember-me-enabled">REMEMBER_ME_ENABLED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#permanent-session-lifetime">PERMANENT_SESSION_LIFETIME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#shares-config">SHARES_CONFIG</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#shares-default">SHARES_DEFAULT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#local-template-dir">LOCAL_TEMPLATE_DIR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#app-display-name">APP_DISPLAY_NAME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#app-display-name-short">APP_DISPLAY_NAME_SHORT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#login-image-random-max">LOGIN_IMAGE_RANDOM_MAX</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#image-preview">IMAGE_PREVIEW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#image-preview-max-size">IMAGE_PREVIEW_MAX_SIZE</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#ldap-auth">LDAP Auth</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-uri">LDAP_URI</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-search-base">LDAP_SEARCH_BASE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-user-attribute">LDAP_USER_ATTRIBUTE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-anon-bind">LDAP_ANON_BIND</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-bind-user">LDAP_BIND_USER</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-bind-pw">LDAP_BIND_PW</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#file-uploads">File uploads</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#max-content-length">MAX_CONTENT_LENGTH</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#banned-extensions">BANNED_EXTENSIONS</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#ldap-home-directory-support">LDAP Home directory support</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-homedir">LDAP_HOMEDIR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-home-attribute">LDAP_HOME_ATTRIBUTE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#ldap-homedir-is-unc">LDAP_HOMEDIR_IS_UNC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#ldap-auth">LDAP Auth</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-uri">LDAP_URI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-search-base">LDAP_SEARCH_BASE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-user-attribute">LDAP_USER_ATTRIBUTE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-anon-bind">LDAP_ANON_BIND</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-bind-user">LDAP_BIND_USER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-bind-pw">LDAP_BIND_PW</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#kerberos-authentication">Kerberos authentication</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#krb5-domain">KRB5_DOMAIN</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#krb5-service">KRB5_SERVICE</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#ldap-home-directory-support">LDAP Home directory support</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-homedir">LDAP_HOMEDIR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-home-attribute">LDAP_HOME_ATTRIBUTE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#ldap-homedir-is-unc">LDAP_HOMEDIR_IS_UNC</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#smb-authentication">SMB authentication</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#smb-auth-uri">SMB_AUTH_URI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#kerberos-authentication">Kerberos authentication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#krb5-domain">KRB5_DOMAIN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#krb5-service">KRB5_SERVICE</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#two-factor-authentication">Two factor authentication</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#totp-enabled">TOTP_ENABLED</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#totp-ident">TOTP_IDENT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#smb-authentication">SMB authentication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#smb-auth-uri">SMB_AUTH_URI</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#logging">Logging</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#file-log">FILE_LOG</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#log-dir">LOG_DIR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#log-file">LOG_FILE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#log-file-max-size">LOG_FILE_MAX_SIZE</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#log-file-max-files">LOG_FILE_MAX_FILES</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#two-factor-authentication">Two factor authentication</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#totp-enabled">TOTP_ENABLED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#totp-ident">TOTP_IDENT</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#e-mail-alerts">E-mail alerts</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#email-alerts">EMAIL_ALERTS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#admins">ADMINS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#smtp-server">SMTP_SERVER</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#email-from">EMAIL_FROM</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#email-subject">EMAIL_SUBJECT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#logging">Logging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#file-log">FILE_LOG</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#log-dir">LOG_DIR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#log-file">LOG_FILE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#log-file-max-size">LOG_FILE_MAX_SIZE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#log-file-max-files">LOG_FILE_MAX_FILES</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#redis">REDIS</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#redis-enabled">REDIS_ENABLED</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#redis-host">REDIS_HOST</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#redis-port">REDIS_PORT</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#e-mail-alerts">E-mail alerts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#email-alerts">EMAIL_ALERTS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#admins">ADMINS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#smtp-server">SMTP_SERVER</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#email-from">EMAIL_FROM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#email-subject">EMAIL_SUBJECT</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#debugging">Debugging</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#debug">DEBUG</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#debug-toolbar">DEBUG_TOOLBAR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#debug-full-errors">DEBUG_FULL_ERRORS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#redis">REDIS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#redis-enabled">REDIS_ENABLED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#redis-host">REDIS_HOST</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#redis-port">REDIS_PORT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#sid-lookups-winbind-lookups">SID Lookups (winbind lookups)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#wbinfo-lookup">WBINFO_LOOKUP</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#wbinfo-binary">WBINFO_BINARY</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="config_options.html#debugging">Debugging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#debug">DEBUG</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#debug-toolbar">DEBUG_TOOLBAR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config_options.html#debug-full-errors">DEBUG_FULL_ERRORS</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="shares.html#shares-syntax">Shares syntax</a></li>
 <li class="toctree-l2"><a class="reference internal" href="shares.html#variable-insertion">Variable insertion</a></li>
 <li class="toctree-l2"><a class="reference internal" href="shares.html#examples">Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="security.html">Security considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
 </ul>
 </div>

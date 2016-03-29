@@ -1,16 +1,7 @@
 Shares configuration
 ====================
 
-Bargate should be configured with a series of server and share
-combinations to present to the users, otherwise only the 'custom' (i.e.
-enter manually) share system is available. These shares are configured
-in the shares config file, usually /etc/bargate/shares.conf (this path
-is configured via the :ref:`CONFIG_SHARES_CONFIG` parameter).
-
-Shares syntax
--------------
-
-The shares config file uses the INI format (specifically, Python's
+The shares config file uses the Python INI format (Python's
 `ConfigParser
 format <https://docs.python.org/2/library/configparser.html>`__). The
 file is broken up into sections, each section representing an SMB share.
@@ -24,15 +15,11 @@ The syntax for each section is as follows:
     menu = <menu_name>
     display = <display_name>
 
--  ``[section_name]`` must be a unique name for this smb share, however
-   it is never displayed to the end user.
--  ``url`` is the url displayed or entered by the user to access this
-   share, e.g. /yournamehere
--  ``path`` is the SMB URI of the share on the remote server to connect
-   to
--  ``menu`` is the name of the menu which should be marked as active
-   when the share is being browsed by the user
--  ``display`` is what bargate will display as the name of the share
+- ``[section_name]`` must be a unique name for this smb share, however it is never displayed to the end user.
+- ``url`` is the url displayed or entered by the user to access this share, e.g. /yournamehere
+- ``path`` is the SMB URI of the share on the remote server to connect to
+- ``menu`` is the name of the menu which should be marked as active when the share is being browsed by the user
+- ``display`` is what bargate will display as the name of the share
 
 Variable insertion
 ------------------

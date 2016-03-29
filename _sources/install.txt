@@ -75,15 +75,14 @@ Choose a directory to install bargate to. This guide assumes /opt/bargate::
   cd /opt/
   git clone https://github.com/divad/bargate.git
 
-You will need to create bargate's configuration file. On startup bargate looks in the following locations:
+You will want to choose a version to run - to do this you can use git branches.
+The latest stable branch is '1.3.x-stable'. Switch to that branch to ensure that
+running 'git pull' won't update you to a major release::
 
-- /etc/bargate.conf
-- /etc/bargate/bargate.conf
+  git checkout 1.3.x-stable
 
-Copy the sample config file to get started::
+Next steps
+---------------
 
-  cp /opt/bargate/etc/bargate.conf /etc/bargate.conf
-
-Edit the file to suit your needs. See :doc:`config` for more information.
-
-You now need to deploy bargate inside a webserver. See :doc:`deploy` on how to do that.
+- Configure bargate. See :doc:`config` for more information.
+- Deploy bargate with a web server. See :doc:`deploy` on how to do that.

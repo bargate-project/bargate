@@ -32,7 +32,7 @@
   
     <link rel="top" title="bargate 1.3.4 documentation" href="index.html"/>
         <link rel="next" title="Deployment" href="deploy.html"/>
-        <link rel="prev" title="Welcome to bargate’s documentation!" href="index.html"/> 
+        <link rel="prev" title="Download" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -88,15 +88,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#install-development-packages">Install development packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-python-packages">Install python packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-bargate">Install bargate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrades</a></li>
-<li class="toctree-l1"><a class="reference internal" href="configfiles.html">Configuration files</a></li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Main configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="security.html">Security considerations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
 </ul>
 
@@ -131,8 +131,6 @@
     <li>Installation</li>
       <li class="wy-breadcrumbs-aside">
         
-          
-            <a href="_sources/install.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -213,17 +211,19 @@ systemctl start redis
 git clone https://github.com/divad/bargate.git
 </pre></div>
 </div>
-<p>You will need to create bargate&#8217;s configuration file. On startup bargate looks in the following locations:</p>
-<ul class="simple">
-<li>/etc/bargate.conf</li>
-<li>/etc/bargate/bargate.conf</li>
-</ul>
-<p>Copy the sample config file to get started:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">cp</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span>
+<p>You will want to choose a version to run - to do this you can use git branches.
+The latest stable branch is &#8216;1.3.x-stable&#8217;. Switch to that branch to ensure that
+running &#8216;git pull&#8217; won&#8217;t update you to a major release:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>git checkout 1.3.x-stable
 </pre></div>
 </div>
-<p>Edit the file to suit your needs. See <a class="reference internal" href="config.html"><em>Main configuration options</em></a> for more information.</p>
-<p>You now need to deploy bargate inside a webserver. See <a class="reference internal" href="deploy.html"><em>Deployment</em></a> on how to do that.</p>
+</div>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Configure bargate. See <a class="reference internal" href="config.html"><em>Configuration</em></a> for more information.</li>
+<li>Deploy bargate with a web server. See <a class="reference internal" href="deploy.html"><em>Deployment</em></a> on how to do that.</li>
+</ul>
 </div>
 </div>
 
@@ -237,7 +237,7 @@ git clone https://github.com/divad/bargate.git
         <a href="deploy.html" class="btn btn-neutral float-right" title="Deployment" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Welcome to bargate’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Download" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
