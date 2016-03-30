@@ -1,3 +1,11 @@
+function bytesToString(bytes,decimals)
+{
+	if (bytes == 0) return '0 Bytes';
+	var sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+	var i = Math.floor(Math.log(bytes) / Math.log(1024));
+	return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
 /* browse mode (directory listings) javascript */
 $(document).ready(function()
 {
@@ -75,7 +83,7 @@ $(document).ready(function()
 		$('#file-click-mtype').text(parent.data('mtype'));
 		$('#file-click-icon').attr('class',parent.data('icon'));
 		$('#file-click-download').attr('href',parent.data('download'));
-		$('#file-click-props').attr('href',parent.data('props'));
+		$('#file-click-details').data('stat',parent.data('stat'));
 		
 		if (parent.attr('data-imgpreview'))
 		{
@@ -111,6 +119,28 @@ $(document).ready(function()
 		$('#delete_filename').html(parent.data('filename'));	
 		
 		$('#file-click').modal();
+	});
+
+	$("#file-click-details").click(function()
+	{
+		$('#file-details-loading').removeClass('hidden');
+		$('#file-details-data').addClass('hidden');
+		$('#file-details-filename').html('Please wait...');
+		$('#file-details').modal({show: true});
+
+		$.getJSON($(this).data('stat'), function(data)
+		{
+			$('#file-details-filename').html(data.filename);
+			$('#file-details-size').html(bytesToString(data.size));
+			$('#file-details-atime').html(data.atime);
+			$('#file-details-mtime').html(data.mtime);
+			$('#file-details-ftype').html(data.ftype);
+			$('#file-details-owner').html(data.owner);
+			$('#file-details-group').html(data.group);
+
+			$('#file-details-loading').addClass('hidden');
+			$('#file-details-data').removeClass('hidden');
+		});
 	});
 
 	/* right click menu for files */
@@ -151,7 +181,26 @@ $(document).ready(function()
 			}
 			else if (selectedMenu.data('action') == 'properties')
 			{
-				window.document.location = parentRow.data('props');			
+				$('#file-details-loading').removeClass('hidden');
+				$('#file-details-data').addClass('hidden');
+				$('#file-details-filename').html('Please wait...');
+				$('#file-details').modal({show: true});
+
+				$.getJSON(parentRow.data('stat'), function(data)
+				{
+					$('#file-details-filename').html(data.filename);
+					$('#file-details-size').html(bytesToString(data.size));
+					$('#file-details-atime').html(data.atime);
+					$('#file-details-mtime').html(data.mtime);
+					$('#file-details-ftype').html(data.ftype);
+					$('#file-details-owner').html(data.owner);
+					$('#file-details-group').html(data.group);
+
+					$('#file-details-loading').addClass('hidden');
+					$('#file-details-data').removeClass('hidden');
+				});
+
+				/*window.document.location = parentRow.data('props');*/
 			}
 
 			event.preventDefault();
@@ -196,5 +245,29 @@ $(document).ready(function()
 	
 	$('#add-bookmark').on('shown.bs.modal', function() {
 		$('#add-bookmark input[type="text"]').focus();
+	});
+
+	/* meh...don't set focus back on buttons when modals are closed */
+	$('#create-directory').on('shown.bs.modal', function(e)
+	{
+		$('#create-directory-button').one('focus', function(e){$(this).blur();});
+	});
+
+	$('#upload-file').on('shown.bs.modal', function(e)
+	{
+		$('#upload-button').one('focus', function(e){$(this).blur();});
+	});
+
+	/* File uploads - drag files over shows a modal */
+	$('body').dragster(
+	{
+		enter: function ()
+		{
+			$('#upload-drag-over').modal()
+		},
+		leave: function ()
+		{
+			$('#upload-drag-over').modal('hide');
+		}
 	});
 });

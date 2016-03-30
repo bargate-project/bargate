@@ -87,3 +87,8 @@ ul.changelog
 {
 	margin-top: 20px;
 }
+
+.form-horizontal-compact .form-group
+{
+	margin-bottom: 0px;
+}

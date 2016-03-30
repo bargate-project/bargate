@@ -26,6 +26,11 @@
 	text-decoration: none !important;
 }
 
+tbody
+{
+	text-decoration: none;
+}
+
 /* Browse mode (list) */
 td.dentry
 {

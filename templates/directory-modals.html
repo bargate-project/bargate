@@ -6,10 +6,10 @@
 				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" type="hidden" value="add"/>
 				<input name="bookmark_function" type="hidden" value="{{ func_name }}"/>
-				<input name="bookmark_path" type="hidden" value="{{ pwd }}"/>
+				<input name="bookmark_path" type="hidden" value="{{ path }}"/>
 								
 				<div class="modal-header">
-					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Add Bookmark</h4>
 				</div>
 				<div class="modal-body">
@@ -43,10 +43,10 @@
 			<form action="{{ url_home }}" method="POST" enctype="multipart/form-data" autocomplete="off">
 				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="upload" type="hidden"/>
-				<input name="path" type="hidden" value="{{ pwd }}"/>
+				<input name="path" type="hidden" value="{{ path }}"/>
 				
 				<div class="modal-header">
-					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Upload Files</h4>
 				</div>
 				<div class="modal-body">
@@ -82,10 +82,10 @@
 			<form action="{{ url_home }}" method="POST">
 				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
 				<input name="action" value="mkdir" type="hidden"/>
-				<input name="path" type="hidden" value="{{ pwd }}"/>
+				<input name="path" type="hidden" value="{{ path }}"/>
 					
 				<div class="modal-header">
-					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Create folder</h4>
 				</div>
 
@@ -113,7 +113,7 @@
 				<input name="path" type="hidden" value="" id="delete_path"/>
 					
 				<div class="modal-header">
-					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Delete file</h4>
 				</div>
 
@@ -142,7 +142,7 @@
 				<input name="path" type="hidden" value="" id="delete_dir_path"/>
 					
 				<div class="modal-header">
-					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Delete directory</h4>
 				</div>
 
@@ -170,13 +170,13 @@
 				<input id="rename_path" name="path" type="hidden" value=""/>
 					
 				<div class="modal-header">
-					<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Rename</h4>
 				</div>
 
 				<div class="modal-body">
 					<label>New file name:</label>
-      				<input class="form-control" id="newfilename" type="text" name="newfilename" value=""/>
+					<input class="form-control" id="newfilename" type="text" name="newfilename" value=""/>
 				</div>
 				
 				<div class="modal-footer">
@@ -198,7 +198,7 @@
   				<input id="copy_path" name="path" type="hidden" value=""/>
 					
 				<div class="modal-header">
-				<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Copy</h4>
 				</div>
 
@@ -221,7 +221,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h4><button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button></h4>
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-click-filename">Unknown</h4>
 			</div>
 
@@ -245,11 +245,72 @@
 				<div class="btn-group btn-group-justified">
 					<a href="#" id="file-click-download" class="btn btn-default"><i class="fa fa-fw fa-2x fa-download"></i><br/>Download</a>
 					<a href="#" id="file-click-view" class="btn btn-default hidden hidden-xs"><i class="fa fa-fw fa-2x fa-eye"></i><br/>View</a>
-					<a href="#" id="file-click-props" class="btn btn-default"><i class="fa fa-fw fa-2x fa-info-circle"></i><br/>Details</a>
+					<a href="#" data-stat="" id="file-click-details" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-2x fa-info-circle"></i><br/>Details</a>
 
 					<a href="#copy-file" data-dismiss="modal"  data-toggle="modal" id="file-click-copy" class="btn btn-default"><i class="fa fa-fw fa-2x fa-clipboard"></i><br/>Copy</a>
 					<a href="#rename-file" data-dismiss="modal"  data-toggle="modal" id="file-click-rename" class="btn btn-default"><i class="fa fa-fw fa-2x fa-pencil-square-o"></i><br/>Rename</a>
 					<a href="#delete-confirm" data-dismiss="modal" data-toggle="modal" id="file-click-delete" class="btn btn-default"><i class="fa fa-fw fa-2x fa-trash"></i><br/>Delete</a>
+				</div>
+			</div>
+			<div class="modal-footer">	
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>	
+			</div>
+		</div>
+	</div>
+</div>
+
+{#- modal for file details (properties?) #}
+<div class="modal" id="file-details" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-details-filename">Unknown</h4>
+			</div>
+
+			<div class="modal-body">
+				<div id="file-details-loading" class="text-center">
+					<i class="fa fa-spinner fa-spin fa-5x text-muted"></i>
+				</div>
+				<div id="file-details-data" class="hidden">
+					<form class="form-horizontal form-horizontal-compact">
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Size:</label>
+							<div class="col-sm-9">
+								<p class="form-control-static" id="file-details-size"></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Type:</label>
+							<div class="col-sm-9">
+								<p class="form-control-static" id="file-details-ftype"></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Last accessed:</label>
+							<div class="col-sm-9">
+								<p class="form-control-static" id="file-details-atime"></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Last modified:</label>
+							<div class="col-sm-9">
+								<p class="form-control-static" id="file-details-mtime"></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Owner:</label>
+							<div class="col-sm-9">
+								<p class="form-control-static" id="file-details-owner"></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Group:</label>
+							<div class="col-sm-9">
+								<p class="form-control-static" id="file-details-group"></p>
+							</div>
+						</div>
+					</form>					
 				</div>
 			</div>
 			<div class="modal-footer">	
@@ -275,7 +336,7 @@ $(function ()
 	{
 		url: '{{url_home}}',
 		dataType: 'json',
-		formData: [{name: '_csrfp_token', value: '{{ csrfp_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{pwd|tojson|safe}}}],
+		formData: [{name: '_csrfp_token', value: '{{ csrfp_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{path|tojson|safe}}}],
 		start: function (e)
 		{
 			$('#upload-drag-over').modal('hide');
@@ -350,27 +411,6 @@ $(function ()
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
 });
 
-$('body').dragster(
-{
-	enter: function ()
-	{
-		$('#upload-drag-over').modal()
-	},
-	leave: function ()
-	{
-		$('#upload-drag-over').modal('hide');
-	}
-});
-
-$('#create-directory').on('shown.bs.modal', function(e)
-{
-	$('#create-directory-button').one('focus', function(e){$(this).blur();});
-});
-
-$('#upload-file').on('shown.bs.modal', function(e)
-{
-	$('#upload-button').one('focus', function(e){$(this).blur();});
-});
 </script>
 
 
