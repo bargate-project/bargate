@@ -27,14 +27,9 @@ $(document).ready(function()
 						top: getMenuPosition(e.clientY, 'height', 'scrollTop')
 					}).off('click').on('click', 'a', function (e)
 					{
-						console.log("Hiding menu...");
 						$menu.hide();
-
-						console.log(e.target);
-
 						var $invokedOn = $menu.data("invokedOn");
 						var $selectedMenu = $(e.target);
-
 						settings.menuSelected.call(this, $invokedOn, $selectedMenu);
 					});
 
@@ -152,54 +147,39 @@ $(document).ready(function()
 		menuSelector: "#fileContextMenu",
 		menuSelected: function (invokedOn, selectedMenu)
 		{
-			console.log("contextMenu item click");
-
 			var parentRow = invokedOn.closest(".entry-click");
+			var $action = selectedMenu.closest("a").data("action");
 
-			console.log("contextMenu item click 2");
-
-			if (selectedMenu.data('action') == 'view')
+			if ($action == 'view')
 			{
-				console.log("contextMenu item click VIEW");
-
 				window.document.location = parentRow.data('view');
 			}
-			else if (selectedMenu.data('action') == 'download')
+			else if ($action == 'download')
 			{
-				console.log("contextMenu item click DOWNLOAD");
-
 				window.document.location = parentRow.data('download');
 			}
-			else if (selectedMenu.data('action') == 'copy')
+			else if ($action == 'copy')
 			{
-				console.log("contextMenu item click COPY");
-
 				$('#copy_path').val(parentRow.data('path'));
 				$('#copyfilename').attr('value',"Copy of " + parentRow.data('filename'));
 				$('#copy-file').modal({show: true});
 				$('#copyfilename').focus();
 			}
-			else if (selectedMenu.data('action') == 'rename')
+			else if ($action == 'rename')
 			{
-				console.log("contextMenu item click RENAME");
-
 				$('#rename_path').val(parentRow.data('path'));
 				$('#newfilename').attr('value',parentRow.data('filename'));
 				$('#rename-file').modal({show: true});
 				$('#newfilename').focus();
 			}
-			else if (selectedMenu.data('action') == 'delete')
+			else if ($action == 'delete')
 			{
-				console.log("contextMenu item click DELETE");
-
 				$('#delete_path').val(parentRow.data('path'));
 				$('#delete_filename').html(parentRow.data('filename'));		
 				$('#delete-confirm').modal({show: true});
 			}
-			else if (selectedMenu.data('action') == 'properties')
+			else if ($action == 'properties')
 			{
-				console.log("contextMenu item click PROPERTIES");
-
 				$('#file-details-loading').removeClass('hidden');
 				$('#file-details-data').addClass('hidden');
 				$('#file-details-filename').html('Please wait...');
@@ -223,7 +203,7 @@ $(document).ready(function()
 			}
 			else
 			{
-				console.log("contextMenu item click UNMATCHED " + selectedMenu.data('action'));
+				console.log("WARNING: contextMenu item click UNMATCHED. data value was: " + selectedMenu.data('action'));
 			}
 
 			event.preventDefault();
@@ -238,19 +218,20 @@ $(document).ready(function()
 		menuSelected: function (invokedOn, selectedMenu)
 		{
 			var parentRow = invokedOn.closest(".entry-click");
+			var $action = selectedMenu.closest("a").data("action");
 
-			if (selectedMenu.data('action') == 'open')
+			if ($action == 'open')
 			{
 				window.document.location = parentRow.data('url');
 			}
-			else if (selectedMenu.data('action') == 'rename')
+			else if ($action == 'rename')
 			{
 				$('#rename_path').val(parentRow.data('path'));
 				$('#newfilename').attr('value',parentRow.data('filename'));
 				$('#rename-file').modal({show: true});
 				$('#newfilename').focus();
 			}
-			else if (selectedMenu.data('action') == 'delete')
+			else if ($action == 'delete')
 			{
 				$('#delete_dir_path').val(parentRow.data('path'));
 				$('#delete-dir-confirm').modal({backdrop: 'static', show: true});
