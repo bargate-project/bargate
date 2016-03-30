@@ -123,21 +123,31 @@ $(document).ready(function()
 	{
 		$('#file-details-loading').removeClass('hidden');
 		$('#file-details-data').addClass('hidden');
+		$('#file-details-error').addClass('hidden');
 		$('#file-details-filename').html('Please wait...');
 		$('#file-details').modal({show: true});
 
 		$.getJSON($(this).data('stat'), function(data)
 		{
-			$('#file-details-filename').html(data.filename);
-			$('#file-details-size').html(bytesToString(data.size));
-			$('#file-details-atime').html(data.atime);
-			$('#file-details-mtime').html(data.mtime);
-			$('#file-details-ftype').html(data.ftype);
-			$('#file-details-owner').html(data.owner);
-			$('#file-details-group').html(data.group);
+			if (data.error == 1) {
+				$('#file-details-reason').html(data.reason);
+				$('#file-details-filename').html('Uh oh');
+				$('#file-details-loading').addClass('hidden');
+				$('#file-details-error').removeClass('hidden');
+			}
+			else
+			{
+				$('#file-details-filename').html(data.filename);
+				$('#file-details-size').html(bytesToString(data.size));
+				$('#file-details-atime').html(data.atime);
+				$('#file-details-mtime').html(data.mtime);
+				$('#file-details-ftype').html(data.ftype);
+				$('#file-details-owner').html(data.owner);
+				$('#file-details-group').html(data.group);
 
-			$('#file-details-loading').addClass('hidden');
-			$('#file-details-data').removeClass('hidden');
+				$('#file-details-loading').addClass('hidden');
+				$('#file-details-data').removeClass('hidden');
+			}
 		});
 	});
 

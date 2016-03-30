@@ -187,6 +187,7 @@ def statToType(fstat):
 ################################################################################
 
 def connection(srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
+
 	## ensure srv_path (the server URI and share) ends with a trailing slash
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
@@ -226,9 +227,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		## Build the URI
 		uri        = srv_path + path
 		uri_as_str = srv_path_as_str + path_as_str
-
-		print uri
-		print uri_as_str
 
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -274,7 +272,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.invalid_item_download(parent_redirect)
 
 			try:
-				## Assuming we got here without an exception, open the file
 				file_object = libsmbclient.open(uri_as_str)
 
 				## Default to sending files as an 'attachment' ("Content-Disposition: attachment")
@@ -283,7 +280,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				## Guess the mime type  based on file extension
 				(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entryname)
 
-				## If the user requested to 'view' (download as an attachment) make sure we allow it for that filetype
+				## If the user requested to 'view' (don't download as an attachment) make sure we allow it for that filetype
 				if action == 'view':
 					if bargate.lib.mime.view_in_browser(mtype):
 						attach = False
@@ -331,7 +328,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri_as_str,parent_redirect)
 			
-			## Read the file into memory first because PIL/Pillow tries readline()
+			## Read the file into memory first (hence a file size limit) because PIL/Pillow tries readline()
 			## on pysmbc's File like objects which it doesn't support
 			try:
 				sfile = StringIO.StringIO(file_object.read())
@@ -352,12 +349,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			
 		elif action == 'stat':
 
-			## try to stat the file
 			try:
 				fstat = libsmbclient.stat(uri_as_str)
 			except Exception as ex:
-				abort(500)
-				## TODO return error instead?
+				return jsonify({'error': 1, 'reason': 'An error occured: ' + str(type(ex)) + ": " + str(ex)})
 
 			data = {}	
 			data['filename']              = entryname
@@ -376,6 +371,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			else:
 				data['owner'] = "N/A"
 				data['group'] = "N/A"
+
+			data['error'] = 0
 
 			## Return JSON
 			return jsonify(data)
