@@ -191,7 +191,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
 
-	## srv_path is unicode - we need a non-unicode copy as well for pysmbc calls
+	## srv_path is unicode - we need a non-unicode copy
+	## ...but it can't be urllib quoted, as that breaks the smb:// part off the URL.
+	## ...which is a problem TODO: urllib quote after removing smb:// or something?
 	srv_path_as_str = srv_path.encode('utf-8')
 	
 	## default the 'active' variable to the function name
@@ -210,11 +212,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 	############################################################################
 
 	if request.method == 'GET':
-		## pysmbc needs urllib quoted strings, but urllib can't handle unicode
-		## so convert to str via 'encode utf-8' and then urllib quote
-		## it seems pysmbc can't handle unicode strings either anyway
-		path_as_str = path.encode('utf-8')
-		path_quoted = urllib.quote(path_as_str)
+		## pysmbc needs urllib quoted str objects (not unicode objects)
+		path_as_str = urllib.quote(path.encode('utf-8'))
 				
 		## Check the path is valid
 		try:
@@ -223,10 +222,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			return bargate.lib.errors.invalid_path()
 
 		## Build the URI
-		# uri is not str, its unicode, so uri must not be given to pysmbc/urllib
-		uri = srv_path + path
-		# uri_as_str CAN be given to pysmbc as its a byte string or 'str' in python land
-		uri_as_str = srv_path.encode('utf-8') + path_quoted
+		uri        = srv_path + path
+		uri_as_str = srv_path_as_str + path_as_str
 		
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -239,6 +236,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			if len(parent_directory_path) > 0:
 				parent_directory = True
 
+				parent_directory_path_as_str = urllib.quote(parent_directory_path.encode('utf-8'))
+
 				## update the parent redirect with the correct path
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
 			else:
@@ -247,6 +246,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		else:
 			parent_directory = False
 			parent_directory_path = ""
+			parent_directory_path_as_str = ""
 			entryname = ""
 
 		## parent_directory is either True/False if there is one
@@ -430,9 +430,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					## create str object
 					entry['name_as_str'] = entry['name'].encode("utf-8")
 
-				## Create a REGULAR str urllib quoted string for use to send back to libsmbclient calls (only in python)
-				## path is UNICODE. urllib needs string. Use path_as_str and name_as_str.
-				entry['uri_as_str'] = srv_path + urllib.quote(path_as_str) + '/' + urllib.quote(entry['name_as_str'])
+				entry['uri_as_str'] = srv_path_as_str + path_as_str + '/' + urllib.quote(entry['name_as_str'])
 
 				## Add the URI (the full path) as an element to the entry dict
 				if len(path) == 0:
@@ -600,15 +598,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		except ValueError as e:
 			return bargate.lib.errors.invalid_path()
 
-		## pysmbc needs urllib quoted, but urllib can't handle unicode
-		## so convert to str via encode utf-8 and then urllib quote
-		## it seems pysmbc can't handle unicode strings either anyway
-		path_as_str = path.encode('utf-8')
-		path_quoted = urllib.quote(path_as_str)
+		## pysmbc needs urllib quoted str objects, not unicode objects
+		path_as_str = urllib.quote(path.encode('utf-8'))
 
 		## Build the URI
 		uri        = srv_path + path
-		uri_as_str = srv_path.encode('utf-8') + path_quoted
+		uri_as_str = srv_path_as_str + path_as_str
 
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -621,7 +616,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			## if seperator was not found then the first two strings returned will be empty strings
 			if len(parent_directory_path) > 0:
 				parent_directory = True
-				parent_directory_path_as_str = parent_directory_path.encode('utf-8')
+				parent_directory_path_as_str = urllib.quote(parent_directory_path.encode('utf-8'))
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
 			else:
 				parent_directory = False
@@ -652,9 +647,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					
 				## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
 				filename = bargate.lib.core.secure_filename(ufile.filename)
-				filename_as_str = filename.encode('utf-8')
-				filename_as_str = urllib.quote(filename)
-				upload_uri_as_str = uri_as_str + '/' + filename_as_str
+				upload_uri_as_str = uri_as_str + '/' + urllib.quote(filename.encode('utf-8'))
 
 				## Check the new file name is valid
 				try:
@@ -724,8 +717,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.invalid_name()
 
 			## build new URI
-			new_filename_as_str = new_filename.encode('utf-8')
-			new_filename_as_str = urllib.quote(new_filename_as_str)
+			new_filename_as_str = urllib.quote(new_filename.encode('utf-8'))
 			if parent_directory:
 				new_uri_as_str = srv_path_as_str + parent_directory_path_as_str + '/' + new_filename_as_str
 			else:
@@ -840,11 +832,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			except ValueError as e:
 				return bargate.lib.errors.invalid_name(parent_redirect)
 
-			## Take 'unicode' object and convert it into a byte string ('string' object)
-			## Then quote it ready for SMB usage
-			mkdirname = request.form['directory_name'].encode('utf-8')
-			mkdirname = urllib.quote(mkdirname)
-			mkdir_uri = uri_as_str + '/' + mkdirname
+			mkdir_uri = uri_as_str + '/' + urllib.quote(request.form['directory_name'].encode('utf-8'))
 
 			try:
 				libsmbclient.mkdir(mkdir_uri,0755)
