@@ -88,7 +88,13 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Templates</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Templates</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#set-up-local-templates">Set up local templates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#templates-you-should-edit">Templates you should edit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#templates-you-can-edit">Templates you can edit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#templates-you-should-not-edit">Templates you should not edit</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
 </ul>
 
@@ -134,6 +140,167 @@
             
   <div class="section" id="templates">
 <h1>Templates<a class="headerlink" href="#templates" title="Permalink to this headline">¶</a></h1>
+<p>As a Flask based web application, bargate uses the Jinja2 template system to
+generate the HTML output that your users see. In order to let you customise this
+output Bargate can be configured to specify an alternative &#8216;local templates&#8217;
+directory. If files are placed in this directory then they will be used in
+preference to those built into bargate.</p>
+<p>In this way you can selectivley override parts of Bargate&#8217;s output and customise
+what the interface looks like, what menu items exist, etc. Any bargate template
+can be overridden but it is recommended that you only override templates designed
+for you to do so.</p>
+<div class="section" id="set-up-local-templates">
+<h2>Set up local templates<a class="headerlink" href="#set-up-local-templates" title="Permalink to this headline">¶</a></h2>
+<p>To get started you need to set the <a class="reference internal" href="config_options.html#config-local-template-dir"><span>LOCAL_TEMPLATE_DIR</span></a> option in
+bargate.conf to point at a directory where you will place your local templates.
+You then need to restart bargate so it will notice the new config option, on startup
+it should output something like this to the log file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span>2016-03-28 19:25:47,119 INFO: site-specific templates will be loaded from: /opt/bargate/local_templates/
+</pre></div>
+</div>
+<p>You will now need to create files in the directory matching names that Bargate looks
+for. Please see the section below for the names of the files you can override
+and what each file is for.</p>
+<p>All template names end in &#8216;.html&#8217;, for brevity this is omitted below.</p>
+</div>
+<div class="section" id="templates-you-should-edit">
+<h2>Templates you should edit<a class="headerlink" href="#templates-you-should-edit" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dropdown-menus</td>
+<td>drop-down menus intended for links to file servers/shares</td>
+</tr>
+<tr class="row-odd"><td>help-menu</td>
+<td>menu intended for items relating to user help/about</td>
+</tr>
+<tr class="row-even"><td>login-body</td>
+<td>the top of the &lt;body&gt; element of the login page</td>
+</tr>
+<tr class="row-odd"><td>login-container</td>
+<td>the login page header area (top of the login box)</td>
+</tr>
+<tr class="row-even"><td>login-footer</td>
+<td>the login page footer area (bottom of the login box)</td>
+</tr>
+<tr class="row-odd"><td>login-head</td>
+<td>the &lt;head&gt; part of the login page</td>
+</tr>
+<tr class="row-even"><td>other</td>
+<td>a menu of smb file servers to connect to</td>
+</tr>
+<tr class="row-odd"><td>user-menu</td>
+<td>part of the &#8216;bargate menu&#8217; - between settings and logout</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="templates-you-can-edit">
+<h2>Templates you can edit<a class="headerlink" href="#templates-you-can-edit" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>custom</td>
+<td>connect to server&#8217; form</td>
+</tr>
+<tr class="row-odd"><td>error</td>
+<td>the generic error page</td>
+</tr>
+<tr class="row-even"><td>header-links</td>
+<td>CSS file imports</td>
+</tr>
+<tr class="row-odd"><td>javascript</td>
+<td>javascript file imports</td>
+</tr>
+<tr class="row-even"><td>login</td>
+<td>login page/form</td>
+</tr>
+<tr class="row-odd"><td>nojs</td>
+<td>page shown when the user has javascript disabled</td>
+</tr>
+<tr class="row-even"><td>totp_verify</td>
+<td>page shown when the user must enter their two factor token</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="templates-you-should-not-edit">
+<h2>Templates you should not edit<a class="headerlink" href="#templates-you-should-not-edit" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>about</td>
+<td>bargate about page</td>
+</tr>
+<tr class="row-odd"><td>bookmarks</td>
+<td>bookmark manager page</td>
+</tr>
+<tr class="row-even"><td>bookmarks-menu</td>
+<td>drop down menu listing user bookmarks</td>
+</tr>
+<tr class="row-odd"><td>breadcrumbs</td>
+<td>breadcrumb generation code</td>
+</tr>
+<tr class="row-even"><td>changelog</td>
+<td>bargate changelog</td>
+</tr>
+<tr class="row-odd"><td>directory-grid</td>
+<td>the grid-layout directory view</td>
+</tr>
+<tr class="row-even"><td>directory-list</td>
+<td>the list-layout directory view</td>
+</tr>
+<tr class="row-odd"><td>directory-menus</td>
+<td>right click menus for directory view</td>
+</tr>
+<tr class="row-even"><td>directory-modals</td>
+<td>pop-up modals for directory view</td>
+</tr>
+<tr class="row-odd"><td>foad</td>
+<td>page shown to users with an out-of-date web browser</td>
+</tr>
+<tr class="row-even"><td>layout</td>
+<td>master template for all pages</td>
+</tr>
+<tr class="row-odd"><td>online</td>
+<td>list of all online users</td>
+</tr>
+<tr class="row-even"><td>settings</td>
+<td>user settings page</td>
+</tr>
+<tr class="row-odd"><td>totp_disable</td>
+<td>two-factor authentication disable form</td>
+</tr>
+<tr class="row-even"><td>totp_enable</td>
+<td>two-factor authentication enable form</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 
 

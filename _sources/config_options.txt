@@ -162,6 +162,8 @@ SHARES\_DEFAULT
 
 The default SMB share to connect to when a user logs in.
 
+.. _CONFIG_LOCAL_TEMPLATE_DIR:
+
 LOCAL\_TEMPLATE\_DIR
 ~~~~~~~~~~~~~~~~~~~~
 
