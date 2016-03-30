@@ -190,6 +190,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 	## ensure srv_path (the server URI and share) ends with a trailing slash
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
+
+	## srv_path is unicode - we need a non-unicode copy as well for pysmbc calls
+	srv_path_as_str = srv_path.encode('utf-8')
 	
 	## default the 'active' variable to the function name
 	if active == None:
@@ -208,9 +211,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 	if request.method == 'GET':
 		## pysmbc needs urllib quoted strings, but urllib can't handle unicode
-		## so convert to str via 'encode utf8' and then urllib quote
+		## so convert to str via 'encode utf-8' and then urllib quote
 		## it seems pysmbc can't handle unicode strings either anyway
-		path_as_str = path.encode('utf8')
+		path_as_str = path.encode('utf-8')
 		path_quoted = urllib.quote(path_as_str)
 				
 		## Check the path is valid
@@ -223,7 +226,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		# uri is not str, its unicode, so uri must not be given to pysmbc/urllib
 		uri = srv_path + path
 		# uri_as_str CAN be given to pysmbc as its a byte string or 'str' in python land
-		uri_as_str = srv_path.encode('utf8') + path_quoted
+		uri_as_str = srv_path.encode('utf-8') + path_quoted
 		
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -237,13 +240,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				parent_directory = True
 
 				## update the parent redirect with the correct path
-				parent_redirect = redirect(url_for(func_name,path=before))
+				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
 			else:
 				parent_directory = False
 
 		else:
 			parent_directory = False
 			parent_directory_path = ""
+			entryname = ""
 
 		## parent_directory is either True/False if there is one
 		## entryname will either be the part after the last / or the full path
@@ -355,7 +359,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			data['size']                  = fstat[6]
 			data['atime']                 = bargate.lib.core.ut_to_string(fstat[7])
 			data['mtime']                 = bargate.lib.core.ut_to_string(fstat[8])
-			(data['ftype'],data['mtype']) = bargate.lib.mime.filename_to_mimetype(data['entryname'])
+			(data['ftype'],data['mtype']) = bargate.lib.mime.filename_to_mimetype(data['filename'])
 			
 			if app.config['WBINFO_LOOKUP']:
 				try:
@@ -597,14 +601,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			return bargate.lib.errors.invalid_path()
 
 		## pysmbc needs urllib quoted, but urllib can't handle unicode
-		## so convert to str via encode utf8 and then urllib quote
+		## so convert to str via encode utf-8 and then urllib quote
 		## it seems pysmbc can't handle unicode strings either anyway
-		path_as_str = path.encode('utf8')
+		path_as_str = path.encode('utf-8')
 		path_quoted = urllib.quote(path_as_str)
 
 		## Build the URI
 		uri        = srv_path + path
-		uri_as_str = srv_path.encode('utf8') + path_quoted
+		uri_as_str = srv_path.encode('utf-8') + path_quoted
 
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using func name "' + func_name + '" and action "' + action + '" using POST and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
@@ -617,7 +621,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			## if seperator was not found then the first two strings returned will be empty strings
 			if len(parent_directory_path) > 0:
 				parent_directory = True
-				parent_redirect = redirect(url_for(func_name,path=before))
+				parent_directory_path_as_str = parent_directory_path.encode('utf-8')
+				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
 			else:
 				parent_directory = False
 
@@ -647,9 +652,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					
 				## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
 				filename = bargate.lib.core.secure_filename(ufile.filename)
-				filename = filename.encode('utf8')
-				filename = urllib.quote(filename)
-				upload_uri = uri_as_str + '/' + filename
+				filename_as_str = filename.encode('utf-8')
+				filename_as_str = urllib.quote(filename)
+				upload_uri_as_str = uri_as_str + '/' + filename_as_str
 
 				## Check the new file name is valid
 				try:
@@ -660,7 +665,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					
 				## Check to see if the file exists
 				try:
-					fstat = libsmbclient.stat(upload_uri)
+					fstat = libsmbclient.stat(upload_uri_as_str)
 				except smbc.NoEntryError:
 					## It doesn't exist so lets continue to upload
 					pass
@@ -677,14 +682,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 							continue
 
 						## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
-						itemType = bargate.lib.smb.getEntryType(libsmbclient,upload_uri)
+						itemType = bargate.lib.smb.getEntryType(libsmbclient,upload_uri_as_str)
 						if itemType == bargate.lib.smb.SMB_DIR:
 							ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
 							continue
 			
 				## Actual upload
 				try:
-					wfile = libsmbclient.open(upload_uri,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+					wfile = libsmbclient.open(upload_uri_as_str,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 
 					while True:
 						buff = ufile.read(8192)
@@ -719,12 +724,15 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.invalid_name()
 
 			## build new URI
-			new_filename_as_str = new_filename.encode('utf8')
+			new_filename_as_str = new_filename.encode('utf-8')
 			new_filename_as_str = urllib.quote(new_filename_as_str)
-			new_uri_as_str      = srv_path + parent_path + '/' + new_filename_as_str
+			if parent_directory:
+				new_uri_as_str = srv_path_as_str + parent_directory_path_as_str + '/' + new_filename_as_str
+			else:
+				new_uri_as_str = srv_path_as_str + new_filename_as_str
 
 			## the place to redirect to on success or failure
-			redirect_path = redirect(url_for(func_name,path=parent_path))
+			redirect_path = redirect(url_for(func_name,path=parent_directory_path))
 
 			## get the item type of the existing 'filename'
 			itemType = bargate.lib.smb.getEntryType(libsmbclient,uri_as_str)
@@ -777,7 +785,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.invalid_name(parent_redirect)
 			
 			## encode the new filename and quote the new filename
-			dest = before_path + '/' + urllib.quote(dest_filename.encode('utf8'))
+			if parent_directory:
+				dest = srv_path_as_str + parent_directory_path_as_str + '/' + urllib.quote(dest_filename.encode('utf-8'))
+			else:
+				dest = srv_path_as_str + urllib.quote(dest_filename.encode('utf-8'))
 
 			## Make sure the dest file doesn't exist
 			try:
@@ -831,9 +842,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			## Take 'unicode' object and convert it into a byte string ('string' object)
 			## Then quote it ready for SMB usage
-			mkdirname = request.form['directory_name'].encode('utf8')
+			mkdirname = request.form['directory_name'].encode('utf-8')
 			mkdirname = urllib.quote(mkdirname)
-			mkdir_uri = uri + '/' + mkdirname
+			mkdir_uri = uri_as_str + '/' + mkdirname
 
 			try:
 				libsmbclient.mkdir(mkdir_uri,0755)
@@ -848,7 +859,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 ################################################################################
 
 		elif action == 'unlink':
-			uri = uri.encode('utf8')
+			uri = uri.encode('utf-8')
 
 			## get the item type of the entry we've been asked to delete
 			itemType = bargate.lib.smb.getEntryType(libsmbclient,uri_as_str)

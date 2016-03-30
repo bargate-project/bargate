@@ -93,7 +93,7 @@ def smbc_handler(exception_object,uri="Unknown",redirect_to=None):
 
 	# ALL OTHER EXCEPTIONS
 	else:
-		return error500(exception_object)
+		return bargate.views.errors.error500(exception_object)
 
 ## pysmbc errors
 
