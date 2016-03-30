@@ -191,11 +191,13 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 	if not srv_path.endswith('/'):
 		srv_path = srv_path + '/'
 
-	## srv_path is unicode - we need a non-unicode copy
-	## ...but it can't be urllib quoted, as that breaks the smb:// part off the URL.
-	## ...which is a problem TODO: urllib quote after removing smb:// or something?
+	## srv_path should always start with smb://, we don't support anything else.
+	if not srv_path.startswith("smb://"):
+		abort(500)
+
+	## We need a non-unicode srv_path for pysmbc calls
 	srv_path_as_str = srv_path.encode('utf-8')
-	
+
 	## default the 'active' variable to the function name
 	if active == None:
 		active = func_name
@@ -224,7 +226,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		## Build the URI
 		uri        = srv_path + path
 		uri_as_str = srv_path_as_str + path_as_str
-		
+
+		print uri
+		print uri_as_str
+
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using GET and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
@@ -418,7 +423,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				## and not unicode, so we have to convert to unicode via .decode. However, from
 				## 1.0.15.1 onwards pysmbc returns unicode (i.e. its probably doing a .decode for us)
 				## so we need to check what we get back and act correctly based on that.
-				## SADLY! urllib2 needs str objects, not unicode objects, so we also have to maintain
+				## SADLY! urllib needs str objects, not unicode objects, so we also have to maintain
 				## a copy of a str object *and* a unicode object.
 
 				if isinstance(entry['name'], str):

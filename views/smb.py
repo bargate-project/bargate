@@ -65,11 +65,12 @@ def custom_server():
 
 ################################################################################
 
-@app.route('/c', methods=['GET','POST'], defaults={'path': ''})
-@app.route('/c/<path:path>/', methods=['GET','POST'])
+@app.route('/c', methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
+@app.route('/c/browse/<path:path>/', methods=['GET','POST'], defaults={'action': 'browse'})
+@app.route('/c/<action>/<path:path>/', methods=['GET','POST'])
 @app.login_required
 @app.allow_disable
-def custom(path):
+def custom(path,action="browse"):
 
 	if request.method == 'POST':
 		try:
@@ -92,4 +93,4 @@ def custom(path):
 	else:
 		return redirect(url_for('custom_server'))
 
-	return bargate.lib.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],path)
+	return bargate.lib.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],action,path)
