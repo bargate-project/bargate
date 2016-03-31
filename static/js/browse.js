@@ -92,7 +92,7 @@ $(document).ready(function()
 		else
 		{
 			$('#file-click-preview').attr('src','');
-			$('#file-click-view').addClass('hidden');
+			$('#file-click-preview').addClass('hidden');
 			$('#file-click-icon').removeClass('hidden');
 		}
 		
