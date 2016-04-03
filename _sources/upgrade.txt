@@ -12,5 +12,5 @@ of bargate. To upgrade to a later major release you will need to switch branches
 
 At time of writing the branches available are:
 
-- 1.4
-- 1.3
+- v1.4
+- v1.3
