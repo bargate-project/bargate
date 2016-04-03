@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration options &mdash; bargate 1.3.4 documentation</title>
+  <title>Configuration options &mdash; bargate 1.4.0 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="bargate 1.3.4 documentation" href="index.html"/>
+    <link rel="top" title="bargate 1.4.0 documentation" href="index.html"/>
         <link rel="next" title="Shares configuration" href="shares.html"/>
         <link rel="prev" title="Configuration" href="config.html"/> 
 
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                1.3
+                1.4
               </div>
             
           
@@ -411,15 +411,22 @@ templates should be loaded from before loading them from inside bargate.</p>
 </div>
 <div class="section" id="login-image-random-max">
 <h3>LOGIN_IMAGE_RANDOM_MAX<a class="headerlink" href="#login-image-random-max" title="Permalink to this headline">¶</a></h3>
+<p><strong>This config option is deprecated and REMOVED in 1.4</strong></p>
 <ul class="simple">
 <li><strong>Required</strong>: No</li>
 <li><strong>Expected value</strong>: Integer</li>
 <li><strong>Type</strong>: Bargate specific config option</li>
 <li><strong>Default</strong>: 17</li>
+<li><strong>Removed</strong>: 1.4</li>
 </ul>
 <p>The default login page (which you don&#8217;t have to use) sets a background
 image from a pool of images based on a random number. This option sets
 the upper bounds on that random number.</p>
+<p>This option has been removed in version 1.4 and is replaced by Jinja template
+filters, e.g:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{{</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">17</span><span class="p">)</span><span class="o">|</span><span class="n">random</span><span class="p">}}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="image-preview">
 <h3>IMAGE_PREVIEW<a class="headerlink" href="#image-preview" title="Permalink to this headline">¶</a></h3>
@@ -635,6 +642,7 @@ but the SMB server is.</p>
 </div>
 <div class="section" id="two-factor-authentication">
 <h2>Two factor authentication<a class="headerlink" href="#two-factor-authentication" title="Permalink to this headline">¶</a></h2>
+<p><strong>Please note:</strong> Two factor authentication support is considered EXPERIMENTAL.</p>
 <div class="section" id="totp-enabled">
 <h3>TOTP_ENABLED<a class="headerlink" href="#totp-enabled" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -929,7 +937,7 @@ trace.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.3.4',
+            VERSION:'1.4.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

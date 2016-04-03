@@ -76,10 +76,10 @@ Choose a directory to install bargate to. This guide assumes /opt/bargate::
   git clone https://github.com/divad/bargate.git
 
 You will want to choose a version to run - to do this you can use git branches.
-The latest stable branch is '1.3.x-stable'. Switch to that branch to ensure that
+The latest stable branch is 'v1.4'. Switch to that branch to ensure that
 running 'git pull' won't update you to a major release::
 
-  git checkout 1.3.x-stable
+  git checkout v1.4
 
 Next steps
 ---------------

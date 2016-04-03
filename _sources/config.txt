@@ -21,7 +21,8 @@ then the other config file locations are not checked.
 Once you have installed bargate you will need to create a configuration file. 
 Copy the sample config file to get started::
 
-  cp /opt/bargate/etc/bargate.conf /etc/bargate.conf
+  mkdir /etc/bargate
+  cp /opt/bargate/doc/bargate.conf.example /etc/bargate/bargate.conf
 
 The above command assumes you installed bargate into /opt/bargate
 
@@ -48,3 +49,8 @@ usually /etc/bargate/shares.conf (this path is configured via the
 See :doc:`shares` to understand the syntax of this configuration file.
 
 Once configured you'll need to override the dropdown-menus.html template as well.
+
+There is a sample config file included with Bargate. Assuming bargate is installed
+in /opt/bargate you can use this command to get started:
+
+  cp /opt/bargate/doc/shares.conf.example /etc/bargate/shares.conf

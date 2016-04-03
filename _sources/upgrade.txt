@@ -10,7 +10,7 @@ of bargate. To upgrade to a later major release you will need to switch branches
 
   git checkout <branch-name>
 
-At time of writing the only branches available are:
+At time of writing the branches available are:
 
-- 1.3.x-stable
-- 1.4-dev
+- 1.4
+- 1.3
