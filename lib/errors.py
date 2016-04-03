@@ -178,4 +178,4 @@ def invalid_path(redirect_to=None):
 
 def invalid_name(redirect_to=None):
 	"""Returns a template or redirect to return from the view for when a user enters an invalid file name"""
-	return output_error("Invalid file or directory name","You file or directory name you entered is invalid",redirect_to)
+	return output_error("Invalid file or directory name","The file or directory name you entered is invalid",redirect_to)

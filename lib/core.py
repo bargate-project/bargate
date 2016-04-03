@@ -91,12 +91,11 @@ def secure_filename(filename):
 			filename = filename.replace(sep, ' ')
 
 	regex = re.compile(r'[^ A-Za-z0-9_.-]')
-	#filename = str(regex.sub('', '_'.join(filename.split() ) ))     .strip('._')
 	filename = str(regex.sub('_',filename))
 
-    # on nt a couple of special files are present in each folder.  We
-    # have to ensure that the target file is not such a filename.  In
-    # this case we prepend an underline
+	# on windows a couple of special files are present in each folder.  We
+	# have to ensure that the target file is not such a filename.  In
+	# this case we prepend an underline
 	windows_device_files = ('CON', 'AUX', 'COM1', 'COM2', 'COM3', 'COM4', 'LPT1', 'LPT2', 'LPT3', 'PRN', 'NUL')
 
 	if os.name == 'nt' and filename and filename.split('.')[0].upper() in windows_device_files:

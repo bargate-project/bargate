@@ -18,7 +18,7 @@
 from datetime import timedelta
 
 ## Bargate internal version number
-VERSION='1.4-beta4'
+VERSION='1.4.0'
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
@@ -78,7 +78,7 @@ REDIS_PORT=6379
 # Default to true if no config file to make sure a config file has been found.
 DISABLE_APP=True
 
-## Default bootstrap/bootswatch theme=
+## Default bootstrap/bootswatch theme
 THEME_DEFAULT='lumen'
 
 ## Default directory layout mode
@@ -129,9 +129,6 @@ KRB5_DOMAIN  = 'localhost.localdomain'
 ## SMB AUTH
 # only use this if you don't have LDAP or kerberos
 SMB_AUTH_URI = "smb://yourdomain.tld/NETLOGON/"
-
-## login background random int.
-LOGIN_IMAGE_RANDOM_MAX = 17
 
 ## TOTP 2-factor auth
 TOTP_ENABLED = False

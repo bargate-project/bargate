@@ -7,7 +7,7 @@
 	<tbody>
 		{% for mark in bookmarks %}
 		<tr class="entry-click" data-url="{{ mark.url }}">
-			<td class="entry-open"><i class="fa fa-fw fa-arrow-right"></i> {{mark.name}}</td>
+			<td class="entry-open"><i class="fa fa-fw fa-arrow-right"></i> {{mark.name}}<br/><span class="text-muted">{{mark.url}}</span></td>
 			<td style="width: 1px">
 				<form action="{{ url_for('bookmarks') }}" method="POST" enctype="multipart/form-data">
 					<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>

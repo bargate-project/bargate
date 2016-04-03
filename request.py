@@ -21,22 +21,20 @@
 # functions in here register per-request functionality
 # with decorators
 
-from flask import Flask, request, session, g, abort
+from flask import Flask, request, session, g, abort, render_template
 from bargate import app
 import bargate.lib.userdata
 import bargate.lib.errors
 import redis
 import time
-from random import randint
 
 ################################################################################
 
 @app.before_request
 def before_request():
-	"""This function is run before the request is handled by Flask. At present it checks
-	to make sure a valid CSRF token has been supplied if a POST request is made, sets
-	the default theme, tells out of date web browsers to foad, and connects to redis
-	for user data storage.
+	"""This function is run before the request is handled by Flask. It connects 
+	connects to REDIS, logs the user access time and asks IE users using version
+	10 or lower to upgrade their web browser.
 	"""
 
 	# Check for MSIE version <= 10
@@ -76,6 +74,3 @@ def context_processor():
 
 	return data
 
-@app.template_global()
-def getrandnum():
-	return randint(1,app.config['LOGIN_IMAGE_RANDOM_MAX'])
