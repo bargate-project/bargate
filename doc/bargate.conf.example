@@ -1,0 +1,6 @@
+SECRET_KEY = 'changemeplease'
+ENCRYPT_KEY = 'change_this_to_something_unique'
+SMB_WORKGROUP = 'MSHOME'
+DISABLE_APP=False
+AUTH_TYPE='smb'
+SMB_AUTH_URI = "smb://yourdomain.tld/NETLOGON/"

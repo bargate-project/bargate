@@ -1,0 +1,6 @@
+[share_name]
+url = /yourpathhere
+path = smb://server.yourdomain.tld/Users/%USERNAME%/
+menu = home
+display = Home
+
