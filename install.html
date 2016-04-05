@@ -32,7 +32,7 @@
   
     <link rel="top" title="bargate 1.4.0 documentation" href="index.html"/>
         <link rel="next" title="Deployment" href="deploy.html"/>
-        <link rel="prev" title="Download" href="index.html"/> 
+        <link rel="prev" title="Screenshots" href="screenshots.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -82,6 +82,7 @@
             
             
                 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-system-packages">Install system packages</a></li>
@@ -189,7 +190,7 @@ systemctl start redis
 <h2>Install development packages<a class="headerlink" href="#install-development-packages" title="Permalink to this headline">¶</a></h2>
 <p>To install the pip modules you will need to install some development packages - these can be removed once you&#8217;ve installed the python packages if you desire.</p>
 <p>On Red Hat Enterprise Linux or Fedora:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel openjpeg-devel openjpeg2-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel
+<div class="highlight-python"><div class="highlight"><pre><span></span>yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel libturbo-jpeg-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel krb5-devel
 </pre></div>
 </div>
 <p>On Debian or Ubuntu:</p>
@@ -214,7 +215,8 @@ git clone https://github.com/divad/bargate.git
 <p>You will want to choose a version to run - to do this you can use git branches.
 The latest stable branch is &#8216;v1.4&#8217;. Switch to that branch to ensure that
 running &#8216;git pull&#8217; won&#8217;t update you to a major release:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>git checkout v1.4
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd /opt/bargate
+git checkout v1.4
 </pre></div>
 </div>
 </div>
@@ -237,7 +239,7 @@ running &#8216;git pull&#8217; won&#8217;t update you to a major release:</p>
         <a href="deploy.html" class="btn btn-neutral float-right" title="Deployment" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="Download" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="screenshots.html" class="btn btn-neutral" title="Screenshots" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -53,12 +53,20 @@ bargate is highly configurable; your users may change how the application works
 and how it looks. You may confifgure what file servers are available for the user
 to access. bargate supports either LDAP, Kerberos or 'SMB' authentication.
 
+Screenshots
+-----------
+
+.. image:: images/screenshot_14_desktop.png
+.. image:: images/screenshot_14_mobile.png
+.. image:: images/screenshot_14_settings.png
+
 Contents
 --------
 
 .. toctree::
    :maxdepth: 3
 
+   screenshots
    install
    deploy
    upgrade

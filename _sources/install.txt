@@ -54,7 +54,7 @@ To install the pip modules you will need to install some development packages - 
 
 On Red Hat Enterprise Linux or Fedora::
 
-  yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel openjpeg-devel openjpeg2-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel
+  yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel libturbo-jpeg-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel krb5-devel
 
 On Debian or Ubuntu::
 
@@ -79,6 +79,7 @@ You will want to choose a version to run - to do this you can use git branches.
 The latest stable branch is 'v1.4'. Switch to that branch to ensure that
 running 'git pull' won't update you to a major release::
 
+  cd /opt/bargate
   git checkout v1.4
 
 Next steps
