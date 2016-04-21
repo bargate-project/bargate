@@ -43,9 +43,13 @@ class Bargate(Flask):
 
 		## Get the sections of the shares config file
 		self.sharesConfig = RawConfigParser()
-		with open(self.config['SHARES_CONFIG'], 'r') as f:
-			self.sharesConfig.readfp(f)
-		self.sharesList = self.sharesConfig.sections()
+		if os.path.exists(self.config['SHARES_CONFIG']):
+			with open(self.config['SHARES_CONFIG'], 'r') as f:
+				self.sharesConfig.readfp(f)
+			self.sharesList = self.sharesConfig.sections()
+		else:
+			self.sharesList = []
+			self.logger.warn("The shares config file '" + self.config['SHARES_CONFIG'] + "' does not exist, ignoring")
 
 		## Modal errors
 		self.add_template_global(self.get_modal_error)
