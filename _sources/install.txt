@@ -54,7 +54,7 @@ To install the pip modules you will need to install some development packages - 
 
 On Red Hat Enterprise Linux or Fedora::
 
-  yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel libturbo-jpeg-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel krb5-devel
+  yum install gcc python-devel libsmbclient-devel openldap-devel zlib-devel libjpeg-turbo-devel libtiff-devel freetype-devel libwebp-devel lcms2-devel krb5-devel
 
 On Debian or Ubuntu::
 
