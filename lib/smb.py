@@ -31,11 +31,16 @@ import StringIO
 import traceback
 
 #### SMB entry types
-SMB_ERR   = -1
-SMB_SHARE = 3
-SMB_DIR   = 7
-SMB_FILE  = 8
-SMB_LINK  = 9
+SMB_ERR         = -1
+SMB_WORKGROUP   = 1
+SMB_SERVER      = 2
+SMB_SHARE       = 3
+SMB_PRINTER     = 4
+SMB_COMMS_SHARE = 5
+SMB_IPC         = 6
+SMB_DIR         = 7
+SMB_FILE        = 8
+SMB_LINK        = 9
 
 ## from libsmbclient source
 #00088 #define SMBC_WORKGROUP      1
@@ -49,6 +54,8 @@ SMB_LINK  = 9
 #00096 #define SMBC_LINK           9
 
 
+################################################################################
+################################################################################
 ################################################################################
 
 def check_name(name):
@@ -74,6 +81,8 @@ def check_name(name):
 		
 	return name
 		
+################################################################################
+################################################################################
 ################################################################################
 
 def check_path(path):
@@ -106,6 +115,8 @@ def check_path(path):
 	return path
 	
 ################################################################################
+################################################################################
+################################################################################
 
 def wb_sid_to_name(sid):
 	import subprocess
@@ -118,6 +129,8 @@ def wb_sid_to_name(sid):
 	else:
 		return sout
 
+################################################################################
+################################################################################
 ################################################################################
 
 def statURI(libsmbclient,uri):
@@ -149,6 +162,8 @@ def statURI(libsmbclient,uri):
 	return dstat
 
 ################################################################################
+################################################################################
+################################################################################
 
 def getEntryType(libsmbclient,uri):
 	## stat the file, st_mode has all the info we need
@@ -167,6 +182,8 @@ def getEntryType(libsmbclient,uri):
 	return statToType(fstat)
 	
 ################################################################################
+################################################################################
+################################################################################
 
 def statToType(fstat):
 
@@ -183,9 +200,157 @@ def statToType(fstat):
 	else:
 		return -1
 
-	
+################################################################################
+################################################################################
 ################################################################################
 
+def searchForFilenames(libsmbclient,path,path_as_str,srv_path_as_str,uri_as_str,query):
+		results = []
+
+		## Try getting directory contents of where we are
+		try:
+			directory_entries = libsmbclient.opendir(uri_as_str).getdents()
+		except smbc.NotDirectoryError as ex:
+			## This was not a directory, return nothing.
+			app.logger.info("Search given URI which was not a directory :(")
+			return results
+
+		except Exception as ex:
+			## We don't actually want to fail the entire search if
+			## one part failed, so we return an empty list :/
+			## not much else we can really do sadly
+			#return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+			app.logger.info("Search encountered an exception " + str(ex) + " " + str(type(ex)))
+			return results
+
+		## now loop over each entry
+		for dentry in directory_entries:
+			entry = loadDentry(dentry, srv_path_as_str, path, path_as_str)
+
+			## Skip hidden files
+			if entry['skip']:
+				continue
+
+			## Check if the filename matched
+			if query.lower() in entry['name'].lower():
+				app.logger.info("MATCH FOUND!!! on " + entry['name'])
+				entry['parent_path'] = path
+				results.append(entry)
+			else:
+				app.logger.info("query " + query.lower() + " did not match: " + entry['name'].lower())
+
+			## Search subdirectories if we found one
+			if entry['type'] == 'dir':
+				results = results + searchForFilenames(libsmbclient,path + "/" + entry['name_as_str'], path_as_str, srv_path_as_str, entry['uri_as_str'], query)
+
+
+		return results
+
+################################################################################
+################################################################################
+################################################################################
+
+def loadDentry(dentry,srv_path_as_str, path, path_as_str):
+	"""This function performs some basic checks and evaluations on entries returned
+		when listing a directory. This is used by 'browse' and 'search' at the 
+		moment. It returns a dictionary of information. The most important result
+		is the 'skip' key in the returned dictionary it means the file should be 
+		omitted from results because either its . or .. or a hidden file.
+
+		The dictionary returned contains the following keys:
+
+			- name			The entry name as a unicode object
+			- name_as_str	The entry name as a str object
+			- uri			
+			- uri_as_str	The full URI including smb:// to the entry as a str object
+			- path			The full path (not including smb:// and  the server name) to the entry as a unicode object
+			- skip			Should this entry be shown to the user or not
+		"""
+
+	entry = {'skip': False, 'name': dentry.name}
+
+	## In earlier versions of pysmbc getdents returns regular python str objects
+	## and not unicode, so we have to convert to unicode via .decode. However, from
+	## 1.0.15.1 onwards pysmbc returns unicode (i.e. its probably doing a .decode for us)
+	## so we need to check what we get back and act correctly based on that.
+	## urllib needs str objects, not unicode objects, so we also have to maintain
+	## a copy of a str object *and* a unicode object. I believe that adding Python 3
+	## support is why 1.0.15.1 onwards returns unicode objects instead of str.
+
+	if isinstance(entry['name'], str):
+		## store str object
+		entry['name_as_str'] = entry['name']
+		## create unicode object
+		entry['name'] = entry['name'].decode("utf-8")
+	else:
+		## create str object
+		entry['name_as_str'] = entry['name'].encode("utf-8")
+
+	## Skip entries for 'this dir' and 'parent dir'
+	if entry['name'] == '.':
+		entry['skip'] = True
+	if entry['name'] == '..':
+		entry['skip'] = True
+
+	## Build the entire URI (str object)
+	entry['uri_as_str'] = srv_path_as_str + path_as_str + '/' + urllib.quote(entry['name_as_str'])
+
+	## Build the path (unicode object)
+	if len(path) == 0:
+		entry['path'] = entry['name']
+	else:
+		entry['path'] = path + '/' + entry['name']
+
+	## Hide hidden files if the user has selected to do so (the default)
+	if not bargate.lib.userdata.get_show_hidden_files():
+		## UNIX hidden files
+		if entry['name'].startswith('.'):
+			entry['skip'] = True
+
+		## Office temporary files
+		if entry['name'].startswith('~$'):
+			entry['skip'] = True
+
+		## Other horrible Windows shite
+		hidden_entries = ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']
+
+		if entry['name'] in hidden_entries:
+			entry['skip'] = True
+
+	if dentry.smbc_type == bargate.lib.smb.SMB_FILE:
+		entry['type'] = 'file'
+		entry['icon'] = 'fa fa-fw fa-file-text-o'
+
+	elif dentry.smbc_type == bargate.lib.smb.SMB_DIR:
+		entry['type'] = 'dir'
+		entry['icon'] = 'fa fa-fw fa-folder'
+
+	elif dentry.smbc_type == bargate.lib.smb.SMB_SHARE:
+		## check last char for $ ('administrative' shares)
+		if entry['name'].endswith == "$":
+			entry['skip'] = True
+
+		entry['type'] = 'share'
+		entry['icon'] = 'fa fa-fw fa-archive'
+
+	else:
+		entry['type'] = 'other'
+		entry['icon'] = 'fa fa-question-circle'
+		entry['skip'] = True
+
+	return entry
+	
+################################################################################
+################################################################################
+################################################################################
+
+## 'path' is always unicode
+## 'uri' is always unicode
+## 'path_as_str' is a str object version of path
+## 'uri_as_str' is a str object version of uri
+## uri, or rather uri_as_str, is used when making calls to pysmbc
+## path is used when generating data to send to jinja
+## path_as_str is used when building a uri_as_str
 def connection(srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
 
 	## ensure srv_path (the server URI and share) ends with a trailing slash
@@ -376,6 +541,18 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			## Return JSON
 			return jsonify(data)
+
+################################################################################
+# REALLY REALLY BASIC SEARCH...
+################################################################################
+			
+		elif action == 'search':
+			if 'q' not in request.args:
+				return redirect(url_for(func_name,path=path,action="browse"))
+
+			query   = request.args.get('q')
+			results = searchForFilenames(libsmbclient,path,path_as_str,srv_path_as_str,uri_as_str,query)
+			return render_template('search.html',results=results,query=query,path=path,root_display_name = display_name)
 			
 ################################################################################
 # BROWSE / DIRECTORY / LIST FILES
@@ -404,62 +581,14 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			for dentry in directory_entries:
 				# Create a new dict for the entry
-				entry = {}
+				entry = loadDentry(dentry, srv_path_as_str, path, path_as_str)
 
-				# Set a default icon and set name
-				entry['icon'] = 'fa fa-fw fa-file-text-o'
-				entry['name'] = dentry.name
-
-				## Skip . (this dir) and .. (parent dir)
-				if entry['name'] == '.':
+				# Continue to next entry if we found it should be skipped
+				if entry['skip']:
 					continue
-				if entry['name'] == '..':
-					continue
-
-				## In earlier versions of pysmbc getdents returns regular python str objects
-				## and not unicode, so we have to convert to unicode via .decode. However, from
-				## 1.0.15.1 onwards pysmbc returns unicode (i.e. its probably doing a .decode for us)
-				## so we need to check what we get back and act correctly based on that.
-				## SADLY! urllib needs str objects, not unicode objects, so we also have to maintain
-				## a copy of a str object *and* a unicode object.
-
-				if isinstance(entry['name'], str):
-					## store str object
-					entry['name_as_str'] = entry['name']
-					## create unicode object
-					entry['name'] = entry['name'].decode("utf-8")
-				else:
-					## create str object
-					entry['name_as_str'] = entry['name'].encode("utf-8")
-
-				entry['uri_as_str'] = srv_path_as_str + path_as_str + '/' + urllib.quote(entry['name_as_str'])
-
-				## Add the URI (the full path) as an element to the entry dict
-				if len(path) == 0:
-					entry['path'] = entry['name']
-				else:
-					entry['path'] = path + '/' + entry['name']
-
-				## Hide hidden files if the user has selected to do so (the default)
-				if not bargate.lib.userdata.get_show_hidden_files():
-					## check first character for . (unix hidden)
-					if entry['name'][0] == ".":
-						continue
-
-					## hide typical windows hidden files
-					if entry['name'] == 'desktop.ini': continue  # desktop settings
-					if entry['name'] == '$RECYCLE.BIN': continue # recycle bin (vista/7)
-					if entry['name'] == 'RECYCLER': continue     # recycle bin (xp)
-					if entry['name'] == 'Thumbs.db': continue    # windows pic/video thumbnails
-					if entry['name'] == 'public_html': continue  # old public_html directories
-					if entry['name'].startswith('~$'): continue  # temp files (office)
 
 				## FILE ########################################################
-				if dentry.smbc_type == bargate.lib.smb.SMB_FILE:
-
-					## Entry type
-					entry['type'] = 'file'
-
+				if entry['type'] == 'file':
 					## Stat the file so we get file size and other bits. 
 					dstat = statURI(libsmbclient,entry['uri_as_str'])
 
@@ -467,13 +596,13 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 						entry['mtime_raw'] = dstat['mtime']
 						entry['mtime']     = bargate.lib.core.ut_to_string(dstat['mtime'])
 					else:
-						entry['mtime'] = 'Unknown'
+						entry['mtime']     = 'Unknown'
 						entry['mtime_raw'] = 0
 
 					## Generate URLs
 					entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
 					entry['download']     = url_for(func_name,path=entry['path'],action='download')
-					entry['open'] = entry['download']
+					entry['open']         = entry['download']
 				
 					## File icon
 					(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
@@ -507,26 +636,18 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					files.append(entry)
 
 				## DIRECTORY ###################################################
-				elif dentry.smbc_type == bargate.lib.smb.SMB_DIR:
-					entry['icon'] = 'fa fa-fw fa-folder'	
-					entry['type'] = 'dir'
+				elif entry['type'] == 'dir':
 					entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 					entry['open'] = url_for(func_name,path=entry['path'])
 					dirs.append(entry)
 
 				## SMB SHARE ###################################################
-				elif dentry.smbc_type == bargate.lib.smb.SMB_SHARE:
-					## check last char for $ (special Windows share in SMB1/CIFS)
-					last = entry['name'][-1]
-					if last == "$":
-						continue
+				elif entry['type'] == 'share':
+					if not entry['skip']:
+						entry['open'] = url_for(func_name,path=entry['path'])
+						dirs.append(entry)
 
-					entry['icon'] = 'fa fa-fw fa-archive'
-					entry['type'] = 'share'
-					entry['open'] = url_for(func_name,path=entry['path'])
-					dirs.append(entry)
-
-			## Sort the directories and files by name
+			## Sort the directories and files by name 
 			dirs  = sorted(dirs,cmp  = bargate.lib.core.sort_by_name)
 			files = sorted(files,cmp = bargate.lib.core.sort_by_name)
 
@@ -566,6 +687,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				url_home=url_for(func_name),
 				url_parent_dir=url_for(func_name,path=parent_directory_path),
 				url_bookmark=url_for('bookmarks'),
+				url_search=url_for(func_name,path=path,action="search"),
 				browse_mode=True,
 				atroot = atroot,
 				func_name = func_name,

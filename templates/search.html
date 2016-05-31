@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<strong>{{root_display_name}}</strong><br/>
+<strong>{{path}}</strong>
+<ul class="list">
+{% if results %}
+	{% for result in results %}
+		<li>{{ result['name'] }}</li>
+	{% endfor %}
+{% endif %}
+</ul>
+
+{% endblock %}

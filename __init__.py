@@ -46,7 +46,13 @@ for section in app.sharesList:
 		app.add_url_rule(url,endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
 		app.add_url_rule(url + '/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
 
+		# If the user goes to /endpoint/action or /endpoint/action/
+		app.add_url_rule(url + '/<string:action>',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': ''})
+		app.add_url_rule(url + '/<string:action>/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'path': ''})
+
 		# If the user goes to /endpoint/browse/path/
+		# this is needed such that the default action is browse
+		# otherwise we can't build url_for urls e.g. url_for('personal',path='mydocuments')
 		app.add_url_rule(url + '/browse/<path:path>',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'action': 'browse'})
 		app.add_url_rule(url + '/browse/<path:path>/',endpoint=section,view_func=bargate.views.smb.share_handler,methods=['GET','POST'], defaults={'action': 'browse'})
 
