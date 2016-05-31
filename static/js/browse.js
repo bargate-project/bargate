@@ -261,6 +261,10 @@ $(document).ready(function()
 		$('#add-bookmark input[type="text"]').focus();
 	});
 
+	$('#search').on('shown.bs.modal', function() {
+		$('#search input[type="text"]').focus();
+	});
+
 	/* meh...don't set focus back on buttons when modals are closed */
 	$('#create-directory').on('shown.bs.modal', function(e)
 	{
@@ -271,6 +275,7 @@ $(document).ready(function()
 	{
 		$('#upload-button').one('focus', function(e){$(this).blur();});
 	});
+
 
 	/* File uploads - drag files over shows a modal */
 	$('body').dragster(
