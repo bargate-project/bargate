@@ -1,14 +1,33 @@
 {% extends "layout.html" %}
 {% block body %}
+{%- include 'directory-modals.html' -%}
+{%- include 'directory-menus.html' -%}
+{%- include 'breadcrumbs.html' -%}
 
-<strong>{{root_display_name}}</strong><br/>
-<strong>{{path}}</strong>
-<ul class="list">
-{% if results %}
-	{% for result in results %}
-		<li>{{ result['name'] }}</li>
-	{% endfor %}
-{% endif %}
-</ul>
+
+{# disable right click menu for searches! #}
+
+<h3>Results for '{{query}}'</h3>
+
+<table id="dir" class="table table-striped table-hover" style="width: 100%">
+	<thead>
+		<tr>
+			<th class="tsdisable" style="width: 1px"></th>
+			<th>Name</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		{%- for entry in results -%}
+
+		<tr class="entry-click entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
+			<td class="text-center entry-open"><span class="{{ entry.icon }} fa-2x"></span></td>
+			<td class="entry-open dentry">{{ entry.name}}<br/><span class="text-muted">in /<a href="{{entry.parent_url}}">{{entry.parent_path}}</a></span></td>
+		</tr>
+		{%- endfor -%}
+
+	</tbody>
+</table>
 
 {% endblock %}
+
