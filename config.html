@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration &mdash; bargate 1.4.0 documentation</title>
+  <title>Configuration &mdash; bargate documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="bargate 1.4.0 documentation" href="index.html"/>
+    <link rel="top" title="bargate documentation" href="index.html"/>
         <link rel="next" title="Configuration options" href="config_options.html"/>
         <link rel="prev" title="Upgrading" href="upgrade.html"/> 
 
@@ -86,7 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Configuration</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#bargate-conf">bargate.conf</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#shares-conf">shares.conf</a></li>
 </ul>
@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
 </ul>
 
             
@@ -156,20 +157,20 @@
 then the other config file locations are not checked.</p>
 <p>Once you have installed bargate you will need to create a configuration file.
 Copy the sample config file to get started:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span>
 <span class="n">cp</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">doc</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">example</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span>
 </pre></div>
 </div>
 <p>The above command assumes you installed bargate into /opt/bargate</p>
 <p>The minimum options you&#8217;ll need to set are:</p>
 <ul class="simple">
-<li><a class="reference internal" href="config_options.html#config-secret-key"><span>SECRET_KEY</span></a></li>
-<li><a class="reference internal" href="config_options.html#config-encrypt-key"><span>ENCRYPT_KEY</span></a></li>
-<li><a class="reference internal" href="config_options.html#config-disable-app"><span>DISABLE_APP</span></a></li>
+<li><a class="reference internal" href="config_options.html#config-secret-key"><span class="std std-ref">SECRET_KEY</span></a></li>
+<li><a class="reference internal" href="config_options.html#config-encrypt-key"><span class="std std-ref">ENCRYPT_KEY</span></a></li>
+<li><a class="reference internal" href="config_options.html#config-disable-app"><span class="std std-ref">DISABLE_APP</span></a></li>
 </ul>
 <p>bargate.conf is treated as a Python file - all configuration must adhere to
 Python syntax.</p>
-<p>See <a class="reference internal" href="config_options.html"><em>Configuration options</em></a> for a complete list of options to set.</p>
+<p>See <a class="reference internal" href="config_options.html"><span class="doc">Configuration options</span></a> for a complete list of options to set.</p>
 </div>
 <div class="section" id="shares-conf">
 <h2>shares.conf<a class="headerlink" href="#shares-conf" title="Permalink to this headline">¶</a></h2>
@@ -177,8 +178,8 @@ Python syntax.</p>
 users, otherwise only &#8216;Connect to server&#8217; (i.e. enter manually) functionality
 is available. These shares are configured in the shares config file,
 usually /etc/bargate/shares.conf (this path is configured via the
-<a class="reference internal" href="config_options.html#config-shares-config"><span>SHARES_CONFIG</span></a> parameter).</p>
-<p>See <a class="reference internal" href="shares.html"><em>Shares configuration</em></a> to understand the syntax of this configuration file.</p>
+<a class="reference internal" href="config_options.html#config-shares-config"><span class="std std-ref">SHARES_CONFIG</span></a> parameter).</p>
+<p>See <a class="reference internal" href="shares.html"><span class="doc">Shares configuration</span></a> to understand the syntax of this configuration file.</p>
 <p>Once configured you&#8217;ll need to override the dropdown-menus.html template as well.</p>
 <p>There is a sample config file included with Bargate. Assuming bargate is installed
 in /opt/bargate you can use this command to get started:</p>
@@ -228,7 +229,7 @@ in /opt/bargate you can use this command to get started:</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.4.0',
+            VERSION:'1.4.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -244,6 +244,8 @@ The maximum file size, in bytes, of image files that will be previewed
 File uploads
 ------------
 
+.. _CONFIG_MAX_CONTENT_LENGTH:
+
 MAX\_CONTENT\_LENGTH
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -689,3 +691,40 @@ redirects the user to the parent folder and shows a simplified error
 message, but this can hide the real error. To prevent this behaviour set
 DEBUG\_FULL\_ERRORS to True and all errors will print a full error stack
 trace.
+
+.. _CONFIG_SECTION_SEARCH:
+
+Search support
+-----------------------------
+
+.. _CONFIG_SEARCH_ENABLED:
+
+SEARCH_ENABLED
+~~~~~~~~~~~~~~
+
+-  **Required**: No
+-  **Expected value**: True or False
+-  **Type**: Bargate specific config option
+-  **Default**: False
+-  **Since**: 1.4.1
+
+Whether to enable the search support in Bargate. See: :doc:`searchsupport` for more
+information.
+
+.. _CONFIG_SEARCH_TIMEOUT:
+
+SEARCH_TIMEOUT
+~~~~~~~~~~~~~~
+
+-  **Required**: No
+-  **Expected value**: Integer
+-  **Type**: Bargate specific config option
+-  **Default**: 60
+-  **Since**: 1.4.1
+
+The number of seconds before Bargate should stop searching and return what it
+has found to the user. This is required because HTTP connections cannot run
+forever - most web servers will timeout a process taking too long to return
+data to the user - usually around 60 seconds. You should set this to be lower
+than the setting the web server uses. If you're using nginx and uwsgi set this
+to be lower than 'uwsgi_read_timeout' and 'uwsgi_send_timeout'.

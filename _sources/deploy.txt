@@ -68,8 +68,8 @@ Run uWSGI as a service (systemd)
 
 You now need to configure uWSGI to run as a service. On systemd based platforms 
 (e.g. RHEL7+, Debian 8+, Fedora 15+, Ubuntu 15.04+) you should create a service 
-unit file. Create the file in /etc/systemd/system/bargate.conf with the following
-contents::
+unit file. Create the file in /etc/systemd/system/bargate.service with the 
+following contents::
 
   [Unit]
   Description=bargate web filestore server
@@ -119,6 +119,17 @@ nginx configuration and within that add these lines to your nginx.conf::
   }
 
 The above example assumes HTTPS - which you were going to use anyway, right?
+
+You should set the 'client_max_body_size' option to be at least the same 
+size as you tell Bargate to allow via the :ref:`CONFIG_MAX_CONTENT_LENGTH` 
+configuration option.
+
+If you intend on using search you may wish to add the 'uwsgi_read_timeout'
+and 'uwsgi_send_timeout' options. See :doc:`searchsupport` for more information 
+on how to set this up.
+
+Enable and start nginx
+~~~~~~~~~~~~~~~~~~~~~~~
 
 You'll want to enable and start nginx (on systemd systems)::
 

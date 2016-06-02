@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Configuration options &mdash; bargate 1.4.0 documentation</title>
+  <title>Configuration options &mdash; bargate documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="bargate 1.4.0 documentation" href="index.html"/>
+    <link rel="top" title="bargate documentation" href="index.html"/>
         <link rel="next" title="Shares configuration" href="shares.html"/>
         <link rel="prev" title="Configuration" href="config.html"/> 
 
@@ -87,7 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Configuration options</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration options</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#required-options">Required options</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#secret-key">SECRET_KEY</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#encrypt-key">ENCRYPT_KEY</a></li>
@@ -179,11 +179,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#debug-full-errors">DEBUG_FULL_ERRORS</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#search-support">Search support</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#search-enabled">SEARCH_ENABLED</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#search-timeout">SEARCH_TIMEOUT</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
 </ul>
 
             
@@ -365,7 +371,7 @@ seconds or as a Python datetime.timedelta object.</p>
 <li><strong>Type</strong>: Bargate specific config option</li>
 <li><strong>Default</strong>: &#8216;/etc/bargate/shares.conf&#8217;</li>
 </ul>
-<p>The location of the SMB shares config file. See <a class="reference internal" href="shares.html"><em>Shares configuration</em></a> for more information.</p>
+<p>The location of the SMB shares config file. See <a class="reference internal" href="shares.html"><span class="doc">Shares configuration</span></a> for more information.</p>
 </div>
 <div class="section" id="shares-default">
 <h3>SHARES_DEFAULT<a class="headerlink" href="#shares-default" title="Permalink to this headline">¶</a></h3>
@@ -388,7 +394,7 @@ seconds or as a Python datetime.timedelta object.</p>
 <p>Bargate templates can be overridden to allow you to customise various parts
 of bargate - or all of bargate. This option defines a local directory where
 templates should be loaded from before loading them from inside bargate.</p>
-<p>See <a class="reference internal" href="templates.html"><em>Templates</em></a> for more information.</p>
+<p>See <a class="reference internal" href="templates.html"><span class="doc">Templates</span></a> for more information.</p>
 </div>
 <div class="section" id="app-display-name">
 <h3>APP_DISPLAY_NAME<a class="headerlink" href="#app-display-name" title="Permalink to this headline">¶</a></h3>
@@ -425,7 +431,7 @@ image from a pool of images based on a random number. This option sets
 the upper bounds on that random number.</p>
 <p>This option has been removed in version 1.4 and is replaced by Jinja template
 filters, e.g:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="p">{{</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">17</span><span class="p">)</span><span class="o">|</span><span class="n">random</span><span class="p">}}</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{{</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">17</span><span class="p">)</span><span class="o">|</span><span class="n">random</span><span class="p">}}</span>
 </pre></div>
 </div>
 </div>
@@ -456,7 +462,7 @@ listing</p>
 <div class="section" id="file-uploads">
 <h2>File uploads<a class="headerlink" href="#file-uploads" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="max-content-length">
-<h3>MAX_CONTENT_LENGTH<a class="headerlink" href="#max-content-length" title="Permalink to this headline">¶</a></h3>
+<span id="config-max-content-length"></span><h3>MAX_CONTENT_LENGTH<a class="headerlink" href="#max-content-length" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><strong>Required</strong>: No</li>
 <li><strong>Expected value</strong>: Integer</li>
@@ -876,7 +882,7 @@ PRODUCTION.</strong> This exposes SECRET_KEY and ENCRYPT_KEY which should
 only be known by the application. The Flask debug toolbar is documented
 here: <a class="reference external" href="https://flask-debugtoolbar.readthedocs.org/en/latest/">https://flask-debugtoolbar.readthedocs.org/en/latest/</a></p>
 <p>This option requires you install Flask-DebugToolbar:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>pip install Flask-DebugToolbar
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">Flask</span><span class="o">-</span><span class="n">DebugToolbar</span>
 </pre></div>
 </div>
 </div>
@@ -893,6 +899,37 @@ redirects the user to the parent folder and shows a simplified error
 message, but this can hide the real error. To prevent this behaviour set
 DEBUG_FULL_ERRORS to True and all errors will print a full error stack
 trace.</p>
+</div>
+</div>
+<div class="section" id="search-support">
+<span id="config-section-search"></span><h2>Search support<a class="headerlink" href="#search-support" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="search-enabled">
+<span id="config-search-enabled"></span><h3>SEARCH_ENABLED<a class="headerlink" href="#search-enabled" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>Required</strong>: No</li>
+<li><strong>Expected value</strong>: True or False</li>
+<li><strong>Type</strong>: Bargate specific config option</li>
+<li><strong>Default</strong>: False</li>
+<li><strong>Since</strong>: 1.4.1</li>
+</ul>
+<p>Whether to enable the search support in Bargate. See: <a class="reference internal" href="searchsupport.html"><span class="doc">Search</span></a> for more
+information.</p>
+</div>
+<div class="section" id="search-timeout">
+<span id="config-search-timeout"></span><h3>SEARCH_TIMEOUT<a class="headerlink" href="#search-timeout" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>Required</strong>: No</li>
+<li><strong>Expected value</strong>: Integer</li>
+<li><strong>Type</strong>: Bargate specific config option</li>
+<li><strong>Default</strong>: 60</li>
+<li><strong>Since</strong>: 1.4.1</li>
+</ul>
+<p>The number of seconds before Bargate should stop searching and return what it
+has found to the user. This is required because HTTP connections cannot run
+forever - most web servers will timeout a process taking too long to return
+data to the user - usually around 60 seconds. You should set this to be lower
+than the setting the web server uses. If you&#8217;re using nginx and uwsgi set this
+to be lower than &#8216;uwsgi_read_timeout&#8217; and &#8216;uwsgi_send_timeout&#8217;.</p>
 </div>
 </div>
 </div>
@@ -938,7 +975,7 @@ trace.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.4.0',
+            VERSION:'1.4.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

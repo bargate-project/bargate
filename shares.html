@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Shares configuration &mdash; bargate 1.4.0 documentation</title>
+  <title>Shares configuration &mdash; bargate documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="bargate 1.4.0 documentation" href="index.html"/>
+    <link rel="top" title="bargate documentation" href="index.html"/>
         <link rel="next" title="Templates" href="templates.html"/>
         <link rel="prev" title="Configuration options" href="config_options.html"/> 
 
@@ -88,13 +88,14 @@
 <li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Shares configuration</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Shares configuration</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#variable-insertion">Variable insertion</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
 </ul>
 
             
@@ -144,11 +145,11 @@
 format</a>). The
 file is broken up into sections, each section representing an SMB share.
 The syntax for each section is as follows:</p>
-<div class="code ini highlight-python"><div class="highlight"><pre><span></span>[section_name]
-url = /&lt;url_name&gt;
-path = smb://server.domain.tld/share/
-menu = &lt;menu_name&gt;
-display = &lt;display_name&gt;
+<div class="code ini highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">section_name</span><span class="p">]</span>
+<span class="n">url</span> <span class="o">=</span> <span class="o">/&lt;</span><span class="n">url_name</span><span class="o">&gt;</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">smb</span><span class="p">:</span><span class="o">//</span><span class="n">server</span><span class="o">.</span><span class="n">domain</span><span class="o">.</span><span class="n">tld</span><span class="o">/</span><span class="n">share</span><span class="o">/</span>
+<span class="n">menu</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">menu_name</span><span class="o">&gt;</span>
+<span class="n">display</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">display_name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -170,29 +171,29 @@ support, the home directory of the user. These variables are:</p>
 <li><code class="docutils literal"><span class="pre">%LDAP_HOMEDIR%</span></code> - resolves to the LDAP home directory of the user,
 if present</li>
 </ul>
-<p>See <a class="reference internal" href="config_options.html#config-section-ldap-home-dir"><span>LDAP Home directory support</span></a> for LDAP home directory support</p>
+<p>See <a class="reference internal" href="config_options.html#config-section-ldap-home-dir"><span class="std std-ref">LDAP Home directory support</span></a> for LDAP home directory support</p>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="code ini highlight-python"><div class="highlight"><pre><span></span>[webfiles]
-url = /webfiles
-path = smb://webfiles.soton.ac.uk/%USERNAME%/
-menu = home
-display = My Website
+<div class="code ini highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">webfiles</span><span class="p">]</span>
+<span class="n">url</span> <span class="o">=</span> <span class="o">/</span><span class="n">webfiles</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">smb</span><span class="p">:</span><span class="o">//</span><span class="n">webfiles</span><span class="o">.</span><span class="n">soton</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="o">/%</span><span class="n">USERNAME</span><span class="o">%/</span>
+<span class="n">menu</span> <span class="o">=</span> <span class="n">home</span>
+<span class="n">display</span> <span class="o">=</span> <span class="n">My</span> <span class="n">Website</span>
 </pre></div>
 </div>
-<div class="code ini highlight-python"><div class="highlight"><pre><span></span>[dfs]
-url = /dfs
-path = smb://soton.ac.uk/
-menu = dfsroot
-display = DFS Root
+<div class="code ini highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">dfs</span><span class="p">]</span>
+<span class="n">url</span> <span class="o">=</span> <span class="o">/</span><span class="n">dfs</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">smb</span><span class="p">:</span><span class="o">//</span><span class="n">soton</span><span class="o">.</span><span class="n">ac</span><span class="o">.</span><span class="n">uk</span><span class="o">/</span>
+<span class="n">menu</span> <span class="o">=</span> <span class="n">dfsroot</span>
+<span class="n">display</span> <span class="o">=</span> <span class="n">DFS</span> <span class="n">Root</span>
 </pre></div>
 </div>
-<div class="code ini highlight-python"><div class="highlight"><pre><span></span>[homedir]
-url = /home
-path = %LDAP_HOMEDIR%
-menu = homedir
-display = My Files
+<div class="code ini highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">homedir</span><span class="p">]</span>
+<span class="n">url</span> <span class="o">=</span> <span class="o">/</span><span class="n">home</span>
+<span class="n">path</span> <span class="o">=</span> <span class="o">%</span><span class="n">LDAP_HOMEDIR</span><span class="o">%</span>
+<span class="n">menu</span> <span class="o">=</span> <span class="n">homedir</span>
+<span class="n">display</span> <span class="o">=</span> <span class="n">My</span> <span class="n">Files</span>
 </pre></div>
 </div>
 </div>
@@ -239,7 +240,7 @@ display = My Files
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.4.0',
+            VERSION:'1.4.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

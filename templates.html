@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Templates &mdash; bargate 1.4.0 documentation</title>
+  <title>Templates &mdash; bargate documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="bargate 1.4.0 documentation" href="index.html"/>
+    <link rel="top" title="bargate documentation" href="index.html"/>
         <link rel="next" title="Single sign on" href="sso.html"/>
         <link rel="prev" title="Shares configuration" href="shares.html"/> 
 
@@ -89,7 +89,7 @@
 <li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Templates</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Templates</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#set-up-local-templates">Set up local templates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#templates-you-should-edit">Templates you should edit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#templates-you-can-edit">Templates you can edit</a></li>
@@ -97,6 +97,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
 </ul>
 
             
@@ -152,11 +153,11 @@ can be overridden but it is recommended that you only override templates designe
 for you to do so.</p>
 <div class="section" id="set-up-local-templates">
 <h2>Set up local templates<a class="headerlink" href="#set-up-local-templates" title="Permalink to this headline">¶</a></h2>
-<p>To get started you need to set the <a class="reference internal" href="config_options.html#config-local-template-dir"><span>LOCAL_TEMPLATE_DIR</span></a> option in
+<p>To get started you need to set the <a class="reference internal" href="config_options.html#config-local-template-dir"><span class="std std-ref">LOCAL_TEMPLATE_DIR</span></a> option in
 bargate.conf to point at a directory where you will place your local templates.
 You then need to restart bargate so it will notice the new config option, on startup
 it should output something like this to the log file:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span>2016-03-28 19:25:47,119 INFO: site-specific templates will be loaded from: /opt/bargate/local_templates/
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">2016</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">28</span> <span class="mi">19</span><span class="p">:</span><span class="mi">25</span><span class="p">:</span><span class="mi">47</span><span class="p">,</span><span class="mi">119</span> <span class="n">INFO</span><span class="p">:</span> <span class="n">site</span><span class="o">-</span><span class="n">specific</span> <span class="n">templates</span> <span class="n">will</span> <span class="n">be</span> <span class="n">loaded</span> <span class="n">from</span><span class="p">:</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">local_templates</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>You will now need to create files in the directory matching names that Bargate looks
@@ -345,7 +346,7 @@ and what each file is for.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.4.0',
+            VERSION:'1.4.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
