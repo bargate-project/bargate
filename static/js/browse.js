@@ -289,4 +289,10 @@ $(document).ready(function()
 			$('#upload-drag-over').modal('hide');
 		}
 	});
+
+	/* Searching - mark as 'searching' for long page loads */
+	$("#search-form" ).submit(function( event )
+	{
+		$("#search-form-submit").button('loading');
+	});
 });
