@@ -133,33 +133,26 @@ def wb_sid_to_name(sid):
 ################################################################################
 ################################################################################
 
-def statURI(libsmbclient,uri):
-	## stat the file
-	## return a dictionary with friendly named access to data
+def statEntry(libsmbclient,url):
+	"""Run stat() on a URI and return a dictionary with friendly named keys"""
 
-	## Strip off trailing slashes as they're useless to us
-	if uri.endswith('/'):
-		uri = uri[:-1]
+	# Strip off trailing slashes as they're useless to us
+	if url.endswith('/'):
+		url = url[:-1]
 
-	## stat the URI
-	try:
-		fstat = libsmbclient.stat(uri)
-	except Exception as ex:
-		return bargate.lib.errors.smbc_handler(ex,uri)
+	fstat = libsmbclient.stat(url)
 
-	dstat = {}
-	dstat['mode']  = fstat[0]		## unix mode
-	dstat['ino']   = fstat[1]		## inode number
-	dstat['dev']   = fstat[2]		## device number
-	dstat['nlink'] = fstat[3]		## number of links
-	dstat['uid']   = fstat[4]		## uid
-	dstat['gid']   = fstat[5]		## gid
-	dstat['size']  = fstat[6]		## size
-	dstat['atime'] = fstat[7]		## access time
-	dstat['mtime'] = fstat[8]		## modify time
-	dstat['ctime'] = fstat[9]		## change time
-
-	return dstat
+	return {'mode': fstat[0], 	## unix mode
+			'ino': fstat[1], 	## inode number
+			'dev': fstat[2], 	## device number
+			'nlink': fstat[3],	## number of links
+			'uid': fstat[4], 	## user ID
+			'gid': fstat[5], 	## group ID
+			'size': fstat[6], 	## size in bytes
+			'atime': fstat[7],	## access time
+			'mtime': fstat[8],	## modify time
+			'ctime': fstat[9]	## change time
+			}
 
 ################################################################################
 ################################################################################
@@ -167,7 +160,6 @@ def statURI(libsmbclient,uri):
 
 def getEntryType(libsmbclient,uri):
 	## stat the file, st_mode has all the info we need
-	## thanks to clayton for fixing this problem
 
 	## Strip off trailing slashes as they're useless to us
 	if uri.endswith('/'):
@@ -211,21 +203,18 @@ def searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,u
 		try:
 			directory_entries = libsmbclient.opendir(uri_as_str).getdents()
 		except smbc.NotDirectoryError as ex:
-			## This was not a directory, return nothing.
-			app.logger.info("Search given URI which was not a directory :(")
-			return results
+			return []
 
 		except Exception as ex:
 			## We don't actually want to fail the entire search if
 			## one part failed, so we return an empty list :/
 			## not much else we can really do sadly
-			#return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
 			app.logger.info("Search encountered an exception " + str(ex) + " " + str(type(ex)))
 			return results
 
 		## now loop over each entry
 		for dentry in directory_entries:
-			entry = loadDentry(dentry, func_name, srv_path_as_str, path, path_as_str)
+			entry = loadDentry(dentry, srv_path_as_str, path, path_as_str)
 
 			## Skip hidden files
 			if entry['skip']:
@@ -233,12 +222,11 @@ def searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,u
 
 			## Check if the filename matched
 			if query.lower() in entry['name'].lower():
-				#app.logger.info("MATCH FOUND!!! on " + entry['name'])
+				## match found! load more data for the entry:
+				entry = processDentry(entry, libsmbclient, func_name)
 				entry['parent_path'] = path
 				entry['parent_url']  = url_for(func_name,path=path)
 				results.append(entry)
-			#else:
-				#app.logger.info("query " + query.lower() + " did not match: " + entry['name'].lower())
 
 			## Search subdirectories if we found one
 			if entry['type'] == 'dir':
@@ -251,22 +239,24 @@ def searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,u
 
 				results = results + searchForFilenames(libsmbclient,func_name,new_path, new_path_as_str, srv_path_as_str, entry['uri_as_str'], query)
 
-
 		return results
 
 ################################################################################
 ################################################################################
 ################################################################################
 
-def loadDentry(dentry,func_name, srv_path_as_str, path, path_as_str):
-	"""This function performs some basic checks and evaluations on entries returned
-		when listing a directory. This is used by 'browse' and 'search' at the 
-		moment. It returns a dictionary of information. The most important result
-		is the 'skip' key in the returned dictionary it means the file should be 
-		omitted from results because either its . or .. or a hidden file.
+def loadDentry(dentry,srv_path_as_str, path, path_as_str):
+	"""This function takes a directory entry returned from getdents and returns
+		a dictionary of information about the dentry. Its primary purpose is
+		to return unicode and str objects for the name, path and URI of the entry
+		and determine if the entry should be 'skipped'.
+
+		'skip' means the file should be omitted from results because either 
+		it is '.' or '..' or is considered a 'hidden' file.
 
 		The dictionary returned contains the following keys:
 
+			- type			Either 'file', 'dir', 'share' or 'other'
 			- name			The entry name as a unicode object
 			- name_as_str	The entry name as a str object
 			- uri			
@@ -319,7 +309,7 @@ def loadDentry(dentry,func_name, srv_path_as_str, path, path_as_str):
 		if entry['name'].startswith('~$'):
 			entry['skip'] = True
 
-		## Other horrible Windows shite
+		## Other horrible Windows files
 		hidden_entries = ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']
 
 		if entry['name'] in hidden_entries:
@@ -328,6 +318,61 @@ def loadDentry(dentry,func_name, srv_path_as_str, path, path_as_str):
 	if dentry.smbc_type == bargate.lib.smb.SMB_FILE:
 		entry['type'] = 'file'
 
+	elif dentry.smbc_type == bargate.lib.smb.SMB_DIR:
+		entry['type'] = 'dir'
+
+
+	elif dentry.smbc_type == bargate.lib.smb.SMB_SHARE:
+		entry['type'] = 'share'
+
+		## check last char for $ ('administrative' shares)
+		if entry['name'].endswith == "$":
+			entry['skip'] = True
+	else:
+		entry['type'] = 'other'
+		entry['skip'] = True
+
+	return entry
+
+################################################################################
+################################################################################
+################################################################################
+
+def processDentry(entry,libsmbclient,func_name):
+	"""This function takes a directory entry returned from the loadDentry
+		function (a dictionary) and performs further processing on the dentry 
+		via stat() if its a file and infers information such as mimetype and 
+		icon from the entry name. This is used by the browse function and also 
+		by the search function (but only when it finds a matching filename).
+
+		The dictionary returned contains the following ADDITIONAL keys:
+
+			For all types:
+			- icon			The CSS class names to use as the icon
+
+			For files and directories:
+			- stat			The URL to 'stat' the entry further (an AJAX/JSON call)			
+			- open			The URL to 'open' the file/directory
+
+			For files only:
+			- mtype			The friendly 'file type' string e.g. Microsoft Word Document
+			- mtype_raw		The raw mimetype e.g. text/plain
+			- download		The URL to 'download' the file
+			- size			Size of the file in bytes
+			- mtime			The modify time of the file as a friendly string
+			- mtime_raw 	The modify time of the file as a UNIX timestamp
+
+			If the user has automatic open/view on file clicking set:
+			- on_file_click	The URL to open/view the file
+
+			For files that should be 'viewed' in browser:
+			- view			The URL to 'view' the file
+
+			For image files that should be previewed:
+			- img_preview	The URL to the image for previews
+		"""
+
+	if entry['type'] == 'file':
 		## Generate 'mtype', 'mtype_raw' and 'icon'
 		entry['icon'] = 'fa fa-fw fa-file-text-o'
 		(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
@@ -338,29 +383,57 @@ def loadDentry(dentry,func_name, srv_path_as_str, path, path_as_str):
 		entry['download']     = url_for(func_name,path=entry['path'],action='download')
 		entry['open']         = entry['download']
 
-	elif dentry.smbc_type == bargate.lib.smb.SMB_DIR:
-		entry['type'] = 'dir'
+		## For files we stat the file and look up a bunch of stuff
+		fstat = statEntry(libsmbclient,entry['uri_as_str'])
+
+		if 'mtime' in fstat:
+			entry['mtime_raw'] = fstat['mtime']
+			entry['mtime']     = bargate.lib.core.ut_to_string(fstat['mtime'])
+		else:
+			entry['mtime']     = 'Unknown'
+			entry['mtime_raw'] = 0
+
+		if 'size' in fstat:
+			entry['size'] = fstat['size']
+
+			## Image previews
+			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
+				if int(fstat['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
+					entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+		else:
+			entry['size'] = 0
+
+		## View-in-browser download type
+		if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
+			entry['view'] = url_for(func_name,path=entry['path'],action='view')
+			entry['open'] = entry['view']
+			
+		## What to do based on 'on_file_click' setting
+		on_file_click = bargate.lib.userdata.get_on_file_click()
+		if on_file_click == 'ask':
+			entry['on_file_click'] = ''
+		elif on_file_click == 'default':
+			entry['on_file_click'] = entry['open']
+		elif on_file_click == 'download':
+			entry['on_file_click'] = entry['download']
+
+	elif entry['type'] == 'dir':
+		## Set the icon for directories
 		entry['icon'] = 'fa fa-fw fa-folder'
 
-		## Generate URLs to this dir
+		## Generate URLs to this directory
 		entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 		entry['open'] = url_for(func_name,path=entry['path'])
 
-	elif dentry.smbc_type == bargate.lib.smb.SMB_SHARE:
-		## check last char for $ ('administrative' shares)
-		if entry['name'].endswith == "$":
-			entry['skip'] = True
-
-		entry['type'] = 'share'
+	elif entry['type'] == 'share':
+		## Set the icon for shares
 		entry['icon'] = 'fa fa-fw fa-archive'
 
 		## Generate a URL for this share
 		entry['open'] = url_for(func_name,path=entry['path'])
 
-	else:
-		entry['type'] = 'other'
+	elif entry['type'] == 'other':
 		entry['icon'] = 'fa fa-question-circle'
-		entry['skip'] = True
 
 	return entry
 	
@@ -588,6 +661,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			query   = request.args.get('q')
 			results = searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query)
 
+			## TODO deal with no results
+
 			return render_template('search.html',
 				results=results,
 				query=query,
@@ -595,7 +670,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				root_display_name = display_name,
 				search_mode=True,
 				url_home=url_for(func_name),
-				crumbs=crumbs)
+				crumbs=crumbs,
+				on_file_click=bargate.lib.userdata.get_on_file_click())
 			
 ################################################################################
 # BROWSE / DIRECTORY / LIST FILES
@@ -612,7 +688,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					return url_for(func_name,path=parent_directory_path)
 				else:
 					# misconfiguration of bargate
-					app.logger.error("Bargate has been misconfigured - the path given for the share " + func_name + " is not a directory!")
+					app.logger.error("Bargate is misconfigured - the path given for the share " + func_name + " is not a directory!")
 					abort(500)
 
 			except Exception as ex:
@@ -624,59 +700,19 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			for dentry in directory_entries:
 				# Create a new dict for the entry
-				entry = loadDentry(dentry, func_name, srv_path_as_str, path, path_as_str)
+				entry = loadDentry(dentry, srv_path_as_str, path, path_as_str)
 
 				# Continue to next entry if we found it should be skipped
 				if entry['skip']:
 					continue
+				else:
+					# Further process the entry (stat it, load the icon, etc)
+					entry = processDentry(entry,libsmbclient,func_name)
 
-				## FILE ########################################################
 				if entry['type'] == 'file':
-					## Stat the file so we get file size and other bits. 
-					dstat = statURI(libsmbclient,entry['uri_as_str'])
-
-					if 'mtime' in dstat:
-						entry['mtime_raw'] = dstat['mtime']
-						entry['mtime']     = bargate.lib.core.ut_to_string(dstat['mtime'])
-					else:
-						entry['mtime']     = 'Unknown'
-						entry['mtime_raw'] = 0
-
-					if 'size' in dstat:
-						entry['size'] = dstat['size']
-
-						## Image previews
-						if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
-							if int(dstat['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
-								entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
-					else:
-						entry['size'] = 0
-					
-					## View-in-browser download type
-					if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
-						entry['view'] = url_for(func_name,path=entry['path'],action='view')
-						entry['open'] = entry['view']
-						
-					## What to do based on 'on_file_click' setting
-					on_file_click = bargate.lib.userdata.get_on_file_click()
-					if on_file_click == 'ask':
-						entry['on_file_click'] = ''
-					elif on_file_click == 'default':
-						entry['on_file_click'] = entry['open']
-					elif on_file_click == 'download':
-						entry['on_file_click'] = entry['download']
-					
-					## Append the file to the files list				
 					files.append(entry)
-
-				## DIRECTORY ###################################################
-				elif entry['type'] == 'dir':
+				elif entry['type'] == 'dir' or entry['type'] == 'share':
 					dirs.append(entry)
-
-				## SMB SHARE ###################################################
-				elif entry['type'] == 'share':
-					if not entry['skip']:
-						dirs.append(entry)
 
 			## Sort the directories and files by name 
 			dirs  = sorted(dirs,cmp  = bargate.lib.core.sort_by_name)
@@ -684,8 +720,8 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			## Build a breadcrumbs trail ##
 			crumbs = []
-			parts = path.split('/')
-			b4 = ''
+			parts  = path.split('/')
+			b4     = ''
 
 			## Build up a list of dicts, each dict representing a crumb
 			for crumb in parts:
