@@ -644,6 +644,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 ################################################################################
 			
 		elif action == 'search':
+			if not app.config['SEARCH_ENABLED']:
+				abort(404)
+
 			if 'q' not in request.args:
 				return redirect(url_for(func_name,path=path))
 
@@ -660,8 +663,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			query   = request.args.get('q')
 			results = searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query)
-
-			## TODO deal with no results
 
 			return render_template('search.html',
 				results=results,

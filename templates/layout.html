@@ -127,11 +127,13 @@
 							{{ sortmenu() }}
 						</div>
 
+						{% if config['SEARCH_ENABLED'] %}
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a data-toggle="modal" href="#search" class="btn navbar-btn btn-default btn" rel="tooltip" title="Search">
 								<i class="fa fa-fw fa-lg fa-search"></i>
 							</a>
 						</div>
+						{% endif %}
 					{% endif %}
 				</div>
 				{%- endif %}

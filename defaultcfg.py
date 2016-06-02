@@ -146,3 +146,6 @@ IMAGE_PREVIEW_MAX_SIZE=30*1024*1024
 ## Should bargate attempt to use winbind to resolve a SID to a name?
 WBINFO_LOOKUP=False
 WBINFO_BINARY='/usr/bin/wbinfo'
+
+## Allow searches?
+SEARCH_ENABLED=False

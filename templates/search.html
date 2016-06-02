@@ -37,8 +37,9 @@
 				<span class="text-muted">in <a href="{{entry.parent_url}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
 			</td>
 		</tr>
-		{%- endfor -%}
-
+		{%- else -%}
+		<tr><td colspan="2"><em>No results found</em></td></tr>
+		{% endfor %}
 	</tbody>
 </table>
 

@@ -103,6 +103,7 @@
 	</div>
 </div>
 
+{% if config['SEARCH_ENABLED'] %}
 {#- modal popup for when search is clicked #}
 <div class="modal" id="search" tabindex='-1'>
 	<div class="modal-dialog">
@@ -126,6 +127,7 @@
 		</div>
 	</div>
 </div>
+{% endif %}
 
 {#- modal to delete a file #}
 <div class="modal" id="delete-confirm" tabindex='-1'>
