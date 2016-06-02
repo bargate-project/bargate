@@ -20,6 +20,7 @@ import bargate.lib.core
 import bargate.lib.errors
 import bargate.lib.userdata
 import bargate.lib.mime
+from bargate.lib.search import RecursiveSearchEngine
 import string, os, smbc, sys, stat, pprint, urllib, re
 from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify, render_template
 
@@ -52,7 +53,6 @@ SMB_LINK        = 9
 #00094 #define SMBC_DIR            7
 #00095 #define SMBC_FILE           8
 #00096 #define SMBC_LINK           9
-
 
 ################################################################################
 ################################################################################
@@ -192,54 +192,7 @@ def statToType(fstat):
 	else:
 		return -1
 
-################################################################################
-################################################################################
-################################################################################
 
-def searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query):
-		results = []
-
-		## Try getting directory contents of where we are
-		try:
-			directory_entries = libsmbclient.opendir(uri_as_str).getdents()
-		except smbc.NotDirectoryError as ex:
-			return []
-
-		except Exception as ex:
-			## We don't actually want to fail the entire search if
-			## one part failed, so we return an empty list :/
-			## not much else we can really do sadly
-			app.logger.info("Search encountered an exception " + str(ex) + " " + str(type(ex)))
-			return results
-
-		## now loop over each entry
-		for dentry in directory_entries:
-			entry = loadDentry(dentry, srv_path_as_str, path, path_as_str)
-
-			## Skip hidden files
-			if entry['skip']:
-				continue
-
-			## Check if the filename matched
-			if query.lower() in entry['name'].lower():
-				## match found! load more data for the entry:
-				entry = processDentry(entry, libsmbclient, func_name)
-				entry['parent_path'] = path
-				entry['parent_url']  = url_for(func_name,path=path)
-				results.append(entry)
-
-			## Search subdirectories if we found one
-			if entry['type'] == 'dir':
-				if len(path) > 0:
-					new_path        = path + "/" + entry['name']
-					new_path_as_str = path_as_str + "/" + entry['name_as_str']
-				else:
-					new_path        = entry['name']
-					new_path_as_str = entry['name_as_str']					
-
-				results = results + searchForFilenames(libsmbclient,func_name,new_path, new_path_as_str, srv_path_as_str, entry['uri_as_str'], query)
-
-		return results
 
 ################################################################################
 ################################################################################
@@ -662,7 +615,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					b4 = b4 + crumb + '/'
 
 			query   = request.args.get('q')
-			results = searchForFilenames(libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query)
+
+			searchEngine = RecursiveSearchEngine(libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query)
+			results, timeout_reached = searchEngine.search()
+
+			if timeout_reached:
+				flash("Some search results have been omitted because the search took too long to perform.","alert-warning")
 
 			return render_template('search.html',
 				results=results,

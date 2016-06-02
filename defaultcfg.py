@@ -149,3 +149,6 @@ WBINFO_BINARY='/usr/bin/wbinfo'
 
 ## Allow searches?
 SEARCH_ENABLED=False
+
+## Maximum time to search for before giving up and returning results
+SEARCH_TIMEOUT=50
