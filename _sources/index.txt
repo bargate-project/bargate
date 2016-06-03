@@ -1,6 +1,6 @@
 .. raw:: html
 
-  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Oswald:700">
   <style type="text/css">
   .logo {
@@ -26,9 +26,8 @@ bargate is an open source web interface for SMB file servers
 Download
 --------
 
-- The latest stable version is: `1.4.0 <https://github.com/divad/bargate/releases/tag/v1.4.0/>`_
+- The latest stable version is: `1.4.1 <https://github.com/divad/bargate/releases/tag/v1.4.1/>`_
 - The latest old-stable version is: `1.3.4 <https://github.com/divad/bargate/releases/tag/v1.3.4/>`_
-- The latest development version is: 1.4.1 Release Candidate
 
 GitHub
 ------

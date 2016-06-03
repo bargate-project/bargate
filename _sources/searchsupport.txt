@@ -4,7 +4,7 @@ Search
 Bargate has EXPERIMENTAL support for simple file name searches since 1.4.1.
 
 
-Here be dragons
+Here be dragons!
 ----------------
 
 The very notion of a client connecting to an SMB server to perform a search
