@@ -76,4 +76,4 @@ Contents
    templates
    sso
    searchsupport
-
+   knownissues

@@ -51,7 +51,7 @@ Templates you can edit
 =================   ============================================================
 Name                Function
 =================   ============================================================
-custom              connect to server' form
+custom              connect to server form
 error               the generic error page
 header-links        CSS file imports
 javascript          javascript file imports
@@ -81,5 +81,6 @@ online              list of all online users
 settings            user settings page
 totp_disable        two-factor authentication disable form
 totp_enable         two-factor authentication enable form
+search              search results view
 =================   ============================================================
 

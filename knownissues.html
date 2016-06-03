@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -9,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; bargate documentation</title>
+  <title>Known issues &mdash; bargate documentation</title>
   
 
   
@@ -31,7 +30,8 @@
   
 
   
-    <link rel="top" title="bargate documentation" href="index.html"/> 
+    <link rel="top" title="bargate documentation" href="index.html"/>
+        <link rel="prev" title="Search" href="searchsupport.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -80,7 +80,7 @@
           
             
             
-                <ul>
+                <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
@@ -91,7 +91,10 @@
 <li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
 <li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
-<li class="toctree-l1"><a class="reference internal" href="knownissues.html">Known issues</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Known issues</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#samba-bug-11624-socket-leak-on-dfs-paths">Samba bug #11624 - Socket leak on DFS paths</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -114,7 +117,7 @@
         <div class="rst-content">
           
 
-
+ 
 
 
 
@@ -122,7 +125,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li></li>
+    <li>Known issues</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -134,17 +137,40 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
+  <div class="section" id="known-issues">
+<h1>Known issues<a class="headerlink" href="#known-issues" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="samba-bug-11624-socket-leak-on-dfs-paths">
+<h2>Samba bug #11624 - Socket leak on DFS paths<a class="headerlink" href="#samba-bug-11624-socket-leak-on-dfs-paths" title="Permalink to this headline">¶</a></h2>
+<p>There (was) a bug in Samba / libsmbclient for which the fix has yet to make it
+through to distribution updates. All versions of RHEL are still affected by
+this bug for example.</p>
+<p>More details here: <a class="reference external" href="https://bugzilla.samba.org/show_bug.cgi?id=11624">https://bugzilla.samba.org/show_bug.cgi?id=11624</a></p>
+<p>If you configure Bargate to let your users connect to shares through DFS paths
+then you will almost certainly hit this bug and Bargate will leak connections
+leading to hundreds or thousands of zombie connections to port 445 on the
+file server.</p>
+<p>The current work around whilst waiting for the bug fix to be made available by
+distributions is to simply restart the wsgi server every so often. If you&#8217;re
+using the recommended nginx+uwsgi approach then add this line to the
+uwsgi.ini configuation file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">max</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">lifetime</span> <span class="o">=</span> <span class="mi">900</span>
+</pre></div>
+</div>
+<p>This will cause uwsgi to restart each worker after 900 seconds (15 minutes).</p>
+</div>
 </div>
 
 
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="searchsupport.html" class="btn btn-neutral" title="Search" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
