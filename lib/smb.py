@@ -419,7 +419,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		active = func_name
 
 	## The place to redirect to (the url) if an error occurs
-	parent_redirect = redirect(url_for(func_name))
+	## This defaults to None (aka don't redirect, and just show an error)
+	## because to do otherwise will lead to a redirect loop. (Fix #93 v1.4.1)
+	parent_redirect = None
 
 	## Prepare to talk to the file server
 	libsmbclient = smbc.Context(auth_fn=bargate.lib.user.get_smbc_auth)
@@ -458,6 +460,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 				## update the parent redirect with the correct path
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
+
 			else:
 				parent_directory = False
 
