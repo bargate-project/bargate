@@ -432,7 +432,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 	## The place to redirect to (the url) if an error occurs
 	## This defaults to None (aka don't redirect, and just show an error)
 	## because to do otherwise will lead to a redirect loop. (Fix #93 v1.4.1)
-	parent_redirect = None
+	error_redirect = None
+
+	## The parent directory to redirect to - defaults to just the current function
+	## name (the handler for this 'share' at the top level)
+	parent_redirect = redirect(url_for(func_name))
 
 	## Prepare to talk to the file server
 	libsmbclient = smbc.Context(auth_fn=bargate.lib.user.get_smbc_auth)
@@ -471,6 +475,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 				## update the parent redirect with the correct path
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
+				error_redirect  = parent_redirect
 
 			else:
 				parent_directory = False
@@ -494,11 +499,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			try:
 				fstat    = libsmbclient.stat(uri_as_str)
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri_as_str,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri_as_str,error_redirect)
 
 			## ensure item is a file
 			if not bargate.lib.smb.statToType(fstat) == SMB_FILE:
-				return bargate.lib.errors.invalid_item_download(parent_redirect)
+				return bargate.lib.errors.invalid_item_download(error_redirect)
 
 			try:
 				file_object = libsmbclient.open(uri_as_str)
@@ -520,7 +525,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return resp
 	
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri_as_str,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri_as_str,error_redirect)
 
 ################################################################################
 # IMAGE PREVIEW
@@ -555,7 +560,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			try:
 				file_object = libsmbclient.open(uri_as_str)
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri_as_str,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri_as_str,error_redirect)
 			
 			## Read the file into memory first (hence a file size limit) because PIL/Pillow tries readline()
 			## on pysmbc's File like objects which it doesn't support
@@ -665,7 +670,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					abort(500)
 
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 
 			## Seperate out dirs and files into two lists
 			dirs  = []
@@ -782,6 +787,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				parent_directory = True
 				parent_directory_path_as_str = urllib.quote(parent_directory_path.encode('utf-8'))
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
+				error_redirect = parent_redirect
 			else:
 				parent_directory = False
 
@@ -887,9 +893,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			else:
 				new_uri_as_str = srv_path_as_str + new_filename_as_str
 
-			## the place to redirect to on success or failure
-			redirect_path = redirect(url_for(func_name,path=parent_directory_path))
-
 			## get the item type of the existing 'filename'
 			itemType = bargate.lib.smb.getEntryType(libsmbclient,uri_as_str)
 
@@ -898,15 +901,15 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			elif itemType == bargate.lib.smb.SMB_DIR:
 				typemsg = "The directory"
 			else:
-				return bargate.lib.errors.invalid_item_type(redirect_path)
+				return bargate.lib.errors.invalid_item_type(error_redirect)
 
 			try:
 				libsmbclient.rename(uri_as_str,new_uri_as_str)
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri,redirect_path)
+				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 			else:
 				flash(typemsg + " '" + entryname + "' was renamed to '" + request.form['newfilename'] + "' successfully.",'alert-success')
-				return redirect_path
+				return parent_redirect
 
 ################################################################################
 # COPY FILE
@@ -926,10 +929,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 				## ensure item is a file
 				if not itemType == SMB_FILE:
-					return bargate.lib.errors.invalid_item_copy(parent_redirect)
+					return bargate.lib.errors.invalid_item_copy(error_redirect)
 
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 
 			## Get the new filename
 			dest_filename = request.form['filename']
@@ -938,7 +941,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			try:
 				bargate.lib.smb.check_name(request.form['filename'])
 			except ValueError as e:
-				return bargate.lib.errors.invalid_name(parent_redirect)
+				return bargate.lib.errors.invalid_name(error_redirect)
 			
 			## encode the new filename and quote the new filename
 			if parent_directory:
@@ -953,20 +956,20 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				## This is what we want - i.e. no file/entry
 				pass
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 
 			## Assuming we got here without an exception, open the source file
 			try:		
 				source_fh = libsmbclient.open(uri_as_str)
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 
 			## Assuming we got here without an exception, open the dest file
 			try:		
 				dest_fh = libsmbclient.open(dest, os.O_CREAT | os.O_WRONLY | os.O_TRUNC )
 
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,srv_path + dest,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,srv_path + dest,error_redirect)
 
 			## try reading then writing blocks of data, then redirect!
 			try:
@@ -977,7 +980,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					location = source_fh.seek(1024,location)
 
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,srv_path + dest,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,srv_path + dest,error_redirect)
 
 			flash('A copy of "' + entryname + '" was created as "' + dest_filename + '"','alert-success')
 			return parent_redirect
@@ -987,24 +990,21 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 ################################################################################
 
 		elif action == 'mkdir':
-			## the place to redirect to on success or failure
-			redirect_path = redirect(url_for(func_name,path=path))
-			
 			## Check the path is valid
 			try:
 				bargate.lib.smb.check_name(request.form['directory_name'])
 			except ValueError as e:
-				return bargate.lib.errors.invalid_name(parent_redirect)
+				return bargate.lib.errors.invalid_name(error_redirect)
 
 			mkdir_uri = uri_as_str + '/' + urllib.quote(request.form['directory_name'].encode('utf-8'))
 
 			try:
 				libsmbclient.mkdir(mkdir_uri,0755)
 			except Exception as ex:
-				return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 			else:
 				flash("The folder '" + request.form['directory_name'] + "' was created successfully.",'alert-success')
-				return redirect_path
+				return parent_redirect
 
 ################################################################################
 # DELETE FILE
@@ -1020,20 +1020,21 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				try:
 					libsmbclient.unlink(uri_as_str)
 				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 				else:
 					flash("The file '" + entryname + "' was deleted successfully.",'alert-success')
 					return parent_redirect
+
 			elif itemType == bargate.lib.smb.SMB_DIR:
 				try:
 					libsmbclient.rmdir(uri_as_str)
 				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,uri,parent_redirect)
+					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 				else:
 					flash("The directory '" + entryname + "' was deleted successfully.",'alert-success')
 					return parent_redirect
 			else:
-				return bargate.lib.errors.invalid_item_type(parent_redirect)
+				return bargate.lib.errors.invalid_item_type(error_redirect)
 
 		else:
 			abort(400)
