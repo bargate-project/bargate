@@ -336,8 +336,19 @@ def processDentry(entry,libsmbclient,func_name):
 		entry['download']     = url_for(func_name,path=entry['path'],action='download')
 		entry['open']         = entry['download']
 
-		## For files we stat the file and look up a bunch of stuff
-		fstat = statEntry(libsmbclient,entry['uri_as_str'])
+		try:
+
+			## For files we stat the file and look up a bunch of stuff
+			fstat = statEntry(libsmbclient,entry['uri_as_str'])
+		except Exception as ex:
+			## If the file stat failed we return a result with the data missing
+			## rather than fail the entire page load
+			entry['mtime_raw'] = 0
+			entry['mtime'] = "Unknown"
+			entry['size'] = 0
+			entry['on_file_click'] = ''
+			entry['error'] = True
+			return entry
 
 		if 'mtime' in fstat:
 			entry['mtime_raw'] = fstat['mtime']
