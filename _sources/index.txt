@@ -26,8 +26,7 @@ bargate is an open source web interface for SMB file servers
 Download
 --------
 
-- The latest stable version is: `1.4.1 <https://github.com/divad/bargate/releases/tag/v1.4.1/>`_
-- The latest old-stable version is: `1.3.4 <https://github.com/divad/bargate/releases/tag/v1.3.4/>`_
+- The latest stable version is: `1.4.2 <https://github.com/divad/bargate/releases/tag/v1.4.2/>`_
 
 GitHub
 ------
