@@ -35,4 +35,9 @@ setup(
 		'Development Status :: 5 - Production/Stable',
 		'Natural Language :: English',
 	],
+	install_requires=[
+		'Flask>=0.10',
+		'pysmbc>=1.0.15.5',
+		'BrokenPackage>=0.7,<=1.0'
+	]
 )
