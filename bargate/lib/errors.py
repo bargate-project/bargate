@@ -86,6 +86,10 @@ def smbc_handler(exception_object,uri="Unknown",redirect_to=None):
 	# TIMED OUT
 	elif isinstance(exception_object,smbc.TimedOutError):
 		return smbc_TimedOutError(redirect_to)
+
+	# CONNECTION REFUSED
+	elif isinstance(exception_object,smbc.ConnectionRefusedError):
+		return smbc_ConnectionRefusedError(redirect_to)
 		
 	# pysmbc spits out RuntimeError when everything else fails
 	elif isinstance(exception_object,RuntimeError):
@@ -98,18 +102,15 @@ def smbc_handler(exception_object,uri="Unknown",redirect_to=None):
 ## pysmbc errors
 
 def smbc_NoEntryError(uri,redirect_to=None):
-	"""Prints out a nice error for smbc.NoEntryError exceptions
-	"""
+	"""Prints out a nice error for smbc.NoEntryError exceptions"""
 	return output_error("No such file or directory","The file or directory '" + uri + "' was not found.",redirect_to)
 
 def smbc_NotEmptyError(uri,redirect_to=None):
-	"""Prints out a nice error for smbc.NotEmptyError exceptions
-	"""
+	"""Prints out a nice error for smbc.NotEmptyError exceptions"""
 	return output_error("The directory is not empty","The directory '" + uri + "' is not empty so cannot be deleted.",redirect_to)
 
 def smbc_PermissionDenied(redirect_to=None):
-	"""Prints out a nice error for smbc.PermissionDenied exceptions
-	"""
+	"""Prints out a nice error for smbc.PermissionDenied exceptions"""
 	
 	## Test to see if the password has changed since logon which would mean perm denied was password related
 	result = bargate.lib.user.auth(session['username'], bargate.lib.user.get_password())
@@ -121,24 +122,24 @@ def smbc_PermissionDenied(redirect_to=None):
 	return output_error("Permission Denied","You do not have permission to perform the action.",redirect_to)
 
 def smbc_ExistsError(uri,redirect_to=None):
-	"""Prints out a nice error for smbc.ExistsError exceptions
-	"""
+	"""Prints out a nice error for smbc.ExistsError exceptions"""
 	return output_error("File or directory already exists","The file or directory '" + uri + "' which you attempted to create already exists.",redirect_to)
 
 def smbc_NoSpaceError(redirect_to=None):
-	"""Prints out a nice error for smbc.NoSpaceError exceptions
-	"""
+	"""Prints out a nice error for smbc.NoSpaceError exceptions"""
 	return output_error("No space left on device","There is no space left on the server. You may have exceeded your usage allowance/quota.",redirect_to)
 
 def smbc_TimedOutError(redirect_to=None):
-	"""Prints out a nice error for smbc.TimedOutError exceptions
-	"""
+	"""Prints out a nice error for smbc.TimedOutError exceptions"""
 	return output_error("Timed out","The current operation timed out. Please try again later.",redirect_to)
 	
 def smbc_RuntimeError(redirect_to=None):
-	"""Prints out a nice error for RuntimeError when smbc is called
-	"""
+	"""Prints out a nice error for RuntimeError when smbc is called"""
 	return output_error("File Server Error","An unknown error was returned from the file server. Please contact your support team.",redirect_to)
+
+def smbc_ConnectionRefusedError(redirect_to=None):
+	"""Prints out a nice error for smbc.ConnectionRefusedError"""
+	return output_error("Connection Refused","The remote server refused our connection. Check the custom server address and try again",redirect_to)
 
 ## Bargate internal errors
 
