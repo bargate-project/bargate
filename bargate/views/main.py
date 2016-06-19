@@ -19,7 +19,7 @@ from bargate import app
 import bargate.lib.user
 import bargate.lib.userdata
 import bargate.lib.totp
-from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response, render_template
+from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response, render_template, send_from_directory
 import mimetypes
 import os 
 import time
@@ -29,7 +29,7 @@ import werkzeug
 from itsdangerous import base64_decode
 
 ################################################################################
-#### HOME PAGE / LOGIN PAGE
+# Default route (login or redirect to the default share if logged in)
 
 @app.csrfp_exempt
 @app.route('/', methods=['GET', 'POST'])
@@ -79,7 +79,7 @@ def login():
 
 
 ################################################################################
-#### LOGOUT
+# LOGOUT
 
 @app.route('/logout')
 def logout():
@@ -92,22 +92,25 @@ def logout():
 	return redirect(url_for('login'))
 
 ################################################################################
-#### HELP PAGES
 
 @app.route('/about')
 def about():
 	return render_template('about.html', active='help')
 
+################################################################################
+
 @app.route('/about/changelog')
 def changelog():
 	return render_template('changelog.html', active='help')
+
+################################################################################
 
 @app.route('/nojs')
 def nojs():
 	return render_template('nojs.html')
 
-#################################################################################
-### Portal login support (added for University of Sheffield)
+################################################################################
+# Portal login support (added for University of Sheffield)
 
 @app.csrfp_exempt
 @app.route('/portallogin', methods=['POST', 'GET'])
@@ -133,3 +136,10 @@ def portallogin():
 	else:
 		session['logged_in']    = True
 		return redirect(url_for(app.config['SHARES_DEFAULT']))
+
+################################################################################
+# Support for an additional /local/ static files directory
+
+@app.route('/local/<path:filename>')
+def local_static(filename):
+    return send_from_directory(app.config['LOCAL_STATIC_DIR'], filename)

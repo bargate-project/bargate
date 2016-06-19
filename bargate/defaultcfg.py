@@ -18,7 +18,7 @@
 from datetime import timedelta
 
 ## Bargate internal version number
-VERSION='1.5.dev6'
+VERSION='1.5.dev7'
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
@@ -99,6 +99,9 @@ SHARES_DEFAULT='custom'
 
 ## Local templates to override built in ones
 LOCAL_TEMPLATE_DIR=False
+
+## Local static files directory
+LOCAL_STATIC_DIR=False
 
 # Name of the app to display everywhere
 APP_DISPLAY_NAME='Bargate'

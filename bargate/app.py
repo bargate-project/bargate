@@ -142,6 +142,14 @@ Further Details:
 			else:
 				self.logger.error('site-specific templates cannot be loaded because LOCAL_TEMPLATE_DIR is not a directory')
 
+		if self.config['LOCAL_STATIC_DIR']:
+			if os.path.isdir(self.config['LOCAL_STATIC_DIR']):
+				self.logger.info('site-specific static files will be served from: ' + str(self.config['LOCAL_STATIC_DIR']))
+
+			else:
+				self.config['LOCAL_STATIC_DIR'] = False
+				self.logger.error('site-specific static files cannot be served because LOCAL_STATIC_DIR is not a directory')
+
 ################################################################################
 
 	def _init_debug(self):
