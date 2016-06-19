@@ -55,7 +55,7 @@
 			{%- set rclick = 'entry-preview' -%}
 		{%- else %}
 			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
-			<tr class="entry-click entry-file" data-url="{{ entry.on_file_click }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" {% if entry.view %}data-view="{{ entry.view }}"{%endif%} data-stat="{{ entry.stat }}">
+			<tr class="entry-click entry-file" data-url="{% if on_file_click == 'download' %} {{entry.download}} {% else %} {{entry.open}} {%endif%}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" {% if entry.view %}data-view="{{ entry.view }}"{%endif%} data-stat="{{ entry.stat }}">
 			{%- set rclick = 'entry-open' -%}
 		{%- endif %}
 

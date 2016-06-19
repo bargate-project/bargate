@@ -315,9 +315,6 @@ def processDentry(entry,libsmbclient,func_name):
 			- mtime			The modify time of the file as a friendly string
 			- mtime_raw 	The modify time of the file as a UNIX timestamp
 
-			If the user has automatic open/view on file clicking set:
-			- on_file_click	The URL to open/view the file
-
 			For files that should be 'viewed' in browser:
 			- view			The URL to 'view' the file
 
@@ -346,7 +343,6 @@ def processDentry(entry,libsmbclient,func_name):
 			entry['mtime_raw'] = 0
 			entry['mtime'] = "Unknown"
 			entry['size'] = 0
-			entry['on_file_click'] = ''
 			entry['error'] = True
 			return entry
 
@@ -371,15 +367,6 @@ def processDentry(entry,libsmbclient,func_name):
 		if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
 			entry['view'] = url_for(func_name,path=entry['path'],action='view')
 			entry['open'] = entry['view']
-			
-		## What to do based on 'on_file_click' setting
-		on_file_click = bargate.lib.userdata.get_on_file_click()
-		if on_file_click == 'ask':
-			entry['on_file_click'] = ''
-		elif on_file_click == 'default':
-			entry['on_file_click'] = entry['open']
-		elif on_file_click == 'download':
-			entry['on_file_click'] = entry['download']
 
 	elif entry['type'] == 'dir':
 		## Set the icon for directories

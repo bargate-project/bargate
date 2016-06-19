@@ -52,19 +52,19 @@
 					<div class="radio">
 					  <label>
 						<input type="radio" name="on_file_click" id="optionsRadios1" value="ask" {%if on_file_click and on_file_click == 'ask' %} checked="checked"{%endif%}>
-						Ask before downloading a file
-					  </label>
-					</div>
-					<div class="radio">
-					  <label>
-						<input type="radio" name="on_file_click" id="optionsRadios2" value="download" {%if on_file_click and on_file_click == 'download' %} checked="checked"{%endif%}>
-						Download files without prompting
+						Ask before downloading a file <span class="text-muted">(Recommended)</span>
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
 						<input type="radio" name="on_file_click" id="optionsRadios2" value="default" {%if on_file_click and on_file_click == 'default' %} checked="checked"{%endif%}>
-						View files in browser or download without prompting
+						View or download files when clicked without prompting
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios3" value="download" {%if on_file_click and on_file_click == 'download' %} checked="checked"{%endif%}>
+						Download files when clicked without prompting
 					  </label>
 					</div>
 				</div>
