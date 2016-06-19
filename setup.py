@@ -8,7 +8,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
 	name='bargate',
-	version='1.5.dev5',
+	version='1.5.dev6',
 	packages=find_packages(),
 	include_package_data=True,
 	license='GNU General Public License v3',
