@@ -692,10 +692,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				elif entry['type'] == 'dir' or entry['type'] == 'share':
 					dirs.append(entry)
 
-			## Sort the directories and files by name 
-			dirs  = sorted(dirs,cmp  = bargate.lib.core.sort_by_name)
-			files = sorted(files,cmp = bargate.lib.core.sort_by_name)
-
 			## Build a breadcrumbs trail ##
 			crumbs = []
 			parts  = path.split('/')
@@ -798,7 +794,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		## parent_directory is either True/False if there is one
 		## entryname will either be the part after the last / or the full path
 		## parent_directory_path will be empty string or the parent directory path
-		
+
 ################################################################################
 # UPLOAD FILE
 ################################################################################

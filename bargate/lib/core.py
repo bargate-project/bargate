@@ -30,14 +30,6 @@ def ut_to_string(ut):
 
 ################################################################################
 
-def sort_by_name(left,right):
-	"""A cmp function for the python sorted() function. Use to sort
-	a list by name. Used by smb.py directory entry sorting.
-	"""
-	return cmp(left['name'].lower(),right['name'].lower())
-
-################################################################################
-
 def banned_file(filename):
 	"""Takes a filename string and checks to see if has a banned
 	file extension. Returns True or False.
@@ -123,6 +115,8 @@ def decode_session_cookie(cookie_data):
 		data = zlib.decompress(data)
 
 	return data
+
+################################################################################
 
 def flask_load_session_json(value):
 
