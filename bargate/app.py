@@ -235,23 +235,26 @@ Further Details:
 		if request.method == 'POST':
 			# Get the function that is rendering the current view
 			view = self.view_functions.get(request.endpoint)
-			view_location = view.__module__ + '.' + view.__name__
 
-			# If the view is not exempt
-			if not view_location in self._exempt_views:
-				token = session.get('_csrfp_token')
+			# Make sure we actually found a view function
+			if view is not None:
+				view_location = view.__module__ + '.' + view.__name__
 
-				if not token or token != request.form.get('_csrfp_token'):
-					if 'username' in session:
-						self.logger.warning('CSRF Protection alert: %s failed to present a valid POST token', session['username'])
-					else:
-			 			self.logger.warning('CSRF Protection alert: a non-logged in user failed to present a valid POST token')
+				# If the view is not exempt
+				if not view_location in self._exempt_views:
+					token = session.get('_csrfp_token')
 
-					# The user should not have accidentally triggered this
-					raise self.CsrfpException()
+					if not token or token != request.form.get('_csrfp_token'):
+						if 'username' in session:
+							self.logger.warning('CSRF Protection alert: %s failed to present a valid POST token', session['username'])
+						else:
+				 			self.logger.warning('CSRF Protection alert: a non-logged in user failed to present a valid POST token')
 
-			else:
-				self.logger.debug('View ' + view_location + ' is exempt from CSRF Protection')
+						# The user should not have accidentally triggered this
+						raise self.CsrfpException()
+
+				else:
+					self.logger.debug('View ' + view_location + ' is exempt from CSRF Protection')
 
 ################################################################################
 
