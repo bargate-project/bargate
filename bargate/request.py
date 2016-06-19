@@ -21,7 +21,7 @@
 # functions in here register per-request functionality
 # with decorators
 
-from flask import Flask, request, session, g, abort, render_template
+from flask import Flask, request, session, g, abort, render_template, url_for
 from bargate import app
 import bargate.lib.userdata
 import bargate.lib.errors
@@ -71,6 +71,12 @@ def context_processor():
 			data['user_theme']     = bargate.lib.userdata.get_theme()
 			data['user_navbar']    = bargate.lib.userdata.get_navbar()	
 			data['user_layout']    = bargate.lib.userdata.get_layout()	
+
+	## The favicon
+	if app.config['LOCAL_FAVICON']:
+		data['favicon'] = url_for('local_static', filename='favicon.ico')
+	else:
+		data['favicon'] = url_for('static', filename='favicon.ico')
 
 	return data
 

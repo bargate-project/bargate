@@ -142,10 +142,15 @@ Further Details:
 			else:
 				self.logger.error('site-specific templates cannot be loaded because LOCAL_TEMPLATE_DIR is not a directory')
 
+		# check for a local static dir, and set up favicon
 		if self.config['LOCAL_STATIC_DIR']:
 			if os.path.isdir(self.config['LOCAL_STATIC_DIR']):
 				self.logger.info('site-specific static files will be served from: ' + str(self.config['LOCAL_STATIC_DIR']))
 
+				# override the built in / default favicon if one exists
+				if os.path.isfile(os.path.join(self.config['LOCAL_STATIC_DIR'], 'favicon.ico')):
+					self.logger.info('site-specific favicon found')
+					self.config['LOCAL_FAVICON'] = True
 			else:
 				self.config['LOCAL_STATIC_DIR'] = False
 				self.logger.error('site-specific static files cannot be served because LOCAL_STATIC_DIR is not a directory')

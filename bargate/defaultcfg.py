@@ -17,8 +17,8 @@
 
 from datetime import timedelta
 
-## Bargate internal version number
-VERSION='1.5.dev7'
+## Bargate version number
+VERSION='1.5.dev8'
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
@@ -102,6 +102,9 @@ LOCAL_TEMPLATE_DIR=False
 
 ## Local static files directory
 LOCAL_STATIC_DIR=False
+
+## Use a local favicon (you don't need to set this, it is determined automatically)
+LOCAL_FAVICON=False
 
 # Name of the app to display everywhere
 APP_DISPLAY_NAME='Bargate'

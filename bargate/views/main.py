@@ -142,4 +142,7 @@ def portallogin():
 
 @app.route('/local/<path:filename>')
 def local_static(filename):
-    return send_from_directory(app.config['LOCAL_STATIC_DIR'], filename)
+	if app.config['LOCAL_STATIC_DIR']:
+	    return send_from_directory(app.config['LOCAL_STATIC_DIR'], filename)
+	else:
+		abort(404)
