@@ -18,7 +18,6 @@
 from bargate import app
 import bargate.lib.user
 import bargate.lib.userdata
-import bargate.lib.totp
 from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response, render_template, send_from_directory
 import mimetypes
 import os 
@@ -70,6 +69,7 @@ def login():
 
 			## Check if two-factor is enabled for this account
 			if app.config['TOTP_ENABLED']:
+				import bargate.lib.totp
 				if bargate.lib.totp.user_enabled(session['username']):
 					app.logger.debug('User "' + session['username'] + '" has two step enabled. Redirecting to two-step handler')
 					return redirect(url_for('totp_logon_view',next=request.form.get('next',default=None)))
