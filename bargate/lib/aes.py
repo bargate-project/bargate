@@ -32,9 +32,6 @@ def encrypt(s,key):
 	## CFB does not require padding
 	## 32-bit key is required (AES256)
 	
-	if len(key) != 32:
-		bargate.lib.errors.fatal('Configuration Error','The Bargate configuration is invalid. The ENCRYPT_KEY must be exactly 32-bytes long.')
-
 	# Create the IV (Initialization Vector)
 	iv = os.urandom(AES.block_size)
 	

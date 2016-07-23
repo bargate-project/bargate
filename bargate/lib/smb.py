@@ -407,7 +407,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 	## srv_path should always start with smb://, we don't support anything else.
 	if not srv_path.startswith("smb://"):
-		abort(500)
+		return bargate.lib.errors.stderr("Invalid server path","The server URL must start with smb://")
 
 	## We need a non-unicode srv_path for pysmbc calls
 	srv_path_as_str = srv_path.encode('utf-8')
@@ -525,8 +525,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			try:
 				fstat = libsmbclient.stat(uri_as_str)
 			except Exception as ex:
-				## this only returns image data, so abort 500 if the stat fails rather than an error message
-				abort(500)
+				abort(400)
 
 			## ensure item is a file
 			if not bargate.lib.smb.statToType(fstat) == SMB_FILE:
@@ -652,9 +651,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				if parent_directory:
 					return url_for(func_name,path=parent_directory_path)
 				else:
-					# misconfiguration of bargate
-					app.logger.error("Bargate is misconfigured - the path given for the share " + func_name + " is not a directory!")
-					abort(500)
+					return bargate.lib.errors.stderr("Bargate is misconfigured","The path given for the share " + func_name + " is not a directory!")
 
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)

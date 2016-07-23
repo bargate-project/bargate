@@ -181,15 +181,15 @@ def bookmarks():
 				bookmark_path     = bargate.lib.smb.check_path(request.form['bookmark_path'])
 				
 			except KeyError as e:
-				bargate.lib.errors.fatal('Invalid bookmark','You missed something on the previous page!')
+				return bargate.lib.errors.stderr('Invalid bookmark','You missed something on the previous page!')
 			except ValueError as e:
-				bargate.lib.errors.fatal('Invalid bookmark','Invalid bookmark name or bookmark value: ' + str(e))
+				return bargate.lib.errors.stderr('Invalid bookmark','Invalid bookmark name or bookmark value: ' + str(e))
 			
 			## Ensure that the function passed is a valid function	
 			try:
 				test_name = url_for(str(bookmark_function),path=bookmark_path)
 			except werkzeug.routing.BuildError as ex:
-				bargate.lib.errors.fatal('Invalid bookmark','Invalid function bookmark path: ' + str(ex))
+				return bargate.lib.errors.stderr('Invalid bookmark','Invalid function bookmark path: ' + str(ex))
 
 			## Generate a unique identifier for this bookmark
 			bookmark_id = uuid.uuid4().hex

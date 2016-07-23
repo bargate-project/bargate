@@ -17,15 +17,15 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from bargate import app
-import bargate.lib.user
+import bargate.lib.errors
 from flask import Flask, request, session, g, redirect, url_for, abort, flash, render_template, make_response
 import smbc
 import traceback
+import redis
 
 @app.errorhandler(500)
 def error500(error):
-	"""Handles abort(500) calls in code.
-	"""
+	"""Handles abort(500) calls in code"""
 	
 	# Default error title/msg
 	err_title  = "Internal Error"
@@ -148,7 +148,6 @@ def csrfp_error(error):
 		debug = None
 	
 	return render_template('error.html',title="Security Error",message="Your browser failed to present a valid security token (CSRF protection token).",debug=debug), 400
-	
 
 ################################################################################
 
@@ -164,61 +163,13 @@ def error_handler(error):
 	else:
 		debug = "Ask your system administrator to consult the error log for this application."
 
-	# Build the response. Not using a template here to prevent any Jinja 
-	# issues from causing this to fail.
-	error_resp = u"""
-<!doctype html>
-<html>
-<head>
-	<title>Fatal Error</title>
-	<meta charset="utf-8" />
-	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<style type="text/css">
-	body {
-		background-color: #8B1820;
-		color: #FFFFFF;
-		margin: 0;
-		padding: 0;
-		font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	}
-	h1 {
-		font-size: 4em;
-		font-weight: normal;
-		margin: 0px;
-	}
-	div {
-		width: 80%%;
-		margin: 5em auto;
-		padding: 50px;
-		border-radius: 0.5em;
-    }
-    @media (max-width: 900px) {
-        div {
-            width: auto;
-            margin: 0 auto;
-            border-radius: 0;
-            padding: 1em;
-        }
-    }
-    </style>    
-</head>
-<body>
-<div>
-	<h1>fatal error ☹</h1>
-	<p>Whilst processing your request an unexpected error occured which the application could not recover from.</p>
-	<pre>%s</pre>
-</div>
-</body>
-</html>
-""" % (debug)
-
 	if 'username' in session:
-		usr = session['username']
+		username = session['username']
 	else:
-		usr = 'Not logged in'
+		username = 'Not logged in'
 
-	app.logger.error("""Critical Error!
+	## Log the critical error (so that it goes to e-mail)
+	app.logger.error("""Critical Error!!!!111111
 HTTP Path:            %s
 HTTP Method:          %s
 Client IP Address:    %s
@@ -238,8 +189,8 @@ Traceback:
 			request.user_agent.platform,
 			request.user_agent.browser,
 			request.user_agent.version,
-			usr,
+			username,
 			trace,			
 		))
 
-	return make_response(error_resp, 500)
+	return bargate.lib.errors.fatalerr(debug=debug)

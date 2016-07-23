@@ -148,7 +148,6 @@ def auth(username, password):
 			app.logger.error("Could not bind to LDAP: " + str(e))
 			abort(500)
 
-
 		app.logger.debug("bargate.lib.user.auth ldap searching for username in base " + app.config['LDAP_SEARCH_BASE'] + " looking for attribute " + app.config['LDAP_USER_ATTRIBUTE'])
 
 		## Now search for the user object to bind as
@@ -216,11 +215,6 @@ def auth(username, password):
 
 		## Catch all return false for LDAP auth
 		return False
-
-	else:
-		flash('Internal Error - Unknown or incorrect authentication type configured','alert-danger')
-		app.logger.error("Critical Error - Unknown or incorrect authentication type configured")
-		abort(500)
 
 ################################################################################
 

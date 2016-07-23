@@ -37,6 +37,10 @@ def before_request():
 	10 or lower to upgrade their web browser.
 	"""
 
+	# Check bargate started correctly
+	if app.error:
+		return bargate.lib.errors.fatalerr(message=app.error)		
+
 	# Check for MSIE version <= 10
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 10):
 		return render_template('foad.html')
@@ -47,8 +51,8 @@ def before_request():
 			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=0)
 			g.redis.get('foo')
 		except Exception as ex:
-			bargate.lib.errors.fatal('Unable to connect to redis',str(ex))
-		
+			return bargate.lib.errors.fatalerr(message='Bargate could not connect to the REDIS server',debug=str(ex))
+			
 	## Log user last access time
 	if 'username' in session:
 		bargate.lib.userdata.save('last',str(time.time()))
@@ -70,7 +74,7 @@ def context_processor():
 			data['user_bookmarks'] = bargate.lib.userdata.get_bookmarks()
 			data['user_theme']     = bargate.lib.userdata.get_theme()
 			data['user_navbar']    = bargate.lib.userdata.get_navbar()	
-			data['user_layout']    = bargate.lib.userdata.get_layout()	
+			data['user_layout']    = bargate.lib.userdata.get_layout()
 
 	## The favicon
 	if app.config['LOCAL_FAVICON']:

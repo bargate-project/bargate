@@ -28,6 +28,9 @@ from logging import Formatter
 from functools import wraps ## used for login_required and downtime_check
 
 class Bargate(Flask):
+	## If during startup Bargate detects a problem then it sets this variable
+	## to true and then on each page load this is used to show an error page
+	error = False
 
 	class CsrfpException(Exception):
 		pass
@@ -51,6 +54,9 @@ class Bargate(Flask):
 			self.sharesList = []
 			self.logger.warn("The shares config file '" + self.config['SHARES_CONFIG'] + "' does not exist, ignoring")
 
+		## Check the config options
+		self._init_check_config()
+
 		## Modal errors
 		self.add_template_global(self.get_modal_error)
 
@@ -67,6 +73,10 @@ class Bargate(Flask):
 			self.config.from_pyfile('/etc/bargate.conf')
 		elif os.path.isfile('/opt/bargate/bargate.conf'):
 			self.config.from_pyfile('/opt/bargate/bargate.conf')
+		else:
+			self.error = "Could not find a bargate configuration file"
+			return
+
 
 ################################################################################
 
@@ -171,6 +181,25 @@ Further Details:
 		self._exempt_views = set()
 		self.add_template_global(self.csrfp_token)
 		self.before_request(self.csrfp_before_request)
+
+################################################################################
+
+	def _init_check_config(self):
+		if len(self.config['ENCRYPT_KEY']) == 0:
+			self.logger.error("ENCRYPT_KEY is not set, disabling bargate")
+			self.error = "The ENCRYPT_KEY configuration option is not set"
+
+		elif len(self.config['ENCRYPT_KEY']) != 32:
+			self.logger.error("ENCRYPT_KEY must be exactly 32-characters long, disabling bargate")
+			self.error = "The ENCRYPT_KEY configuration option must be exactly 32-characters long"
+
+		elif len(self.config['SECRET_KEY']) == 0:
+			self.logger.error("SECRET_KEY is not set, disabling bargate")
+			self.error = "The SECRET_KEY configuration option is not set"
+
+		elif self.config['AUTH_TYPE'] not in ['kerberos','krb5','smb','ldap']:
+			self.logger.error("AUTH_TYPE is set to an unknown authentication type, disabling bargate")
+			self.error = "The value of the AUTH_TYPE configuration option is invalid/incorrect"
 
 ################################################################################
 ## User session/login functions
