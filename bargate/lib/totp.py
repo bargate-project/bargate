@@ -80,4 +80,3 @@ def user_enabled(userid):
 		return False
 	else:
 		return True
-			

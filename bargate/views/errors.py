@@ -169,7 +169,7 @@ def error_handler(error):
 		username = 'Not logged in'
 
 	## Log the critical error (so that it goes to e-mail)
-	app.logger.error("""Critical Error!!!!111111
+	app.logger.error("""Fatal Error
 HTTP Path:            %s
 HTTP Method:          %s
 Client IP Address:    %s
