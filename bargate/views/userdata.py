@@ -27,6 +27,7 @@ from random import randint
 import time
 import json
 import werkzeug
+import uuid
 
 ################################################################################
 #### Account Settings View
@@ -162,8 +163,8 @@ def bookmarks():
 	if not app.config['REDIS_ENABLED']:
 		abort(404)
 
-	bmKey = 'user:' + session['username'] + ':bookmarks'
-	bmPrefix = 'user:' + session['username'] + ':bookmark:'
+	user_bookmarks_key   = 'user:' + session['username'] + ':bookmarks'
+	user_bookmark_prefix = 'user:' + session['username'] + ':bookmark:'
 
 	if request.method == 'GET':
 		bookmarks = bargate.lib.userdata.get_bookmarks()
@@ -173,7 +174,7 @@ def bookmarks():
 		action = request.form['action']
 		
 		if action == 'add':
-		
+
 			try:
 				bookmark_name     = request.form['bookmark_name']
 				bookmark_function = bargate.lib.smb.check_name(request.form['bookmark_function'])
@@ -183,38 +184,138 @@ def bookmarks():
 				bargate.lib.errors.fatal('Invalid bookmark','You missed something on the previous page!')
 			except ValueError as e:
 				bargate.lib.errors.fatal('Invalid bookmark','Invalid bookmark name or bookmark value: ' + str(e))
-				
+			
+			## Ensure that the function passed is a valid function	
 			try:
 				test_name = url_for(str(bookmark_function),path=bookmark_path)
 			except werkzeug.routing.BuildError as ex:
 				bargate.lib.errors.fatal('Invalid bookmark','Invalid function bookmark path: ' + str(ex))
 
-			g.redis.hset(bmPrefix + bookmark_name,'function',bookmark_function)
-			g.redis.hset(bmPrefix + bookmark_name,'path',bookmark_path)
-			g.redis.sadd(bmKey,bookmark_name)
-		
+			## Generate a unique identifier for this bookmark
+			bookmark_id = uuid.uuid4().hex
+			
+			## Update the user_bookmark_prefix with the ID
+			user_bookmark_prefix = user_bookmark_prefix + bookmark_id
+
+			## Mark this as a version 2 bookmark (v1.5 or later)
+			g.redis.hset(user_bookmark_prefix,'version','2')
+
+			## store the function name in use
+			g.redis.hset(user_bookmark_prefix,'function',bookmark_function)
+
+			## if we're on a custom server then we need to store the URL 
+			## to that server otherwise the bookmark is useless.
+			if bookmark_function == 'custom':
+				if 'custom_uri' in session:
+					g.redis.hset(user_bookmark_prefix,'custom_uri',session['custom_uri'])
+				else:
+					## the function is custom, but there is no custom_uri
+					## so we should redirect the user to go choose one
+					return redirect(url_for('custom_server'))
+
+			## store the path the user is at within the share/function
+			g.redis.hset(user_bookmark_prefix,'path',bookmark_path)
+
+			## store the name/title of the bookmark
+			g.redis.hset(user_bookmark_prefix,'name',bookmark_name)
+
+			## add the new bookmark name to the list of bookmarks for the user
+			g.redis.sadd(user_bookmarks_key,bookmark_id)
+
 			flash('Bookmark added successfully','alert-success')
-			## return the user to the folder they were in
 			return redirect(url_for(bookmark_function,path=bookmark_path))
 			
 		elif action == 'delete':
-			bookmark_name     = request.form['bookmark_name']
+			bookmark_id     = request.form['bookmark_id']
 			
-			if g.redis.exists(bmKey):
-				if g.redis.sismember(bmKey,bookmark_name):
+			if g.redis.exists(user_bookmarks_key):
+				if g.redis.sismember(user_bookmarks_key,bookmark_id):
 				
 					## Delete from the bookmarks key
-					g.redis.srem(bmKey,bookmark_name)
+					g.redis.srem(user_bookmarks_key,bookmark_id)
 					
 					## Delete the bookmark hash
-					g.redis.delete(bmPrefix + bookmark_name)
+					g.redis.delete(user_bookmark_prefix + bookmark_id)
 					
 					## Let the user know and redirect
 					flash('Bookmark deleted successfully','alert-success')
 					return redirect(url_for('bookmarks'))
 
 			flash('Bookmark not found!','alert-danger')
-			return redirect(url_for('bookmarks'))	
+			return redirect(url_for('bookmarks'))
+
+		elif action == 'rename':
+			bookmark_id     = request.form['bookmark_id']
+			bookmark_name   = request.form['bookmark_name']
+			
+			if g.redis.exists(user_bookmark_prefix + bookmark_id):
+				g.redis.hset(user_bookmark_prefix + bookmark_id,"name",bookmark_name)
+				flash('Bookmark renamed successfully','alert-success')
+				return redirect(url_for('bookmarks'))
+
+			flash('Bookmark not found!','alert-danger')
+			return redirect(url_for('bookmarks'))
+
+
+################################################################################
+
+@app.route('/bookmark/<string:bookmark_id>')
+@app.login_required
+@app.allow_disable
+def bookmark(bookmark_id):
+	"""This function takes a bookmark ID and redirects the user to the location
+	specified by the bookmark in the REDIS database. This only works with 
+	version 2 bookmarks, not version 1 (Bargate v1.4 or earlier)"""
+
+	## Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
+	if not app.config['REDIS_ENABLED']:
+		abort(404)
+
+	## Prepare the redis key name
+	redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
+
+	## bookmarks are a hash with the keys 'version', 'function', 'path' and 'custom_uri' (optional)
+	# only proceed if we can find the bookmark in redis
+	if g.redis.exists(redis_key):
+		try:
+			# redis returns 'None' for hget if the hash key doesn't exist
+			bookmark_version    = g.redis.hget(redis_key,'version')
+			bookmark_function   = g.redis.hget(redis_key,'function')
+			bookmark_path       = g.redis.hget(redis_key,'path')
+			bookmark_custom_uri = g.redis.hget(redis_key,'custom_uri')
+		except Exception as ex:
+			app.logger.error('Failed to load v2 bookmark ' + bookmark_id + ' user: ' + session['username'] + ' error: ' + str(ex))
+			abort(404)
+
+		if bookmark_version is None:
+			abort(404)
+
+		if bookmark_version != '2':
+			abort(404)
+
+		## Handle custom URI bookmarks
+		if bookmark_function == 'custom':
+			# Set the custom_uri in the session so when the custom function is
+			# hit then the user is sent to the right place (maybe)
+			session['custom_uri'] = bookmark_custom_uri
+			session.modified      = True
+
+			# redirect the user to the custom function
+			return redirect(url_for('custom',path=bookmark_path))
+
+		## Handle standard non-custom bookmarks
+		else:
+			try:
+				return redirect(url_for(bookmark_function,path=bookmark_path))
+			except werkzeug.routing.BuildError as ex:
+				## could not build a URL for that function_name
+				## it could be that the function was removed by the admin
+				## so we should say 404 not found.
+				abort(404)
+
+	else:
+		## bookmark not found
+		abort(404)
 
 ################################################################################
 

@@ -50,46 +50,62 @@ def save(key,value):
 ################################################################################
 
 def get_bookmarks():
-	bmKey = 'user:' + session['username'] + ':bookmarks'
-	bmPrefix = 'user:' + session['username'] + ':bookmark:'
-	bmList = list()
+	user_bookmarks_key = 'user:' + session['username'] + ':bookmarks'
+	user_bookmark_key  = 'user:' + session['username'] + ':bookmark:'
+	bookmarks          = list()
 
 	if app.config['REDIS_ENABLED'] and 'redis' in g:	
-		if g.redis.exists(bmKey):
+		if g.redis.exists(user_bookmarks_key):
 			try:
-				bookmarks = g.redis.smembers(bmKey)
+				user_bookmarks = g.redis.smembers(user_bookmarks_key)
 			except Exception as ex:	
 				app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
-				return bmList
+				return bookmarks_list
 
-			if bookmarks != None:
-				if isinstance(bookmarks,set):
-					for bookmark_name in bookmarks:
+			if user_bookmarks != None:
+				if isinstance(user_bookmarks,set):
+					for bookmark_id in user_bookmarks:
 
 						try:
-							function = g.redis.hget(bmPrefix + bookmark_name,'function')
-							path     = g.redis.hget(bmPrefix + bookmark_name,'path')
+							bookmark = g.redis.hgetall(user_bookmark_key + bookmark_id)
 						except Exception as ex:
-							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ' + str(ex))
+							app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': ' + str(ex))
 							continue
-				
-						if function == None:
-							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'function was not set')
-							continue
-						if path == None:
-							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': ', 'path was not set')
-							continue
-				
-						try:
-							bm = { 'name': bookmark_name, 'url': url_for(function,path=path) }
-							bmList.append(bm)
-						except werkzeug.routing.BuildError as ex:
-							app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function and/or path - ', str(ex))
-							continue
+
+						if 'version' not in bookmark:
+							## Version 1 bookmark - we link directly from here
+							if 'function' not in bookmark or 'path' not in bookmark:
+								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': ', 'function and/or path was not set')
+								continue
+		
+							try:
+								bookmark['url'] = url_for(bookmark_function,path=bookmark_path)
+							except werkzeug.routing.BuildError as ex:
+								app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function: ', str(ex))
+								continue
+
+							## Version 1 bookmarks stored the name of the bookmark as the ID :(
+							bookmark['name'] = bookmark['id']
+
+						else:
+							if bookmark['version'] == '2':
+								## Version 2 bookmark - use a resolver / redirector function
+								if 'name' not in bookmark:
+									app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': No name set')
+									continue
+
+								bookmark['url'] = url_for('bookmark',bookmark_id=bookmark_id)
+							else:
+								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': Invalid value for version field')
+								continue
+
+						bookmark['id'] = bookmark_id
+						bookmarks.append(bookmark)
+
 				else:
 					app.logger.error('Failed to load bookmarks','Invalid redis data type when loading bookmarks set for ' + session['username'])
 			
-	return bmList
+	return bookmarks
 
 ################################################################################
 

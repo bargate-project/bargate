@@ -25,7 +25,7 @@ import binascii
 from logging.handlers import SMTPHandler
 from logging.handlers import RotatingFileHandler
 from logging import Formatter
-from functools import wraps   ## used for login_required and downtime_check
+from functools import wraps ## used for login_required and downtime_check
 
 class Bargate(Flask):
 
