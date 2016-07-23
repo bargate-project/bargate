@@ -14,7 +14,7 @@
 				</div>
 				<div class="modal-body">
 					<label>Bookmark name:</label>
-					<input class="form-control" type="text" name="bookmark_name" value="{% if func_name == 'custom' %}{{path}} in {{session.custom_uri|replace('smb://','')}}{% else %}{{ func_name }}/{{path}}{%endif%}"/>
+					<input class="form-control" type="text" name="bookmark_name" value="{% if func_name == 'custom' %}{%if not atroot %}{{path}} in {%endif%}{{session.custom_uri|replace('smb://','')}}{% else %}{{ func_name }}/{{path}}{%endif%}"/>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
