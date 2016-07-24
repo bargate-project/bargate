@@ -28,6 +28,36 @@ and what each file is for.
 
 All template names end in '.html', for brevity this is omitted below.
 
+Set up local static files
+-------------------------
+
+When writing your own templates you'll probably want to include your own logo
+images and possibly your own favicon or css/javascript. Rather than put these
+files into the bargate static directory you should place them in a site-specific
+local static directory via the :ref:`CONFIG\_LOCAL\_STATIC\_DIR` option.
+
+To get started set the :ref:`CONFIG\_LOCAL\_STATIC\_DIR` option in 
+bargate.conf to point at a directory where you will place your static files.
+You then need to restart bargate so it will notice the new config option, on startup
+it should output something like this to the log file::
+
+  2016-03-28 19:25:47,119 INFO: site-specific templates will be loaded from: /opt/bargate/local_templates/
+  2016-07-23 17:31:44,475 INFO: site-specific static files will be served from: /opt/bargate/local_static/
+
+You can then refer to files in that directory from your templates using the 
+url_for function with the first parameter set to 'local_static', like so::
+
+  {{ url_for('local_static', filename='logo.png') }}
+
+Changing the favicon
+--------------------
+
+If a 'favicon.ico' file resides in the :ref:`CONFIG\_LOCAL\_STATIC\_DIR` 
+directory then this file will automatically be detected and used as the site
+specific favicon. At startup the log file will say something like::
+
+  2016-07-23 17:31:44,475 INFO: site-specific favicon found
+
 Templates you should edit
 -------------------------
 

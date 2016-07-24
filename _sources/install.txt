@@ -67,8 +67,8 @@ Install the packages with pip::
 
   pip install Flask pysmbc pycrypto Pillow redis python-ldap kerberos onetimepass pyqrcode
 
-Install bargate 
----------------
+Install bargate via git
+-----------------------
 
 Choose a directory to install bargate to. This guide assumes /opt/bargate::
 
@@ -82,8 +82,17 @@ running 'git pull' won't update you to a major release::
   cd /opt/bargate
   git checkout v1.4
 
+Install bargate via pip
+-----------------------
+
+From version 1.5 the recommended method to install Bargate is via the 'pip'
+package manager. At the time of writing this version is not yet released 
+so only do the following if you're installing the development version::
+
+  pip install bargate
+
 Next steps
 ---------------
 
-- Configure bargate. See :doc:`config` for more information.
+- Create the configuration file. See :doc:`config` for how to do this.
 - Deploy bargate with a web server. See :doc:`deploy` on how to do that.

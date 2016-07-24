@@ -2,8 +2,9 @@ Deployment
 ==========
 
 You have several options when choosing how to deploy bargate. You are strongly 
-recommended to use the combination of uWSGI and nginx - but you can also deploy
-with mod_wsgi and apache.
+recommended to use the combination of uWSGI and nginx. bargate is a standard 
+WSGI application so can be deployed via whatever method you like which 
+supports WSGI applications.
 
 nginx and uWSGI
 -------------------
@@ -43,16 +44,22 @@ format. A sample configuration file for bargate is below::
   uid = nobody
   gid = nobody
   logto = /var/log/uwsgi.log
-  python-path = /opt/
   chmod-socket = 700
   chown-socket = nginx
   protocol = uwsgi
   pidfile = /var/run/uwsgi.pid
 
-You could place this in /etc/bargate/uwsgi.ini or place it in whatever location
-suits your environment. All of the paths above can be changed, and the user
-should probably not be left as 'nobody' - pick a user or create a new one such
-as 'bargate'.
+If you've installed from git you need to also add::
+
+  python-path = /opt/
+
+And set the path (above /opt/) to the directory above where the git checkout is,
+i.e. if you checked out into /opt/bargate/ set the python-path to be /opt/.
+
+You could place the uWSGI config file in /etc/bargate/uwsgi.ini or place it 
+in whatever location suits your environment. All of the paths above can be 
+changed, and the user should probably not be left as 'nobody' - pick a user 
+or create a new one such as 'bargate'.
 
 The socket - the way uWSGI and nginx communicate - needs to be set so that 
 nginx can communicate with it - and nothing else - so in the above example
@@ -63,13 +70,13 @@ Whatever user/group you decide to set in the uid/gid options above must be able
 to read the config files for bargate. See :doc:`config` for details about the 
 bargate configuration file.
 
+Next: You need to configure uWSGI to run as a service.
+
 Run uWSGI as a service (systemd)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You now need to configure uWSGI to run as a service. On systemd based platforms 
-(e.g. RHEL7+, Debian 8+, Fedora 15+, Ubuntu 15.04+) you should create a service 
-unit file. Create the file in /etc/systemd/system/bargate.service with the 
-following contents::
+On systemd based platforms  (e.g. RHEL7+, Debian 8+, Fedora 15+, Ubuntu 15.04+) 
+you should create a service unit file. Create the file in 
+/etc/systemd/system/bargate.service with the following contents::
 
   [Unit]
   Description=bargate web filestore server
@@ -94,7 +101,19 @@ And then enable and start the service::
 Run uWSGI as a service (upstart)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TBD
+On upstart based platforms (RHEL6, Ubuntu before 15.04, Fedora before 15) you 
+should create /etc/init/bargate.conf with the following contents::
+
+  description "Bargate web filestore server"
+  start on runlevel [2345]
+  stop on runlevel [!2345]
+  exec /usr/bin/uwsgi /etc/bargate/uwsgi.ini --die-on-term
+
+You can then simply start the service:
+
+ start bargate
+
+The above example assumes you placed your uwsgi.ini file in /etc/bargate
 
 Connect nginx to uWSGI
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -136,10 +155,12 @@ You'll want to enable and start nginx (on systemd systems)::
   systemctl enable nginx
   systemctl start nginx
 
-On RHEL6::
+On Upstart based systems::
+
+ start nginx
+
+On SysV systems (e.g. RHEL6)::
 
   chkconfig nginx on
   service nginx start
 
-apache and mod_wsgi
--------------------

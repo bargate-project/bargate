@@ -105,6 +105,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#shares-config">SHARES_CONFIG</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#shares-default">SHARES_DEFAULT</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#local-template-dir">LOCAL_TEMPLATE_DIR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-static-dir">LOCAL_STATIC_DIR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#app-display-name">APP_DISPLAY_NAME</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#app-display-name-short">APP_DISPLAY_NAME_SHORT</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#login-image-random-max">LOGIN_IMAGE_RANDOM_MAX</a></li>
@@ -395,6 +396,27 @@ seconds or as a Python datetime.timedelta object.</p>
 <p>Bargate templates can be overridden to allow you to customise various parts
 of bargate - or all of bargate. This option defines a local directory where
 templates should be loaded from before loading them from inside bargate.</p>
+<p>See <a class="reference internal" href="templates.html"><span class="doc">Templates</span></a> for more information.</p>
+</div>
+<div class="section" id="local-static-dir">
+<span id="config-local-static-dir"></span><h3>LOCAL_STATIC_DIR<a class="headerlink" href="#local-static-dir" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>Required</strong>: No</li>
+<li><strong>Expected value</strong>: False or a String</li>
+<li><strong>Type</strong>: Bargate specific config option</li>
+<li><strong>Default</strong>: False</li>
+<li><strong>Since</strong>: 1.5</li>
+</ul>
+<p>Set a directory where local static files reside. This is useful for customising
+bargate with your own favicon, images, javascript or CSS. If a &#8216;favicon.ico&#8217;
+file resides within this directory it will be automatically used as the favicon
+for bargate.</p>
+<p>To use other files in your local static directory you will need to reference
+them using the local_static function in templates (which themselves should
+resides in LOCAL_TEMPLATE_DIR). Reference the files like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{{</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;local_static&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;logo.png&#39;</span><span class="p">)</span> <span class="p">}}</span>
+</pre></div>
+</div>
 <p>See <a class="reference internal" href="templates.html"><span class="doc">Templates</span></a> for more information.</p>
 </div>
 <div class="section" id="app-display-name">

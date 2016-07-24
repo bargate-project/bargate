@@ -178,6 +178,30 @@ templates should be loaded from before loading them from inside bargate.
 
 See :doc:`templates` for more information.
 
+.. _CONFIG_LOCAL_STATIC_DIR:
+
+LOCAL\_STATIC\_DIR
+~~~~~~~~~~~~~~~~~~~~
+
+-  **Required**: No
+-  **Expected value**: False or a String
+-  **Type**: Bargate specific config option
+-  **Default**: False
+-  **Since**: 1.5
+
+Set a directory where local static files reside. This is useful for customising
+bargate with your own favicon, images, javascript or CSS. If a 'favicon.ico' 
+file resides within this directory it will be automatically used as the favicon
+for bargate.
+
+To use other files in your local static directory you will need to reference 
+them using the local_static function in templates (which themselves should
+resides in LOCAL_TEMPLATE_DIR). Reference the files like so::
+
+  {{ url_for('local_static', filename='logo.png') }}
+
+See :doc:`templates` for more information.
+
 APP\_DISPLAY\_NAME
 ~~~~~~~~~~~~~~~~~~
 
