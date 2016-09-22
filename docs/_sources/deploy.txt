@@ -1,4 +1,4 @@
-Deployment
+x`Deployment
 ==========
 
 You have several options when choosing how to deploy bargate. You are strongly 
@@ -49,7 +49,7 @@ format. A sample configuration file for bargate is below::
   protocol = uwsgi
   pidfile = /var/run/uwsgi.pid
 
-If you've installed from git you need to also add::
+If you've installed from git (rather than pip) you need to also add::
 
   python-path = /opt/
 

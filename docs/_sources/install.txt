@@ -63,12 +63,22 @@ On Debian or Ubuntu::
 Install python packages
 -----------------------
 
-Install the packages with pip::
+Install all of the required and optional packages with pip::
 
   pip install Flask pysmbc pycrypto Pillow redis python-ldap kerberos onetimepass pyqrcode
 
+Install bargate via pip
+-----------------------
+
+From version 1.5 the recommended method to install Bargate is via the 'pip'
+package manager:
+
+  pip install bargate
+
 Install bargate via git
 -----------------------
+
+Only use this method if you are installing a previous version (pre-1.5).
 
 Choose a directory to install bargate to. This guide assumes /opt/bargate::
 
@@ -76,20 +86,12 @@ Choose a directory to install bargate to. This guide assumes /opt/bargate::
   git clone https://github.com/divad/bargate.git
 
 You will want to choose a version to run - to do this you can use git branches.
-The latest stable branch is 'v1.4'. Switch to that branch to ensure that
-running 'git pull' won't update you to a major release::
+The latest release installed via git is is 'v1.4'. Switch to that branch:
 
   cd /opt/bargate
   git checkout v1.4
 
-Install bargate via pip
------------------------
-
-From version 1.5 the recommended method to install Bargate is via the 'pip'
-package manager. At the time of writing this version is not yet released 
-so only do the following if you're installing the development version::
-
-  pip install bargate
+However, you are strongly advised to install via pip instead.
 
 Next steps
 ---------------
