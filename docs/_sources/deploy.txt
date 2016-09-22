@@ -1,4 +1,4 @@
-x`Deployment
+Deployment
 ==========
 
 You have several options when choosing how to deploy bargate. You are strongly 
