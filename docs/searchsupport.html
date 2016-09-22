@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Search &mdash; bargate documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="bargate documentation" href="index.html"/>
+        <link rel="next" title="Known issues" href="knownissues.html"/>
+        <link rel="prev" title="Single sign on" href="sso.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> bargate
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Search</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#here-be-dragons">Here be dragons!</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#enable-searching">Enable searching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#search-timeout">Search timeout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="knownissues.html">Known issues</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">bargate</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Search</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="search">
+<h1>Search<a class="headerlink" href="#search" title="Permalink to this headline">¶</a></h1>
+<p>Bargate has EXPERIMENTAL support for simple file name searches since 1.4.1.</p>
+<div class="section" id="here-be-dragons">
+<h2>Here be dragons!<a class="headerlink" href="#here-be-dragons" title="Permalink to this headline">¶</a></h2>
+<p>The very notion of a client connecting to an SMB server to perform a search
+for file names is not a good one - performance is always going to be poor. The
+idea then that the web interface on top should provide searching to a user
+connecting over HTTPS - perhaps on the other side of the world - is even more
+of a bad idea. Despite this issue bargate does support searching but it is
+disabled by default.</p>
+<p>Microsoft has (somewhat) mitigated the performance problem with the
+Windows Search Protocol extension to SMB, however Samba does not have any
+support for this so Bargate cannot utilise it.</p>
+<p>If you decide to go ahead and enable searching please read about the
+<a class="reference internal" href="config_options.html#config-search-timeout"><span class="std std-ref">SEARCH_TIMEOUT</span></a> option and set it appropriately.</p>
+</div>
+<div class="section" id="enable-searching">
+<h2>Enable searching<a class="headerlink" href="#enable-searching" title="Permalink to this headline">¶</a></h2>
+<p>Set the config option <a class="reference internal" href="config_options.html#config-search-enabled"><span class="std std-ref">SEARCH_ENABLED</span></a> to &#8216;True&#8217; and restart
+Bargate. Please however read the following section before doing that.</p>
+</div>
+<div class="section" id="search-timeout">
+<h2>Search timeout<a class="headerlink" href="#search-timeout" title="Permalink to this headline">¶</a></h2>
+<p>Searching on a slow SMB file server will take a long time - probably longer
+than the web server timeout. If bargate is still searching for longer than
+the timeout then the web server will kill the connection and return an error
+to the browser - probably an unhelpful &#8220;504 Gateway Timeout&#8221;. Worse still if
+you&#8217;re using uwsgi or similar then the process will keep searching behind the
+scenes. It may even be possible then for an attacker to perform a denial of
+service attack by searching a huge, slow file server.</p>
+<p>To prevent this Bargate monitors how long the search is taking and stops
+searching when it reaches its own timeout configured via the
+<a class="reference internal" href="config_options.html#config-search-timeout"><span class="std std-ref">SEARCH_TIMEOUT</span></a> config option.</p>
+<p>You should set this parameter to be less than the timeout the web server is
+configured to. If you&#8217;re using the recommended nginx+uwsgi set up then you
+should set the following nginx parameters like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">location</span> <span class="nd">@bargate</span>
+<span class="p">{</span>
+    <span class="n">include</span> <span class="n">uwsgi_params</span><span class="p">;</span>
+    <span class="n">uwsgi_param</span> <span class="n">HTTPS</span> <span class="n">on</span><span class="p">;</span>
+    <span class="n">uwsgi_pass</span> <span class="n">unix</span><span class="p">:</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">uwsgi</span><span class="o">.</span><span class="n">sock</span><span class="p">;</span>
+    <span class="n">uwsgi_read_timeout</span> <span class="mi">120</span><span class="n">s</span><span class="p">;</span>
+    <span class="n">uwsgi_send_timeout</span> <span class="mi">120</span><span class="n">s</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You don&#8217;t need to set these as the default of 60 seconds for both is safest,
+but if you want users to be able to search for longer increase the values and
+increase <a class="reference internal" href="config_options.html#config-search-timeout"><span class="std std-ref">SEARCH_TIMEOUT</span></a> - but remember to keep it less than
+the uwsgi_read_timeout and uwsgi_send_timeout options.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="knownissues.html" class="btn btn-neutral float-right" title="Known issues" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="sso.html" class="btn btn-neutral" title="Single sign on" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, David Bell.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.4.3',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Configuration &mdash; bargate documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="bargate documentation" href="index.html"/>
+        <link rel="next" title="Configuration options" href="config_options.html"/>
+        <link rel="prev" title="Upgrading" href="upgrade.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> bargate
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bargate-conf">bargate.conf</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#shares-conf">shares.conf</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="knownissues.html">Known issues</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">bargate</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="configuration">
+<h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>Bargate utilises two configuration files:</p>
+<ul class="simple">
+<li>bargate.conf - the main configuration file</li>
+<li>shares.conf - a list of file shares your users can access</li>
+</ul>
+<div class="section" id="bargate-conf">
+<h2>bargate.conf<a class="headerlink" href="#bargate-conf" title="Permalink to this headline">¶</a></h2>
+<p>On startup bargate looks in the following locations for a config file:</p>
+<ul class="simple">
+<li>/etc/bargate.conf</li>
+<li>/etc/bargate/bargate.conf</li>
+<li>/opt/bargate/bargate.conf</li>
+</ul>
+<p>Once it finds a config file it stops searching, e.g. if /etc/bargate.conf exists
+then the other config file locations are not checked.</p>
+<p>Once you have installed bargate you will need to create a configuration file.
+Copy the sample config file to get started:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span>
+<span class="n">cp</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">doc</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">example</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">bargate</span><span class="o">.</span><span class="n">conf</span>
+</pre></div>
+</div>
+<p>The above command assumes you installed bargate into /opt/bargate</p>
+<p>The minimum options you&#8217;ll need to set are:</p>
+<ul class="simple">
+<li><a class="reference internal" href="config_options.html#config-secret-key"><span class="std std-ref">SECRET_KEY</span></a></li>
+<li><a class="reference internal" href="config_options.html#config-encrypt-key"><span class="std std-ref">ENCRYPT_KEY</span></a></li>
+<li><a class="reference internal" href="config_options.html#config-disable-app"><span class="std std-ref">DISABLE_APP</span></a></li>
+</ul>
+<p>bargate.conf is treated as a Python file - all configuration must adhere to
+Python syntax.</p>
+<p>See <a class="reference internal" href="config_options.html"><span class="doc">Configuration options</span></a> for a complete list of options to set.</p>
+</div>
+<div class="section" id="shares-conf">
+<h2>shares.conf<a class="headerlink" href="#shares-conf" title="Permalink to this headline">¶</a></h2>
+<p>Bargate should be configured with a list of file shares to present to the
+users, otherwise only &#8216;Connect to server&#8217; (i.e. enter manually) functionality
+is available. These shares are configured in the shares config file,
+usually /etc/bargate/shares.conf (this path is configured via the
+<a class="reference internal" href="config_options.html#config-shares-config"><span class="std std-ref">SHARES_CONFIG</span></a> parameter).</p>
+<p>See <a class="reference internal" href="shares.html"><span class="doc">Shares configuration</span></a> to understand the syntax of this configuration file.</p>
+<p>Once configured you&#8217;ll need to override the dropdown-menus.html template as well.</p>
+<p>There is a sample config file included with Bargate. Assuming bargate is installed
+in /opt/bargate you can use this command to get started:</p>
+<blockquote>
+<div>cp /opt/bargate/doc/shares.conf.example /etc/bargate/shares.conf</div></blockquote>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="config_options.html" class="btn btn-neutral float-right" title="Configuration options" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="upgrade.html" class="btn btn-neutral" title="Upgrading" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, David Bell.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.4.3',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

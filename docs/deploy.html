@@ -1,0 +1,372 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Deployment &mdash; bargate documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="bargate documentation" href="index.html"/>
+        <link rel="next" title="Upgrading" href="upgrade.html"/>
+        <link rel="prev" title="Installation" href="install.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> bargate
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="screenshots.html">Screenshots</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nginx-and-uwsgi">nginx and uWSGI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install-uwsgi-and-nginx">Install uWSGI and nginx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-uwsgi">Configure uWSGI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-uwsgi-as-a-service-systemd">Run uWSGI as a service (systemd)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-uwsgi-as-a-service-upstart">Run uWSGI as a service (upstart)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connect-nginx-to-uwsgi">Connect nginx to uWSGI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#enable-and-start-nginx">Enable and start nginx</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_options.html">Configuration options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shares.html">Shares configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="templates.html">Templates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sso.html">Single sign on</a></li>
+<li class="toctree-l1"><a class="reference internal" href="searchsupport.html">Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="knownissues.html">Known issues</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">bargate</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Deployment</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="deployment">
+<h1>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
+<p>You have several options when choosing how to deploy bargate. You are strongly
+recommended to use the combination of uWSGI and nginx. bargate is a standard
+WSGI application so can be deployed via whatever method you like which
+supports WSGI applications.</p>
+<div class="section" id="nginx-and-uwsgi">
+<h2>nginx and uWSGI<a class="headerlink" href="#nginx-and-uwsgi" title="Permalink to this headline">¶</a></h2>
+<p>This is the recommended option for deploying bargate, it offers the best
+performance and a range of options not available with other choices.</p>
+<div class="section" id="install-uwsgi-and-nginx">
+<h3>Install uWSGI and nginx<a class="headerlink" href="#install-uwsgi-and-nginx" title="Permalink to this headline">¶</a></h3>
+<p>First we must install uWSGI and nginx. For uWSGI it is probably best to install
+this via &#8216;pip&#8217; on any Linux platform so you get the latest version:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">uWSGI</span>
+</pre></div>
+</div>
+<p>If you can prefer you can install it via your distributions package manager.</p>
+<p>For nginx you will need to use your package manager:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">yum</span> <span class="n">install</span> <span class="n">nginx</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">nginx</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configure-uwsgi">
+<h3>Configure uWSGI<a class="headerlink" href="#configure-uwsgi" title="Permalink to this headline">¶</a></h3>
+<p>uWSGI can be configured in multiple ways but you should probably use the &#8216;ini&#8217;
+format. A sample configuration file for bargate is below:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">uwsgi</span><span class="p">]</span>
+<span class="n">socket</span> <span class="o">=</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">uwsgi</span><span class="o">.</span><span class="n">sock</span>
+<span class="n">master</span> <span class="o">=</span> <span class="n">true</span>
+<span class="n">processes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">module</span><span class="o">=</span><span class="n">bargate</span><span class="p">:</span><span class="n">app</span>
+<span class="n">uid</span> <span class="o">=</span> <span class="n">nobody</span>
+<span class="n">gid</span> <span class="o">=</span> <span class="n">nobody</span>
+<span class="n">logto</span> <span class="o">=</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">uwsgi</span><span class="o">.</span><span class="n">log</span>
+<span class="n">chmod</span><span class="o">-</span><span class="n">socket</span> <span class="o">=</span> <span class="mi">700</span>
+<span class="n">chown</span><span class="o">-</span><span class="n">socket</span> <span class="o">=</span> <span class="n">nginx</span>
+<span class="n">protocol</span> <span class="o">=</span> <span class="n">uwsgi</span>
+<span class="n">pidfile</span> <span class="o">=</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">uwsgi</span><span class="o">.</span><span class="n">pid</span>
+</pre></div>
+</div>
+<p>If you&#8217;ve installed from git you need to also add:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span><span class="o">-</span><span class="n">path</span> <span class="o">=</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>And set the path (above /opt/) to the directory above where the git checkout is,
+i.e. if you checked out into /opt/bargate/ set the python-path to be /opt/.</p>
+<p>You could place the uWSGI config file in /etc/bargate/uwsgi.ini or place it
+in whatever location suits your environment. All of the paths above can be
+changed, and the user should probably not be left as &#8216;nobody&#8217; - pick a user
+or create a new one such as &#8216;bargate&#8217;.</p>
+<p>The socket - the way uWSGI and nginx communicate - needs to be set so that
+nginx can communicate with it - and nothing else - so in the above example
+the socket is set to be owned by &#8216;nginx&#8217; and permissions set to limit access
+to only the owner.</p>
+<p>Whatever user/group you decide to set in the uid/gid options above must be able
+to read the config files for bargate. See <a class="reference internal" href="config.html"><span class="doc">Configuration</span></a> for details about the
+bargate configuration file.</p>
+<p>Next: You need to configure uWSGI to run as a service.</p>
+</div>
+<div class="section" id="run-uwsgi-as-a-service-systemd">
+<h3>Run uWSGI as a service (systemd)<a class="headerlink" href="#run-uwsgi-as-a-service-systemd" title="Permalink to this headline">¶</a></h3>
+<p>On systemd based platforms  (e.g. RHEL7+, Debian 8+, Fedora 15+, Ubuntu 15.04+)
+you should create a service unit file. Create the file in
+/etc/systemd/system/bargate.service with the following contents:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Unit</span><span class="p">]</span>
+<span class="n">Description</span><span class="o">=</span><span class="n">bargate</span> <span class="n">web</span> <span class="n">filestore</span> <span class="n">server</span>
+<span class="n">After</span><span class="o">=</span><span class="n">network</span><span class="o">.</span><span class="n">target</span>
+
+<span class="p">[</span><span class="n">Service</span><span class="p">]</span>
+<span class="n">ExecStart</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">uwsgi</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">bargate</span><span class="o">/</span><span class="n">uwsgi</span><span class="o">.</span><span class="n">ini</span> <span class="o">--</span><span class="n">die</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">term</span>
+<span class="n">Restart</span><span class="o">=</span><span class="n">always</span>
+
+<span class="p">[</span><span class="n">Install</span><span class="p">]</span>
+<span class="n">WantedBy</span><span class="o">=</span><span class="n">multi</span><span class="o">-</span><span class="n">user</span><span class="o">.</span><span class="n">target</span>
+</pre></div>
+</div>
+<p>You should then ask systemd to reload:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+</pre></div>
+</div>
+<p>And then enable and start the service:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="n">enable</span> <span class="n">bargate</span>
+<span class="n">systemctl</span> <span class="n">start</span> <span class="n">bargate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-uwsgi-as-a-service-upstart">
+<h3>Run uWSGI as a service (upstart)<a class="headerlink" href="#run-uwsgi-as-a-service-upstart" title="Permalink to this headline">¶</a></h3>
+<p>On upstart based platforms (RHEL6, Ubuntu before 15.04, Fedora before 15) you
+should create /etc/init/bargate.conf with the following contents:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>description &quot;Bargate web filestore server&quot;
+start on runlevel [2345]
+stop on runlevel [!2345]
+exec /usr/bin/uwsgi /etc/bargate/uwsgi.ini --die-on-term
+</pre></div>
+</div>
+<p>You can then simply start the service:</p>
+<blockquote>
+<div>start bargate</div></blockquote>
+<p>The above example assumes you placed your uwsgi.ini file in /etc/bargate</p>
+</div>
+<div class="section" id="connect-nginx-to-uwsgi">
+<h3>Connect nginx to uWSGI<a class="headerlink" href="#connect-nginx-to-uwsgi" title="Permalink to this headline">¶</a></h3>
+<p>The final step is to configure nginx to speak to uWSGI. Configuring nginx itself
+is beyond the scope of this document, but you&#8217;ll need a &#8216;server&#8217; block in your
+nginx configuration and within that add these lines to your nginx.conf:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>client_max_body_size 257M;
+
+location /static/
+{
+    root /opt/bargate/;
+}
+
+location / { try_files $uri @bargate; }
+location @bargate
+{
+    include uwsgi_params;
+    uwsgi_param HTTPS on;
+    uwsgi_pass unix:/var/run/uwsgi.sock;
+}
+</pre></div>
+</div>
+<p>The above example assumes HTTPS - which you were going to use anyway, right?</p>
+<p>You should set the &#8216;client_max_body_size&#8217; option to be at least the same
+size as you tell Bargate to allow via the <a class="reference internal" href="config_options.html#config-max-content-length"><span class="std std-ref">MAX_CONTENT_LENGTH</span></a>
+configuration option.</p>
+<p>If you intend on using search you may wish to add the &#8216;uwsgi_read_timeout&#8217;
+and &#8216;uwsgi_send_timeout&#8217; options. See <a class="reference internal" href="searchsupport.html"><span class="doc">Search</span></a> for more information
+on how to set this up.</p>
+</div>
+<div class="section" id="enable-and-start-nginx">
+<h3>Enable and start nginx<a class="headerlink" href="#enable-and-start-nginx" title="Permalink to this headline">¶</a></h3>
+<p>You&#8217;ll want to enable and start nginx (on systemd systems):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">systemctl</span> <span class="n">enable</span> <span class="n">nginx</span>
+<span class="n">systemctl</span> <span class="n">start</span> <span class="n">nginx</span>
+</pre></div>
+</div>
+<p>On Upstart based systems:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">start</span> <span class="n">nginx</span>
+</pre></div>
+</div>
+<p>On SysV systems (e.g. RHEL6):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chkconfig</span> <span class="n">nginx</span> <span class="n">on</span>
+<span class="n">service</span> <span class="n">nginx</span> <span class="n">start</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="upgrade.html" class="btn btn-neutral float-right" title="Upgrading" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, David Bell.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.4.3',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
