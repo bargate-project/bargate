@@ -761,12 +761,15 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		## Work out if there is a parent directory
 		## and work out the entry name (filename or directory name being browsed)
 		if len(path) > 0:
+			app.logger.debug("PATH > 0: " + path)
 			(parent_directory_path,seperator,entryname) = path.rpartition('/')
 			## if seperator was not found then the first two strings returned will be empty strings
 			if len(parent_directory_path) > 0:
+				app.logger.debug("parent_directory TRUE: " + parent_directory_path + " - setting parent_redirect")
 				parent_directory = True
 				parent_directory_path_as_str = urllib.quote(parent_directory_path.encode('utf-8'))
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
+				app.logger.debug("parent_redirect: " + parent_redirect)
 				error_redirect = parent_redirect
 			else:
 				parent_directory = False
@@ -984,7 +987,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 			else:
 				flash("The folder '" + request.form['directory_name'] + "' was created successfully.",'alert-success')
-				return parent_redirect
+				return redirect(url_for(func_name,path=path))
 
 ################################################################################
 # DELETE FILE
