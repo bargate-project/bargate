@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<form action="{{ url_for('settings') }}" method="POST">
+
+
+	<span class="pull-right">
+		<button type="submit" class="btn btn-primary"><i class="fa fa-fw fa-save"></i> Save</button>
+	</span>
+	<h2><i class="fa fa-fw fa-cogs"></i> Settings</h2>
+	<hr/>
+
+	<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
+	<div class="row equal">
+		<div class="col-sm-8">
+			<div class="panel panel-equal panel-default" style="min-height: 500px">
+				<div class="panel-heading">
+					<h3 class="panel-title">Folder Options</h3>
+				</div>
+				<div class="panel-body">
+					<legend>Layout</legend>
+					<div class="radio">
+						<label>
+						<input type="radio" name="layout" id="layout_grid" value="grid" {%if user_layout == 'grid' %} checked="checked" {%endif%}> View items as a grid of icons
+						</label>
+					</div>
+					<div class="radio">
+						<label>
+						<input type="radio" name="layout" id="layout_list" value="list" {%if user_layout == 'list' %} checked="checked" {%endif%}> View items as a list
+						</label>
+					</div>
+					<br/>
+					<legend>Hidden Files</legend>
+						<div class="checkbox">
+					  <label>
+						<input id="hidden_files" name="hidden_files" type="checkbox" value="show" {%if hidden_files and hidden_files == 'show' %} checked="checked"{%endif%}>
+						Show hidden files and folders
+					  </label>
+					</div>
+					
+					<br/>
+    				<legend>Overwrite on upload</legend>
+					<div class="checkbox">
+					  <label>
+						<input id="overwrite_on_upload" name="overwrite_on_upload" type="checkbox" value="yes" {%if overwrite_on_upload and overwrite_on_upload == 'yes' %} checked="checked"{%endif%}>
+						Overwrite an existing file when uploading if the name matches
+					  </label>
+					</div>
+			
+					<br/>
+    				<legend>Click to Download</legend>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios1" value="ask" {%if on_file_click and on_file_click == 'ask' %} checked="checked"{%endif%}>
+						Ask before downloading a file <span class="text-muted">(Recommended)</span>
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios2" value="default" {%if on_file_click and on_file_click == 'default' %} checked="checked"{%endif%}>
+						View or download files when clicked without prompting
+					  </label>
+					</div>
+					<div class="radio">
+					  <label>
+						<input type="radio" name="on_file_click" id="optionsRadios3" value="download" {%if on_file_click and on_file_click == 'download' %} checked="checked"{%endif%}>
+						Download files when clicked without prompting
+					  </label>
+					</div>
+				</div>
+			</div>		
+		</div>
+		<div class="col-sm-4">
+			<div class="panel panel-equal panel-default" style="min-height: 500px">
+				<div class="panel-heading">
+					<h3 class="panel-title">Theme
+				</div>
+				<div class="panel-body">
+					<legend>Theme Pack</legend>
+					{% for bootstrap_theme in themes %}
+					<div class="radio">
+						<label>
+						<input type="radio" name="theme" id="theme_{{bootstrap_theme.value}}" value="{{bootstrap_theme.value}}" {% if user_theme == bootstrap_theme.value%}checked{%endif%}>
+						{{bootstrap_theme.name}}
+						</label>
+					</div>
+					{% endfor %}
+					
+					<br/>
+					<legend>Inverted Menu Bar</legend>
+					<div class="checkbox">
+					<label>
+						<input name="navbar_alt" type="checkbox" value="inverse" {%if user_navbar == 'inverse' %} checked="checked" {%endif%}>
+						Use alternative menu bar colour
+					</label>
+					</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+
+{% endblock %}

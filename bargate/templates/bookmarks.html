@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<script type="text/javascript">
+$(document).ready(function($)
+{
+	$(".click-rename").click(function()
+	{
+		var parent = $(this).closest('tr');
+		$('#bookmark-rename-id').val(parent.data('id'));
+		$('#bookmark-rename-name').val(parent.data('name'));
+		$('#rename').modal();		
+	});	
+	$(".click-delete").click(function()
+	{
+		var parent = $(this).closest('tr');
+		$('#bookmark-delete-id').val(parent.data('id'));
+		$('#bookmark-delete-name').text(parent.data('name'));
+		$('#delete').modal();		
+	});	
+});
+</script>
+
+{#- modal popup for when rename bookmark is clicked  #}
+<div class="modal" id="rename" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_for('bookmarks') }}" method="POST" enctype="multipart/form-data" autocomplete="off">
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
+				<input name="action" type="hidden" value="rename"/>
+				<input id="bookmark-rename-id" name="bookmark_id" type="hidden" value=""/>
+								
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<h4 class="modal-title">Rename Bookmark</h4>
+				</div>
+				<div class="modal-body">
+					<label>Bookmark name:</label>
+					<input id="bookmark-rename-name" class="form-control" type="text" name="bookmark_name" value=""/>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" id="deletebtn" class="btn btn-success" value="Rename"/>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+{#- modal popup for when delete bookmark is clicked  #}
+<div class="modal" id="delete" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form action="{{ url_home }}" method="POST">
+				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
+				<input name="action" value="delete" type="hidden"/>
+				<input id="bookmark-delete-id" name="bookmark_id" type="hidden" value=""/>
+					
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<h4 class="modal-title">Delete bookmark</h4>
+				</div>
+
+				<div class="modal-body text-center">
+					<p><i class="fa fa-fw fa-exclamation-triangle fa-5x"></i></p>
+
+					<p>Are you sure you want to permanently delete the bookmark "<span id="bookmark-delete-name"></span>"?</p>
+				</div>
+				
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+					<input type="submit" id="deletebtn" class="btn btn-danger" value="Yes"/>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<h2><i class="fa fa-bookmark"></i> Bookmarks</h2>
+<hr/>
+<table class="table table-hover">
+	<tbody>
+		{% for mark in bookmarks %}
+		<tr class="entry-click" data-url="{{ mark.url }}" data-id="{{mark.id}}" data-name="{{mark.name}}">
+			<td class="entry-open">
+				<i class="fa fa-fw fa-arrow-right"></i> {{mark.name}}<br/>
+				<span class="text-muted">{% if mark.function == 'custom' %}{{mark.custom_uri|replace('smb://','')}}{{mark.path}}{%else%}{{mark.function}}/{{mark.path}}{%endif%}</span>
+			</td>
+			<td class="text-right">
+				<div class="btn-group">
+					<button type="submit" class="btn btn-info click-rename"><i class="fa fa-edit"></i> Rename</button>
+					<button type="submit" class="btn btn-danger click-delete"><i class="fa fa-times-circle"></i> Delete</button>
+				</div>
+			</td>
+		</tr>
+		{%- else %}
+		<tr>
+			<td colspan="2">
+				<em>You have no bookmarks yet. To create one, navigate to a folder and click 'Bookmark this folder'.</em>
+			</td>
+		</tr>
+		{%- endfor %}
+		<tr>
+		<td></td><td></td>
+		</tr>
+	</tbody>
+</table>
+		
+
+{% endblock %}

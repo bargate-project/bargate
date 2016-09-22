@@ -1,0 +1,73 @@
+{%- extends "layout.html" -%}
+{%- block body -%}
+{%- include 'directory-modals.html' -%}
+{%- include 'directory-menus.html' -%}
+{%- include 'breadcrumbs.html' -%}
+
+<table id="dir" class="table table-striped table-hover" style="width: 100%">
+	<thead>
+		<tr>
+			<th class="tsdisable" style="width: 1px"></th>
+			<th>Name</th>
+			<th class="hidden-xs hidden-sm">Modified</th>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th></th>
+		</tr>
+
+		{%- if atroot == False %}
+		<tr class="tsdisable entry-click" data-url="{{ url_parent_dir }}">
+			<td class="sorter-false text-center entry-open" style="padding-left: 8px !important">
+				<i class="fa fa-fw fa-arrow-up"></i>
+			</td>
+			<td class="sorter-false entry-open">
+				<a href="{{ url_parent_dir }}">Parent Folder</a>
+			</td>
+			<td class="sorter-false entry-open hidden-xs hidden-sm">
+				
+			</td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</td>
+		{% endif -%}
+	</thead>
+
+	<tbody>
+		{%- for entry in dirs -%}
+		<tr class="entry-click entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
+			<td class="text-center entry-open"><span class="{{ entry.icon }}"></span></td>
+			<td class="entry-open dentry">{{ entry.name}}</td>
+			<td class="hidden-xs hidden-sm entry-open dentry-mtime">-</td>
+			<td>.1111{{entry.name}}</td>
+			<td>-1</td>
+			<td>111adir</td>
+			<td>-1</td>
+		</tr>
+		{%- endfor -%}
+
+		{%- for entry in files -%}
+		{%- if on_file_click == 'ask' %}
+			{#- POPUP DIALOG FOR FILES TR -#}
+			<tr class="entry-click entry-file" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
+			{%- set rclick = 'entry-preview' -%}
+		{%- else %}
+			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
+			<tr class="entry-click entry-file" data-url="{% if on_file_click == 'download' %} {{entry.download}} {% else %} {{entry.open}} {%endif%}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" {% if entry.view %}data-view="{{ entry.view }}"{%endif%} data-stat="{{ entry.stat }}">
+			{%- set rclick = 'entry-open' -%}
+		{%- endif %}
+
+			<td class="text-center {{rclick}}"><span class="{{ entry.icon }}"></span></td>
+			<td class="{{rclick}} dentry">{{ entry.name}}</td>
+			<td class="hidden-xs hidden-sm {{rclick}} dentry-mtime">{{ entry.mtime }}</td>
+			<td>{{ entry.name }}</td>
+			<td>{{ entry.mtime_raw }}</td>
+			<td>{{ entry.mtype_raw }}</td>
+			<td>{{ entry.size }}</td>
+		</tr>
+		{%- endfor -%}
+	</tbody>
+</table>
+{% endblock %}

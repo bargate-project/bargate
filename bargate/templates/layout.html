@@ -1,0 +1,200 @@
+{%- macro logoutmenu(class) -%}
+	<li class="{{class}}"><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
+{%- endmacro -%}
+{%- macro bargatemenu() -%}
+	{% if config['REDIS_ENABLED'] %}
+	<li><a href="{{ url_for('settings') }}"><i class="fa fa-gears fa-fw"></i> Settings</a></li>
+	{% endif %}
+	{% if config['TOTP_ENABLED'] %}
+	<li><a href="{{ url_for('totp_user_view') }}"><i class="fa fa-lock fa-fw"></i> Two Step Protection</a></li>
+	{% endif %}
+	{%- include 'user-menu.html' %}
+	<li class="divider"></li>
+	{%- include 'help-menu.html' %}
+	<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
+{%- endmacro -%}
+{%- macro sortmenu() -%}
+<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-title="Sort by" rel="tooltip">
+	<i class="fa fa-fw fa-lg fa-sort"></i>
+</a>
+<ul class="dropdown-menu dropdown-menu-auto">
+	<li style="cursor: pointer"><a class="dir-sortby-name"><span class="sortby-check"><i class="fa fa-fw fa-check"></i></span> Name</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-type"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Type</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-mtime"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Modified</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-size"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Size</a></li>
+</ul>
+{%- endmacro -%}
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<link rel="icon" type="image/png" href="{{ favicon }}">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+		<link rel="stylesheet" href="{{ url_for('static', filename='themes/' + user_theme + '/' + user_theme + '.css') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/bargate.css') }}">
+		{%- if browse_mode or search_mode %}
+		{%- if user_layout == 'list' or search_mode %}
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.11/datatables.min.css"/>
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse-list.css') }}">
+		{%- elif user_layout == 'grid' %}
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse-grid.css') }}">
+		{%- endif %}
+		{%- endif %}
+
+		{% include 'javascript.html' %}
+		{%- if browse_mode or search_mode %}
+		<script src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/upload/jquery.iframe-transport.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/upload/jquery.dragster.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/browse.js') }}"></script>
+		{%- if user_layout == 'list' %}
+		<script src="https://cdn.datatables.net/t/bs/dt-1.10.11/datatables.min.js"></script>
+		{%- if search_mode %}
+		<script src="{{ url_for('static', filename='js/browse-search.js') }}"></script>
+		{%- else %}
+		<script src="{{ url_for('static', filename='js/browse-list.js') }}"></script>
+		{%- endif %}
+		{%- elif user_layout == 'grid' %}
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.min.js"></script>
+		<script src="{{ url_for('static', filename='js/browse-grid.js') }}"></script>
+		{%- endif %}
+		{%- endif %}	
+		<script src="{{ url_for('static', filename='js/bargate.js') }}"></script>
+	</head>
+	<body>
+		<div class="navbar navbar-{{user_navbar}} navbar-fixed-top" role="navigation">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					{%- if session.logged_in %}
+					<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand visible-xs visible-md visible-lg">{{ config['APP_DISPLAY_NAME'] }}</a>
+					<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand visible-sm">{{ config['APP_DISPLAY_NAME_SHORT'] }}</a>
+					{%- else %}
+					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fa fa-arrow-circle-o-left"></i> Back to Login</a>
+					{%- endif %}
+				</div>
+			
+				{%- if session.logged_in %}
+				<div class="navbar-collapse collapse" id="navbar-collapse-1">	
+					<ul class="nav navbar-nav">
+						{%- include 'dropdown-menus.html' %}
+						{%- include 'bookmarks-menu.html' %}
+						<li class="dropdown visible-xs">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								{{ bargatemenu() }}
+							</ul>
+						</li>
+						{{ logoutmenu('visible-xs') }}
+					</ul>
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" title="Menu" aria-haspopup="true" aria-expanded="false">
+								<i class="fa fa-bars fa-fw fa-lg"></i>
+							</a>
+							<ul class="dropdown-menu dropdown-menu-right">
+							{{ bargatemenu() }}
+							<li class="divider"></li>
+							{{ logoutmenu() }}
+							</ul>
+						</div>
+					
+					{% if browse_mode %}
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="create-directory-button" data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default" rel="tooltip" data-toggle="tooltip" title="Create a folder">
+								<i class="fa fa-fw fa-lg fa-folder-open"></i>
+							</a>
+						</div>
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn" rel="tooltip" title="Upload a file">
+								<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
+							</a>
+						</div>
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							{{ sortmenu() }}
+						</div>
+
+						{% if config['SEARCH_ENABLED'] %}
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a data-toggle="modal" href="#search" class="btn navbar-btn btn-default btn" rel="tooltip" title="Search">
+								<i class="fa fa-fw fa-lg fa-search"></i>
+							</a>
+						</div>
+						{% endif %}
+					{% endif %}
+				</div>
+				{%- endif %}
+			</div>
+		</div>
+
+		{%- if session.modal_error -%}
+			{%- with modal_error = get_modal_error() -%}
+			<div class="modal fade" id="popup-error">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+							<h4 class="modal-title">{{ modal_error.0 }}</h4>
+						</div>
+						<div class="modal-body">
+							{{ modal_error.1 }}
+						</div>
+						<div class="modal-footer">
+							<a href="#" class="btn btn-default"  data-dismiss="modal">OK</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			{%- endwith -%}
+		{%- endif %}
+
+		
+		<div class="container-fluid{% if browse_mode %} container-browse{%endif%} container-body">
+			{% for category, message in get_flashed_messages(with_categories=true) %}
+				<div class="alert alert-dismissable {{category}}"><button type="button" class="close" data-dismiss="alert">×</button>{{message}}</div>
+			{% endfor %}
+			{% block body %}{% endblock -%}
+		</div>
+		
+		{% if browse_mode %}
+		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
+			<div class="container text-center">
+				<div class="text-center inline-block dropup">
+					{{ sortmenu() }}
+				</div>
+				<div class="text-center inline-block">
+					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">
+						<i class="fa fa-fw fa-upload"></i>
+					</a>
+				</div>
+				<div class="text-center inline-block">
+					<a data-toggle="modal" href="#create-directory" class="btn navbar-btn btn-default">
+						<i class="fa fa-fw fa-folder-open"></i>
+					</a>
+				</div>
+				{%- if config['REDIS_ENABLED'] %}
+				<div class="text-center inline-block">
+					<a href="#" class="btn navbar-btn btn-default" {% if atroot %}disabled="disabled"{%else%} data-toggle="modal" data-target="#add-bookmark" {%endif%}>
+						<i class="fa fa-fw fa-bookmark"></i>
+					</a>
+				</div>
+				{%- endif %}
+			</div>
+		</div>
+		{%endif%}
+
+	</body>
+</html>

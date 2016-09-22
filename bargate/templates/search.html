@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block body %}
+{%- include 'directory-modals.html' -%}
+{%- include 'directory-menus.html' -%}
+{%- include 'breadcrumbs.html' -%}
+
+<h3>Results for '{{query}}'</h3>
+
+<table id="dir" class="table table-striped table-hover" style="width: 100%">
+	<thead>
+		<tr>
+			<th class="tsdisable" style="width: 1px"></th>
+			<th>Name</th>
+		</tr>
+	</thead>
+
+	<tbody>
+		{%- for entry in results -%}
+
+		{% if entry['type'] == 'dir' %}	
+			{%- set rclick = 'entry-open' -%}	
+		<tr class="entry-click" data-url="{{ entry.open }}" >
+		{% elif entry['type'] == 'file' %}
+			{%- if on_file_click == 'ask' %}
+			{#- POPUP DIALOG FOR FILES TR -#}
+			{%- set rclick = 'entry-preview' -%}
+		<tr class="entry-click" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
+			{%- else %}
+			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
+			{%- set rclick = 'entry-open' -%}
+		<tr class="entry-click" data-url="{% if on_file_click == 'download' %} {{entry.download}} {% else %} {{entry.open}} {%endif%}">
+			{% endif %}
+		{% endif %}
+
+			<td class="{{rclick}} text-center"><span class="{{ entry.icon }} fa-2x"></span></td>
+			<td class="{{rclick}} dentry">{{ entry.name}}<br/>
+				<span class="text-muted">in <a href="{{entry.parent_url}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
+			</td>
+		</tr>
+		{%- else -%}
+		<tr><td colspan="2"><em>No results found</em></td></tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

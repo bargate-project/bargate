@@ -1,4 +1,4 @@
-bargate is an open source modern web interface for CIFS/SMB file servers.
+bargate is an open source modern web interface for SMB file servers.
 
 For more information visit: https://bargate.io
 

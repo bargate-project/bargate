@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+# if you haven't installed bargate via pip
+# then you need to uncomment the next two lines
+# and set the path to where the bargate module is
+#import sys
+#sys.path.insert(0, '/path/to/bargate/')
+
+from bargate import app as application

@@ -1,0 +1,5 @@
+include LICENSE
+include README.md
+recursive-include bargate/templates *
+recursive-include bargate/static *
+recursive-include bargate/doc *

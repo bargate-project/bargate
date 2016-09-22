@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+		<meta charset="utf-8">
+		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<link rel="icon" type="image/png" href="{{ favicon }}">
+		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
+		{% include 'login-head.html' ignore missing %}
+		<noscript>
+			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
+		</noscript>
+		{% include 'javascript.html' %}
+		<script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
+	</head>
+	<body>
+		{% include 'login-body.html' ignore missing %}
+		<div class="container">
+			{% include 'login-container.html' ignore missing %}
+			<div class="loginbox">
+				<h1>{{ config['APP_DISPLAY_NAME'] }}</h1>
+				{% for category, message in get_flashed_messages(with_categories=true) %}
+				<div class="alert {{ category }} fade in">
+					<a data-dismiss="alert" class="close" href="#">×</a>
+					{{ message|safe }}
+				</div>
+				{% endfor %}
+
+				<form role="form" action="{{ url_for('login') }}" method="POST" class="text-left">
+					{% if next %}
+					<input name="next" type="hidden" value="{{next}}"/>
+					{% endif %}
+					<div class="form-group">
+						<label>Username:</label>
+						<input type="text" class="login-input form-control" id="loginUsername" name="username">
+					</div>
+					<div class="form-group">
+						<label>Password:</label>
+						<input type="password" class="login-input form-control" id="loginPassword" name="password">
+					</div>
+					{% if config['REMEMBER_ME_ENABLED'] %}
+					<div class="checkbox">
+						<label>
+							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this device <span class="hidden-xs glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-trigger="hover" data-content="If you are on a private computer you trust then selecting this option will keep you logged in even if you close the browser window. Do not use this on public or shared computers."></span>
+						</label>
+					</div>
+					{% endif %}
+					<div class="form-group text-center">
+						<button class="btn btn-default btn-lg" type="submit">Login</button>
+					</div>
+				</form>
+				<p class="text-center">
+					{% include 'login-footer.html' ignore missing %}
+				</p>
+			</div>
+		</div>
+	</body>
+</html>
