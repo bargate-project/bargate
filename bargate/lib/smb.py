@@ -816,19 +816,6 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					app.logger.error("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 					ret.append({'name' : ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
 					continue
-					
-				else:
-					## If the file did exist, check to see if we should overwrite
-					if fstat:
-						if not bargate.lib.userdata.get_overwrite_on_upload():
-							ret.append({'name' : ufile.filename, 'error': 'File already exists. You can enable overwriting files in Account Settings.'})
-							continue
-
-						## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
-						itemType = bargate.lib.smb.getEntryType(libsmbclient,upload_uri_as_str)
-						if itemType == bargate.lib.smb.SMB_DIR:
-							ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
-							continue
 
 				byterange_start = 0
 				if 'Content-Range' in request.headers:
@@ -837,9 +824,25 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 				## Actual upload
 				try:
+					# Check if we're writing from the start of the file
 					if byterange_start == 0:
+						## We're truncating an existing file, or creating a new file
+						## If the file already exists, check to see if we should overwrite
+						if fstat:
+							if not bargate.lib.userdata.get_overwrite_on_upload():
+								ret.append({'name' : ufile.filename, 'error': 'File already exists. You can enable overwriting files in Settings.'})
+								continue
+
+							## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
+							itemType = bargate.lib.smb.getEntryType(libsmbclient,upload_uri_as_str)
+							if itemType == bargate.lib.smb.SMB_DIR:
+								ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
+								continue
+
+						## Open the file for the first time, truncating or creating it if necessary
 						wfile = libsmbclient.open(upload_uri_as_str,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 					else:
+						## Open the file and seek to where we are going to write the additional data
 						wfile = libsmbclient.open(upload_uri_as_str,os.O_WRONLY)
 						wfile.seek(byterange_start)
 
