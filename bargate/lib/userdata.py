@@ -79,13 +79,13 @@ def get_bookmarks():
 								continue
 		
 							try:
-								bookmark['url'] = url_for(bookmark_function,path=bookmark_path)
+								bookmark['url'] = url_for(bookmark['function'],path=bookmark['path'])
 							except werkzeug.routing.BuildError as ex:
 								app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function: ', str(ex))
 								continue
 
 							## Version 1 bookmarks stored the name of the bookmark as the ID :(
-							bookmark['name'] = bookmark['id']
+							bookmark['name'] = bookmark_id
 
 						else:
 							if bookmark['version'] == '2':
