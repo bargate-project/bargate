@@ -8,13 +8,13 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
 	name='bargate',
-	version='1.5',
+	version='1.5.2',
 	packages=find_packages(),
 	include_package_data=True,
 	license='GNU General Public License v3',
 	description='Open source modern web interface for SMB file servers',
 	long_description=README,
-	url='https://www.bargate.io',
+	url='https://bargate.io',
 	author='David Bell',
 	author_email='dave@evad.io',
 	classifiers=[
