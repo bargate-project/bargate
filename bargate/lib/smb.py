@@ -807,11 +807,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					continue
 					
 				## Check to see if the file exists
+				fstat = None
 				try:
 					fstat = libsmbclient.stat(upload_uri_as_str)
 				except smbc.NoEntryError:
+					app.logger.debug("Upload filename of " + upload_uri_as_str + " does not exist, ignoring")
 					## It doesn't exist so lets continue to upload
-					pass
 				except Exception as ex:
 					app.logger.error("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 					ret.append({'name' : ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
@@ -828,7 +829,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 					if byterange_start == 0:
 						## We're truncating an existing file, or creating a new file
 						## If the file already exists, check to see if we should overwrite
-						if fstat:
+						if fstat is not None:
 							if not bargate.lib.userdata.get_overwrite_on_upload():
 								ret.append({'name' : ufile.filename, 'error': 'File already exists. You can enable overwriting files in Settings.'})
 								continue
@@ -840,9 +841,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 								continue
 
 						## Open the file for the first time, truncating or creating it if necessary
+						app.logger.debug("Opening for writing with O_CREAT and TRUNC")
 						wfile = libsmbclient.open(upload_uri_as_str,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 					else:
 						## Open the file and seek to where we are going to write the additional data
+						app.logger.debug("Opening for writing with O_WRONLY")
 						wfile = libsmbclient.open(upload_uri_as_str,os.O_WRONLY)
 						wfile.seek(byterange_start)
 
@@ -853,11 +856,10 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 						wfile.write(buff)
 
 					wfile.close()
-
-
 					ret.append({'name' : ufile.filename})
 
 				except Exception as ex:
+					app.logger.error("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 					ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
 					continue
 					

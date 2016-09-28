@@ -334,7 +334,7 @@ def online(last=5):
 	elif last == 180:
 		last_str = "3 hours"
 	else:
-		last_str = str(last) + " minutes"			
+		last_str = str(last) + " minutes"
 
 	usernames = bargate.lib.userdata.get_online_users(last)
 	return render_template('online.html',online=usernames,active="help",last=last_str)
