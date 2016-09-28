@@ -1,6 +1,10 @@
 Upgrading
 =========
 
+If you installed bargate with pip then you can upgrade like so::
+
+  pip install --upgrade bargate
+
 If you installed bargate using Git you can simply 'git pull' to the latest::
 
   git pull
