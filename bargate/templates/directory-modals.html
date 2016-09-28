@@ -367,6 +367,7 @@ $(function ()
 	{
 		url: '{{url_home}}',
 		dataType: 'json',
+		maxChunkSize: 10485760, // 10MB
 		formData: [{name: '_csrfp_token', value: '{{ csrfp_token() }}'}, {name: 'action', value: 'jsonupload'}, {name: 'path', value: {{path|tojson|safe}}}],
 		start: function (e)
 		{

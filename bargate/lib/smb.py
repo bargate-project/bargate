@@ -21,7 +21,7 @@ import bargate.lib.errors
 import bargate.lib.userdata
 import bargate.lib.mime
 from bargate.lib.search import RecursiveSearchEngine
-import string, os, smbc, sys, stat, pprint, urllib, re
+import string, os, io, smbc, sys, stat, pprint, urllib, re
 from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify, render_template
 
 ### Python imaging stuff
@@ -761,15 +761,12 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		## Work out if there is a parent directory
 		## and work out the entry name (filename or directory name being browsed)
 		if len(path) > 0:
-			app.logger.debug("PATH > 0: " + path)
 			(parent_directory_path,seperator,entryname) = path.rpartition('/')
 			## if seperator was not found then the first two strings returned will be empty strings
 			if len(parent_directory_path) > 0:
-				app.logger.debug("parent_directory TRUE: " + parent_directory_path + " - setting parent_redirect")
 				parent_directory = True
 				parent_directory_path_as_str = urllib.quote(parent_directory_path.encode('utf-8'))
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
-				app.logger.debug("parent_redirect: " + parent_redirect)
 				error_redirect = parent_redirect
 			else:
 				parent_directory = False
@@ -832,13 +829,23 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 						if itemType == bargate.lib.smb.SMB_DIR:
 							ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
 							continue
-			
+
+				byterange_start = 0
+				if 'Content-Range' in request.headers:
+					byterange_start = int(request.headers['Content-Range'].split(' ')[1].split('-')[0])
+
+					app.logger.info("Content-Range sent with bytes " + str(byterange_start) + " with filename " + filename)
+
 				## Actual upload
 				try:
-					wfile = libsmbclient.open(upload_uri_as_str,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+					if byterange_start == 0:
+						wfile = libsmbclient.open(upload_uri_as_str,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+					else:
+						wfile = libsmbclient.open(upload_uri_as_str,os.O_WRONLY)
+						wfile.seek(byterange_start)
 
 					while True:
-						buff = ufile.read(8192)
+						buff = ufile.read(io.DEFAULT_BUFFER_SIZE)
 						if not buff:
 							break
 						wfile.write(buff)
