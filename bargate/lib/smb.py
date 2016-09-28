@@ -833,8 +833,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				byterange_start = 0
 				if 'Content-Range' in request.headers:
 					byterange_start = int(request.headers['Content-Range'].split(' ')[1].split('-')[0])
-
-					app.logger.info("Content-Range sent with bytes " + str(byterange_start) + " with filename " + filename)
+					app.logger.debug("Chunked file upload request: Content-Range sent with byte range start of " + str(byterange_start) + " with filename " + filename)
 
 				## Actual upload
 				try:
