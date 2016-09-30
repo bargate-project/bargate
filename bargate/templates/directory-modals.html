@@ -27,7 +27,7 @@
 
 <div class="modal" id="upload-drag-over">
 	<div class="modal-dialog">
-		<div class="modal-content" style="opacity: 0.8;">
+		<div class="modal-content" style="opacity: 0.9;">
 			<div class="modal-body text-center">
 				<h1><i class="fa fa-fw fa-5x fa-cloud-download"></i></h1>
 				<h2>Drag and drop your files here to upload</h2>
@@ -55,15 +55,20 @@
 					</p>
 					
 					<div id="upload-progress" class="progress progress-striped hidden active">
-						<div class="progress-bar progress-bar-info">
+						<div class="progress-bar progress-bar-info" style="min-width: 2em; width: 2%;">
+    						<span id="upload-progress-pc">2</span>%
 						</div>
 					</div>
-					<button id="upload-cancel" type="button" class="btn btn-danger hidden"><i class="fa fa-fw fa-times"></i> Cancel upload</button>
-					<ul id="upload-files" class="files list-unstyled" style="max-height: 250px; overflow-y: scroll">
+
+					<div id="upload-progress-ext" class="text-muted text-center hidden">
+					</div>
+
+					<ul id="upload-files" class="files list-unstyled" style="max-height: 250px; margin-top: 25px; overflow-y: auto">
 					</ul>  
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-fw fa-times-circle"></i> Close</button>
+					<button id="upload-cancel" type="button" class="btn btn-danger hidden"><i class="fa fa-fw fa-times"></i> Cancel upload</button>
 					<span class="btn btn-success fileinput-button">
 						<i class="fa fa-fw fa-plus"></i>
 						<span>Select files</span>
@@ -361,6 +366,58 @@ $('#upload-file').on('hidden.bs.modal', function (e)
 	}
 })
 
+function formatFileSize(bytes) {
+	if (typeof bytes !== 'number') {
+		return '';
+	}
+	if (bytes >= 1000000000) {
+		return (bytes / 1000000000).toFixed(2) + ' GB';
+	}
+	if (bytes >= 1000000) {
+		return (bytes / 1000000).toFixed(2) + ' MB';
+	}
+	return (bytes / 1000).toFixed(2) + ' KB';
+}
+
+function formatBitrate(bits) {
+	if (typeof bits !== 'number') {
+		return '';
+	}
+
+	bits = bits / 8
+
+	if (bits >= 1000000000) {
+		return (bits / 1000000000).toFixed(2) + ' GiB/s';
+	}
+	if (bits >= 1000000) {
+		return (bits / 1000000).toFixed(2) + ' MiB/s';
+	}
+	if (bits >= 1000) {
+		return (bits / 1000).toFixed(2) + ' KiB/s';
+	}
+	return bits.toFixed(2) + ' bytes/s';
+}
+
+function formatTime (seconds) {
+	var date = new Date(seconds * 1000),
+		days = Math.floor(seconds / 86400);
+	days = days ? days + 'd ' : '';
+	return days +
+		('0' + date.getUTCHours()).slice(-2) + ':' +
+		('0' + date.getUTCMinutes()).slice(-2) + ':' +
+		('0' + date.getUTCSeconds()).slice(-2);
+}
+
+function renderExtendedProgress(data)
+{
+    return formatBitrate(data.bitrate) + ', ' +
+        formatTime(
+            (data.total - data.loaded) * 8 / data.bitrate
+        ) + ' remaining <br/>' +
+        formatFileSize(data.loaded) + ' uploaded of ' +
+        formatFileSize(data.total);
+}
+
 $(function ()
 {
 	$('#fileupload').fileupload(
@@ -374,6 +431,7 @@ $(function ()
 			$('#upload-drag-over').modal('hide');
 			$('#upload-file').modal()
 			$('#upload-progress').removeClass('hidden');
+			$('#upload-progress-ext').removeClass('hidden');
 			$('#upload-cancel').removeClass('hidden');
 			
 			$('#upload-button-icon').removeClass('fa-upload');
@@ -385,6 +443,10 @@ $(function ()
 			$('#upload-button-icon').addClass('fa-upload');
 			$('#upload-button-icon').removeClass('fa-spin');
 			$('#upload-button-icon').removeClass('fa-cog');
+
+			$('#upload-progress').addClass('hidden');
+			$('#upload-progress-ext').addClass('hidden');
+			$('#upload-cancel').addClass('hidden');
 
 			if (!($("#upload-file").data('bs.modal').isShown))
 			{
@@ -399,15 +461,12 @@ $(function ()
 			{
 				if (file.error)
 				{
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded: ' + file.error + ' </li>').appendTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').appendTo('#upload-files');
 				}
 				else
 				{
-					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; ' + file.name + ' was uploaded successfully </li>').appendTo('#upload-files');
+					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; Uploaded: ' + file.name + '</li>').appendTo('#upload-files');
 				}
-				
-				$('#upload-progress').addClass('hidden');
-				$('#upload-cancel').addClass('hidden');
 			});
 		},
 		fail: function (e, data)
@@ -420,17 +479,15 @@ $(function ()
 			}
 			else
 			{		
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; ' + file.name + ' could not be uploaded. The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ' The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
 			}
-			
-			$('#upload-progress').addClass('hidden');
-			$('#upload-cancel').addClass('hidden');
-
 		},
 		progressall: function (e, data)
 		{
 			var progress = parseInt(data.loaded / data.total * 100, 10);
+			$('#upload-progress-pc').html(progress);
 			$('#upload-progress .progress-bar').css('width', progress + '%');
+			$('#upload-progress-ext').html(renderExtendedProgress(data));
 		},
 		add: function (e, data)
 		{
@@ -441,6 +498,7 @@ $(function ()
 			});
 		},
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
+
 });
 
 </script>

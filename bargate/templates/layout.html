@@ -39,7 +39,7 @@
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/bargate.css') }}">
 		{%- if browse_mode or search_mode %}
 		{%- if user_layout == 'list' or search_mode %}
-		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.11/datatables.min.css"/>
+		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.12/datatables.min.css"/>
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse-list.css') }}">
 		{%- elif user_layout == 'grid' %}
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse-grid.css') }}">
@@ -49,19 +49,18 @@
 		{% include 'javascript.html' %}
 		{%- if browse_mode or search_mode %}
 		<script src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/upload/jquery.iframe-transport.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.dragster.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/browse.js') }}"></script>
 		{%- if user_layout == 'list' %}
-		<script src="https://cdn.datatables.net/t/bs/dt-1.10.11/datatables.min.js"></script>
+		<script src="https://cdn.datatables.net/t/bs/dt-1.10.12/datatables.min.js"></script>
 		{%- if search_mode %}
 		<script src="{{ url_for('static', filename='js/browse-search.js') }}"></script>
 		{%- else %}
 		<script src="{{ url_for('static', filename='js/browse-list.js') }}"></script>
 		{%- endif %}
 		{%- elif user_layout == 'grid' %}
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.1/isotope.pkgd.min.js"></script>
 		<script src="{{ url_for('static', filename='js/browse-grid.js') }}"></script>
 		{%- endif %}
 		{%- endif %}	

@@ -36,10 +36,15 @@
 	padding-left: 0px;
 	padding-right: 0px;
 }
+
 .entry {
 	margin-top: 4px;
 	margin-right: 4px;
 	width: calc(50% - 4px);
+}
+.alert
+{
+	margin-right: 4px;
 }
 ol.breadcrumb {
 	margin-bottom: 0px;
@@ -50,11 +55,16 @@ ol.breadcrumb {
 	.container-browse {
 		padding-left: 12px;
 		padding-right: 0px;
+		padding-bottom: 12px;
 	}
 	.entry {
 		margin-top: 12px;
 		margin-right: 12px;
 		width: calc(25% - 12px);
+	}
+	.alert
+	{
+		margin-right: 12px;
 	}
 	ol.breadcrumb {
 		margin-right: 12px;
@@ -67,7 +77,6 @@ ol.breadcrumb {
 		width: calc(16.666666667% - 12px);
 	}
 }
-
 
 /* eight icons - large desktops */ 
 @media (min-width: 1200px) {
