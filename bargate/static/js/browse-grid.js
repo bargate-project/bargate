@@ -17,7 +17,8 @@ $(document).ready(function()
 			type: true,
 			mtime: false,
 			size: false
-		}
+		},
+		sortBy: 'name',
 	});
 
 	/* sort entries in a directory */
@@ -45,4 +46,11 @@ $(document).ready(function()
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-size span').removeClass('invisible');
 	});
+
+	var $dirs = $('#dirs').isotope(
+	{
+		getSortData: { name: '[data-filename]',},
+		sortBy: 'name',
+	});
+
 });
