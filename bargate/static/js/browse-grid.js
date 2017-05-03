@@ -4,7 +4,7 @@ $(document).ready(function()
 	{
 		getSortData:
 		{
-			name: '[data-filename]',
+			name: '[data-sortname]',
 			type: '[data-raw-mtype]',
 			mtime: '[data-raw-mtime] parseInt',
 			size: '[data-raw-size] parseInt',
@@ -49,7 +49,7 @@ $(document).ready(function()
 
 	var $dirs = $('#dirs').isotope(
 	{
-		getSortData: { name: '[data-filename]',},
+		getSortData: { name: '[data-sortname]',},
 		sortBy: 'name',
 	});
 

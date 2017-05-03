@@ -18,7 +18,7 @@
 from datetime import timedelta
 
 ## Bargate version number
-VERSION='1.5.6'
+VERSION='1.5.7'
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
