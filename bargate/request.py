@@ -39,7 +39,7 @@ def before_request():
 
 	# Check bargate started correctly
 	if app.error:
-		return bargate.lib.errors.fatalerr(message=app.error)		
+		return bargate.lib.errors.fatalerr(message=app.error)
 
 	# Check for MSIE version <= 10
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 10):

@@ -19,7 +19,6 @@
 from bargate import app
 import bargate.lib.errors
 from flask import Flask, request, session, g, redirect, url_for, abort, flash, render_template, make_response
-import smbc
 import traceback
 import redis
 

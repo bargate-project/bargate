@@ -18,7 +18,7 @@
 from datetime import timedelta
 
 ## Bargate version number
-VERSION='1.5.7'
+VERSION='1.6.dev'
 
 ## Debug mode. This engages the web-based debug mode
 DEBUG = False
@@ -76,7 +76,7 @@ REDIS_PORT=6379
 
 ## Disable the application or not
 # Default to true if no config file to make sure a config file has been found.
-DISABLE_APP=True
+DISABLE_APP=False
 
 ## Default bootstrap/bootswatch theme
 THEME_DEFAULT='lumen'
@@ -158,3 +158,6 @@ SEARCH_ENABLED=False
 
 ## Maximum time to search for before giving up and returning results
 SEARCH_TIMEOUT=50
+
+## Backend library to use to talk SMB over the network
+SMB_LIBRARY="pysmbc"

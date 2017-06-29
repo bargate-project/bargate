@@ -19,6 +19,21 @@
 from bargate.app import Bargate
 app = Bargate(__name__)
 
+import traceback
+
+# Load the SMB library
+try:
+	if app.config['SMB_LIBRARY'] == "pysmbc":
+		from bargate.lib.smblib_pysmbc import backend_pysmbc
+		app.set_smb_library(backend_pysmbc())
+	elif app.config['SMB_LIBRARY'] == "pysmb":
+		from bargate.lib.smblib_pysmb import backend_pysmb
+		app.set_smb_library(backend_pysmb())
+except Exception as ex:
+	app.logger.error("Could not load the SMB library: " + str(type(ex)) + " " + str(ex))
+	app.logger.error(traceback.format_exc())
+	app.error = "Could not load the SMB library: " + str(type(ex)) + " " + str(ex)
+
 # only continue if bargate started successfully
 if not app.error:
 	# process per-request decorators

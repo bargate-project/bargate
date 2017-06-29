@@ -144,3 +144,72 @@ def flask_load_session_json(value):
 
 	return json.loads(value, object_hook=object_hook)
 
+################################################################################
+
+def check_name(name):
+	"""This function checks for invalid characters in a folder or file name or similar
+	strings. It checks for a range of characters and invalid conditions as defined 
+	by Microsoft here: http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
+	Raises an exception of ValueError if any failure condition is met by the string.
+	"""
+		
+	## File names MUST NOT end in a space or a period (full stop)
+	if name.endswith(' ') or name.endswith('.'):
+		raise ValueError('File and folder names must not end in a space or period (full stop) character')
+		
+	## Run the file/folder name check through the generic path checker
+	bargate.lib.core.check_path(name)
+	
+	## banned characters which CIFS servers reject!
+	invalidchars = re.compile(r'[<>/\\\":\|\?\*\x00]');
+	
+	## Check for the chars
+	if invalidchars.search(name):
+		raise ValueError('Invalid characters found. You cannot use the following characters in file or folder names: < > \ / : " ? *')
+		
+	return name
+
+################################################################################
+
+def check_path(path):
+	"""This function checks for invalid characters in an entire path. It checks to ensure
+	that paths don't contain strings which manipulate the path e.g up path or similar.
+	Raises an exception of ValueError if any failure condition is met by the string.
+	"""
+	
+	if path.startswith(".."):
+		raise ValueError('Invalid path. Paths cannot start with ".."')
+
+	if path.startswith("./"):
+		raise ValueError('Invalid path. Paths cannot start with "./"')
+
+	if path.startswith(".\\"):
+		raise ValueError('Invalid path. Paths cannot start with ".\"')
+
+	if '/../' in path:
+		raise ValueError('Invalid path. Paths cannot contain "/../"')
+
+	if '\\..\\' in path:
+		raise ValueError('Invalid path. Paths cannot contain "\..\"')
+
+	if '\\.\\' in path:
+		raise ValueError('Invalid path. Paths cannot contain "\.\"')
+
+	if '/./' in path:
+		raise ValueError('Invalid path. Paths cannot contain "/./"')
+		
+	return path
+	
+################################################################################
+
+def wb_sid_to_name(sid):
+	import subprocess
+	process = subprocess.Popen([app.config['WBINFO_BINARY'], '--sid-to-name',sid], stdout=subprocess.PIPE)
+	sout, serr = process.communicate()
+	sout = sout.rstrip()
+
+	if sout.endswith(' 1') or sout.endswith(' 2'):
+		return sout[:-2]
+	else:
+		return sout
+

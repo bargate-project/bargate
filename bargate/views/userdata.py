@@ -18,7 +18,6 @@
 import bargate
 import bargate.lib.userdata
 import bargate.lib.errors
-import bargate.lib.smb
 from bargate import app
 from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template
 import mimetypes
@@ -177,8 +176,8 @@ def bookmarks():
 
 			try:
 				bookmark_name     = request.form['bookmark_name']
-				bookmark_function = bargate.lib.smb.check_name(request.form['bookmark_function'])
-				bookmark_path     = bargate.lib.smb.check_path(request.form['bookmark_path'])
+				bookmark_function = bargate.lib.core.check_name(request.form['bookmark_function'])
+				bookmark_path     = bargate.lib.core.check_path(request.form['bookmark_path'])
 				
 			except KeyError as e:
 				return bargate.lib.errors.stderr('Invalid bookmark','You missed something on the previous page!')

@@ -46,7 +46,8 @@ def share_handler(path, action="browse"):
 	menu = app.sharesConfig.get(request.endpoint,'menu')
 
 	## Run the page!
-	return bargate.lib.smb.connection(svrpath,request.endpoint,menu,display,action,path)
+	return app.smblib.smb_action(svrpath,request.endpoint,menu,display,action,path)
+	#return bargate.lib.smb.connection(svrpath,request.endpoint,menu,display,action,path)
 
 ################################################################################
 
@@ -94,4 +95,5 @@ def custom(path,action="browse"):
 	else:
 		return redirect(url_for('custom_server'))
 
-	return bargate.lib.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],action,path)
+	#return bargate.lib.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],action,path)
+	return app.smblib.smb_action(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],action,path)
