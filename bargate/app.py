@@ -17,11 +17,12 @@
 
 from flask import Flask, request, session, g, abort, flash, redirect, url_for, render_template
 from ConfigParser import RawConfigParser
-import jinja2 
+import jinja2
 import logging
 import os
 import os.path
 import binascii
+import io
 from logging.handlers import SMTPHandler
 from logging.handlers import RotatingFileHandler
 from logging import Formatter
@@ -47,7 +48,7 @@ class Bargate(Flask):
 		## Get the sections of the shares config file
 		self.sharesConfig = RawConfigParser()
 		if os.path.exists(self.config['SHARES_CONFIG']):
-			with open(self.config['SHARES_CONFIG'], 'r') as f:
+			with io.open(self.config['SHARES_CONFIG'], mode='r', encoding='utf-8') as f:
 				self.sharesConfig.readfp(f)
 			self.sharesList = self.sharesConfig.sections()
 		else:

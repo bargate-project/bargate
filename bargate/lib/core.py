@@ -158,7 +158,7 @@ def check_name(name):
 		raise ValueError('File and folder names must not end in a space or period (full stop) character')
 		
 	## Run the file/folder name check through the generic path checker
-	bargate.lib.core.check_path(name)
+	check_path(name)
 	
 	## banned characters which CIFS servers reject!
 	invalidchars = re.compile(r'[<>/\\\":\|\?\*\x00]');

@@ -17,11 +17,11 @@
 
 import bargate
 from bargate import app
-from flask import Flask, request, session, redirect, url_for, render_template
+from flask import Flask, request, session, redirect, url_for, render_template, flash
 
 ################################################################################
 #### SHARE HANDLER
-		
+
 @app.login_required
 @app.allow_disable
 def share_handler(path, action="browse"):
