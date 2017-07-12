@@ -144,9 +144,9 @@ def auth(username, password):
 			else:
 				l.simple_bind_s( (app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']) )
 		except ldap.LDAPError as e:
-			flash('Internal Error - Could not connect to LDAP directory: ' + str(e),'alert-danger')
+			flash('Internal Error - Could not connect to LDAP server: ' + str(e),'alert-danger')
 			app.logger.error("Could not bind to LDAP: " + str(e))
-			abort(500)
+			return False
 
 		app.logger.debug("bargate.lib.user.auth ldap searching for username in base " + app.config['LDAP_SEARCH_BASE'] + " looking for attribute " + app.config['LDAP_USER_ATTRIBUTE'])
 

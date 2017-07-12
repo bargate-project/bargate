@@ -95,9 +95,9 @@ class backend_pysmb:
 
 			full_path = path_prefix + "/" + path
 
-		#flash("SERVER_NAME: " + str(server_name),"alert-info")
-		#flash("SHARE NAME: " + str(share_name),"alert-info")
-		#flash("PATH: " + str(path),"alert-info")
+		flash("SERVER_NAME: " + unicode(server_name),"alert-info")
+		flash("SHARE NAME: " + unicode(share_name),"alert-info")
+		flash("PATH: " + unicode(path),"alert-info")
 
 		## default the 'active' variable to the function name
 		if active == None:
@@ -162,6 +162,8 @@ class backend_pysmb:
 
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using ' + str(request.method) + ' and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
+
+		flash("SMB2: " + str(conn.isUsingSMB2),"alert-info")
 
 		if request.method == 'GET':
 			###############################
@@ -472,7 +474,7 @@ class backend_pysmb:
 				try:
 					bargate.lib.core.check_name(new_filename)
 				except ValueError as e:
-					return bargate.lib.errors.invalid_name()
+					return bargate.lib.errors.invalid_name(error_redirect)
 
 				## Build new path
 				if parent_directory:
@@ -521,59 +523,36 @@ class backend_pysmb:
 				## Make sure the new file does not exist
 				try:
 					sfile = conn.getAttributes(share_name,dest_full_path)
-					# TODO if this worked, bail, because the destination already exists
+					return bargate.lib.errors.stderr("Destination exists","The name you specified already exists")
 				except:
+					# could not get attributes, so file does not exist, so lets continue
 					pass
 
-#				try:
-#					sfile = conn.getAttributes(share_name,full_path)
-#
-#					## ensure item is a file
-#					if sfile.isDirectory:
-#						abort(400) #TODO return proper error
-#					
-#					# create a tempfile to read the data into
-#					tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
-#
-#					## Read data into the tempfile via SMB
-#					conn.retrieveFile(share_name,full_path,tfile)
-#
-#					## Seek back to 0 on the tempfile ready to read it again
-#					tfile.seek(0)
-
-
-				## Make sure the dest file doesn't exist
 				try:
-					libsmbclient.stat(dest)
-				except smbc.NoEntryError as ex:
-					## This is what we want - i.e. no file/entry
-					pass
+					sfile = conn.getAttributes(share_name,full_path)
 				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
+					return bargate.lib.errors.stderr("Source file does not exist","The file you tried to copy does not exist")
 
-				## Assuming we got here without an exception, open the source file
-				try:		
-					source_fh = libsmbclient.open(uri_as_str)
-				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
+				## ensure item is a file
+				if sfile.isDirectory:
+					return bargate.lib.errors.invalid_item_copy(error_redirect)
 
-				## Assuming we got here without an exception, open the dest file
-				try:		
-					dest_fh = libsmbclient.open(dest, os.O_CREAT | os.O_WRONLY | os.O_TRUNC )
-
-				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,srv_path + dest,error_redirect)
-
-				## try reading then writing blocks of data, then redirect!
 				try:
-					location = 0
-					while(location >= 0 and location < source_size):
-						chunk = source_fh.read(1024)
-						dest_fh.write(chunk)
-						location = source_fh.seek(1024,location)
+					# create a tempfile to read the data into
+					tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
 
+					## Read data into the tempfile via SMB
+					conn.retrieveFile(share_name,full_path,tfile)
+
+					## Seek back to 0 on the tempfile ready to read it again
+					tfile.seek(0)
 				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,srv_path + dest,error_redirect)
+					return bargate.lib.errors.stderr("Could not read from source file","An error occured whilst reading from the source file")
+
+				try:
+					conn.storeFile(share_name,dest_full_path, tfile, timeout=120)
+				except Exception as ex:
+					return self.smb_error(ex,uri,error_redirect)
 
 				flash('A copy of "' + entry_name + '" was created as "' + dest_filename + '"','alert-success')
 				return parent_redirect
