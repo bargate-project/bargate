@@ -42,6 +42,10 @@ ul.changelog
 	cursor: pointer;
 }
 
+.dirclick {
+	cursor: pointer;
+}
+
 /* file uploads */
 .fileinput-button {
 	position: relative;

@@ -1,3 +1,20 @@
+function loadDirectory(url)
+{
+	$( "#browse" ).load( url, function( response, status, xhr )
+	{
+		if ( status == "error" )
+		{
+			var msg = "Sorry but there was an error: ";
+			$( "#error" ).html( msg + xhr.status + " " + xhr.statusText );
+		}
+
+		//doTable();
+		doGrid();
+
+		doBrowse();
+	});
+}
+
 function bytesToString(bytes,decimals)
 {
 	if (bytes == 0) return '0 Bytes';
@@ -6,9 +23,75 @@ function bytesToString(bytes,decimals)
 	return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-/* browse mode (directory listings) javascript */
-$(document).ready(function()
+function doTable()
 {
+	console.log("doTable()");
+
+	/* sort entries in a directory */
+	$('.dir-sortby-name').on( 'click', function()
+	{
+		$('#dir').DataTable().order([3,'asc']).draw();
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-name span').removeClass('invisible');
+	});
+	$('.dir-sortby-mtime').on( 'click', function()
+	{
+		$('#dir').DataTable().order([4,'asc']).draw();
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-mtime span').removeClass('invisible');
+	});
+	$('.dir-sortby-type').on( 'click', function()
+	{
+		$('#dir').DataTable().order([5,'asc']).draw();
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-type span').removeClass('invisible');
+	});
+	$('.dir-sortby-size').on( 'click', function()
+	{
+		$('#dir').DataTable().order([6,'asc']).draw();
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-size span').removeClass('invisible');
+	});
+
+	$('#dir').DataTable( {
+		"paging": false,
+		"searching": false,
+		"info": false,
+		"columns": [
+			{ "orderable": false },
+			{ "orderable": false },
+			{ "orderable": false },
+			{ "visible": false},
+			{ "visible": false},
+			{ "visible": false},
+			{ "visible": false},
+		],
+		"order": [[3,"asc"]],
+		"dom": 'lrtip'
+	});
+}
+
+function doBrowse()
+{
+	console.log("doBrowse()");
+
+	$(".entry-open").click(function()
+	{
+		window.document.location = $(this).closest('.entry-click').data('url');
+	});
+
+	$(".dirclick").click(function()
+	{
+		loadDirectory( $(this).data('jurl') );
+		history.pushState(null, "", $(this).data('url'));
+	});
+
+	$(".dirclick").children("td").click(function()
+	{
+		loadDirectory( $(this).parent().data('jurl') );
+		history.pushState(null, "", $(this).parent().data('url'));
+	});
+
 	/* context (right click) menus */
 	(function ($, window)
 	{
@@ -295,4 +378,61 @@ $(document).ready(function()
 	{
 		$("#search-form-submit").button('loading');
 	});
-});
+}
+
+function doGrid()
+{
+	var $container = $('#files').isotope(
+	{
+		getSortData:
+		{
+			name: '[data-sortname]',
+			type: '[data-raw-mtype]',
+			mtime: '[data-raw-mtime] parseInt',
+			size: '[data-raw-size] parseInt',
+		},
+		transitionDuration: '0.2s',
+		percentPosition: true,
+		sortAscending:
+		{
+			name: true,
+			type: true,
+			mtime: false,
+			size: false
+		},
+		sortBy: 'name',
+	});
+
+	/* sort entries in a directory */
+	$('.dir-sortby-name').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'name' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-name span').removeClass('invisible');
+	});
+	$('.dir-sortby-mtime').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'mtime' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-mtime span').removeClass('invisible');
+	});
+	$('.dir-sortby-type').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'type' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-type span').removeClass('invisible');
+	});
+	$('.dir-sortby-size').on( 'click', function()
+	{
+		$container.isotope({ sortBy: 'size' });
+		$('.sortby-check').addClass('invisible');
+		$('.dir-sortby-size span').removeClass('invisible');
+	});
+
+	var $dirs = $('#dirs').isotope(
+	{
+		getSortData: { name: '[data-sortname]',},
+		sortBy: 'name',
+	});
+
+}

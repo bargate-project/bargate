@@ -1,5 +1,3 @@
-{%- extends "layout.html" -%}
-{%- block body -%}
 {%- include 'directory-modals.html' -%}
 {%- include 'directory-menus.html' -%}
 {%- include 'breadcrumbs.html' -%}
@@ -38,9 +36,9 @@
 	<tbody>
 		{%- for entry in dirs -%}
 		<tr class="entry-click entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
-			<td class="text-center entry-open"><span class="{{ entry.icon }}"></span></td>
-			<td class="entry-open dentry">{{ entry.name}}</td>
-			<td class="hidden-xs hidden-sm entry-open dentry-mtime">-</td>
+			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
+			<td class="dentry">{{ entry.name}}</td>
+			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
 			<td>.1111{{entry.name}}</td>
 			<td>-1</td>
 			<td>111adir</td>
@@ -70,4 +68,3 @@
 		{%- endfor -%}
 	</tbody>
 </table>
-{% endblock %}

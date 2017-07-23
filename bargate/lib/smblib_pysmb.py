@@ -48,7 +48,8 @@ class backend_pysmb:
 		if isinstance(exception_object,ProtocolError):
 			return self._exProtocolError(redirect_to)
 		if isinstance(exception_object,OperationFailure):
-			return self._exOperationFailure(redirect_to)
+			#return self._exOperationFailure(redirect_to)
+			return bargate.views.errors.error500(exception_object)
 
 		# anything else
 		else:
@@ -57,8 +58,6 @@ class backend_pysmb:
 ################################################################################
 
 	def smb_action(self,srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
-
-
 		## If the method is POST then 'action' and 'path' are set in the form
 		## rather than in the URL. We do this because we need, in javascript, 
 		## to be able to change these without having to regenerate the URL in 
@@ -72,7 +71,7 @@ class backend_pysmb:
 		if srv_path.endswith('/'):
 			srv_path = srv_path[:-1]
 
-		## srv_path should always start with smb://, we don't support anything else.
+		## srv_path should always start with smb://
 		if not srv_path.startswith("smb://"):
 			return bargate.lib.errors.stderr("Invalid server path","The server URL must start with smb://")
 
@@ -84,7 +83,7 @@ class backend_pysmb:
 
 		if len(url_parts) == 1:
 			## TODO support browse here, to show a list of shares
-			return bargate.lib.errors.stderr("Invalid server path","The server URL must include at least share name")
+			return bargate.lib.errors.stderr("Invalid server path","The server URL must include at least a share name")
 		else:
 			share_name = url_parts[1]
 
@@ -95,9 +94,9 @@ class backend_pysmb:
 
 			full_path = path_prefix + "/" + path
 
-		flash("SERVER_NAME: " + unicode(server_name),"alert-info")
-		flash("SHARE NAME: " + unicode(share_name),"alert-info")
-		flash("PATH: " + unicode(path),"alert-info")
+		#flash("SERVER_NAME: " + unicode(server_name),"alert-info")
+		#flash("SHARE NAME: " + unicode(share_name),"alert-info")
+		#flash("PATH: " + unicode(path),"alert-info")
 
 		## default the 'active' variable to the function name
 		if active == None:
@@ -115,38 +114,42 @@ class backend_pysmb:
 		## Work out if there is a parent directory
 		## and work out the entry name (filename or directory name being browsed)
 		if len(path) > 0:
+			parent_directory = True
+
 			(parent_directory_path,seperator,entry_name) = path.rpartition('/')
 			## if seperator was not found then the first two strings returned will be empty strings
 			if len(parent_directory_path) > 0:
-				parent_directory = True
 				## update the parent redirect with the correct path
 				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
 				error_redirect  = parent_redirect
 				full_parent_directory_path = path_prefix + "/" + parent_directory_path
 
 			else:
-				parent_directory = False
+				# there is a parent directory - the 'share' - so just set the parent 
+				# path to empty, because share_name (the actual parent dir) is sent
+				# as the first parameter with each call anyway
 				parent_directory_path = ""
-				full_parent_directory_path = ""
+				full_parent_directory_path = path_prefix + ""
 
 		else:
+			# we're at the share root
 			parent_directory = False
 			parent_directory_path = ""
-			full_parent_directory_path = ""
+			full_parent_directory_path = path_prefix
 			entry_name = ""
 
 		uri = srv_path + "/" + path
 
-		#app.logger.debug(u"srv_path: " + srv_path + "; " + unicode(type(server_name)))
-		#app.logger.debug(u"server_name: " + server_name + "; " + unicode(type(server_name)))
-		#app.logger.debug(u"share_name: " + share_name + "; " + unicode(type(share_name)))
-		#app.logger.debug(u"path " + path + u"; " + unicode(type(path)))
-		#app.logger.debug(u"full_path: " + full_path + "; " + unicode(type(full_path)))
-		#app.logger.debug(u"uri: " + uri + "; " + unicode(type(uri)))
-		#app.logger.debug(u"entry_name: " + entry_name + "; " + unicode(type(entry_name)))
-		#app.logger.debug(u"parent_directory: " + unicode(parent_directory) + "; " + str(type(parent_directory)))
-		#app.logger.debug(u"parent_directory_path: " + parent_directory_path + "; " + str(type(parent_directory_path)))
-		#app.logger.debug(u"full_parent_directory_path: " + full_parent_directory_path + "; " + str(type(full_parent_directory_path)))
+		app.logger.debug(u"srv_path: " + srv_path + "; " + unicode(type(server_name)))
+		app.logger.debug(u"server_name: " + server_name + "; " + unicode(type(server_name)))
+		app.logger.debug(u"share_name: " + share_name + "; " + unicode(type(share_name)))
+		app.logger.debug(u"path " + path + u"; " + unicode(type(path)))
+		app.logger.debug(u"full_path: " + full_path + "; " + unicode(type(full_path)))
+		app.logger.debug(u"uri: " + uri + "; " + unicode(type(uri)))
+		app.logger.debug(u"entry_name: " + entry_name + "; " + unicode(type(entry_name)))
+		app.logger.debug(u"parent_directory: " + unicode(parent_directory) + "; " + str(type(parent_directory)))
+		app.logger.debug(u"parent_directory_path: " + parent_directory_path + "; " + str(type(parent_directory_path)))
+		app.logger.debug(u"full_parent_directory_path: " + full_parent_directory_path + "; " + str(type(full_parent_directory_path)))
 
 		## Check the path is valid
 		try:
@@ -163,7 +166,7 @@ class backend_pysmb:
 		## Log this activity
 		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using ' + str(request.method) + ' and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
 
-		flash("SMB2: " + str(conn.isUsingSMB2),"alert-info")
+		#flash("SMB2: " + str(conn.isUsingSMB2),"alert-info")
 
 		if request.method == 'GET':
 			###############################
@@ -323,6 +326,10 @@ class backend_pysmb:
 			###############################
 			elif action == 'browse':
 
+ 				return render_template('browse.html',path=path,browse_mode=True,url_here=url_for(func_name,path=path,action='jbrowse'))
+
+			elif action == 'jbrowse':
+
 				try:
 					directory_entries = conn.listPath(share_name,full_path)
 				except Exception as ex:
@@ -351,7 +358,7 @@ class backend_pysmb:
 				## Build up a list of dicts, each dict representing a crumb
 				for crumb in parts:
 					if len(crumb) > 0:
-						crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+						crumbs.append({'name': crumb, 'jurl': url_for(func_name,action="jbrowse",path=b4+crumb), 'url': url_for(func_name,path=b4+crumb)})
 						b4 = b4 + crumb + '/'
 
 				## Are we at the root?
@@ -396,6 +403,8 @@ class backend_pysmb:
 			# POST: UPLOAD
 			###############################
 			if action == 'jsonupload':
+				# path here is the directory to upload files into
+
 				ret = []
 
 				uploaded_files = request.files.getlist("files[]")
@@ -466,6 +475,7 @@ class backend_pysmb:
 			# POST: RENAME
 			###############################
 			elif action == 'rename':
+				# path here is the full path to the existing file to rename (not the directory its in)
 
 				## Get the new requested file name
 				new_filename = request.form['newfilename']
@@ -504,7 +514,9 @@ class backend_pysmb:
 			###############################
 			# POST: COPY
 			###############################
-			elif action == 'copy': #TODO
+			elif action == 'copy':
+				## path here is the path to the existing file, not the directory it is within
+
 				## Get the new filename
 				dest_filename = request.form['filename']
 			
@@ -523,7 +535,7 @@ class backend_pysmb:
 				## Make sure the new file does not exist
 				try:
 					sfile = conn.getAttributes(share_name,dest_full_path)
-					return bargate.lib.errors.stderr("Destination exists","The name you specified already exists")
+					return bargate.lib.errors.stderr("Destination exists","The name you specified already exists",error_redirect)
 				except:
 					# could not get attributes, so file does not exist, so lets continue
 					pass
@@ -531,7 +543,7 @@ class backend_pysmb:
 				try:
 					sfile = conn.getAttributes(share_name,full_path)
 				except Exception as ex:
-					return bargate.lib.errors.stderr("Source file does not exist","The file you tried to copy does not exist")
+					return bargate.lib.errors.stderr("Source file does not exist","The file you tried to copy does not exist",error_redirect)
 
 				## ensure item is a file
 				if sfile.isDirectory:
@@ -560,51 +572,55 @@ class backend_pysmb:
 			###############################
 			# POST: MAKE DIRECTORY
 			###############################
-			elif action == 'mkdir': #TODO
+			elif action == 'mkdir':
+				# path here is the directory to create the new directory within
+
+				new_directory = request.form['directory_name']
 				## Check the path is valid
 				try:
-					bargate.lib.core.check_name(request.form['directory_name'])
+					bargate.lib.core.check_name(new_directory)
 				except ValueError as e:
 					return bargate.lib.errors.invalid_name(error_redirect)
 
-				mkdir_uri = uri_as_str + '/' + urllib.quote(request.form['directory_name'].encode('utf-8'))
+				new_full_path = full_path + "/" + new_directory
 
 				try:
-					libsmbclient.mkdir(mkdir_uri,0755)
+					conn.createDirectory(share_name,new_full_path)
 				except Exception as ex:
-					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
-				else:
-					flash("The folder '" + request.form['directory_name'] + "' was created successfully.",'alert-success')
-					return redirect(url_for(func_name,path=path))
+					return self.smb_error(ex,uri,error_redirect)
+				
+				flash("The folder '" + new_directory + "' was created successfully.",'alert-success')
+				return redirect(url_for(func_name,path=path))
 
 			###############################
 			# POST: DELETE
 			###############################
 			elif action == 'unlink': #TODO
-				uri = uri.encode('utf-8')
+				# path here is the full path to the file to delete, not the directory it is within
+				try:
+					sfile = conn.getAttributes(share_name,full_path)
+				except Exception as ex:
+					return self.smb_error(ex,uri,error_redirect)
 
-				## get the item type of the entry we've been asked to delete
-				itemType = self._etype(libsmbclient,uri_as_str)
-
-				if itemType == SMB_FILE:
+				if sfile.isDirectory:
+					## try to delete directory
 					try:
-						libsmbclient.unlink(uri_as_str)
+						conn.deleteDirectory(share_name, full_path)
 					except Exception as ex:
-						return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
-					else:
-						flash("The file '" + entry_name + "' was deleted successfully.",'alert-success')
-						return parent_redirect
+						return self.smb_error(ex,uri,error_redirect)
 
-				elif itemType == SMB_DIR:
-					try:
-						libsmbclient.rmdir(uri_as_str)
-					except Exception as ex:
-						return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
-					else:
-						flash("The directory '" + entry_name + "' was deleted successfully.",'alert-success')
-						return parent_redirect
+					flash("The directory '" + entry_name + "' was deleted successfully.",'alert-success')
+					return parent_redirect
+
 				else:
-					return bargate.lib.errors.invalid_item_type(error_redirect)
+					## try to delete file
+					try:
+						conn.deleteFiles(share_name, full_path)
+					except Exception as ex:
+						return self.smb_error(ex,uri,error_redirect)
+
+					flash("The file '" + entry_name + "' was deleted successfully.",'alert-success')
+					return parent_redirect
 
 			else:
 				abort(400)
@@ -723,7 +739,8 @@ class backend_pysmb:
 			entry['type'] = 'dir'
 			entry['icon'] = 'fa fa-fw fa-folder'
 			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
-			entry['open'] = url_for(func_name,path=entry['path'])
+			entry['url']  = url_for(func_name,path=entry['path'])
+			entry['jurl'] = url_for(func_name,action="jbrowse",path=entry['path'])
 
 		# Files
 		else:

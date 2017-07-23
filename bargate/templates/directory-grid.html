@@ -1,12 +1,11 @@
-{%- extends "layout.html" -%}
-{%- block body -%}
 {%- include 'directory-modals.html' -%}
 {%- include 'directory-menus.html' -%}
 {%- include 'breadcrumbs.html' -%}
 
+
 <div id="dirs">
 	{%- for entry in dirs -%}
-	<div class="entry entry-click entry-dir entry-open" data-url="{{ entry.open }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}" data-path="{{entry.path}}">
+	<div class="dirclick entry entry-click entry-dir" data-jurl="{{ entry.jurl}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}" data-path="{{entry.path}}">
 		<div class="panel panel-default">
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="{{entry.icon}}"></i> {{ entry.name }}</div>
 		</div>
@@ -43,5 +42,3 @@
 <div class="alert alert-warning">There are no items in this directory</div>
 </p>
 {%- endif -%}
-
-{% endblock %}

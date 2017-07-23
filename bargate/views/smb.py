@@ -68,7 +68,11 @@ def custom_server():
 ################################################################################
 
 @app.route('/c', methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
+@app.route('/c/browse/<path:path>', methods=['GET','POST'], defaults={'action': 'browse'})
 @app.route('/c/browse/<path:path>/', methods=['GET','POST'], defaults={'action': 'browse'})
+@app.route('/c/<action>', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/c/<action>/', methods=['GET','POST'], defaults={'path': ''})
+@app.route('/c/<action>/<path:path>', methods=['GET','POST'])
 @app.route('/c/<action>/<path:path>/', methods=['GET','POST'])
 @app.login_required
 @app.allow_disable

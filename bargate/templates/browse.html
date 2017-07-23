@@ -1,0 +1,15 @@
+{%- extends "layout.html" -%}
+{%- block body -%}
+
+<div id="error">
+</div>
+<div id="browse">
+</div>
+
+<script>
+$(document).ready(function()
+{
+	loadDirectory("{{url_here}}");
+});
+</script>
+{% endblock %}
