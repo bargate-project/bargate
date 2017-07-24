@@ -19,7 +19,7 @@ import bargate
 import bargate.lib.userdata
 import bargate.lib.errors
 from bargate import app
-from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template
+from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template, Response
 import mimetypes
 import os
 from random import randint
@@ -176,6 +176,20 @@ def settings_set_layout():
 		bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
 
 	return "", 200
+
+################################################################################
+
+@app.route('/settings.js')
+@app.login_required
+def settings_js():
+		js = """var userLayout = "{0}";
+var userToken = "{1}";
+var userTheme = "{2}";
+var userNavbar = "{3}";
+""".format(bargate.lib.userdata.get_layout(),app.csrfp_token(),bargate.lib.userdata.get_theme(),bargate.lib.userdata.get_navbar())
+
+		return Response(js, mimetype='application/javascript')
+
 
 ################################################################################
 #### BOOKMARKS

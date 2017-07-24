@@ -1,8 +1,8 @@
 {%- extends "layout.html" -%}
 {%- block body -%}
 
-<div id="error">
-</div>
+<!--<div id="testabc" class="btn btn-primary">Test change</div>
+<br/>-->
 <div id="browse">
 </div>
 
@@ -10,6 +10,11 @@
 $(document).ready(function()
 {
 	loadDirectory("{{url_here}}");
+});
+
+$("#testabc").click(function() {
+	$("#user-theme-link").attr("href","/static/themes/paper/paper.css");
+
 });
 </script>
 {% endblock %}

@@ -73,7 +73,7 @@ def context_processor():
 		if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
 			data['user_bookmarks'] = bargate.lib.userdata.get_bookmarks()
 			data['user_theme']     = bargate.lib.userdata.get_theme()
-			data['user_navbar']    = bargate.lib.userdata.get_navbar()	
+			data['user_navbar']    = bargate.lib.userdata.get_navbar()
 			data['user_layout']    = bargate.lib.userdata.get_layout()
 
 	## The favicon

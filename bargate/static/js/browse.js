@@ -5,13 +5,12 @@ function loadDirectory(url)
 	$( "#browse" ).load( url, function( response, status, xhr )
 	{
 		if ( status == "error" ) {
-			var msg = "Sorry but there was an error: ";
-			$( "#error" ).html( msg + xhr.status + " " + xhr.statusText );
+			showError("Could not open directory","An error occured whilst contacting the server. " + xhr.statusText);
 		}
 		else {
 			currentUrl = url;
 
-			if (layoutMode == "list") {
+			if (userLayout == "list") {
 				doTable();
 			}
 			else {
@@ -26,7 +25,7 @@ function loadDirectory(url)
 function switchLayout()
 {
 	// work out the new layout
-	if (layoutMode == "list") {
+	if (userLayout == "list") {
 		newLayout = "grid";
 	}
 	else {
@@ -34,13 +33,13 @@ function switchLayout()
 	}
 
 	// tell bargate to save the new layout
-	$.post( "/settings/layout", { layout: newLayout, _csrfp_token: postToken })
+	$.post( "/settings/layout", { layout: newLayout, _csrfp_token: userToken })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showError("Could not switch layout","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
 			// Now change classes/icons
-			if (layoutMode == "list") {
+			if (userLayout == "list") {
 				$("#pdiv").removeClass("listview");
 				$("#pdiv").addClass("gridview");
 				$("#layout-button-icon").removeClass("fa-th-large");
@@ -53,7 +52,7 @@ function switchLayout()
 				$("#layout-button-icon").addClass("fa-th-large");
 			}
 			// save the new layout locally in browser
-			layoutMode = newLayout;
+			userLayout = newLayout;
 
 			// Now reload the directory view
 			loadDirectory(currentUrl);
