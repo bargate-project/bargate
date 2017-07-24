@@ -59,6 +59,21 @@
 		<script src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
+	<div class="modal fade" id="modal-error">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<h4 class="modal-title" id="modal-error-title"></h4>
+				</div>
+				<div class="modal-body"><p id="modal-error-desc"></p></div>
+				<div class="modal-footer">
+					<a href="#" class="btn btn-default"  data-dismiss="modal">Close</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
 		<div class="navbar navbar-{{user_navbar}} navbar-fixed-top" role="navigation">
 			<div class="container-fluid">
 				<div class="navbar-header">
@@ -117,7 +132,7 @@
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a id="layout-button" class="btn navbar-btn btn-default btn" rel="tooltip" title="Switch layout">
-								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if layout_mode == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
+								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
 							</a>
 						</div>
 

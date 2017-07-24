@@ -2,7 +2,6 @@ var currentUrl;
 
 function loadDirectory(url)
 {
-	console.log("loadDirectory() with URL " + url);
 	$( "#browse" ).load( url, function( response, status, xhr )
 	{
 		if ( status == "error" ) {
@@ -36,8 +35,8 @@ function switchLayout()
 
 	// tell bargate to save the new layout
 	$.post( "/settings/layout", { layout: newLayout, _csrfp_token: postToken })
-		.fail(function() {
-			alert("error!!!11111 TODO");
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			showError("Could not switch layout","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
 			// Now change classes/icons
@@ -53,12 +52,8 @@ function switchLayout()
 				$("#layout-button-icon").removeClass("fa-list");
 				$("#layout-button-icon").addClass("fa-th-large");
 			}
-
-
-
 			// save the new layout locally in browser
 			layoutMode = newLayout;
-
 
 			// Now reload the directory view
 			loadDirectory(currentUrl);
