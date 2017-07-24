@@ -580,14 +580,13 @@ function prepFileUpload()
 			{
 				if (file.error)
 				{
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').appendTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').prependTo('#upload-files');
 				}
 				else
 				{
-					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').appendTo('#upload-files');
+					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').prependTo('#upload-files');
 					loadDirectory(currentUrl);
 				}
-				$("#upload-files").animate({ scrollTop: $('#upload-files').prop("scrollHeight")}, 1000);
 			});
 		},
 		fail: function (e, data)
@@ -596,13 +595,12 @@ function prepFileUpload()
 
 			if (data.errorThrown === 'abort')
 			{
-				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').appendTo('#upload-files');
+				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').prependTo('#upload-files');
 			}
 			else
 			{		
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').prependTo('#upload-files');
 			}
-			$("#upload-files").animate({ scrollTop: $('#upload-files').prop("scrollHeight")}, 1000);
 		},
 		progressall: function (e, data)
 		{
