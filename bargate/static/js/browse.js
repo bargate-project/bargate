@@ -18,6 +18,7 @@ function loadDirectory(url)
 			}
 
 			doBrowse();
+			prepFileUpload();
 		}
 	});
 }
@@ -483,3 +484,142 @@ function doGrid()
 	});
 
 }
+
+function formatFileSize(bytes) {
+	if (typeof bytes !== 'number') {
+		return '';
+	}
+	if (bytes >= 1000000000) {
+		return (bytes / 1000000000).toFixed(2) + ' GB';
+	}
+	if (bytes >= 1000000) {
+		return (bytes / 1000000).toFixed(2) + ' MB';
+	}
+	return (bytes / 1000).toFixed(2) + ' KB';
+}
+
+function formatBitrate(bits) {
+	if (typeof bits !== 'number') {
+		return '';
+	}
+
+	bits = bits / 8
+
+	if (bits >= 1000000000) {
+		return (bits / 1000000000).toFixed(2) + ' GiB/s';
+	}
+	if (bits >= 1000000) {
+		return (bits / 1000000).toFixed(2) + ' MiB/s';
+	}
+	if (bits >= 1000) {
+		return (bits / 1000).toFixed(2) + ' KiB/s';
+	}
+	return bits.toFixed(2) + ' bytes/s';
+}
+
+function formatTime (seconds) {
+	var date = new Date(seconds * 1000),
+		days = Math.floor(seconds / 86400);
+	days = days ? days + 'd ' : '';
+	return days +
+		('0' + date.getUTCHours()).slice(-2) + ':' +
+		('0' + date.getUTCMinutes()).slice(-2) + ':' +
+		('0' + date.getUTCSeconds()).slice(-2);
+}
+
+function renderExtendedProgress(data)
+{
+    return formatBitrate(data.bitrate) + ', ' +
+        formatTime(
+            (data.total - data.loaded) * 8 / data.bitrate
+        ) + ' remaining <br/>' +
+        formatFileSize(data.loaded) + ' uploaded of ' +
+        formatFileSize(data.total);
+}
+
+function prepFileUpload()
+{
+	$('#fileupload').fileupload(
+	{
+		url: currentUrl,
+		dataType: 'json',
+		maxChunkSize: 10485760, // 10MB
+		formData: [{name: '_csrfp_token', value: userToken}, {name: 'action', value: 'jsonupload'}],
+		start: function (e)
+		{
+			$('#upload-drag-over').modal('hide');
+			$('#upload-file').modal()
+			$('#upload-progress').removeClass('hidden');
+			$('#upload-progress-ext').removeClass('hidden');
+			$('#upload-cancel').removeClass('hidden');
+			
+			$('#upload-button-icon').removeClass('fa-upload');
+			$('#upload-button-icon').addClass('fa-spin');
+			$('#upload-button-icon').addClass('fa-cog');
+		},
+		stop: function (e, data)
+		{
+			$('#upload-button-icon').addClass('fa-upload');
+			$('#upload-button-icon').removeClass('fa-spin');
+			$('#upload-button-icon').removeClass('fa-cog');
+
+			$('#upload-progress').addClass('hidden');
+			$('#upload-progress-ext').addClass('hidden');
+			$('#upload-cancel').addClass('hidden');
+
+			if (!($("#upload-file").data('bs.modal').isShown))
+			{
+				/* if something finished then show the modal if it wasnt already */
+				$('#upload-file').modal('show');
+			}
+		},
+		done: function (e, data)
+		{
+			window.uploadsuccess = 1;
+			$.each(data.result.files, function (index, file)
+			{
+				if (file.error)
+				{
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').appendTo('#upload-files');
+				}
+				else
+				{
+					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').appendTo('#upload-files');
+					loadDirectory(currentUrl);
+				}
+				$("#upload-files").animate({ scrollTop: $('#upload-files').prop("scrollHeight")}, 1000);
+			});
+		},
+		fail: function (e, data)
+		{
+			window.uploadsuccess = 0;
+
+			if (data.errorThrown === 'abort')
+			{
+				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').appendTo('#upload-files');
+			}
+			else
+			{		
+					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').appendTo('#upload-files');
+			}
+			$("#upload-files").animate({ scrollTop: $('#upload-files').prop("scrollHeight")}, 1000);
+		},
+		progressall: function (e, data)
+		{
+			var progress = parseInt(data.loaded / data.total * 100, 10);
+			$('#upload-progress-pc').html(progress);
+			$('#upload-progress .progress-bar').css('width', progress + '%');
+			$('#upload-progress-ext').html(renderExtendedProgress(data));
+		},
+		add: function (e, data)
+		{
+			jqXHR = data.submit();
+			$('#upload-cancel').click(function (e)
+			{
+				jqXHR.abort();
+			});
+		},
+	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
+
+}
+

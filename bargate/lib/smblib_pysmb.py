@@ -65,7 +65,7 @@ class backend_pysmb:
 		## POSTs anyway
 		if request.method == 'POST':
 			action = request.form['action']
-			path   = request.form['path']
+			#path   = request.form['path']
 
 		## ensure srv_path (the server URI and share) does not end with a trailing slash
 		if srv_path.endswith('/'):
@@ -140,16 +140,16 @@ class backend_pysmb:
 
 		uri = srv_path + "/" + path
 
-		app.logger.debug(u"srv_path: " + srv_path + "; " + unicode(type(server_name)))
-		app.logger.debug(u"server_name: " + server_name + "; " + unicode(type(server_name)))
-		app.logger.debug(u"share_name: " + share_name + "; " + unicode(type(share_name)))
-		app.logger.debug(u"path " + path + u"; " + unicode(type(path)))
-		app.logger.debug(u"full_path: " + full_path + "; " + unicode(type(full_path)))
-		app.logger.debug(u"uri: " + uri + "; " + unicode(type(uri)))
-		app.logger.debug(u"entry_name: " + entry_name + "; " + unicode(type(entry_name)))
-		app.logger.debug(u"parent_directory: " + unicode(parent_directory) + "; " + str(type(parent_directory)))
-		app.logger.debug(u"parent_directory_path: " + parent_directory_path + "; " + str(type(parent_directory_path)))
-		app.logger.debug(u"full_parent_directory_path: " + full_parent_directory_path + "; " + str(type(full_parent_directory_path)))
+		#app.logger.debug(u"srv_path: " + srv_path + "; " + unicode(type(server_name)))
+		#app.logger.debug(u"server_name: " + server_name + "; " + unicode(type(server_name)))
+		#app.logger.debug(u"share_name: " + share_name + "; " + unicode(type(share_name)))
+		#app.logger.debug(u"path " + path + u"; " + unicode(type(path)))
+		#app.logger.debug(u"full_path: " + full_path + "; " + unicode(type(full_path)))
+		#app.logger.debug(u"uri: " + uri + "; " + unicode(type(uri)))
+		#app.logger.debug(u"entry_name: " + entry_name + "; " + unicode(type(entry_name)))
+		#app.logger.debug(u"parent_directory: " + unicode(parent_directory) + "; " + str(type(parent_directory)))
+		#app.logger.debug(u"parent_directory_path: " + parent_directory_path + "; " + str(type(parent_directory_path)))
+		#app.logger.debug(u"full_parent_directory_path: " + full_parent_directory_path + "; " + str(type(full_parent_directory_path)))
 
 		## Check the path is valid
 		try:
@@ -164,7 +164,7 @@ class backend_pysmb:
 			return bargate.lib.errors.stderr("Could not connect","Could not connect to the SMB server, authentication was unsuccessful")
 
 		## Log this activity
-		app.logger.info('User "' + session['username'] + '" connected to "' + srv_path + '" using endpoint "' + func_name + '" and action "' + action + '" using ' + str(request.method) + ' and path "' + path + '" from "' + request.remote_addr + '" using ' + request.user_agent.string)
+		app.logger.info('user: "' + session['username'] + '", svr_path: "' + srv_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
 
 		#flash("SMB2: " + str(conn.isUsingSMB2),"alert-info")
 
@@ -462,7 +462,7 @@ class backend_pysmb:
 						if byterange_start == 0:
 							conn.storeFile(share_name,upload_path, ufile, timeout=120)
 						else:
-							conn.storeFile(share_name,upload_path, ufile, offset=byterange_start)
+							conn.storeFileFromOffset(share_name,upload_path, ufile, offset=byterange_start)
 
 						ret.append({'name' : ufile.filename})
 					except Exception as ex:
