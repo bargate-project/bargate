@@ -145,11 +145,37 @@ def settings():
 				bargate.lib.userdata.save('layout','grid')
 			elif layout == 'list':
 				bargate.lib.userdata.save('layout','list')
+			else:
+				bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
 		else:
-			bargate.lib.userdata.save('layout','list')
+			bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
 						
 		flash('Settings saved','alert-success')
 		return redirect(url_for('settings'))
+
+################################################################################
+
+@app.route('/settings/layout',methods=['POST'])
+@app.login_required
+@app.allow_disable
+def settings_set_layout():
+	"""This is called by XHR to change the layout mode 'on the fly'. The browser
+	calls it when the 'layout' button is clicked, and then the browser makes a
+	fresh request to the server for the current directory."""
+
+	if 'layout' in request.form:
+		layout = request.form['layout']
+		
+		if layout == 'grid':
+			bargate.lib.userdata.save('layout','grid')
+		elif layout == 'list':
+			bargate.lib.userdata.save('layout','list')
+		else:
+			bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
+	else:
+		bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
+
+	return "", 200
 
 ################################################################################
 #### BOOKMARKS

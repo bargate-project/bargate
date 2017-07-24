@@ -34,35 +34,27 @@
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<link rel="icon" type="image/png" href="{{ favicon }}">
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 		<link rel="stylesheet" href="{{ url_for('static', filename='themes/' + user_theme + '/' + user_theme + '.css') }}">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/bargate.css') }}">
-		{%- if browse_mode or search_mode %}
-		{%- if user_layout == 'list' or search_mode %}
 		<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/t/bs/dt-1.10.12/datatables.min.css"/>
+		{%- if browse_mode or search_mode %}
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse-list.css') }}">
-		{%- elif user_layout == 'grid' %}
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/browse-grid.css') }}">
 		{%- endif %}
-		{%- endif %}
-
+		<script>var layoutMode = "{{user_layout}}";</script>
+		<script>var postToken = "{{csrfp_token()}}";</script>
 		{% include 'javascript.html' %}
 		{%- if browse_mode or search_mode %}
 		<script src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.dragster.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/browse.js') }}"></script>
-		{%- if user_layout == 'list' %}
 		<script src="https://cdn.datatables.net/t/bs/dt-1.10.12/datatables.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.1/isotope.pkgd.min.js"></script>
+		{%- endif %}
 		{%- if search_mode %}
 		<script src="{{ url_for('static', filename='js/browse-search.js') }}"></script>
-		{%- else %}
-		<script src="{{ url_for('static', filename='js/browse-list.js') }}"></script>
-		{%- endif %}
-		{%- elif user_layout == 'grid' %}
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.1/isotope.pkgd.min.js"></script>
-		<script src="{{ url_for('static', filename='js/browse-grid.js') }}"></script>
-		{%- endif %}
 		{%- endif %}
 		<script src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
@@ -122,6 +114,13 @@
 							</a>
 						</div>
 
+
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="layout-button" class="btn navbar-btn btn-default btn" rel="tooltip" title="Switch layout">
+								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if layout_mode == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
+							</a>
+						</div>
+
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							{{ sortmenu() }}
 						</div>
@@ -139,29 +138,7 @@
 			</div>
 		</div>
 
-		{%- if session.modal_error -%}
-			{%- with modal_error = get_modal_error() -%}
-			<div class="modal fade" id="popup-error">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-							<h4 class="modal-title">{{ modal_error.0 }}</h4>
-						</div>
-						<div class="modal-body">
-							{{ modal_error.1 }}
-						</div>
-						<div class="modal-footer">
-							<a href="#" class="btn btn-default"  data-dismiss="modal">OK</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			{%- endwith -%}
-		{%- endif %}
-
-		
-		<div class="container-fluid{% if browse_mode %} container-browse{%endif%} container-body">
+		<div id="pdiv" class="container-fluid{% if browse_mode %} {% if user_layout == 'list' %}listview{%else%}gridview{%endif%}{%endif%} container-body">
 			{% for category, message in get_flashed_messages(with_categories=true) %}
 				<div class="alert alert-dismissable {{category}}"><button type="button" class="close" data-dismiss="alert">×</button>{{message}}</div>
 			{% endfor %}

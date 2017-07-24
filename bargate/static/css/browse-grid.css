@@ -1,4 +1,4 @@
-.entry-file {
+.entry-file-grid {
 	text-align: center;
 }
 
@@ -32,7 +32,7 @@
 }
 
 /* mobile rules */
-.container-browse {
+.gridview {
 	padding-left: 0px;
 	padding-right: 0px;
 }
@@ -52,7 +52,7 @@ ol.breadcrumb {
 
 /* four icons - small desktops */ 
 @media (min-width: 768px) {
-	.container-browse {
+	.gridview {
 		padding-left: 12px;
 		padding-right: 0px;
 		padding-bottom: 12px;

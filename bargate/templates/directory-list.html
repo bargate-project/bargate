@@ -35,7 +35,7 @@
 
 	<tbody>
 		{%- for entry in dirs -%}
-		<tr class="entry-click entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.open }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
+		<tr class="dirclick entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.url }}" data-jurl="{{ entry.jurl }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>

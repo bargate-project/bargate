@@ -181,12 +181,12 @@ class backend_pysmb:
 					try:
 						sfile = conn.getAttributes(share_name,full_path)
 					except Exception as ex:
-						abort(400)
+						return bargate.lib.errors.stderr("Not found","The path you specified does not exist, or could not be read")
 
-					## ensure item is a file
+					## if we were asked to 'download' a directory, redirect to browse instead
 					if sfile.isDirectory:
-						abort(400)
-				
+						return redirect(url_for(func_name,path=path))
+
 					## guess a mimetype
 					(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
 
@@ -383,7 +383,9 @@ class backend_pysmb:
 					crumbs=crumbs,
 					path=path,
 					cwd=entry_name,
+					url_home_xhr=url_for(func_name,action="jbrowse"),
 					url_home=url_for(func_name),
+					url_parent_dir_xhr=url_for(func_name,action="jbrowse",path=parent_directory_path),
 					url_parent_dir=url_for(func_name,path=parent_directory_path),
 					url_bookmark=url_for('bookmarks'),
 					url_search=url_for(func_name,path=path,action="search"),

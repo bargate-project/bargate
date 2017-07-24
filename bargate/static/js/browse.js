@@ -1,19 +1,76 @@
+var currentUrl;
+
 function loadDirectory(url)
 {
+	console.log("loadDirectory() with URL " + url);
 	$( "#browse" ).load( url, function( response, status, xhr )
 	{
-		if ( status == "error" )
-		{
+		if ( status == "error" ) {
 			var msg = "Sorry but there was an error: ";
 			$( "#error" ).html( msg + xhr.status + " " + xhr.statusText );
 		}
+		else {
+			currentUrl = url;
 
-		//doTable();
-		doGrid();
+			if (layoutMode == "list") {
+				doTable();
+			}
+			else {
+				doGrid();
+			}
 
-		doBrowse();
+			doBrowse();
+		}
 	});
 }
+
+function switchLayout()
+{
+	// work out the new layout
+	if (layoutMode == "list") {
+		newLayout = "grid";
+	}
+	else {
+		newLayout = "list";
+	}
+
+	// tell bargate to save the new layout
+	$.post( "/settings/layout", { layout: newLayout, _csrfp_token: postToken })
+		.fail(function() {
+			alert("error!!!11111 TODO");
+		})
+		.done(function() {
+			// Now change classes/icons
+			if (layoutMode == "list") {
+				$("#pdiv").removeClass("listview");
+				$("#pdiv").addClass("gridview");
+				$("#layout-button-icon").removeClass("fa-th-large");
+				$("#layout-button-icon").addClass("fa-list");
+			}
+			else {
+				$("#pdiv").removeClass("gridview");
+				$("#pdiv").addClass("listview");
+				$("#layout-button-icon").removeClass("fa-list");
+				$("#layout-button-icon").addClass("fa-th-large");
+			}
+
+
+
+			// save the new layout locally in browser
+			layoutMode = newLayout;
+
+
+			// Now reload the directory view
+			loadDirectory(currentUrl);
+
+	});
+}
+
+$( document ).ready(function() {
+	$("#layout-button").click(function () {
+		switchLayout();
+	});
+});
 
 function bytesToString(bytes,decimals)
 {
@@ -25,8 +82,6 @@ function bytesToString(bytes,decimals)
 
 function doTable()
 {
-	console.log("doTable()");
-
 	/* sort entries in a directory */
 	$('.dir-sortby-name').on( 'click', function()
 	{
@@ -73,8 +128,6 @@ function doTable()
 
 function doBrowse()
 {
-	console.log("doBrowse()");
-
 	$(".entry-open").click(function()
 	{
 		window.document.location = $(this).closest('.entry-click').data('url');
