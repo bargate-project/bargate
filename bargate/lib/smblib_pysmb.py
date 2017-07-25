@@ -92,11 +92,15 @@ class backend_pysmb:
 			else:
 				path_prefix = "/" + "/".join(url_parts[2:])
 
-			full_path = path_prefix + "/" + path
+			if len(path_prefix) > 0:
+				full_path = path_prefix + "/" + path
+			else:
+				full_path = path
 
 		#flash("SERVER_NAME: " + unicode(server_name),"alert-info")
 		#flash("SHARE NAME: " + unicode(share_name),"alert-info")
-		#flash("PATH: " + unicode(path),"alert-info")
+		#flash("FULL PATH: " + unicode(full_path),"alert-info")
+
 
 		## default the 'active' variable to the function name
 		if active == None:
@@ -477,41 +481,43 @@ class backend_pysmb:
 			# POST: RENAME
 			###############################
 			elif action == 'rename':
-				# path here is the full path to the existing file to rename (not the directory its in)
-
-				## Get the new requested file name
-				new_filename = request.form['newfilename']
+				try:
+					old_name = request.form['old_name']
+					new_name = request.form['new_name']
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Invalid parameter(s)'})
 
 				## Check the new file name is valid
 				try:
-					bargate.lib.core.check_name(new_filename)
+					bargate.lib.core.check_name(new_name)
 				except ValueError as e:
-					return bargate.lib.errors.invalid_name(error_redirect)
+					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
-				## Build new path
-				if parent_directory:
-					new_full_path = full_parent_directory_path + "/" + new_filename
-				else:
-					new_full_path = new_filename
-				
+				## Build paths
+				old_path = full_path + "/" + old_name
+				new_path = full_path + "/" + new_name
 
+				app.logger.debug("asked to rename from " + old_path + " to " + new_path)
+
+				## Check existing file/directory exists
 				try:
-					sfile = conn.getAttributes(share_name,full_path)
+					sfile = conn.getAttributes(share_name,old_path)
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
+					return jsonify({'code': 1, 'msg': 'Unable to read the existing entry'})
 
 				if sfile.isDirectory:
-					typemsg = "The directory"
+					typestr = "directory"
 				else:
-					typemsg = "The file"
+					typestr = "file"
 
 				try:
-					conn.rename(share_name,full_path,new_full_path)
+					conn.rename(share_name,old_path,new_path)
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
+					app.logger.debug(ex)
+					return jsonify({'code': 1, 'msg': 'Unable to rename: ' + str(type(ex))})
 				else:
-					flash(typemsg + " '" + entry_name + "' was renamed to '" + request.form['newfilename'] + "' successfully.",'alert-success')
-					return parent_redirect
+					app.logger.debug("Renamed from " + old_path + " to " + new_path)
+					return jsonify({'code': 0, 'msg': "The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
 
 			###############################
 			# POST: COPY

@@ -1,4 +1,5 @@
 var currentUrl;
+var currentFile;
 
 function loadDirectory(url)
 {
@@ -64,6 +65,11 @@ function switchLayout()
 $( document ).ready(function() {
 	$("#layout-button").click(function () {
 		switchLayout();
+	});
+
+	$("#rename-form").submit(function (e) {
+		e.preventDefault();
+		doRename();
 	});
 });
 
@@ -138,6 +144,11 @@ function doBrowse()
 	{
 		loadDirectory( $(this).parent().data('jurl') );
 		history.pushState(null, "", $(this).parent().data('url'));
+	});
+
+	$("#file-click-rename").click(function ()
+	{
+		showRename(currentFile);
 	});
 
 	/* context (right click) menus */
@@ -237,15 +248,14 @@ function doBrowse()
 			$('#file-click-view').addClass('hidden');
 		}
 
-		/* We also prime the 'rename', 'delete' and 'copy' modals as if they have
+		/* We also prime the 'delete' and 'copy' modals as if they have
 			been clicked because they can be clicked from this modal */
+		currentFile = parent.data('filename')
 
 		$('#copy_path').val(parent.data('path'));
-		$('#copyfilename').attr('value',"Copy of " + parent.data('filename'));		
-		$('#rename_path').val(parent.data('path'));
-		$('#newfilename').attr('value',parent.data('filename'));
+		$('#copyfilename').attr('value',"Copy of " + parent.data('filename'));
 		$('#delete_path').val(parent.data('path'));
-		$('#delete_filename').html(parent.data('filename'));	
+		$('#delete_filename').html(parent.data('filename'));
 		
 		$('#file-click').modal();
 	});
@@ -308,10 +318,7 @@ function doBrowse()
 			}
 			else if ($action == 'rename')
 			{
-				$('#rename_path').val(parentRow.data('path'));
-				$('#newfilename').attr('value',parentRow.data('filename'));
-				$('#rename-file').modal({show: true});
-				$('#newfilename').focus();
+				showRename(parentRow.data('filename'));
 			}
 			else if ($action == 'delete')
 			{
@@ -367,10 +374,7 @@ function doBrowse()
 			}
 			else if ($action == 'rename')
 			{
-				$('#rename_path').val(parentRow.data('path'));
-				$('#newfilename').attr('value',parentRow.data('filename'));
-				$('#rename-file').modal({show: true});
-				$('#newfilename').focus();
+				showRename(parentRow.data('filename'));
 			}
 			else if ($action == 'delete')
 			{
@@ -621,3 +625,48 @@ function prepFileUpload()
 
 }
 
+function doSearch() {
+	$('#dir').DataTable( {
+		"paging": false,
+		"searching": false,
+		"info": false,
+		"columns": [
+			{ "orderable": false },
+			{ "orderable": false },
+		],
+		"dom": 'lrtip'
+	});
+}
+
+function showRename(filename) {
+	currentFile = filename;
+	$('#rename-filename').val(filename);
+	$('#rename-file').modal('show');
+	$('#rename-filename').focus();
+}
+
+function notifySuccess(msg)
+{
+	$.notify({ icon: 'fa fa-fw fa-check', message: msg },{ type: 'success', placement: {align: 'center', from: 'bottom'}});
+}
+
+function doRename()
+{
+	$('#rename-file').modal('hide');
+
+	newFilename = $('#rename-filename').val();
+
+	$.post( currentUrl, { action: 'rename', _csrfp_token: userToken, old_name: currentFile, new_name: newFilename})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			showError("Could not rename","An error occured whilst contacting the server. " + errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code != 0) {
+				showError("Could not rename",data.msg);
+			}
+			else {
+				notifySuccess(data.msg);
+				loadDirectory(currentUrl);
+			}
+	});
+}

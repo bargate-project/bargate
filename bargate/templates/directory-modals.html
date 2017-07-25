@@ -138,34 +138,6 @@
 	</div>
 </div>
 
-{#- modal for rename #}
-<div class="modal" id="rename-file" tabindex='-1'>
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_home }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="rename" type="hidden"/>
-				<input id="rename_path" name="path" type="hidden" value=""/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title">Rename</h4>
-				</div>
-
-				<div class="modal-body">
-					<label>New file name:</label>
-					<input class="form-control" id="newfilename" type="text" name="newfilename" value=""/>
-				</div>
-				
-				<div class="modal-footer">
- 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-					<input type="submit" class="btn btn-primary" value="Rename"/>				
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
 {#- modal popup for when copy file is clicked #}
 <div class="modal" id="copy-file" tabindex='-1'>
 	<div class="modal-dialog">
@@ -226,7 +198,7 @@
 					<a href="#" data-stat="" id="file-click-details" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-info-circle"></i><br/><span class="hidden-xs">Details</span></a>
 
 					<a href="#copy-file" data-dismiss="modal"  data-toggle="modal" id="file-click-copy" class="btn btn-default"><i class="fa fa-fw fa-3x fa-clipboard"></i><br/><span class="hidden-xs">Copy</span></a>
-					<a href="#rename-file" data-dismiss="modal"  data-toggle="modal" id="file-click-rename" class="btn btn-default"><i class="fa fa-fw fa-3x fa-pencil-square-o"></i><br/><span class="hidden-xs">Rename</span></a>
+					<a id="file-click-rename" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-pencil-square-o"></i><br/><span class="hidden-xs">Rename</span></a>
 					<a href="#delete-confirm" data-dismiss="modal" data-toggle="modal" id="file-click-delete" class="btn btn-default"><i class="fa fa-fw fa-3x fa-trash"></i><br/><span class="hidden-xs">Delete</span></a>
 				</div>
 			</div>

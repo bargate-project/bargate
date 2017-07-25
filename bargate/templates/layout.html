@@ -44,6 +44,7 @@
 		{%- endif %}
 		<script src="{{ url_for('settings_js') }}"></script>
 		{% include 'javascript.html' %}
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.7/bootstrap-notify.min.js" integrity="sha256-LlN0a0J3hMkDLO1mhcMwy+GIMbIRV7kvKHx4oCxNoxI=" crossorigin="anonymous"></script>
 		{%- if browse_mode or search_mode %}
 		<script src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
