@@ -2,13 +2,13 @@
 <ol class="breadcrumb">
 		<li>
 			<i class="fa fa-home"></i>
-			<a class="dirclick" data-url="{{ url_home }}" data-jurl="{{ url_home_xhr }}">
+			<a class="dirclick" data-url="{{ url_home }}" data-xhr="{{ url_home_xhr }}">
 			{{ root_display_name }}
 			</a>
 		</li>
 		{%- for dir in crumbs %}
 		<li{% if loop.last %} class="active"{%endif%}>
-			{%- if not loop.last %}<a class="dirclick" data-url="{{ dir.url }}" data-jurl="{{ dir.jurl }}">{{ dir.name }}</a>
+			{%- if not loop.last %}<a class="dirclick" data-url="{{ dir.url }}" data-xhr="{{ dir.xhr }}">{{ dir.name }}</a>
 			{%- else %}{{ dir.name }}
 			{%- endif %}
 		</li>

@@ -1,20 +1,14 @@
 {%- extends "layout.html" -%}
 {%- block body -%}
 
-<!--<div id="testabc" class="btn btn-primary">Test change</div>
-<br/>-->
 <div id="browse">
 </div>
 
 <script>
 $(document).ready(function()
 {
-	loadDirectory("{{url_here}}");
+	loadDirectory("{{url_xhr}}");
 });
 
-$("#testabc").click(function() {
-	$("#user-theme-link").attr("href","/static/themes/paper/paper.css");
-
-});
 </script>
 {% endblock %}

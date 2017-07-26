@@ -53,10 +53,7 @@ function switchLayout()
 				$("#layout-button-icon").removeClass("fa-list");
 				$("#layout-button-icon").addClass("fa-th-large");
 			}
-			// save the new layout locally in browser
 			userLayout = newLayout;
-
-			// Now reload the directory view
 			loadDirectory(currentUrl);
 
 	});
@@ -150,12 +147,12 @@ function doBrowse()
 	});
 
 	$(".dirclick").click(function() {
-		loadDirectory( $(this).data('jurl') );
+		loadDirectory( $(this).data('xhr') );
 		history.pushState(null, "", $(this).data('url'));
 	});
 
 	$(".dirclick").children("td").click(function() {
-		loadDirectory( $(this).parent().data('jurl') );
+		loadDirectory( $(this).parent().data('xhr') );
 		history.pushState(null, "", $(this).parent().data('url'));
 	});
 
@@ -308,19 +305,12 @@ function doBrowse()
 				window.open(parentRow.data('download'),'_blank');
 			}
 			else if ($action == 'copy') {
-				//$('#copy_path').val(parentRow.data('path'));
-				//$('#copyfilename').attr('value',"Copy of " + parentRow.data('filename'));
-				//$('#copy-file').modal({show: true});
-				//$('#copyfilename').focus();
 				showCopy(parentRow.data('filename'));
 			}
 			else if ($action == 'rename') {
 				showRename(parentRow.data('filename'));
 			}
 			else if ($action == 'delete') {
-				//$('#delete_path').val(parentRow.data('path'));
-				//$('#delete_filename').html(parentRow.data('filename'));
-				//$('#delete-confirm').modal({show: true});
 				showDeleteFile(parentRow.data('filename'));
 			}
 			else if ($action == 'properties') {

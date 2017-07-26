@@ -100,7 +100,7 @@ class backend_pysmb:
 			parent_directory = True
 			(parent_directory_path,seperator,entry_name) = path.rpartition('/')
 		else:
-			# we're at the share root
+			# we're at the root
 			parent_directory = False
 			parent_directory_path = ""
 			entry_name = ""
@@ -117,7 +117,6 @@ class backend_pysmb:
 		if not conn.connect(server_name,port=445,timeout=5):
 			return bargate.lib.errors.stderr("Could not connect","Could not connect to the SMB server, authentication was unsuccessful")
 
-		## Log this activity
 		app.logger.info('user: "' + session['username'] + '", svr_path: "' + srv_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
 
 		if request.method == 'GET':
@@ -277,8 +276,11 @@ class backend_pysmb:
 			# GET: BROWSE / LS
 			###############################
 			elif action == 'browse':
+				return render_template('browse.html',path=path,browse_mode=True,url_xhr=url_for(func_name,path=path,action='xhr'))
 
- 				return render_template('browse.html',path=path,browse_mode=True,url_here=url_for(func_name,path=path,action='xhr'))
+			###############################
+			# GET: XHR BROWSE
+			###############################
 
 			elif action == 'xhr':
 
@@ -293,7 +295,7 @@ class backend_pysmb:
 
 				# sfile = shared file (smb.base.SharedFile)
 				for sfile in directory_entries:
-					entry = self._sfile_load(sfile, srv_path, path, func_name)
+					entry = self._sfile_load(sfile, path, func_name)
 
 					# Don't add hidden files
 					if not entry['skip']:
@@ -310,15 +312,9 @@ class backend_pysmb:
 				## Build up a list of dicts, each dict representing a crumb
 				for crumb in parts:
 					if len(crumb) > 0:
-						crumbs.append({'name': crumb, 'jurl': url_for(func_name,action="xhr",path=b4+crumb), 'url': url_for(func_name,path=b4+crumb)})
+						crumbs.append({'name': crumb, 'xhr': url_for(func_name,action="xhr",path=b4+crumb), 'url': url_for(func_name,path=b4+crumb)})
 						b4 = b4 + crumb + '/'
 
-				## Are we at the root?
-				if len(path) == 0:
-					atroot = True
-				else:
-					atroot = False
-				
 				## are there any items in the list?
 				no_items = False
 				if len(files) == 0 and len(dirs) == 0:
@@ -334,13 +330,12 @@ class backend_pysmb:
 					files=files,
 					crumbs=crumbs,
 					path=path,
-					cwd=entry_name,
 					url_home_xhr=url_for(func_name,action="xhr"),
 					url_home=url_for(func_name),
 					url_bookmark=url_for('bookmarks'),
 					url_search=url_for(func_name,path=path,action="search"),
 					browse_mode=True,
-					atroot = atroot,
+					atroot = not parent_directory,
 					func_name = func_name,
 					root_display_name = display_name,
 					on_file_click=bargate.lib.userdata.get_on_file_click(),
@@ -650,7 +645,7 @@ class backend_pysmb:
 
 ################################################################################
 
-	def _sfile_load(self,sfile,srv_path, path, func_name):
+	def _sfile_load(self,sfile, path, func_name):
 		"""Takes a smb SharedFile object and returns a dictionary with information
 		about that SharedFile object. 
 		"""
@@ -658,9 +653,7 @@ class backend_pysmb:
 		entry = {'skip': False, 'name': sfile.filename, 'size': sfile.file_size }
 
 		## Skip entries for 'this dir' and 'parent dir'
-		if entry['name'] == '.':
-			entry['skip'] = True
-		if entry['name'] == '..':
+		if entry['name'] == '.' or entry['name'] == '..':
 			entry['skip'] = True
 
 		## Build the path
@@ -680,9 +673,7 @@ class backend_pysmb:
 				entry['skip'] = True
 
 			## Other horrible Windows files
-			hidden_entries = ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']
-
-			if entry['name'] in hidden_entries:
+			if entry['name'] in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
 				entry['skip'] = True
 
 		if entry['skip']:
@@ -694,7 +685,7 @@ class backend_pysmb:
 			entry['icon'] = 'fa fa-fw fa-folder'
 			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 			entry['url']  = url_for(func_name,path=entry['path'])
-			entry['jurl'] = url_for(func_name,action="xhr",path=entry['path'])
+			entry['xhr']  = url_for(func_name,action="xhr",path=entry['path'])
 
 		# Files
 		else:
@@ -723,6 +714,6 @@ class backend_pysmb:
 			if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
 				entry['view'] = url_for(func_name,path=entry['path'],action='view')
 				entry['open'] = entry['view']
-	
+
 		return entry
 

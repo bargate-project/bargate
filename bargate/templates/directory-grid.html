@@ -4,7 +4,7 @@
 
 <div id="dirs">
 	{%- for entry in dirs -%}
-	<div class="dirclick entry entry-click entry-dir" data-jurl="{{ entry.jurl}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}" data-path="{{entry.path}}">
+	<div class="dirclick entry entry-dir" data-xhr="{{ entry.xhr}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="{{entry.icon}}"></i> {{ entry.name }}</div>
 		</div>
