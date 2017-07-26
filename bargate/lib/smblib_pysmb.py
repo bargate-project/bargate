@@ -59,32 +59,32 @@ class backend_pysmb:
 
 	def smb_action(self,func_path,func_name,active=None,display_name="Home",action='browse',path=''):
 		"""
-			func_path		this is the full SMB path to the server, optionally 
-							including the share name, and any subsequent dirs
-							the user can't browse 'above' this path, and does
-							not get to see this path.
+			func_path       this is the full SMB path to the server, optionally 
+			                including the share name, and any subsequent dirs
+			                the user can't browse 'above' this path, and does
+			                not get to see this path.
 
-			func_name		a unique identifier for this 'view' or 'function'
-							that the user can select and use.
+			func_name       a unique identifier for this 'view' or 'function'
+			                that the user can select and use.
 
-			active			what should the 'active' variable set to, for menu
-							highlights in HTML?
+			active          what should the 'active' variable set to, for menu
+			                highlights in HTML?
 
-			display_name	the friendly name for this 'view' or 'function',
-							to use instead of the func_path. Defaults to "Home".
+			display_name    the friendly name for this 'view' or 'function',
+			                to use instead of the func_path. Defaults to "Home".
 
-			action			the action the user is trying to perform, e.g. 'browse'
+			action          the action the user is trying to perform
 
-			path			the path the user is viewing, which is in addition
-							to the 'func_path'.
+			path            the path the user is viewing, which is in addition
+			                to the 'func_path'.
 
 			example:
-				func_path		smb://server/users/username/
-				func_name		userfiles
-				active			userfiles
-				display_name	my files
-				action			browse
-				path			mydocuments/
+			    func_path        smb://server/users/username/
+			    func_name        userfiles
+			    active           userfiles
+			    display_name     my files
+			    action           browse
+			    path             mydocuments/
 		"""
 
 		## default the 'active' variable to the function name
