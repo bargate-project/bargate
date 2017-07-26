@@ -58,14 +58,14 @@ class backend_pysmb:
 ################################################################################
 
 	def smb_action(self,srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
-		## If the method is POST then 'action' and 'path' are set in the form
-		## rather than in the URL. We do this because we need, in javascript, 
-		## to be able to change these without having to regenerate the URL in 
-		## the <form> as such, the path and action are not sent via bargate 
-		## POSTs anyway
+		## default the 'active' variable to the function name
+		if active == None:
+			active = func_name
+
+		## If the method is POST then 'action' is sent via a POST parameter 
+		## rather than via a so-called "GET" parameter in the URL
 		if request.method == 'POST':
 			action = request.form['action']
-			#path   = request.form['path']
 
 		## ensure srv_path (the server URI and share) does not end with a trailing slash
 		if srv_path.endswith('/'):
@@ -73,13 +73,11 @@ class backend_pysmb:
 
 		## srv_path should always start with smb://
 		if not srv_path.startswith("smb://"):
-			return bargate.lib.errors.stderr("Invalid server path","The server URL must start with smb://")
+			return bargate.lib.errors.stderr("Invalid server path",'The server URL must start with smb://')
 
-		## work out just the server name part of the URL
+		## work out just the server name part of the URL 
 		url_parts   = srv_path.replace("smb://","").split('/')
 		server_name = url_parts[0]
-
-		#flash("URL_PARTS: " + str(url_parts),"alert-info")
 
 		if len(url_parts) == 1:
 			## TODO support browse here, to show a list of shares
@@ -97,49 +95,15 @@ class backend_pysmb:
 			else:
 				full_path = path
 
-		#flash("SERVER_NAME: " + unicode(server_name),"alert-info")
-		#flash("SHARE NAME: " + unicode(share_name),"alert-info")
-		#flash("FULL PATH: " + unicode(full_path),"alert-info")
-
-
-		## default the 'active' variable to the function name
-		if active == None:
-			active = func_name
-
-		## The place to redirect to (the url) if an error occurs
-		## This defaults to None (aka don't redirect, and just show an error)
-		## because to do otherwise will lead to a redirect loop. (Fix #93 v1.4.1)
-		error_redirect = None
-
-		## The parent directory to redirect to - defaults to just the current function
-		## name (the handler for this 'share' at the top level)
-		parent_redirect = redirect(url_for(func_name))
-
 		## Work out if there is a parent directory
 		## and work out the entry name (filename or directory name being browsed)
 		if len(path) > 0:
 			parent_directory = True
-
 			(parent_directory_path,seperator,entry_name) = path.rpartition('/')
-			## if seperator was not found then the first two strings returned will be empty strings
-			if len(parent_directory_path) > 0:
-				## update the parent redirect with the correct path
-				parent_redirect = redirect(url_for(func_name,path=parent_directory_path))
-				error_redirect  = parent_redirect
-				full_parent_directory_path = path_prefix + "/" + parent_directory_path
-
-			else:
-				# there is a parent directory - the 'share' - so just set the parent 
-				# path to empty, because share_name (the actual parent dir) is sent
-				# as the first parameter with each call anyway
-				parent_directory_path = ""
-				full_parent_directory_path = path_prefix + ""
-
 		else:
 			# we're at the share root
 			parent_directory = False
 			parent_directory_path = ""
-			full_parent_directory_path = path_prefix
 			entry_name = ""
 
 		uri = srv_path + "/" + path
@@ -153,7 +117,6 @@ class backend_pysmb:
 		#app.logger.debug(u"entry_name: " + entry_name + "; " + unicode(type(entry_name)))
 		#app.logger.debug(u"parent_directory: " + unicode(parent_directory) + "; " + str(type(parent_directory)))
 		#app.logger.debug(u"parent_directory_path: " + parent_directory_path + "; " + str(type(parent_directory_path)))
-		#app.logger.debug(u"full_parent_directory_path: " + full_parent_directory_path + "; " + str(type(full_parent_directory_path)))
 
 		## Check the path is valid
 		try:
@@ -214,7 +177,7 @@ class backend_pysmb:
 					return resp
 	
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
+					return self.smb_error(ex,uri)
 
 			####################
 			# GET: IMAGE PREVIEW
@@ -337,7 +300,7 @@ class backend_pysmb:
 				try:
 					directory_entries = conn.listPath(share_name,full_path)
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
+					return self.smb_error(ex,uri)
 
 				## Seperate out dirs and files into two lists
 				dirs  = []
