@@ -550,8 +550,8 @@ class backend_pysmb:
 
 				## Make sure the new file does not exist
 				try:
-					sfile = conn.getAttributes(share_name,dest_full_path)
-					return jsonify({'code': 1, 'msg': 'The name you specified to copy to already exists'})
+					sfile = conn.getAttributes(share_name,dest_path)
+					return jsonify({'code': 1, 'msg': 'The destination filename already exists'})
 				except:
 					# could not get attributes, so file does not exist, so lets continue
 					pass
@@ -561,13 +561,13 @@ class backend_pysmb:
 				# oh and we need to reset the file pos 'cos storeFile expects that
 				try:
 					tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
-					conn.retrieveFile(share_name,src_path,tfile)
+					conn.retrieveFile(share_name, src_path, tfile)
 					tfile.seek(0)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'Could not read from the source file'})
 
 				try:
-					conn.storeFile(share_name,dest_full_path, tfile, timeout=120)
+					conn.storeFile(share_name, dest_path, tfile, timeout=120)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'Could not write to the new file'})
 
@@ -610,7 +610,7 @@ class backend_pysmb:
 				delete_path  = full_path + "/" + delete_name
 
 				try:
-					sfile = conn.getAttributes(share_name,delete_name)
+					sfile = conn.getAttributes(share_name,delete_path)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to check the file to be deleted'})
 

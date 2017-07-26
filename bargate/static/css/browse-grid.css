@@ -1,8 +1,8 @@
-.entry-file-grid {
+.gridview .entry-file-grid {
 	text-align: center;
 }
 
-.entry {
+.gridview .entry {
 	width: 200px;
 	position: relative;
 	float: left;
@@ -11,14 +11,14 @@
 }
 
 /* overflow text properly on panel labels */
-.panel-footer {
+.gridview .panel-footer {
 	 text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
 }
 
 /* wrap tooltips properly */
-.tooltip-inner {
+.gridview .tooltip-inner {
 	white-space:pre-wrap;
 	overflow-wrap: break-word;
 	word-wrap: break-word;
@@ -37,16 +37,13 @@
 	padding-right: 0px;
 }
 
-.entry {
+.gridview .entry {
 	margin-top: 4px;
 	margin-right: 4px;
 	width: calc(50% - 4px);
 }
-.alert
-{
-	margin-right: 4px;
-}
-ol.breadcrumb {
+
+.gridview ol.breadcrumb {
 	margin-bottom: 0px;
 }
 
@@ -57,46 +54,42 @@ ol.breadcrumb {
 		padding-right: 0px;
 		padding-bottom: 12px;
 	}
-	.entry {
+	.gridview .entry {
 		margin-top: 12px;
 		margin-right: 12px;
 		width: calc(25% - 12px);
 	}
-	.alert
-	{
-		margin-right: 12px;
-	}
-	ol.breadcrumb {
+	.gridview ol.breadcrumb {
 		margin-right: 12px;
 	}
 }
 
 /* six icons - medium desktops */ 
 @media (min-width: 992px) {
-	.entry {
+	.gridview .entry {
 		width: calc(16.666666667% - 12px);
 	}
 }
 
 /* eight icons - large desktops */ 
 @media (min-width: 1200px) {
-	.entry {
+	.gridview .entry {
 		width: calc(12.5% - 12px);
 	}
 }
 
-.panel {
+.gridview .panel {
 	margin-bottom: 0px;
 }
-.panel-body {
+.gridview .panel-body {
 	height: 160px;
 	padding: 0px;
 }
-.panel-icon {
+.gridview .panel-icon {
 	font-size: 6em;
 	line-height: 150px;
 }
-.panel-img {
+.gridview .panel-img {
 	background-size: cover;
 	overflow: hidden;
 }

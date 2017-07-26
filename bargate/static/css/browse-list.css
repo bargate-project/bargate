@@ -3,36 +3,36 @@
 }
 
 /* don't put a margin on directory view table - datatables used !important so we have to as well :( */
-#dir
+.listview #dir
 {
 	margin-top: 0px !important;
 	margin-bottom: 0px !important;
 }
 
-.table-hover thead tr:hover td
+.listview .table-hover thead tr:hover td
 {
 	background-color: #f5f5f5;
 }
 
 /* MAKE BOOTSTRAP DO VERTICAL ALIGN IN TABLES, DUH? */
-.table td
+.listview .table td
 {
 	vertical-align: middle !important;
 }
 
 /* Make sure no underlines on a's in tables pls - For flatly theme mostly */
-.table a, table a
+.listview .table a, table a
 {
 	text-decoration: none !important;
 }
 
-tbody
+.listview tbody
 {
 	text-decoration: none;
 }
 
 /* Browse mode (list) */
-td.dentry
+.listview td.dentry
 {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -41,7 +41,7 @@ td.dentry
 /* Table cell widths for multiple sizes */
 @media (max-width: 768px)
 {
-	td.dentry
+	.listview td.dentry
 	{
 		max-width: 1px;
 	}
@@ -49,7 +49,7 @@ td.dentry
 
 @media (min-width: 768px)
 {
-	td.dentry
+	.listview td.dentry
 	{
 		max-width: 1px;
 	}
@@ -57,11 +57,11 @@ td.dentry
 
 @media (min-width: 992px)
 {
-	td.dentry
+	.listview td.dentry
 	{
 		max-width: 1px;
 	}
-	td.dentry-mtime
+	.listview td.dentry-mtime
 	{
 		width: 15em;
 	}
@@ -69,11 +69,11 @@ td.dentry
 
 @media (min-width: 1200px)
 {
-	td.dentry
+	.listview td.dentry
 	{
 		max-width: 200px;
 	}
-	td.dentry-mtime
+	.listview td.dentry-mtime
 	{
 		width: 15em;
 	}

@@ -117,20 +117,18 @@
 
 
 {#- RENAME #}
-<div class="modal" id="rename-file" tabindex='-1'>
+<div class="modal" id="e-rename-m" tabindex='-1'>
 	<div class="modal-dialog">
-		<form id="rename-form">
+		<form id="e-rename-f">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<h4 class="modal-title">Rename</h4>
 				</div>
-
 				<div class="modal-body">
 					<label>New file name:</label>
-					<input class="form-control" id="rename-filename" type="text" name="rename-filename" value=""/>
+					<input id="e-rename-i" class="form-control" type="text"/>
 				</div>
-			
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 					<input type="submit" class="btn btn-primary" value="Rename"/>
@@ -141,23 +139,65 @@
 </div>
 
 {#- DELETE #}
-<div class="modal" id="delete-entry" tabindex='-1'>
+<div class="modal" id="e-delete-m" tabindex='-1'>
 	<div class="modal-dialog">
-		<form>
+		<form id="e-delete-f">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title">Delete <span id="delete-what"></span></h4>
+					<h4 class="modal-title">Delete <span id="e-delete-t"></span></h4>
 				</div>
-
 				<div class="modal-body">
-					<p>Are you sure you want to permanently delete '<span id="delete-name" style="word-wrap: break-word;"></span>'?</p>
-					<div class="delete-warn" class="hidden"><label><span class="label label-danger">Note!</span> Only empty directories can be deleted! </label></div>
+					<p>Are you sure you want to permanently delete '<span id="e-delete-n" style="word-wrap: break-word;"></span>'?</p>
+					<div id="e-delete-w" class="hidden"><label><span class="label label-danger">Note!</span> Only empty directories can be deleted! </label></div>
 				</div>
-				
 				<div class="modal-footer">
 					<input type="submit" class="btn btn-primary" value="Yes"/>
  					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{#- COPY #}
+<div class="modal" id="e-copy-m" tabindex='-1'>
+	<div class="modal-dialog">
+		<form id="e-copy-f">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<h4 class="modal-title">Copy</h4>
+				</div>
+				<div class="modal-body">
+					<label>Name of new file:</label>
+					<input id="e-copy-i" class="form-control" type="text"/>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-primary" value="Copy"/>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{#- MKDIR #}
+<div class="modal" id="mkdir-m" tabindex='-1'>
+	<div class="modal-dialog">
+		<form id="mkdir-f">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<h4 class="modal-title">Create directory</h4>
+				</div>
+				<div class="modal-body">
+					<label>New directory name:</label>
+					<input id="mkdir-i" class="form-control" type="text" placeholder="New directory"/>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-success" value="Create"/>
 				</div>
 			</div>
 		</form>

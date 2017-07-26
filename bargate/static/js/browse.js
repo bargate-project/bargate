@@ -67,9 +67,24 @@ $( document ).ready(function() {
 		switchLayout();
 	});
 
-	$("#rename-form").submit(function (e) {
+	$("#e-rename-f").submit(function (e) {
 		e.preventDefault();
 		doRename();
+	});
+
+	$("#e-copy-f").submit(function (e) {
+		e.preventDefault();
+		doCopy();
+	});
+
+	$("#e-delete-f").submit(function (e) {
+		e.preventDefault();
+		doDelete();
+	});
+
+	$("#mkdir-f").submit(function (e) {
+		e.preventDefault();
+		doMkdir();
 	});
 });
 
@@ -134,22 +149,20 @@ function doBrowse()
 		window.document.location = $(this).closest('.entry-click').data('url');
 	});
 
-	$(".dirclick").click(function()
-	{
+	$(".dirclick").click(function() {
 		loadDirectory( $(this).data('jurl') );
 		history.pushState(null, "", $(this).data('url'));
 	});
 
-	$(".dirclick").children("td").click(function()
-	{
+	$(".dirclick").children("td").click(function() {
 		loadDirectory( $(this).parent().data('jurl') );
 		history.pushState(null, "", $(this).parent().data('url'));
 	});
 
-	$("#file-click-rename").click(function ()
-	{
-		showRename(currentFile);
-	});
+	// Bind actions to buttons in the 'file show' modal
+	$("#e-rename-b").click(function () { showRename(currentFile); });
+	$("#e-copy-b").click(function () { showCopy(currentFile); });
+	$("#e-delete-b").click(function () { showDeleteFile(currentFile); });
 
 	/* context (right click) menus */
 	(function ($, window)
@@ -213,8 +226,7 @@ function doBrowse()
 
 	/**************************************************************************/
 	
-	$(".entry-preview").click(function()
-	{
+	$(".entry-preview").click(function() {
 		var parent = $(this).closest('.entry-click');
 		
 		$('#file-click-filename').text(parent.data('filename'));
@@ -225,39 +237,27 @@ function doBrowse()
 		$('#file-click-download').attr('href',parent.data('download'));
 		$('#file-click-details').data('stat',parent.data('stat'));
 		
-		if (parent.attr('data-imgpreview'))
-		{
+		if (parent.attr('data-imgpreview')) {
 			$('#file-click-preview').attr('src',parent.data('imgpreview'));
 			$('#file-click-preview').removeClass('hidden');
 			$('#file-click-icon').addClass('hidden');
 		}
-		else
-		{
+		else {
 			$('#file-click-preview').attr('src','');
 			$('#file-click-preview').addClass('hidden');
 			$('#file-click-icon').removeClass('hidden');
 		}
 		
-		if (parent.attr('data-view'))
-		{
+		if (parent.attr('data-view')) {
 			$('#file-click-view').attr('href',parent.data('view'));
 			$('#file-click-view').removeClass('hidden');
 		}
-		else
-		{
+		else {
 			$('#file-click-view').addClass('hidden');
 		}
 
-		/* We also prime the 'delete' and 'copy' modals as if they have
-			been clicked because they can be clicked from this modal */
-		currentFile = parent.data('filename')
-
-		$('#copy_path').val(parent.data('path'));
-		$('#copyfilename').attr('value',"Copy of " + parent.data('filename'));
-		$('#delete_path').val(parent.data('path'));
-		$('#delete_filename').html(parent.data('filename'));
-		
-		$('#file-click').modal();
+		currentFile = parent.data('filename');
+		$('#file-click').modal('show');
 	});
 
 	$("#file-click-details").click(function()
@@ -301,33 +301,29 @@ function doBrowse()
 			var parentRow = invokedOn.closest(".entry-click");
 			var $action = selectedMenu.closest("a").data("action");
 
-			if ($action == 'view')
-			{
-				window.document.location = parentRow.data('view');
+			if ($action == 'view') {
+				window.open(parentRow.data('view'),'_blank');
 			}
-			else if ($action == 'download')
-			{
-				window.document.location = parentRow.data('download');
+			else if ($action == 'download') {
+				window.open(parentRow.data('download'),'_blank');
 			}
-			else if ($action == 'copy')
-			{
-				$('#copy_path').val(parentRow.data('path'));
-				$('#copyfilename').attr('value',"Copy of " + parentRow.data('filename'));
-				$('#copy-file').modal({show: true});
-				$('#copyfilename').focus();
+			else if ($action == 'copy') {
+				//$('#copy_path').val(parentRow.data('path'));
+				//$('#copyfilename').attr('value',"Copy of " + parentRow.data('filename'));
+				//$('#copy-file').modal({show: true});
+				//$('#copyfilename').focus();
+				showCopy(parentRow.data('filename'));
 			}
-			else if ($action == 'rename')
-			{
+			else if ($action == 'rename') {
 				showRename(parentRow.data('filename'));
 			}
-			else if ($action == 'delete')
-			{
-				$('#delete_path').val(parentRow.data('path'));
-				$('#delete_filename').html(parentRow.data('filename'));		
-				$('#delete-confirm').modal({show: true});
+			else if ($action == 'delete') {
+				//$('#delete_path').val(parentRow.data('path'));
+				//$('#delete_filename').html(parentRow.data('filename'));
+				//$('#delete-confirm').modal({show: true});
+				showDeleteFile(parentRow.data('filename'));
 			}
-			else if ($action == 'properties')
-			{
+			else if ($action == 'properties') {
 				$('#file-details-loading').removeClass('hidden');
 				$('#file-details-data').addClass('hidden');
 				$('#file-details-filename').html('Please wait...');
@@ -349,37 +345,28 @@ function doBrowse()
 
 				/*window.document.location = parentRow.data('props');*/
 			}
-			else
-			{
-				console.log("WARNING: contextMenu item click UNMATCHED. data value was: " + selectedMenu.data('action'));
-			}
 
 			event.preventDefault();
 			event.stopPropagation();
 		}
 	});
 
-	/* right click menu for directories */
+	/* context menu for directories */
 	$(".entry-dir").contextMenu(
 	{
 		menuSelector: "#dirContextMenu",
-		menuSelected: function (invokedOn, selectedMenu)
-		{
+		menuSelected: function (invokedOn, selectedMenu) {
 			var parentRow = invokedOn.closest(".entry-click");
 			var $action = selectedMenu.closest("a").data("action");
 
-			if ($action == 'open')
-			{
-				window.document.location = parentRow.data('url');
+			if ($action == 'open') {
+				loadDirectory(parentRow.data('url'));
 			}
-			else if ($action == 'rename')
-			{
+			else if ($action == 'rename') {
 				showRename(parentRow.data('filename'));
 			}
-			else if ($action == 'delete')
-			{
-				$('#delete_dir_path').val(parentRow.data('path'));
-				$('#delete-dir-confirm').modal({backdrop: 'static', show: true});
+			else if ($action == 'delete') {
+				showDeleteDirectory(parentRow.data('filename'));
 			}
 
 			event.preventDefault();
@@ -388,8 +375,9 @@ function doBrowse()
 	});
 
 	/* focus on inputs when modals open */
-	$('#create-directory').on('shown.bs.modal', function() {
-		$('#create-directory input[type="text"]').focus();
+	/* these modals are triggered by data-toggle, so we must do it here */
+	$('#mkdir-m').on('shown.bs.modal', function() {
+		$('#mkdir-m input[type="text"]').focus();
 	});
 	
 	$('#add-bookmark').on('shown.bs.modal', function() {
@@ -401,20 +389,19 @@ function doBrowse()
 	});
 
 	/* meh...don't set focus back on buttons when modals are closed */
-	$('#create-directory').on('shown.bs.modal', function(e)
-	{
-		$('#create-directory-button').one('focus', function(e){$(this).blur();});
-	});
+	//$('#mkdir-m').on('shown.bs.modal', function(e)
+	//{
+	//	$('#mkdir-b').one('focus', function(e){$(this).blur();});
+	//});
 
-	$('#upload-file').on('shown.bs.modal', function(e)
-	{
-		$('#upload-button').one('focus', function(e){$(this).blur();});
-	});
+	//$('#upload-file').on('shown.bs.modal', function(e)
+	//{
+	//	$('#upload-button').one('focus', function(e){$(this).blur();});
+	//});
 
 
 	/* File uploads - drag files over shows a modal */
-	$('body').dragster(
-	{
+	$('body').dragster({
 		enter: function ()
 		{
 			$('#upload-drag-over').modal()
@@ -426,16 +413,13 @@ function doBrowse()
 	});
 
 	/* Searching - mark as 'searching' for long page loads */
-	$("#search-form" ).submit(function( event )
-	{
+	$("#search-form" ).submit(function( event ) {
 		$("#search-form-submit").button('loading');
 	});
 }
 
-function doGrid()
-{
-	var $container = $('#files').isotope(
-	{
+function doGrid() {
+	var $container = $('#files').isotope({
 		getSortData:
 		{
 			name: '[data-sortname]',
@@ -456,33 +440,28 @@ function doGrid()
 	});
 
 	/* sort entries in a directory */
-	$('.dir-sortby-name').on( 'click', function()
-	{
+	$('.dir-sortby-name').on( 'click', function() {
 		$container.isotope({ sortBy: 'name' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-name span').removeClass('invisible');
 	});
-	$('.dir-sortby-mtime').on( 'click', function()
-	{
+	$('.dir-sortby-mtime').on( 'click', function() {
 		$container.isotope({ sortBy: 'mtime' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-mtime span').removeClass('invisible');
 	});
-	$('.dir-sortby-type').on( 'click', function()
-	{
+	$('.dir-sortby-type').on( 'click', function() {
 		$container.isotope({ sortBy: 'type' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-type span').removeClass('invisible');
 	});
-	$('.dir-sortby-size').on( 'click', function()
-	{
+	$('.dir-sortby-size').on( 'click', function() {
 		$container.isotope({ sortBy: 'size' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-size span').removeClass('invisible');
 	});
 
-	var $dirs = $('#dirs').isotope(
-	{
+	var $dirs = $('#dirs').isotope( {
 		getSortData: { name: '[data-sortname]',},
 		sortBy: 'name',
 	});
@@ -531,26 +510,17 @@ function formatTime (seconds) {
 		('0' + date.getUTCSeconds()).slice(-2);
 }
 
-function renderExtendedProgress(data)
-{
-    return formatBitrate(data.bitrate) + ', ' +
-        formatTime(
-            (data.total - data.loaded) * 8 / data.bitrate
-        ) + ' remaining <br/>' +
-        formatFileSize(data.loaded) + ' uploaded of ' +
-        formatFileSize(data.total);
+function renderExtendedProgress(data) {
+	return formatBitrate(data.bitrate) + ', ' + formatTime((data.total - data.loaded) * 8 / data.bitrate) + ' remaining <br/>' + formatFileSize(data.loaded) + ' uploaded of ' + formatFileSize(data.total);
 }
 
-function prepFileUpload()
-{
-	$('#fileupload').fileupload(
-	{
+function prepFileUpload() {
+	$('#fileupload').fileupload({
 		url: currentUrl,
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
 		formData: [{name: '_csrfp_token', value: userToken}, {name: 'action', value: 'jsonupload'}],
-		start: function (e)
-		{
+		start: function (e) {
 			$('#upload-drag-over').modal('hide');
 			$('#upload-file').modal()
 			$('#upload-progress').removeClass('hidden');
@@ -561,8 +531,7 @@ function prepFileUpload()
 			$('#upload-button-icon').addClass('fa-spin');
 			$('#upload-button-icon').addClass('fa-cog');
 		},
-		stop: function (e, data)
-		{
+		stop: function (e, data) {
 			$('#upload-button-icon').addClass('fa-upload');
 			$('#upload-button-icon').removeClass('fa-spin');
 			$('#upload-button-icon').removeClass('fa-cog');
@@ -571,58 +540,46 @@ function prepFileUpload()
 			$('#upload-progress-ext').addClass('hidden');
 			$('#upload-cancel').addClass('hidden');
 
-			if (!($("#upload-file").data('bs.modal').isShown))
-			{
+			if (!($("#upload-file").data('bs.modal').isShown)) {
 				/* if something finished then show the modal if it wasnt already */
 				$('#upload-file').modal('show');
 			}
 		},
-		done: function (e, data)
-		{
+		done: function (e, data) {
 			window.uploadsuccess = 1;
-			$.each(data.result.files, function (index, file)
-			{
-				if (file.error)
-				{
+			$.each(data.result.files, function (index, file) {
+				if (file.error) {
 					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').prependTo('#upload-files');
 				}
-				else
-				{
+				else {
 					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').prependTo('#upload-files');
 					loadDirectory(currentUrl);
 				}
 			});
 		},
-		fail: function (e, data)
-		{
+		fail: function (e, data) {
 			window.uploadsuccess = 0;
 
-			if (data.errorThrown === 'abort')
-			{
+			if (data.errorThrown === 'abort') {
 				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').prependTo('#upload-files');
 			}
-			else
-			{		
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').prependTo('#upload-files');
+			else {
+				$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').prependTo('#upload-files');
 			}
 		},
-		progressall: function (e, data)
-		{
+		progressall: function (e, data) {
 			var progress = parseInt(data.loaded / data.total * 100, 10);
 			$('#upload-progress-pc').html(progress);
 			$('#upload-progress .progress-bar').css('width', progress + '%');
 			$('#upload-progress-ext').html(renderExtendedProgress(data));
 		},
-		add: function (e, data)
-		{
+		add: function (e, data) {
 			jqXHR = data.submit();
-			$('#upload-cancel').click(function (e)
-			{
+			$('#upload-cancel').click(function (e) {
 				jqXHR.abort();
 			});
 		},
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
-
 }
 
 function doSearch() {
@@ -638,11 +595,41 @@ function doSearch() {
 	});
 }
 
-function showRename(filename) {
-	currentFile = filename;
-	$('#rename-filename').val(filename);
-	$('#rename-file').modal('show');
-	$('#rename-filename').focus();
+function showRename(name) {
+	currentFile = name;
+	$('#e-rename-i').val(name);
+	$('#e-rename-m').modal('show');
+	$('#e-rename-i').focus();
+}
+
+function showCopy(name) {
+	currentFile = name;
+	$('#e-copy-i').val("Copy of " + name);
+	$('#e-copy-m').modal('show');
+	$('#e-copy-i').focus();
+}
+
+function showDeleteFile(name) {
+	$('#e-delete-t').text("file");
+	$('#e-delete-w').addClass("hidden");
+	showDelete(name);
+}
+
+function showDeleteDirectory(name) {
+	$('#e-delete-t').text("directory");
+	$('#e-delete-w').removeClass("hidden");
+	showDelete(name);
+}
+
+function showDelete(name) {
+	currentFile = name;
+	$('#e-delete-n').text(name);
+	$('#e-delete-m').modal('show');
+}
+
+function showMkdir() {
+	$('#e-mkdir-m').modal('show');
+	$('#e-mkdir-i').focus();
 }
 
 function notifySuccess(msg)
@@ -652,17 +639,72 @@ function notifySuccess(msg)
 
 function doRename()
 {
-	$('#rename-file').modal('hide');
+	$('#e-rename-m').modal('hide');
 
-	newFilename = $('#rename-filename').val();
-
-	$.post( currentUrl, { action: 'rename', _csrfp_token: userToken, old_name: currentFile, new_name: newFilename})
+	$.post( currentUrl, { action: 'rename', _csrfp_token: userToken, old_name: currentFile, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showError("Could not rename","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
 				showError("Could not rename",data.msg);
+			}
+			else {
+				notifySuccess(data.msg);
+				loadDirectory(currentUrl);
+			}
+	});
+}
+
+function doCopy()
+{
+	$('#e-copy-m').modal('hide');
+
+	$.post( currentUrl, { action: 'copy', _csrfp_token: userToken, src: currentFile, dest: $('#e-copy-i').val()})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			showError("Could not copy","An error occured whilst contacting the server. " + errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code != 0) {
+				showError("Could not copy",data.msg);
+			}
+			else {
+				notifySuccess(data.msg);
+				loadDirectory(currentUrl);
+			}
+	});
+}
+
+function doMkdir()
+{
+	$('#mkdir-m').modal('hide');
+
+	$.post( currentUrl, { action: 'mkdir', _csrfp_token: userToken, name: $('#mkdir-i').val()})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			showError("Could not create directory","An error occured whilst contacting the server. " + errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code != 0) {
+				showError("Could not create directory",data.msg);
+			}
+			else {
+				notifySuccess(data.msg);
+				loadDirectory(currentUrl);
+			}
+	});
+}
+
+function doDelete()
+{
+	$('#e-delete-m').modal('hide');
+
+	$.post( currentUrl, { action: 'delete', _csrfp_token: userToken, name: currentFile})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			showError("Could not delete","An error occured whilst contacting the server. " + errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code != 0) {
+				showError("Could not delete",data.msg);
 			}
 			else {
 				notifySuccess(data.msg);

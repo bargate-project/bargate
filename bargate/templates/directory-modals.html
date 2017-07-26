@@ -1,4 +1,4 @@
-{#- modal popup for when 'add bookmark' is clicked  #}
+{#- ADD BOOKMARK  #}
 <div class="modal" id="add-bookmark" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -25,37 +25,8 @@
 	</div>
 </div>
 
-
-{#- modal popup for when create directory is clicked #}
-<div class="modal" id="create-directory" tabindex='-1'>
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_home }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="mkdir" type="hidden"/>
-				<input name="path" type="hidden" value="{{ path }}"/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title">Create folder</h4>
-				</div>
-
-				<div class="modal-body">
-					<label>New folder name:</label>
-					<input class="form-control" type="text" name="directory_name" placeholder="New folder"/>
-				</div>
-				
-				<div class="modal-footer">
- 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-					<input type="submit" class="btn btn-success" value="Create"/>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
 {% if config['SEARCH_ENABLED'] %}
-{#- modal popup for when search is clicked #}
+{#- SEARCH #}
 <div class="modal" id="search" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -80,91 +51,6 @@
 	</div>
 </div>
 {% endif %}
-
-{#- modal to delete a file #}
-<div class="modal" id="delete-confirm" tabindex='-1'>
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_home }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="unlink" type="hidden"/>
-				<input name="path" type="hidden" value="" id="delete_path"/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title">Delete file</h4>
-				</div>
-
-				<div class="modal-body text-center">
-					<p><i class="fa fa-fw fa-exclamation-triangle fa-5x"></i></p>
-
-					<p>Are you sure you want to permanently delete '<span id="delete_filename" style="word-wrap: break-word;"></span>'?</p>
-				</div>
-				
-				<div class="modal-footer">
- 					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-					<input type="submit" id="deletebtn" class="btn btn-danger" onclick="$('#deletebtn').button('loading')" data-loading-text="Deleting..." value="Yes"/>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-{#- modal to delete a directory #}
-<div class="modal" id="delete-dir-confirm" tabindex='-1'>
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_home }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="unlink" type="hidden"/>
-				<input name="path" type="hidden" value="" id="delete_dir_path"/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title">Delete directory</h4>
-				</div>
-
-				<div class="modal-body">
-					<p>Are you sure you want to permanently delete the directory?</p>
-					<label><span class="label label-danger">Note!</span> Only empty directories can be deleted! </label>
-				</div>
-				
-				<div class="modal-footer">
-					<input type="submit" class="btn btn-primary" value="Yes"/>
- 					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-
-{#- modal popup for when copy file is clicked #}
-<div class="modal" id="copy-file" tabindex='-1'>
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<form action="{{ url_home }}" method="POST">
-				<input name="_csrfp_token" type="hidden" value="{{ csrfp_token() }}"/>
-				<input name="action" value="copy" type="hidden"/>
-  				<input id="copy_path" name="path" type="hidden" value=""/>
-					
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title">Copy</h4>
-				</div>
-
-				<div class="modal-body">
-					<label>Name of copied file:</label>
-      				<input class="form-control" id="copyfilename" type="text" name="filename" value=""/>
-				</div>
-				
-				<div class="modal-footer">
- 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-					<input type="submit" class="btn btn-primary" value="Copy"/>				
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
 
 {#- modal for file click #}
 <div class="modal" id="file-click" tabindex='-1'>
@@ -196,14 +82,10 @@
 					<a href="#" id="file-click-download" class="btn btn-default"><i class="fa fa-fw fa-3x fa-download"></i><br/><span class="hidden-xs">Download</span></a>
 					<a href="#" id="file-click-view" class="btn btn-default hidden hidden-xs"><i class="fa fa-fw fa-3x fa-eye"></i><br/><span class="hidden-xs">View</span></a>
 					<a href="#" data-stat="" id="file-click-details" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-info-circle"></i><br/><span class="hidden-xs">Details</span></a>
-
-					<a href="#copy-file" data-dismiss="modal"  data-toggle="modal" id="file-click-copy" class="btn btn-default"><i class="fa fa-fw fa-3x fa-clipboard"></i><br/><span class="hidden-xs">Copy</span></a>
-					<a id="file-click-rename" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-pencil-square-o"></i><br/><span class="hidden-xs">Rename</span></a>
-					<a href="#delete-confirm" data-dismiss="modal" data-toggle="modal" id="file-click-delete" class="btn btn-default"><i class="fa fa-fw fa-3x fa-trash"></i><br/><span class="hidden-xs">Delete</span></a>
+					<a id="e-copy-b" data-dismiss="modal"  class="btn btn-default"><i class="fa fa-fw fa-3x fa-clipboard"></i><br/><span class="hidden-xs">Copy</span></a>
+					<a id="e-rename-b" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-pencil-square-o"></i><br/><span class="hidden-xs">Rename</span></a>
+					<a id="e-delete-b" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-trash"></i><br/><span class="hidden-xs">Delete</span></a>
 				</div>
-			</div>
-			<div class="modal-footer">	
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>	
 			</div>
 		</div>
 	</div>
