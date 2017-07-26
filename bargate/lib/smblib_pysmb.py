@@ -330,9 +330,9 @@ class backend_pysmb:
 			###############################
 			elif action == 'browse':
 
- 				return render_template('browse.html',path=path,browse_mode=True,url_here=url_for(func_name,path=path,action='jbrowse'))
+ 				return render_template('browse.html',path=path,browse_mode=True,url_here=url_for(func_name,path=path,action='xhr'))
 
-			elif action == 'jbrowse':
+			elif action == 'xhr':
 
 				try:
 					directory_entries = conn.listPath(share_name,full_path)
@@ -362,7 +362,7 @@ class backend_pysmb:
 				## Build up a list of dicts, each dict representing a crumb
 				for crumb in parts:
 					if len(crumb) > 0:
-						crumbs.append({'name': crumb, 'jurl': url_for(func_name,action="jbrowse",path=b4+crumb), 'url': url_for(func_name,path=b4+crumb)})
+						crumbs.append({'name': crumb, 'jurl': url_for(func_name,action="xhr",path=b4+crumb), 'url': url_for(func_name,path=b4+crumb)})
 						b4 = b4 + crumb + '/'
 
 				## Are we at the root?
@@ -387,9 +387,9 @@ class backend_pysmb:
 					crumbs=crumbs,
 					path=path,
 					cwd=entry_name,
-					url_home_xhr=url_for(func_name,action="jbrowse"),
+					url_home_xhr=url_for(func_name,action="xhr"),
 					url_home=url_for(func_name),
-					url_parent_dir_xhr=url_for(func_name,action="jbrowse",path=parent_directory_path),
+					url_parent_dir_xhr=url_for(func_name,action="xhr",path=parent_directory_path),
 					url_parent_dir=url_for(func_name,path=parent_directory_path),
 					url_bookmark=url_for('bookmarks'),
 					url_search=url_for(func_name,path=path,action="search"),
@@ -409,8 +409,6 @@ class backend_pysmb:
 			# POST: UPLOAD
 			###############################
 			if action == 'jsonupload':
-				# path here is the directory to upload files into
-
 				ret = []
 
 				uploaded_files = request.files.getlist("files[]")
@@ -523,115 +521,117 @@ class backend_pysmb:
 			# POST: COPY
 			###############################
 			elif action == 'copy':
-				## path here is the path to the existing file, not the directory it is within
-
-				## Get the new filename
-				dest_filename = request.form['filename']
-			
-				## Check the new file name is valid
 				try:
-					bargate.lib.core.check_name(dest_filename)
-				except ValueError as e:
-					return bargate.lib.errors.invalid_name(error_redirect)
+					src  = request.form['src']
+					dest = request.form['dest']
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Invalid parameter(s)'})
 
-				## Build new path
-				if parent_directory:
-					dest_full_path = full_parent_directory_path + "/" + dest_filename
-				else:
-					dest_full_path = dest_filename
+				## check the proposed new name is valid
+				try:
+					bargate.lib.core.check_name(dest)
+				except ValueError as e:
+					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
+
+				## Build paths
+				src_path  = full_path + "/" + src
+				dest_path = full_path + "/" + dest
+
+				app.logger.debug("asked to copy from " + src + " to " + dest)
+
+				## Check if existing file exists
+				try:
+					sfile = conn.getAttributes(share_name,src_path)
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'The file you tried to copy does not exist'})
+
+				if sfile.isDirectory:
+					return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
 
 				## Make sure the new file does not exist
 				try:
 					sfile = conn.getAttributes(share_name,dest_full_path)
-					return bargate.lib.errors.stderr("Destination exists","The name you specified already exists",error_redirect)
+					return jsonify({'code': 1, 'msg': 'The name you specified to copy to already exists'})
 				except:
 					# could not get attributes, so file does not exist, so lets continue
 					pass
 
+				# read into a local temp file, because you can't 'open' a file handle
+				# in pysmb, you have to read the entire thing and store it somewhere
+				# oh and we need to reset the file pos 'cos storeFile expects that
 				try:
-					sfile = conn.getAttributes(share_name,full_path)
-				except Exception as ex:
-					return bargate.lib.errors.stderr("Source file does not exist","The file you tried to copy does not exist",error_redirect)
-
-				## ensure item is a file
-				if sfile.isDirectory:
-					return bargate.lib.errors.invalid_item_copy(error_redirect)
-
-				try:
-					# create a tempfile to read the data into
 					tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
-
-					## Read data into the tempfile via SMB
-					conn.retrieveFile(share_name,full_path,tfile)
-
-					## Seek back to 0 on the tempfile ready to read it again
+					conn.retrieveFile(share_name,src_path,tfile)
 					tfile.seek(0)
 				except Exception as ex:
-					return bargate.lib.errors.stderr("Could not read from source file","An error occured whilst reading from the source file")
+					return jsonify({'code': 1, 'msg': 'Could not read from the source file'})
 
 				try:
 					conn.storeFile(share_name,dest_full_path, tfile, timeout=120)
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
+					return jsonify({'code': 1, 'msg': 'Could not write to the new file'})
 
-				flash('A copy of "' + entry_name + '" was created as "' + dest_filename + '"','alert-success')
-				return parent_redirect
+
+				return jsonify({'code': 0, 'msg': 'A copy of "' + src + '" was created as "' + dest + '"'})
 
 			###############################
 			# POST: MAKE DIRECTORY
 			###############################
 			elif action == 'mkdir':
-				# path here is the directory to create the new directory within
-
-				new_directory = request.form['directory_name']
-				## Check the path is valid
 				try:
-					bargate.lib.core.check_name(new_directory)
-				except ValueError as e:
-					return bargate.lib.errors.invalid_name(error_redirect)
-
-				new_full_path = full_path + "/" + new_directory
-
-				try:
-					conn.createDirectory(share_name,new_full_path)
+					dirname = request.form['name']
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
-				
-				flash("The folder '" + new_directory + "' was created successfully.",'alert-success')
-				return redirect(url_for(func_name,path=path))
+					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+
+				## check the proposed new name is valid
+				try:
+					bargate.lib.core.check_name(dirname)
+				except ValueError as e:
+					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
+
+				dirname_path  = full_path + "/" + dirname
+
+				try:
+					conn.createDirectory(share_name,dirname_path)
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to create the directory'})
+
+				return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
 			###############################
 			# POST: DELETE
 			###############################
-			elif action == 'unlink': #TODO
-				# path here is the full path to the file to delete, not the directory it is within
+			elif action == 'delete':
 				try:
-					sfile = conn.getAttributes(share_name,full_path)
+					delete_name = request.form['name']
 				except Exception as ex:
-					return self.smb_error(ex,uri,error_redirect)
+					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+
+				delete_path  = full_path + "/" + delete_name
+
+				try:
+					sfile = conn.getAttributes(share_name,delete_name)
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to check the file to be deleted'})
 
 				if sfile.isDirectory:
-					## try to delete directory
 					try:
-						conn.deleteDirectory(share_name, full_path)
+						conn.deleteDirectory(share_name, delete_path)
 					except Exception as ex:
-						return self.smb_error(ex,uri,error_redirect)
+						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the directory'})
 
-					flash("The directory '" + entry_name + "' was deleted successfully.",'alert-success')
-					return parent_redirect
+					return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
 
 				else:
-					## try to delete file
 					try:
-						conn.deleteFiles(share_name, full_path)
+						conn.deleteFiles(share_name, delete_path)
 					except Exception as ex:
-						return self.smb_error(ex,uri,error_redirect)
+						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the file'})
 
-					flash("The file '" + entry_name + "' was deleted successfully.",'alert-success')
-					return parent_redirect
+					return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 
 			else:
-				abort(400)
+				return jsonify({'code': 1, 'msg': "An invalid action was specified"})
 
 	############################################################################
 
@@ -748,7 +748,7 @@ class backend_pysmb:
 			entry['icon'] = 'fa fa-fw fa-folder'
 			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 			entry['url']  = url_for(func_name,path=entry['path'])
-			entry['jurl'] = url_for(func_name,action="jbrowse",path=entry['path'])
+			entry['jurl'] = url_for(func_name,action="xhr",path=entry['path'])
 
 		# Files
 		else:
