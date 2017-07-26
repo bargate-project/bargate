@@ -242,3 +242,28 @@
 		</form>
 	</div>
 </div>
+
+
+{% if config['SEARCH_ENABLED'] %}
+{#- SEARCH #}
+<div id="search-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="search-f">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<h4 class="modal-title">Search</h4>
+				</div>
+				<div class="modal-body">
+					<input class="form-control" type="text" id="search-i" placeholder="Name to search for"/><br/>
+					<p class="text-muted"><i class="fa fa-fw fa-exclamation-triangle"></i> Search results can be slow depending on the speed of the file server you are using</p>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<input id="search-b" type="submit" class="btn btn-success" value="Search" data-loading-text="Searching..."/>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endif %}

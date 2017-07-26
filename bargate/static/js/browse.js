@@ -24,6 +24,34 @@ function loadDirectory(url)
 	});
 }
 
+function doSearch()
+{
+	$('#search-m').modal('hide');
+	$( "#browse" ).load( currentUrl + "?" + $.param({'q': $('#search-i').val() }), function( response, status, xhr )
+	{
+		if ( status == "error" ) {
+			showError("Could not search","An error occured whilst contacting the server. " + xhr.statusText);
+		}
+		else {
+			doTable();
+
+			$('#results').DataTable( {
+				"paging": false,
+				"searching": false,
+				"info": false,
+				"columns": [
+					{ "orderable": false },
+					{ "orderable": false },
+				],
+				"dom": 'lrtip'
+			});
+
+			doBrowse();
+			//prepFileUpload();
+		}
+	});
+}
+
 function switchLayout()
 {
 	// work out the new layout
@@ -82,6 +110,11 @@ $( document ).ready(function() {
 	$("#mkdir-f").submit(function (e) {
 		e.preventDefault();
 		doMkdir();
+	});
+
+	$("#search-f").submit(function (e) {
+		e.preventDefault();
+		doSearch();
 	});
 });
 
@@ -370,12 +403,12 @@ function doBrowse()
 		$('#mkdir-m input[type="text"]').focus();
 	});
 	
-	$('#add-bookmark').on('shown.bs.modal', function() {
-		$('#add-bookmark input[type="text"]').focus();
+	$('#bmark-m').on('shown.bs.modal', function() {
+		$('#bmark-m input[type="text"]').focus();
 	});
 
-	$('#search').on('shown.bs.modal', function() {
-		$('#search input[type="text"]').focus();
+	$('#search-m').on('shown.bs.modal', function() {
+		$('#search-m input[type="text"]').focus();
 	});
 
 	/* meh...don't set focus back on buttons when modals are closed */
@@ -570,19 +603,6 @@ function prepFileUpload() {
 			});
 		},
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
-}
-
-function doSearch() {
-	$('#dir').DataTable( {
-		"paging": false,
-		"searching": false,
-		"info": false,
-		"columns": [
-			{ "orderable": false },
-			{ "orderable": false },
-		],
-		"dom": 'lrtip'
-	});
 }
 
 function showRename(name) {
