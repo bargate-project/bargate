@@ -25,7 +25,7 @@ import bargate.lib.mime
 import bargate.views.errors
 
 from smb.SMBConnection import SMBConnection
-from smb.base import SMBTimeout, NotReadyError, NotConnectedError
+from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
 from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
 from PIL import Image
 
@@ -57,7 +57,36 @@ class backend_pysmb:
 
 ################################################################################
 
-	def smb_action(self,srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
+	def smb_action(self,func_path,func_name,active=None,display_name="Home",action='browse',path=''):
+		"""
+			func_path		this is the full SMB path to the server, optionally 
+							including the share name, and any subsequent dirs
+							the user can't browse 'above' this path, and does
+							not get to see this path.
+
+			func_name		a unique identifier for this 'view' or 'function'
+							that the user can select and use.
+
+			active			what should the 'active' variable set to, for menu
+							highlights in HTML?
+
+			display_name	the friendly name for this 'view' or 'function',
+							to use instead of the func_path. Defaults to "Home".
+
+			action			the action the user is trying to perform, e.g. 'browse'
+
+			path			the path the user is viewing, which is in addition
+							to the 'func_path'.
+
+			example:
+				func_path		smb://server/users/username/
+				func_name		userfiles
+				active			userfiles
+				display_name	my files
+				action			browse
+				path			mydocuments/
+		"""
+
 		## default the 'active' variable to the function name
 		if active == None:
 			active = func_name
@@ -67,32 +96,40 @@ class backend_pysmb:
 		if request.method == 'POST':
 			action = request.form['action']
 
-		if srv_path.endswith('/'):
-			srv_path = srv_path[:-1]
+		if func_path.endswith('/'):
+			func_path = func_path[:-1]
 
-		## srv_path should always start with smb://
-		if not srv_path.startswith("smb://"):
+		## func_path should always start with smb://
+		if not func_path.startswith("smb://"):
 			return bargate.lib.errors.stderr("Invalid server path",'The server URL must start with smb://')
 
 		## work out just the server name part of the URL 
-		url_parts   = srv_path.replace("smb://","").split('/')
-		server_name = url_parts[0]
+		func_path_parts   = func_path.replace("smb://","").split('/')
+		server_name = func_path_parts[0]
 
-		if len(url_parts) == 1:
-			## TODO support browse here, to show a list of shares
-			return bargate.lib.errors.stderr("Invalid server path","The server URL must include at least a share name")
-		else:
-			share_name = url_parts[1]
-
-			if len(url_parts) == 2:
-				path_prefix = ""
+		if len(func_path_parts) == 1:
+			## there is no share in the func_path
+			## so we have to either list shares, or take the share name out
+			## of the path
+			if len(path) == 0 or action == "browse":
+				# list shares
+				share_name = None
 			else:
-				path_prefix = "/" + "/".join(url_parts[2:])
+				(share_name,seperator,path_without_share) = path.partition('/')
+		else:
+			share_name = func_path_parts[1]
+
+			# is there multiple parts to the func_path, i.e., we've not been
+			# given a share root?
+			if len(func_path_parts) == 2:
+				path_without_share_prefix = ""
+			else:
+				path_without_share_prefix = "/" + "/".join(func_path_parts[2:])
 
 			if len(path_prefix) > 0:
-				full_path = path_prefix + "/" + path
+				path_without_share = path_without_share_prefix + "/" + path
 			else:
-				full_path = path
+				path_without_share = path
 
 		## Work out if there is a parent directory
 		## and work out the entry name (filename or directory name being browsed)
@@ -115,9 +152,51 @@ class backend_pysmb:
 		conn = SMBConnection(session['username'], bargate.lib.user.get_password(), socket.gethostname(), server_name, domain=app.config['SMB_WORKGROUP'], use_ntlm_v2 = True, is_direct_tcp=True)
 
 		if not conn.connect(server_name,port=445,timeout=5):
-			return bargate.lib.errors.stderr("Could not connect","Could not connect to the SMB server, authentication was unsuccessful")
+			return bargate.lib.errors.stderr("Could not connect","Could not connect to the file server, authentication was unsuccessful")
 
-		app.logger.info('user: "' + session['username'] + '", svr_path: "' + srv_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
+		app.logger.info('user: "' + session['username'] + '", svr_path: "' + func_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
+
+		if share_name is None:
+			# there is no share name specified, so the only thing we can do here is support
+			# either 'browse' or 'xhr'
+			if action == 'browse':
+				return render_template('browse.html',path=path,browse_mode=True,url_xhr=url_for(func_name,path=path,action='xhr'))
+			elif action == 'xhr':
+				try:
+					smb_shares = conn.listShares()
+				except Exception as ex:
+					return self.smb_error(ex)
+
+				shares = []
+				for share in smb_shares:
+					if share.type == SharedDevice.DISK_TREE:
+						shares.append({'name': share.name, 'url': url_for(func_name,path=share.name), 'xhr': url_for(func_name,path=share.name,action='xhr')})
+
+				## are there any items in the list?
+				no_items = False
+				if len(shares) == 0:
+					no_items = True
+
+				## What layout mode does the user want?
+				layout = bargate.lib.userdata.get_layout()
+
+				## Render the template
+				return render_template('directory-' + layout + '.html',
+					active=active,
+					dirs=[], files=[], shares=shares, crumbs=[], path=path,
+					url_home_xhr=url_for(func_name,action="xhr"),
+					url_home=url_for(func_name),
+					url_bookmark=url_for('bookmarks'),
+					url_search=url_for(func_name,path=path,action="search"),
+					browse_mode=True,
+					atroot=True,
+					func_name = func_name,
+					root_display_name = display_name,
+					on_file_click=bargate.lib.userdata.get_on_file_click(),
+					no_items = no_items,
+				)
+			else:
+				abort(400)
 
 		if request.method == 'GET':
 			###############################
@@ -130,7 +209,7 @@ class backend_pysmb:
 					attach = True
 
 					try:
-						sfile = conn.getAttributes(share_name,full_path)
+						sfile = conn.getAttributes(share_name,path_without_share)
 					except Exception as ex:
 						return bargate.lib.errors.stderr("Not found","The path you specified does not exist, or could not be read")
 
@@ -151,7 +230,7 @@ class backend_pysmb:
 					tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
 
 					## Read data into the tempfile via SMB
-					conn.retrieveFile(share_name,full_path,tfile)
+					conn.retrieveFile(share_name,path_without_share,tfile)
 					## Seek back to 0 on the tempfile, otherwise send_file breaks (!)
 					tfile.seek(0)
 
@@ -171,7 +250,7 @@ class backend_pysmb:
 					abort(400)
 
 				try:
-					sfile = conn.getAttributes(share_name,full_path)
+					sfile = conn.getAttributes(share_name,path_without_share)
 				except Exception as ex:
 					abort(400)
 
@@ -192,7 +271,7 @@ class backend_pysmb:
 
 				## read the file
 				tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
-				conn.retrieveFile(share_name,full_path,tfile)
+				conn.retrieveFile(share_name,path_without_share,tfile)
 				tfile.seek(0)
 
 				try:
@@ -213,7 +292,7 @@ class backend_pysmb:
 			elif action == 'stat': 
 
 				try:
-					sfile = conn.getAttributes(share_name,full_path)
+					sfile = conn.getAttributes(share_name,path_without_share)
 				except Exception as ex:
 					return jsonify({'error': 1, 'reason': 'An error occured: ' + str(type(ex)) + ": " + str(ex)})
 
@@ -236,7 +315,7 @@ class backend_pysmb:
 			###############################
 			# GET: SEARCH
 			###############################
-			elif action == 'search': #TODO
+			elif action == 'search': 
 				if not app.config['SEARCH_ENABLED']:
 					abort(404)
 
@@ -256,13 +335,14 @@ class backend_pysmb:
 
 				query   = request.args.get('q')
 
-				self._init_search(libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query)
+				self._init_search(conn,func_name,path,path_as_str,func_path_as_str,uri_as_str,query)
 				results, timeout_reached = self._search()
 
-				if timeout_reached:
-					flash("Some search results have been omitted because the search took too long to perform.","alert-warning")
+				#if timeout_reached:
+				#	flash("Some search results have been omitted because the search took too long to perform.","alert-warning")
 
 				return render_template('search.html',
+					timeout_reached = timeout_reached,
 					results=results,
 					query=query,
 					path=path,
@@ -285,7 +365,7 @@ class backend_pysmb:
 			elif action == 'xhr':
 
 				try:
-					directory_entries = conn.listPath(share_name,full_path)
+					directory_entries = conn.listPath(share_name,path_without_share)
 				except Exception as ex:
 					return self.smb_error(ex)
 
@@ -328,6 +408,7 @@ class backend_pysmb:
 					active=active,
 					dirs=dirs,
 					files=files,
+					shares=[],
 					crumbs=crumbs,
 					path=path,
 					url_home_xhr=url_for(func_name,action="xhr"),
@@ -362,7 +443,7 @@ class backend_pysmb:
 					
 					## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
 					filename = bargate.lib.core.secure_filename(ufile.filename)
-					upload_path = full_path + '/' + filename
+					upload_path = path_without_share + '/' + filename
 
 					## Check the new file name is valid
 					try:
@@ -433,8 +514,8 @@ class backend_pysmb:
 					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
 				## Build paths
-				old_path = full_path + "/" + old_name
-				new_path = full_path + "/" + new_name
+				old_path = path_without_share + "/" + old_name
+				new_path = path_without_share + "/" + new_name
 
 				app.logger.debug("asked to rename from " + old_path + " to " + new_path)
 
@@ -475,8 +556,8 @@ class backend_pysmb:
 					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
 				## Build paths
-				src_path  = full_path + "/" + src
-				dest_path = full_path + "/" + dest
+				src_path  = path_without_share + "/" + src
+				dest_path = path_without_share + "/" + dest
 
 				app.logger.debug("asked to copy from " + src + " to " + dest)
 
@@ -530,7 +611,7 @@ class backend_pysmb:
 				except ValueError as e:
 					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
-				dirname_path  = full_path + "/" + dirname
+				dirname_path  = path_without_share + "/" + dirname
 
 				try:
 					conn.createDirectory(share_name,dirname_path)
@@ -548,7 +629,7 @@ class backend_pysmb:
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
 
-				delete_path  = full_path + "/" + delete_name
+				delete_path  = path_without_share + "/" + delete_name
 
 				try:
 					sfile = conn.getAttributes(share_name,delete_path)
@@ -576,14 +657,12 @@ class backend_pysmb:
 
 	############################################################################
 
-################################################################################
-
-	def _init_search(self,libsmbclient,func_name,path,path_as_str,srv_path_as_str,uri_as_str,query):
+	def _init_search(self,libsmbclient,func_name,path,path_as_str,func_path_as_str,uri_as_str,query):
 		self.libsmbclient    = libsmbclient
 		self.func_name       = func_name
 		self.path            = path
 		self.path_as_str     = path_as_str
-		self.srv_path_as_str = srv_path_as_str
+		self.func_path_as_str = func_path_as_str
 		self.uri_as_str      = uri_as_str
 		self.query           = query
 
@@ -617,7 +696,7 @@ class backend_pysmb:
 				self.timeout_reached = True
 				break
 
-			entry = self._direntry_load(dentry, self.srv_path_as_str, path, path_as_str)
+			entry = self._direntry_load(dentry, self.func_path_as_str, path, path_as_str)
 
 			## Skip hidden files
 			if entry['skip']:
@@ -638,7 +717,7 @@ class backend_pysmb:
 					new_path_as_str = path_as_str + "/" + entry['name_as_str']
 				else:
 					new_path        = entry['name']
-					new_path_as_str = entry['name_as_str']					
+					new_path_as_str = entry['name_as_str']
 
 				self._rsearch(new_path, new_path_as_str, entry['uri_as_str'])
 

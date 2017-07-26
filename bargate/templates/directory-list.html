@@ -16,8 +16,20 @@
 	</thead>
 
 	<tbody>
+		{%- for entry in shares -%}
+		<tr class="dirclick entry-dir" data-url="{{ entry.url }}" data-xhr="{{ entry.xhr }}" data-filename="{{entry.name}}">
+			<td class="text-center"><span class="fa fa-fw fa-archive"></span></td>
+			<td class="dentry">{{ entry.name}}</td>
+			<td class="hidden-xs hidden-sm dentry-mtime"></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		{%- endfor -%}
+
 		{%- for entry in dirs -%}
-		<tr class="dirclick entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.url }}" data-xhr="{{ entry.xhr }}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
+		<tr class="dirclick entry-dir" data-icon="{{entry.icon}}" data-url="{{ entry.url }}" data-xhr="{{ entry.xhr }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
