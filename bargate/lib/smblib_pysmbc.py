@@ -611,7 +611,6 @@ class backend_pysmbc:
 					path=path,
 					cwd=entryname,
 					url_home=url_for(func_name),
-					url_parent_dir=url_for(func_name,path=parent_directory_path),
 					url_bookmark=url_for('bookmarks'),
 					url_search=url_for(func_name,path=path,action="search"),
 					browse_mode=True,

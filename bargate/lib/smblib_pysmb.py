@@ -67,7 +67,6 @@ class backend_pysmb:
 		if request.method == 'POST':
 			action = request.form['action']
 
-		## ensure srv_path (the server URI and share) does not end with a trailing slash
 		if srv_path.endswith('/'):
 			srv_path = srv_path[:-1]
 
@@ -106,19 +105,7 @@ class backend_pysmb:
 			parent_directory_path = ""
 			entry_name = ""
 
-		uri = srv_path + "/" + path
-
-		#app.logger.debug(u"srv_path: " + srv_path + "; " + unicode(type(server_name)))
-		#app.logger.debug(u"server_name: " + server_name + "; " + unicode(type(server_name)))
-		#app.logger.debug(u"share_name: " + share_name + "; " + unicode(type(share_name)))
-		#app.logger.debug(u"path " + path + u"; " + unicode(type(path)))
-		#app.logger.debug(u"full_path: " + full_path + "; " + unicode(type(full_path)))
-		#app.logger.debug(u"uri: " + uri + "; " + unicode(type(uri)))
-		#app.logger.debug(u"entry_name: " + entry_name + "; " + unicode(type(entry_name)))
-		#app.logger.debug(u"parent_directory: " + unicode(parent_directory) + "; " + str(type(parent_directory)))
-		#app.logger.debug(u"parent_directory_path: " + parent_directory_path + "; " + str(type(parent_directory_path)))
-
-		## Check the path is valid
+		## Check the path is not bad/dangerous
 		try:
 			bargate.lib.core.check_path(path)
 		except ValueError as e:
@@ -132,8 +119,6 @@ class backend_pysmb:
 
 		## Log this activity
 		app.logger.info('user: "' + session['username'] + '", svr_path: "' + srv_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
-
-		#flash("SMB2: " + str(conn.isUsingSMB2),"alert-info")
 
 		if request.method == 'GET':
 			###############################
@@ -177,7 +162,7 @@ class backend_pysmb:
 					return resp
 	
 				except Exception as ex:
-					return self.smb_error(ex,uri)
+					return self.smb_error(ex)
 
 			####################
 			# GET: IMAGE PREVIEW
@@ -300,7 +285,7 @@ class backend_pysmb:
 				try:
 					directory_entries = conn.listPath(share_name,full_path)
 				except Exception as ex:
-					return self.smb_error(ex,uri)
+					return self.smb_error(ex)
 
 				## Seperate out dirs and files into two lists
 				dirs  = []
@@ -352,8 +337,6 @@ class backend_pysmb:
 					cwd=entry_name,
 					url_home_xhr=url_for(func_name,action="xhr"),
 					url_home=url_for(func_name),
-					url_parent_dir_xhr=url_for(func_name,action="xhr",path=parent_directory_path),
-					url_parent_dir=url_for(func_name,path=parent_directory_path),
 					url_bookmark=url_for('bookmarks'),
 					url_search=url_for(func_name,path=path,action="search"),
 					browse_mode=True,
