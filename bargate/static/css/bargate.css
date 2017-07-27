@@ -38,11 +38,7 @@ ul.changelog
 }
 
 /* directory/browse mode and bookmark table clickables */
-.entry-click {
-	cursor: pointer;
-}
-
-.dirclick {
+.entry-click, .dirclick, .tdirclick {
 	cursor: pointer;
 }
 

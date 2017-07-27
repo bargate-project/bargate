@@ -4,15 +4,6 @@
 {%- include 'directory-modals-new.html' -%}
 {%- endblock %}
 {%- block body -%}
-
-<div id="browse">
-</div>
-
-<script>
-$(document).ready(function()
-{
-	loadDirectory("{{url_xhr}}");
-});
-
-</script>
+<div id="browse"></div>
+<script>$(function() { initDirectory("{{url}}"); }); </script>
 {%- endblock %}

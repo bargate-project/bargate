@@ -1,14 +1,26 @@
-var currentUrl;
-var currentFile;
+var currentUrl = null;
+var currentFile = null;
 
-function loadDirectory(url)
+function initDirectory(url)
 {
-	$( "#browse" ).load( url, function( response, status, xhr )
+	history.replaceState(url,"",url);
+	loadDirectory(url,false);
+}
+
+function loadDirectory(url,alterHistory)
+{
+	if (alterHistory === undefined) { alterHistory = true; }
+
+	$( "#browse" ).load( url + "?" + $.param({xhr: 1}), function( response, status, xhr )
 	{
 		if ( status == "error" ) {
 			showError("Could not open directory","An error occured whilst contacting the server. " + xhr.statusText);
 		}
 		else {
+			// store the old url in history, and set the new URL
+			if (alterHistory) {
+				history.pushState(url, "", url);
+			}
 			currentUrl = url;
 
 			if (userLayout == "list") {
@@ -116,6 +128,14 @@ $( document ).ready(function() {
 		e.preventDefault();
 		doSearch();
 	});
+
+	/* handle back/forward buttons */
+	window.addEventListener('popstate', function(e) {
+		var requestedUrl = e.state;
+		if (requestedUrl != null) {
+			loadDirectory(requestedUrl,false);
+		}
+	});
 });
 
 function bytesToString(bytes,decimals)
@@ -174,19 +194,12 @@ function doTable()
 
 function doBrowse()
 {
-	$(".entry-open").click(function()
-	{
-		window.document.location = $(this).closest('.entry-click').data('url');
+	$(".tdirclick").children("td").click(function() {
+		loadDirectory( $(this).parent().data('url') );
 	});
 
 	$(".dirclick").click(function() {
-		loadDirectory( $(this).data('xhr') );
-		history.pushState(null, "", $(this).data('url'));
-	});
-
-	$(".dirclick").children("td").click(function() {
-		loadDirectory( $(this).parent().data('xhr') );
-		history.pushState(null, "", $(this).parent().data('url'));
+		loadDirectory( $(this).data('url') );
 	});
 
 	// Bind actions to buttons in the 'file show' modal

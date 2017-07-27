@@ -17,13 +17,12 @@
 		{%- for entry in results -%}
 
 		{% if entry['type'] == 'dir' %}	
-			{%- set rclick = 'entry-open' -%}	
-		<tr class="entry-click" data-url="{{ entry.open }}" >
+		<tr class="tdirclick" data-url="{{entry.url}}">
 		{% elif entry['type'] == 'file' %}
 			{%- if on_file_click == 'ask' %}
 			{#- POPUP DIALOG FOR FILES TR -#}
 			{%- set rclick = 'entry-preview' -%}
-		<tr class="entry-click" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-stat="{{ entry.stat }}">
+		<tr class="entry-click" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-stat="{{ entry.stat }}" data-dir="{{entry.parent_url}}">
 			{%- else %}
 			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
 			{%- set rclick = 'entry-open' -%}
@@ -33,7 +32,7 @@
 
 			<td class="{{rclick}} text-center"><span class="{{ entry.icon }} fa-2x"></span></td>
 			<td class="{{rclick}} dentry">{{ entry.name}}<br/>
-				<span class="text-muted">in <a class="dirclick" data-url="{{entry.parent_url}}" data-xhr="{{entry.parent_xhr}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
+				<span class="text-muted">in <a class="dirclick" data-url="{{entry.parent_url}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
 			</td>
 		</tr>
 		{%- else -%}

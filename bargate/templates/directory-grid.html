@@ -5,14 +5,14 @@
 
 <div id="dirs">
 	{%- for entry in shares -%}
-	<div class="dirclick entry entry-dir" data-xhr="{{ entry.xhr}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+	<div class="dirclick entry entry-dir" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="fa fa-fw fa-archive"></i> {{ entry.name }}</div>
 		</div>
 	</div>
 	{%- endfor -%}
 	{%- for entry in dirs -%}
-	<div class="dirclick entry entry-dir" data-xhr="{{ entry.xhr}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+	<div class="dirclick entry entry-dir" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="{{entry.icon}}"></i> {{ entry.name }}</div>
 		</div>

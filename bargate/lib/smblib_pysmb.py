@@ -113,7 +113,7 @@ class backend_pysmb:
 			## there is no share in the func_path
 			## so we have to either list shares, or take the share name out
 			## of the path
-			if len(path) == 0 or action == "browse":
+			if len(path) == 0:
 				# list shares
 				share_name = None
 			else:
@@ -156,47 +156,47 @@ class backend_pysmb:
 		if not conn.connect(server_name,port=445,timeout=5):
 			return bargate.lib.errors.stderr("Could not connect","Could not connect to the file server, authentication was unsuccessful")
 
-		app.logger.info('user: "' + session['username'] + '", func_path: "' + func_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
+		app.logger.info('user: "' + session['username'] + '", func_path: "' + func_path + '", share_name: "' + unicode(share_name) + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
 
 		if share_name is None:
-			# there is no share name specified, so the only thing we can do here is support
-			# either 'browse' or 'xhr'
+			# there is no share name specified, so the only thing we can do here is browse
 			if action == 'browse':
-				return render_template('browse.html',path=path,browse_mode=True,url_xhr=url_for(func_name,path=path,action='xhr'))
-			elif action == 'xhr':
-				try:
-					smb_shares = conn.listShares()
-				except Exception as ex:
-					return self.smb_error(ex)
+				if 'xhr' in request.args:
 
-				shares = []
-				for share in smb_shares:
-					if share.type == SharedDevice.DISK_TREE:
-						shares.append({'name': share.name, 'url': url_for(func_name,path=share.name), 'xhr': url_for(func_name,path=share.name,action='xhr')})
+					try:
+						smb_shares = conn.listShares()
+					except Exception as ex:
+						return self.smb_error(ex)
 
-				## are there any items in the list?
-				no_items = False
-				if len(shares) == 0:
-					no_items = True
+					shares = []
+					for share in smb_shares:
+						if share.type == SharedDevice.DISK_TREE:
+							shares.append({'name': share.name, 'url': url_for(func_name,path=share.name)})
 
-				## What layout mode does the user want?
-				layout = bargate.lib.userdata.get_layout()
+					## are there any items in the list?
+					no_items = False
+					if len(shares) == 0:
+						no_items = True
 
-				## Render the template
-				return render_template('directory-' + layout + '.html',
-					active=active,
-					dirs=[], files=[], shares=shares, crumbs=[], path=path,
-					url_home_xhr=url_for(func_name,action="xhr"),
-					url_home=url_for(func_name),
-					url_bookmark=url_for('bookmarks'),
-					url_search=url_for(func_name,path=path,action="search"),
-					browse_mode=True,
-					atroot=True,
-					func_name = func_name,
-					root_display_name = display_name,
-					on_file_click=bargate.lib.userdata.get_on_file_click(),
-					no_items = no_items,
-				)
+					## What layout mode does the user want?
+					layout = bargate.lib.userdata.get_layout()
+
+					## Render the template
+					return render_template('directory-' + layout + '.html',
+						active=active,
+						dirs=[], files=[], shares=shares, crumbs=[], path=path,
+						url_home=url_for(func_name),
+						url_bookmark=url_for('bookmarks'),
+						url_search=url_for(func_name,path=path,action="search"),
+						browse_mode=True,
+						atroot=True,
+						func_name = func_name,
+						root_display_name = display_name,
+						on_file_click=bargate.lib.userdata.get_on_file_click(),
+						no_items = no_items,
+					)
+				else:
+					return render_template('browse.html',url=url_for(func_name,path=path),browse_mode=True)
 			else:
 				abort(400)
 
@@ -331,14 +331,6 @@ class backend_pysmb:
 			# GET: BROWSE
 			###############################
 			elif action == 'browse':
-				return render_template('browse.html',path=path,browse_mode=True,url_xhr=url_for(func_name,path=path,action='xhr'))
-
-			###############################
-			# GET: XHR BROWSE
-			###############################
-
-			elif action == 'xhr':
-
 				#### SEARCH
 				if 'q' in request.args:
 
@@ -374,66 +366,69 @@ class backend_pysmb:
 						crumbs=crumbs,
 						on_file_click=bargate.lib.userdata.get_on_file_click())
 
-				## NORMAL BROWSE
+				elif 'xhr' in request.args:
 
-				try:
-					directory_entries = conn.listPath(share_name,path_without_share)
-				except Exception as ex:
-					return self.smb_error(ex)
+					## NORMAL BROWSE
 
-				## Seperate out dirs and files into two lists
-				dirs  = []
-				files = []
+					try:
+						directory_entries = conn.listPath(share_name,path_without_share)
+					except Exception as ex:
+						return self.smb_error(ex)
 
-				# sfile = shared file (smb.base.SharedFile)
-				for sfile in directory_entries:
-					entry = self._sfile_load(sfile, path, func_name)
+					## Seperate out dirs and files into two lists
+					dirs  = []
+					files = []
 
-					# Don't add hidden files
-					if not entry['skip']:
-						if entry['type'] == 'file':
-							files.append(entry)
-						elif entry['type'] == 'dir':
-							dirs.append(entry)
+					# sfile = shared file (smb.base.SharedFile)
+					for sfile in directory_entries:
+						entry = self._sfile_load(sfile, path, func_name)
 
-				## Build a breadcrumbs trail ##
-				crumbs = []
-				parts  = path.split('/')
-				b4     = ''
+						# Don't add hidden files
+						if not entry['skip']:
+							if entry['type'] == 'file':
+								files.append(entry)
+							elif entry['type'] == 'dir':
+								dirs.append(entry)
 
-				## Build up a list of dicts, each dict representing a crumb
-				for crumb in parts:
-					if len(crumb) > 0:
-						crumbs.append({'name': crumb, 'xhr': url_for(func_name,action="xhr",path=b4+crumb), 'url': url_for(func_name,path=b4+crumb)})
-						b4 = b4 + crumb + '/'
+					## Build a breadcrumbs trail ##
+					crumbs = []
+					parts  = path.split('/')
+					b4     = ''
 
-				## are there any items in the list?
-				no_items = False
-				if len(files) == 0 and len(dirs) == 0:
-					no_items = True
+					## Build up a list of dicts, each dict representing a crumb
+					for crumb in parts:
+						if len(crumb) > 0:
+							crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+							b4 = b4 + crumb + '/'
 
-				## What layout mode does the user want?
-				layout = bargate.lib.userdata.get_layout()
+					## are there any items in the list?
+					no_items = False
+					if len(files) == 0 and len(dirs) == 0:
+						no_items = True
 
-				## Render the template
-				return render_template('directory-' + layout + '.html',
-					active=active,
-					dirs=dirs,
-					files=files,
-					shares=[],
-					crumbs=crumbs,
-					path=path,
-					url_home_xhr=url_for(func_name,action="xhr"),
-					url_home=url_for(func_name),
-					url_bookmark=url_for('bookmarks'),
-					url_search=url_for(func_name,path=path,action="search"),
-					browse_mode=True,
-					atroot = not parent_directory,
-					func_name = func_name,
-					root_display_name = display_name,
-					on_file_click=bargate.lib.userdata.get_on_file_click(),
-					no_items = no_items,
-				)
+					## What layout mode does the user want?
+					layout = bargate.lib.userdata.get_layout()
+
+					## Render the template
+					return render_template('directory-' + layout + '.html',
+						active=active,
+						dirs=dirs,
+						files=files,
+						shares=[],
+						crumbs=crumbs,
+						path=path,
+						url_home=url_for(func_name),
+						url_bookmark=url_for('bookmarks'),
+						url_search=url_for(func_name,path=path,action="search"),
+						browse_mode=True,
+						atroot = not parent_directory,
+						func_name = func_name,
+						root_display_name = display_name,
+						on_file_click=bargate.lib.userdata.get_on_file_click(),
+						no_items = no_items,
+					)
+				else:
+					return render_template('browse.html',path=path,browse_mode=True,url=url_for(func_name,path=path))
 
 			else:
 				abort(400)
@@ -708,22 +703,21 @@ class backend_pysmb:
 			if self.query.lower() in entry['name'].lower():
 				entry['parent_path'] = path
 				entry['parent_url'] = url_for(self.func_name,path=path)
-				entry['parent_xhr'] = url_for(self.func_name,path=path,action='xhr')
 				self.results.append(entry)
 
 			## Search subdirectories if we found one
 			if entry['type'] == 'dir':
 				if len(path) > 0:
-					path = path + "/" + entry['name']
+					sub_path = path + "/" + entry['name']
 				else:
-					path = entry['name']
+					sub_path = entry['name']
 
 				if len(path_without_share) > 0:
-					path_without_share = path_without_share + "/" + entry['name']
+					sub_path_without_share = path_without_share + "/" + entry['name']
 				else:
-					path_without_share = entry['name']
+					sub_path_without_share = entry['name']
 
-				self._rsearch(path, path_without_share)
+				self._rsearch(sub_path, sub_path_without_share)
 
 
 ################################################################################
@@ -769,7 +763,6 @@ class backend_pysmb:
 			entry['icon'] = 'fa fa-fw fa-folder'
 			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 			entry['url']  = url_for(func_name,path=entry['path'])
-			entry['xhr']  = url_for(func_name,action="xhr",path=entry['path'])
 
 		# Files
 		else:
