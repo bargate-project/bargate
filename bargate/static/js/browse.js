@@ -1,5 +1,6 @@
 var currentUrl = null;
-var currentFile = null;
+var currentEntry = null;
+var currentEntryDirUrl = null;
 
 function initDirectory(url)
 {
@@ -14,10 +15,9 @@ function loadDirectory(url,alterHistory)
 	$( "#browse" ).load( url + "?" + $.param({xhr: 1}), function( response, status, xhr )
 	{
 		if ( status == "error" ) {
-			showError("Could not open directory","An error occured whilst contacting the server. " + xhr.statusText);
+			showError("Could not open directory","An error occured whilst contacting the server. ");
 		}
 		else {
-			// store the old url in history, and set the new URL
 			if (alterHistory) {
 				history.pushState(url, "", url);
 			}
@@ -203,9 +203,9 @@ function doBrowse()
 	});
 
 	// Bind actions to buttons in the 'file show' modal
-	$("#e-rename-b").click(function () { showRename(currentFile); });
-	$("#e-copy-b").click(function () { showCopy(currentFile); });
-	$("#e-delete-b").click(function () { showDeleteFile(currentFile); });
+	$("#e-rename-b").click(function () { showRename(); });
+	$("#e-copy-b").click(function () { showCopy(); });
+	$("#e-delete-b").click(function () { showDeleteFile(); });
 
 	/* context (right click) menus */
 	(function ($, window)
@@ -299,7 +299,12 @@ function doBrowse()
 			$('#file-click-view').addClass('hidden');
 		}
 
-		currentFile = parent.data('filename');
+		if (parent.attr('data-parent')) {
+			selectEntry(parent.data('filename'),parent.data('parent'));
+		} else {
+			selectEntry(parent.data('filename'),currentUrl);
+		}
+
 		$('#file-click').modal('show');
 	});
 
@@ -351,13 +356,16 @@ function doBrowse()
 				window.open(parentRow.data('download'),'_blank');
 			}
 			else if ($action == 'copy') {
-				showCopy(parentRow.data('filename'));
+				selectEntry(parentRow.data('filename'),currentUrl);
+				showCopy();
 			}
 			else if ($action == 'rename') {
-				showRename(parentRow.data('filename'));
+				selectEntry(parentRow.data('filename'),currentUrl);
+				showRename();
 			}
 			else if ($action == 'delete') {
-				showDeleteFile(parentRow.data('filename'));
+				selectEntry(parentRow.data('filename'),currentUrl);
+				showDeleteFile();
 			}
 			else if ($action == 'properties') {
 				$('#file-details-loading').removeClass('hidden');
@@ -378,8 +386,6 @@ function doBrowse()
 					$('#file-details-loading').addClass('hidden');
 					$('#file-details-data').removeClass('hidden');
 				});
-
-				/*window.document.location = parentRow.data('props');*/
 			}
 
 			event.preventDefault();
@@ -423,18 +429,6 @@ function doBrowse()
 	$('#search-m').on('shown.bs.modal', function() {
 		$('#search-m input[type="text"]').focus();
 	});
-
-	/* meh...don't set focus back on buttons when modals are closed */
-	//$('#mkdir-m').on('shown.bs.modal', function(e)
-	//{
-	//	$('#mkdir-b').one('focus', function(e){$(this).blur();});
-	//});
-
-	//$('#upload-file').on('shown.bs.modal', function(e)
-	//{
-	//	$('#upload-button').one('focus', function(e){$(this).blur();});
-	//});
-
 
 	/* File uploads - drag files over shows a modal */
 	$('body').dragster({
@@ -618,35 +612,38 @@ function prepFileUpload() {
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
 }
 
-function showRename(name) {
-	currentFile = name;
-	$('#e-rename-i').val(name);
+function selectEntry(name,url) {
+	console.log("selectEntry(" + name + "," + url + ");");
+	currentEntry = name;
+	currentEntryDirUrl = url;
+}
+
+function showRename() {
+	$('#e-rename-i').val(currentEntry);
 	$('#e-rename-m').modal('show');
 	$('#e-rename-i').focus();
 }
 
-function showCopy(name) {
-	currentFile = name;
-	$('#e-copy-i').val("Copy of " + name);
+function showCopy() {
+	$('#e-copy-i').val("Copy of " + currentEntry);
 	$('#e-copy-m').modal('show');
 	$('#e-copy-i').focus();
 }
 
-function showDeleteFile(name) {
+function showDeleteFile() {
 	$('#e-delete-t').text("file");
 	$('#e-delete-w').addClass("hidden");
-	showDelete(name);
+	showDelete();
 }
 
-function showDeleteDirectory(name) {
+function showDeleteDirectory() {
 	$('#e-delete-t').text("directory");
 	$('#e-delete-w').removeClass("hidden");
-	showDelete(name);
+	showDelete();
 }
 
-function showDelete(name) {
-	currentFile = name;
-	$('#e-delete-n').text(name);
+function showDelete() {
+	$('#e-delete-n').text(currentEntry);
 	$('#e-delete-m').modal('show');
 }
 
@@ -664,7 +661,7 @@ function doRename()
 {
 	$('#e-rename-m').modal('hide');
 
-	$.post( currentUrl, { action: 'rename', _csrfp_token: userToken, old_name: currentFile, new_name: $('#e-rename-i').val()})
+	$.post( currentEntryDirUrl, { action: 'rename', _csrfp_token: userToken, old_name: currentEntry, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showError("Could not rename","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -674,7 +671,7 @@ function doRename()
 			}
 			else {
 				notifySuccess(data.msg);
-				loadDirectory(currentUrl);
+				loadDirectory(currentEntryDirUrl);
 			}
 	});
 }
@@ -683,7 +680,7 @@ function doCopy()
 {
 	$('#e-copy-m').modal('hide');
 
-	$.post( currentUrl, { action: 'copy', _csrfp_token: userToken, src: currentFile, dest: $('#e-copy-i').val()})
+	$.post( currentEntryDirUrl, { action: 'copy', _csrfp_token: userToken, src: currentEntry, dest: $('#e-copy-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showError("Could not copy","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -693,7 +690,7 @@ function doCopy()
 			}
 			else {
 				notifySuccess(data.msg);
-				loadDirectory(currentUrl);
+				loadDirectory(currentEntryDirUrl);
 			}
 	});
 }
@@ -702,7 +699,7 @@ function doMkdir()
 {
 	$('#mkdir-m').modal('hide');
 
-	$.post( currentUrl, { action: 'mkdir', _csrfp_token: userToken, name: $('#mkdir-i').val()})
+	$.post( currentEntryDirUrl, { action: 'mkdir', _csrfp_token: userToken, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showError("Could not create directory","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -712,7 +709,7 @@ function doMkdir()
 			}
 			else {
 				notifySuccess(data.msg);
-				loadDirectory(currentUrl);
+				loadDirectory(currentEntryDirUrl);
 			}
 	});
 }
@@ -721,7 +718,7 @@ function doDelete()
 {
 	$('#e-delete-m').modal('hide');
 
-	$.post( currentUrl, { action: 'delete', _csrfp_token: userToken, name: currentFile})
+	$.post( currentEntryDirUrl, { action: 'delete', _csrfp_token: userToken, name: currentEntry})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showError("Could not delete","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -731,7 +728,7 @@ function doDelete()
 			}
 			else {
 				notifySuccess(data.msg);
-				loadDirectory(currentUrl);
+				loadDirectory(currentEntryDirUrl);
 			}
 	});
 }
