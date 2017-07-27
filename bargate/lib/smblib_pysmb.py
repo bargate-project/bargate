@@ -308,9 +308,22 @@ class backend_pysmb:
 				data['atime']                 = bargate.lib.core.ut_to_string(sfile.last_access_time)
 				data['mtime']                 = bargate.lib.core.ut_to_string(sfile.last_write_time)
 				(data['ftype'],data['mtype']) = bargate.lib.mime.filename_to_mimetype(data['filename'])
-				data['owner']                 = "Not yet implemented"
-				data['group']                 = "Not yet implemented"
+				data['owner']                 = "N/A"
+				data['group']                 = "N/A"
 				data['error']                 = 0
+
+				try:
+					secDesc = conn.getSecurity(share_name,path_without_share)
+
+					if app.config['WBINFO_LOOKUP']:
+						data['owner'] = bargate.lib.core.wb_sid_to_name(str(secDesc.owner))
+						data['group'] = bargate.lib.core.wb_sid_to_name(str(secDesc.group))
+					else:
+						data['owner'] = str(secDesc.owner)
+						data['group'] = str(secDesc.group)
+				except Exception as ex:
+					pass
+
 
 				return jsonify(data)
 
