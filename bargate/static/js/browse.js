@@ -613,7 +613,6 @@ function prepFileUpload() {
 }
 
 function selectEntry(name,url) {
-	console.log("selectEntry(" + name + "," + url + ");");
 	currentEntry = name;
 	currentEntryDirUrl = url;
 }
