@@ -14,7 +14,7 @@
 	<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
 {%- endmacro -%}
 {%- macro sortmenu() -%}
-<a class="btn navbar-btn btn-default" rel="tooltip" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-title="Sort by" rel="tooltip">
+<a class="btn navbar-btn btn-default browse-b disabled" disabled="disabled" rel="tooltip" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-title="Sort by" rel="tooltip">
 	<i class="fa fa-fw fa-lg fa-sort"></i>
 </a>
 <ul class="dropdown-menu dropdown-menu-auto">
@@ -116,20 +116,20 @@
 					
 					{% if browse_mode %}
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
-							<a id="create-directory-button" data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default" rel="tooltip" data-toggle="tooltip" title="Create a directory">
+							<a id="create-directory-button" data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default browse-b disabled" rel="tooltip" data-toggle="tooltip" title="Create a directory" disabled="disabled">
 								<i class="fa fa-fw fa-lg fa-folder-open"></i>
 							</a>
 						</div>
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
-							<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn" rel="tooltip" title="Upload a file">
+							<a id="upload-button" data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default btn browse-b disabled" rel="tooltip" title="Upload a file" disabled="disabled">
 								<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
 							</a>
 						</div>
 
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
-							<a id="layout-button" class="btn navbar-btn btn-default btn" rel="tooltip" title="Switch layout">
+							<a id="layout-button" class="btn navbar-btn btn-default btn browse-b disabled" rel="tooltip" title="Switch layout" disabled="disabled">
 								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
 							</a>
 						</div>
@@ -140,7 +140,7 @@
 
 						{% if config['SEARCH_ENABLED'] %}
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
-							<a data-toggle="modal" href="#search-m" class="btn navbar-btn btn-default btn" rel="tooltip" title="Search">
+							<a data-toggle="modal" href="#search-m" class="btn navbar-btn btn-default btn browse-b disabled" disabled="disabled" rel="tooltip" title="Search">
 								<i class="fa fa-fw fa-lg fa-search"></i>
 							</a>
 						</div>
@@ -159,31 +159,30 @@
 		</div>
 		
 		{% if browse_mode %}
-		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">	
+		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">
 			<div class="container text-center">
 				<div class="text-center inline-block dropup">
 					{{ sortmenu() }}
 				</div>
 				<div class="text-center inline-block">
-					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default">
+					<a data-toggle="modal" href="#upload-file" class="btn navbar-btn btn-default browse-b disabled" disabled="disabled">
 						<i class="fa fa-fw fa-upload"></i>
 					</a>
 				</div>
 				<div class="text-center inline-block">
-					<a data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default">
+					<a data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default browse-b disabled" disabled="disabled">
 						<i class="fa fa-fw fa-folder-open"></i>
 					</a>
 				</div>
 				{%- if config['REDIS_ENABLED'] %}
 				<div class="text-center inline-block">
-					<a href="#" class="btn navbar-btn btn-default" {% if atroot %}disabled="disabled"{%else%} data-toggle="modal" data-target="#add-bookmark" {%endif%}>
+					<a href="#bmark-m" class="btn navbar-btn btn-default bmark-b disabled" disabled="disabled" data-toggle="modal">
 						<i class="fa fa-fw fa-bookmark"></i>
 					</a>
 				</div>
 				{%- endif %}
 			</div>
 		</div>
-		{%endif%}
-
+		{%- endif %}
 	</body>
 </html>

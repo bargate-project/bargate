@@ -4,19 +4,17 @@
 <script type="text/javascript">
 $(document).ready(function($)
 {
-	$(".click-rename").click(function()
-	{
+	$(".click-rename").click(function() {
 		var parent = $(this).closest('tr');
 		$('#bookmark-rename-id').val(parent.data('id'));
 		$('#bookmark-rename-name').val(parent.data('name'));
-		$('#rename').modal();		
+		$('#rename').modal();
 	});	
-	$(".click-delete").click(function()
-	{
+	$(".click-delete").click(function() {
 		var parent = $(this).closest('tr');
 		$('#bookmark-delete-id').val(parent.data('id'));
 		$('#bookmark-delete-name').text(parent.data('name'));
-		$('#delete').modal();		
+		$('#delete').modal();
 	});	
 });
 </script>
@@ -105,6 +103,4 @@ $(document).ready(function($)
 		</tr>
 	</tbody>
 </table>
-		
-
 {% endblock %}

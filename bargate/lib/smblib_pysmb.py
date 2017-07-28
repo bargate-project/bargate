@@ -178,17 +178,16 @@ class backend_pysmb:
 					if len(shares) == 0:
 						no_items = True
 
-					## What layout mode does the user want?
-					layout = bargate.lib.userdata.get_layout()
-
 					## Render the template
-					return render_template('directory-' + layout + '.html',
+					return render_template('directory-grid.html',
 						active=active,
 						dirs=[], files=[], shares=shares, crumbs=[], path=path,
 						url_home=url_for(func_name),
 						url_bookmark=url_for('bookmarks'),
 						url_search=url_for(func_name,path=path,action="search"),
 						browse_mode=True,
+						browse_butts_enabled=False,
+						bmark_enabled=False,
 						atroot=True,
 						func_name = func_name,
 						root_display_name = display_name,
@@ -362,6 +361,9 @@ class backend_pysmb:
 						path=path,
 						root_display_name = display_name,
 						search_mode=True,
+						browse_mode=False,
+						browse_butts_enabled=False,
+						bmark_enabled=False,
 						url_home=url_for(func_name),
 						crumbs=crumbs,
 						on_file_click=bargate.lib.userdata.get_on_file_click())
@@ -421,6 +423,8 @@ class backend_pysmb:
 						url_bookmark=url_for('bookmarks'),
 						url_search=url_for(func_name,path=path,action="search"),
 						browse_mode=True,
+						browse_butts_enabled=True,
+						bmark_enabled=True,
 						atroot = not parent_directory,
 						func_name = func_name,
 						root_display_name = display_name,

@@ -3,9 +3,8 @@
 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">Bookmarks <b class="caret"></b></a>
 	<ul class="dropdown-menu">
 		<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-tags fa-fw"></i> Bookmark Manager</a></li>
-
-		<li {% if not browse_mode or (func_name|default("none") != 'custom' and atroot) %}class="disabled"{%endif%}>
-			<a href="#" {% if browse_mode and (not atroot or func_name == 'custom') %} data-toggle="modal" data-target="#add-bookmark"{%endif%}><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder</a>
+		<li id="bmark-l" class="disabled">
+			<a href="#bmark-m" data-toggle="modal"><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder</a>
 		</li>
 		{% if user_bookmarks %}
 		<li class="divider"></li>

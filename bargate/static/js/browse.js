@@ -1,6 +1,46 @@
 var currentUrl = null;
 var currentEntry = null;
 var currentEntryDirUrl = null;
+var browseButtsEnabled = false;
+var bookmarkEnabled = false;
+
+function enableBrowseButts()
+{
+	if (!browseButtsEnabled === true) {
+		browseButtsEnabled = true;
+		$('.browse-b').attr("disabled", false);
+		$('.browse-b').removeClass("disabled");
+	}
+}
+
+function disableBrowseButts()
+{
+	if (browseButtsEnabled === true) {
+		browseButtsEnabled = false;
+		$('.browse-b').attr("disabled", true);
+		$('.browse-b').addClass("disabled");
+	}
+}
+
+function enableBookmark()
+{
+	if (!bookmarkEnabled) {
+		bookmarkEnabled = true;
+		$('#bmark-l').removeClass('disabled');
+		$('.bmark-b').attr("disabled", false);
+		$('.bmark-b').removeClass("disabled");
+	}
+}
+
+function disableBookmark()
+{
+	if (bookmarkEnabled) {
+		bookmarkEnabled = false;
+		$('#bmark-l').addClass('disabled');
+		$('.bmark-b').attr("disabled", true);
+		$('.bmark-b').addClass("disabled");
+	}
+}
 
 function initDirectory(url)
 {
@@ -98,45 +138,6 @@ function switchLayout()
 
 	});
 }
-
-$( document ).ready(function() {
-	$("#layout-button").click(function () {
-		switchLayout();
-	});
-
-	$("#e-rename-f").submit(function (e) {
-		e.preventDefault();
-		doRename();
-	});
-
-	$("#e-copy-f").submit(function (e) {
-		e.preventDefault();
-		doCopy();
-	});
-
-	$("#e-delete-f").submit(function (e) {
-		e.preventDefault();
-		doDelete();
-	});
-
-	$("#mkdir-f").submit(function (e) {
-		e.preventDefault();
-		doMkdir();
-	});
-
-	$("#search-f").submit(function (e) {
-		e.preventDefault();
-		doSearch();
-	});
-
-	/* handle back/forward buttons */
-	window.addEventListener('popstate', function(e) {
-		var requestedUrl = e.state;
-		if (requestedUrl != null) {
-			loadDirectory(requestedUrl,false);
-		}
-	});
-});
 
 function bytesToString(bytes,decimals)
 {
@@ -731,3 +732,47 @@ function doDelete()
 			}
 	});
 }
+
+$( document ).ready(function() {
+	$("#layout-button").click(function () {
+		switchLayout();
+	});
+
+	$("#e-rename-f").submit(function (e) {
+		e.preventDefault();
+		doRename();
+	});
+
+	$("#e-copy-f").submit(function (e) {
+		e.preventDefault();
+		doCopy();
+	});
+
+	$("#e-delete-f").submit(function (e) {
+		e.preventDefault();
+		doDelete();
+	});
+
+	$("#mkdir-f").submit(function (e) {
+		e.preventDefault();
+		doMkdir();
+	});
+
+	$("#search-f").submit(function (e) {
+		e.preventDefault();
+		doSearch();
+	});
+
+	$("#bmark-f").submit(function (e) {
+		e.preventDefault();
+		doBookmark();
+	});
+
+	/* handle back/forward buttons */
+	window.addEventListener('popstate', function(e) {
+		var requestedUrl = e.state;
+		if (requestedUrl != null) {
+			loadDirectory(requestedUrl,false);
+		}
+	});
+});
