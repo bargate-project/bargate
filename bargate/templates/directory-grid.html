@@ -42,13 +42,4 @@
 	{%- endfor -%}
 </div>
 
-{%- if no_items -%}
-<p>
-<div class="alert alert-warning">There are no items in this directory</div>
-</p>
-{%- endif -%}
-
-<script>
-{% if bmark_enabled %}enableBookmark();{%else%}disableBookmark();{%endif%}
-{% if browse_butts_enabled%}enableBrowseButts();{%else%}disableBrowseButts();{%endif%}
-</script>
+{%- include 'directory.html' -%}
