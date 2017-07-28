@@ -20,13 +20,7 @@ import bargate.lib.userdata
 import bargate.lib.errors
 from bargate import app
 from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template, Response
-import mimetypes
-import os
-from random import randint
-import time
-import json
 import werkzeug
-import uuid
 
 ################################################################################
 #### Account Settings View
@@ -190,7 +184,6 @@ var userNavbar = "{3}";
 
 		return Response(js, mimetype='application/javascript')
 
-
 ################################################################################
 #### BOOKMARKS
 
@@ -212,59 +205,7 @@ def bookmarks():
 	elif request.method == 'POST':
 		action = request.form['action']
 		
-		if action == 'add':
-
-			try:
-				bookmark_name     = request.form['bookmark_name']
-				bookmark_function = bargate.lib.core.check_name(request.form['bookmark_function'])
-				bookmark_path     = bargate.lib.core.check_path(request.form['bookmark_path'])
-				
-			except KeyError as e:
-				return bargate.lib.errors.stderr('Invalid bookmark','You missed something on the previous page!')
-			except ValueError as e:
-				return bargate.lib.errors.stderr('Invalid bookmark','Invalid bookmark name or bookmark value: ' + str(e))
-			
-			## Ensure that the function passed is a valid function	
-			try:
-				test_name = url_for(str(bookmark_function),path=bookmark_path)
-			except werkzeug.routing.BuildError as ex:
-				return bargate.lib.errors.stderr('Invalid bookmark','Invalid function bookmark path: ' + str(ex))
-
-			## Generate a unique identifier for this bookmark
-			bookmark_id = uuid.uuid4().hex
-			
-			## Update the user_bookmark_prefix with the ID
-			user_bookmark_prefix = user_bookmark_prefix + bookmark_id
-
-			## Mark this as a version 2 bookmark (v1.5 or later)
-			g.redis.hset(user_bookmark_prefix,'version','2')
-
-			## store the function name in use
-			g.redis.hset(user_bookmark_prefix,'function',bookmark_function)
-
-			## if we're on a custom server then we need to store the URL 
-			## to that server otherwise the bookmark is useless.
-			if bookmark_function == 'custom':
-				if 'custom_uri' in session:
-					g.redis.hset(user_bookmark_prefix,'custom_uri',session['custom_uri'])
-				else:
-					## the function is custom, but there is no custom_uri
-					## so we should redirect the user to go choose one
-					return redirect(url_for('custom_server'))
-
-			## store the path the user is at within the share/function
-			g.redis.hset(user_bookmark_prefix,'path',bookmark_path)
-
-			## store the name/title of the bookmark
-			g.redis.hset(user_bookmark_prefix,'name',bookmark_name)
-
-			## add the new bookmark name to the list of bookmarks for the user
-			g.redis.sadd(user_bookmarks_key,bookmark_id)
-
-			flash('Bookmark added successfully','alert-success')
-			return redirect(url_for(bookmark_function,path=bookmark_path))
-			
-		elif action == 'delete':
+		if action == 'delete':
 			bookmark_id     = request.form['bookmark_id']
 			
 			if g.redis.exists(user_bookmarks_key):
@@ -294,7 +235,6 @@ def bookmarks():
 
 			flash('Bookmark not found!','alert-danger')
 			return redirect(url_for('bookmarks'))
-
 
 ################################################################################
 

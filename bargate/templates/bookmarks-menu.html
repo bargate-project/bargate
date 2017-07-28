@@ -1,7 +1,7 @@
 {%- if config['REDIS_ENABLED'] %}
 <li class="dropdown{%if active == 'bookmarks'%} active{%endif%}">
 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">Bookmarks <b class="caret"></b></a>
-	<ul class="dropdown-menu">
+	<ul class="dropdown-menu" id="bmarks"	>
 		<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-tags fa-fw"></i> Bookmark Manager</a></li>
 		<li id="bmark-l" class="disabled">
 			<a href="#bmark-m" data-toggle="modal"><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder</a>

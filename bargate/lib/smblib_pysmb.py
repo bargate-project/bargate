@@ -30,6 +30,7 @@ from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
 from PIL import Image
 
 import time
+import uuid
 
 class backend_pysmb:
 	def smb_error(self,exception_object,uri="Unknown",redirect_to=None):
@@ -133,15 +134,10 @@ class backend_pysmb:
 			else:
 				path_without_share = path
 
-		## Work out if there is a parent directory
-		## and work out the entry name (filename or directory name being browsed)
+		## Work out the 'entry name'
 		if len(path) > 0:
-			parent_directory = True
-			(parent_directory_path,seperator,entry_name) = path.rpartition('/')
+			(a,b,entry_name) = path.rpartition('/')
 		else:
-			# we're at the root
-			parent_directory = False
-			parent_directory_path = ""
 			entry_name = ""
 
 		## Check the path is not bad/dangerous
@@ -188,7 +184,6 @@ class backend_pysmb:
 						browse_mode=True,
 						browse_butts_enabled=False,
 						bmark_enabled=False,
-						atroot=True,
 						func_name = func_name,
 						root_display_name = display_name,
 						on_file_click=bargate.lib.userdata.get_on_file_click(),
@@ -411,6 +406,12 @@ class backend_pysmb:
 					## What layout mode does the user want?
 					layout = bargate.lib.userdata.get_layout()
 
+					## Don't allow bookmarks at the root of a function
+					## - that is superfluous
+					bmark_enabled=False
+					if len(path) > 0:
+						bmark_enabled = True
+
 					## Render the template
 					return render_template('directory-' + layout + '.html',
 						active=active,
@@ -424,8 +425,7 @@ class backend_pysmb:
 						url_search=url_for(func_name,path=path,action="search"),
 						browse_mode=True,
 						browse_butts_enabled=True,
-						bmark_enabled=True,
-						atroot = not parent_directory,
+						bmark_enabled=bmark_enabled,
 						func_name = func_name,
 						root_display_name = display_name,
 						on_file_click=bargate.lib.userdata.get_on_file_click(),
@@ -660,6 +660,45 @@ class backend_pysmb:
 						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the file'})
 
 					return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
+
+			###############################
+			# POST: BOOKMARK
+			###############################
+			elif action == 'bookmark':
+
+				try:
+					bookmark_name     = request.form['name']
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+
+				try:
+					## Generate a unique identifier for this bookmark
+					bookmark_id = uuid.uuid4().hex
+
+					## Turn this into a redis key for the new bookmark
+					redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
+
+					## Store all the details of this bookmark in REDIS
+					g.redis.hset(redis_key,'version','2')
+					g.redis.hset(redis_key,'function', func_name)
+					g.redis.hset(redis_key,'path',path)
+					g.redis.hset(redis_key,'name',bookmark_name)
+
+					## if we're on a custom server then we need to store the URL 
+					## to that server otherwise the bookmark is useless.
+					if func_name == 'custom':
+						if 'custom_uri' in session:
+							g.redis.hset(redis_key,'custom_uri',session['custom_uri'])
+						else:
+							return jsonify({'code': 1, 'msg': 'Invalid request'})
+
+					## add the new bookmark name to the list of bookmarks for the user
+					g.redis.sadd('user:' + session['username'] + ':bookmarks',bookmark_id)
+
+					return jsonify({'code': 0, 'msg': 'Added bookmark ' + bookmark_name, 'url': url_for('bookmark',bookmark_id=bookmark_id)})
+
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Could not save bookmark: ' + str(type(ex)) + " " + str(ex)})
 
 			else:
 				return jsonify({'code': 1, 'msg': "An invalid action was specified"})

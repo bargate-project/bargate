@@ -442,11 +442,6 @@ function doBrowse()
 			$('#upload-drag-over').modal('hide');
 		}
 	});
-
-	/* Searching - mark as 'searching' for long page loads */
-	$("#search-form" ).submit(function( event ) {
-		$("#search-form-submit").button('loading');
-	});
 }
 
 function doGrid() {
@@ -710,6 +705,26 @@ function doMkdir()
 			else {
 				notifySuccess(data.msg);
 				loadDirectory(currentEntryDirUrl);
+			}
+	});
+}
+
+function doBookmark()
+{
+	$('#bmark-m').modal('hide');
+	bmarkName = $('#bmark-i').val();
+
+	$.post( currentUrl, { action: 'bookmark', _csrfp_token: userToken, name: bmarkName})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			showError("Could not create bookmark","An error occured whilst contacting the server.");
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code != 0) {
+				showError("Could not create bookmark",data.msg);
+			}
+			else {
+				notifySuccess(data.msg);
+				$('#bmarks').append('<li><a href="' + data.url + '"><i class="fa fa-arrow-right fa-fw"></i>' + bmarkName + '</a></li>');
 			}
 	});
 }
