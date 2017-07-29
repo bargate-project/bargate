@@ -127,12 +127,13 @@
 							</a>
 						</div>
 
-
+						{% if config['REDIS_ENABLED'] %}
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a id="layout-button" class="btn navbar-btn btn-default btn browse-b disabled" rel="tooltip" title="Switch layout" disabled="disabled">
 								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
 							</a>
 						</div>
+						{% endif %}
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							{{ sortmenu() }}

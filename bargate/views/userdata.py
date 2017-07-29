@@ -157,6 +157,9 @@ def settings_set_layout():
 	calls it when the 'layout' button is clicked, and then the browser makes a
 	fresh request to the server for the current directory."""
 
+	if not app.config['REDIS_ENABLED']:
+		abort(404)
+
 	if 'layout' in request.form:
 		layout = request.form['layout']
 		

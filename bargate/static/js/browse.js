@@ -3,6 +3,7 @@ var currentEntry = null;
 var currentEntryDirUrl = null;
 var browseButtsEnabled = false;
 var bookmarkEnabled = false;
+var currentSortBy = 'name';
 
 function enableBrowseButts()
 {
@@ -64,10 +65,10 @@ function loadDirectory(url,alterHistory)
 			currentUrl = url;
 
 			if (userLayout == "list") {
-				doTable();
+				doListView();
 			}
 			else {
-				doGrid();
+				doGridView();
 			}
 
 			doBrowse();
@@ -85,7 +86,7 @@ function doSearch()
 			showError("Could not search","An error occured whilst contacting the server. " + xhr.statusText);
 		}
 		else {
-			doTable();
+			doListView();
 
 			$('#results').DataTable( {
 				"paging": false,
@@ -99,7 +100,6 @@ function doSearch()
 			});
 
 			doBrowse();
-			//prepFileUpload();
 		}
 	});
 }
@@ -147,33 +147,42 @@ function bytesToString(bytes,decimals)
 	return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-function doTable()
+function doListView()
 {
 	/* sort entries in a directory */
 	$('.dir-sortby-name').on( 'click', function()
 	{
+		currentSortBy = 'name';
 		$('#dir').DataTable().order([3,'asc']).draw();
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-name span').removeClass('invisible');
 	});
 	$('.dir-sortby-mtime').on( 'click', function()
 	{
+		currentSortBy = 'mtime';
 		$('#dir').DataTable().order([4,'asc']).draw();
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-mtime span').removeClass('invisible');
 	});
 	$('.dir-sortby-type').on( 'click', function()
 	{
+		currentSortBy = 'type';
 		$('#dir').DataTable().order([5,'asc']).draw();
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-type span').removeClass('invisible');
 	});
 	$('.dir-sortby-size').on( 'click', function()
 	{
+		currentSortBy = 'size';
 		$('#dir').DataTable().order([6,'asc']).draw();
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-size span').removeClass('invisible');
 	});
+
+	if (currentSortBy == 'name') { itemOrder = [3,"asc"]; }
+	else if (currentSortBy == 'mtime') { itemOrder = [4,"asc"]; }
+	else if (currentSortBy == 'type') { itemOrder = [5,"asc"]; }
+	else if (currentSortBy == 'size') { itemOrder = [6,"asc"]; }
 
 	$('#dir').DataTable( {
 		"paging": false,
@@ -188,7 +197,7 @@ function doTable()
 			{ "visible": false},
 			{ "visible": false},
 		],
-		"order": [[3,"asc"]],
+		"order": [itemOrder],
 		"dom": 'lrtip'
 	});
 }
@@ -444,7 +453,7 @@ function doBrowse()
 	});
 }
 
-function doGrid() {
+function doGridView() {
 	var $container = $('#files').isotope({
 		getSortData:
 		{
@@ -462,26 +471,30 @@ function doGrid() {
 			mtime: false,
 			size: false
 		},
-		sortBy: 'name',
+		sortBy: currentSortBy,
 	});
 
 	/* sort entries in a directory */
 	$('.dir-sortby-name').on( 'click', function() {
+		currentSortBy = 'name';
 		$container.isotope({ sortBy: 'name' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-name span').removeClass('invisible');
 	});
 	$('.dir-sortby-mtime').on( 'click', function() {
+		currentSortBy = 'mtime';
 		$container.isotope({ sortBy: 'mtime' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-mtime span').removeClass('invisible');
 	});
 	$('.dir-sortby-type').on( 'click', function() {
+		currentSortBy = 'type';
 		$container.isotope({ sortBy: 'type' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-type span').removeClass('invisible');
 	});
 	$('.dir-sortby-size').on( 'click', function() {
+		currentSortBy = 'size';
 		$container.isotope({ sortBy: 'size' });
 		$('.sortby-check').addClass('invisible');
 		$('.dir-sortby-size span').removeClass('invisible');
