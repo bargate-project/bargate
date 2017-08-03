@@ -817,9 +817,9 @@ function setTheme(themeName) {
 			showErr("Could not change theme","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
-			$("body").fadeOut(400, function() {
-				$("#theme-l").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
-				$("body").fadeIn();
+			$("body").fadeOut(200, function() {
+				$("#theme-l2").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
+				$("body").fadeIn(200);
 			});
 
 			$user.theme = themeName;
