@@ -817,7 +817,11 @@ function setTheme(themeName) {
 			showErr("Could not change theme","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
-			$("#theme-l2").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
+			$("body").fadeOut(400, function() {
+				$("#theme-l").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
+				$("body").fadeIn();
+			});
+
 			$user.theme = themeName;
 		});
 }
