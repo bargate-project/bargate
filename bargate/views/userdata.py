@@ -17,160 +17,51 @@
 
 import bargate
 import bargate.lib.userdata
+from bargate.lib.userdata import themes
 import bargate.lib.errors
 from bargate import app
-from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template, Response
+from flask import Flask, request, session, redirect, url_for, flash, g, abort
+from flask import render_template, Response
 import werkzeug
 
-################################################################################
-#### Account Settings View
-
-@app.route('/settings', methods=['GET','POST'])
+@app.route('/settings', methods=['POST'])
 @app.login_required
 @app.allow_disable
 def settings():
-	## Settings need redis storage, if redis is disabled we can't do settings :(
+	## Settings need redis storage, if redis is disabled we can't do settings
 	if not app.config['REDIS_ENABLED']:
 		abort(404)
 
-	themes = []
-	themes.append({'name':'Lumen','value':'lumen'})
-	themes.append({'name':'Cerulean','value':'cerulean'})
-	themes.append({'name':'Cosmo','value':'cosmo'})
-	themes.append({'name':'Cyborg','value':'cyborg'})
-	themes.append({'name':'Journal','value':'journal'})
-	themes.append({'name':'Flatly','value':'flatly'})
-	themes.append({'name':'Sandstone','value':'sandstone'})
-	themes.append({'name':'Paper','value':'paper'})
-	themes.append({'name':'Readable','value':'readable'})
-	themes.append({'name':'Simplex','value':'simplex'})
-	themes.append({'name':'Spacelab','value':'spacelab'})
-	themes.append({'name':'United','value':'united'})
-	themes.append({'name':'Darkly','value':'darkly'})
-	themes.append({'name':'Slate','value':'slate'})
-	themes.append({'name':'Yeti','value':'yeti'})
+	key   = request.form['key']
+	value = request.form['value']
 
+	if key == 'layout':
+		if value not in ['grid', 'list']:
+			value = app.config['LAYOUT_DEFAULT']
+		bargate.lib.userdata.save('layout',value)
 
-	if request.method == 'GET':
-	
-		if bargate.lib.userdata.get_show_hidden_files():
-			hidden_files = 'show'
-		else:
-			hidden_files = 'hide'
-			
-		if bargate.lib.userdata.get_overwrite_on_upload():
-			overwrite_on_upload = 'yes'
-		else:
-			overwrite_on_upload = 'no'
-	
-		return render_template('settings.html', 
-			active='user',
-			themes=themes,
-			hidden_files=hidden_files,
-			overwrite_on_upload = overwrite_on_upload,
-			on_file_click = bargate.lib.userdata.get_on_file_click(),
-		)
+	elif key == 'click':
+		if value not in ['ask', 'default', 'download']:
+			value = 'ask'
+		bargate.lib.userdata.save('on_file_click',value)
 
-	elif request.method == 'POST':
-	
-		## Set theme
-		new_theme = request.form['theme']
-		
-		## check theme is valid
-		theme_set = False
-		for theme in themes:
-			if new_theme == theme['value']:
-				bargate.lib.userdata.save('theme',new_theme)
-				theme_set = True
-				
-		if not theme_set:
-			flash('Invalid theme choice','alert-danger')
-			return redirect(url_for('settings'))
-			
-		## navbar inverse/alt
-		if 'navbar_alt' in request.form:
-			navbar_alt = request.form['navbar_alt']
-			if navbar_alt == 'inverse':
-				bargate.lib.userdata.save('navbar_alt','inverse')
-			else:
-				bargate.lib.userdata.save('navbar_alt','default')
-		else:
-			bargate.lib.userdata.save('navbar_alt','default')
-					
-		## Set hidden files
-		if 'hidden_files' in request.form:
-			hidden_files = request.form['hidden_files']
-			if hidden_files == 'show':
-				bargate.lib.userdata.save('hidden_files','show')
-			else:
-				bargate.lib.userdata.save('hidden_files','hide')
+	elif key == 'hidden':
+		if value == 'true':
+			bargate.lib.userdata.save('hidden_files','show')
 		else:
 			bargate.lib.userdata.save('hidden_files','hide')
-			
-		## Upload overwrite
-		if 'overwrite_on_upload' in request.form:
-			overwrite_on_upload = request.form['overwrite_on_upload']
-			
-			if overwrite_on_upload == 'yes':
-				bargate.lib.userdata.save('upload_overwrite','yes')
-			else:
-				bargate.lib.userdata.save('upload_overwrite','no')
+
+	elif key == 'overwrite':
+		if value == 'true':
+			bargate.lib.userdata.save('upload_overwrite','yes')
 		else:
 			bargate.lib.userdata.save('upload_overwrite','no')
-			
-		## On file click
-		if 'on_file_click' in request.form:
-			on_file_click = request.form['on_file_click']
-			
-			if on_file_click == 'download':
-				bargate.lib.userdata.save('on_file_click','download')
-			elif on_file_click == 'default':
-				bargate.lib.userdata.save('on_file_click','default')
-			else:
-				bargate.lib.userdata.save('on_file_click','ask')
-		else:
-			bargate.lib.userdata.save('on_file_click','ask')
 
-		## Layout
-		if 'layout' in request.form:
-			layout = request.form['layout']
-			
-			if layout == 'grid':
-				bargate.lib.userdata.save('layout','grid')
-			elif layout == 'list':
-				bargate.lib.userdata.save('layout','list')
-			else:
-				bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
-		else:
-			bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
-						
-		flash('Settings saved','alert-success')
-		return redirect(url_for('settings'))
-
-################################################################################
-
-@app.route('/settings/layout',methods=['POST'])
-@app.login_required
-@app.allow_disable
-def settings_set_layout():
-	"""This is called by XHR to change the layout mode 'on the fly'. The browser
-	calls it when the 'layout' button is clicked, and then the browser makes a
-	fresh request to the server for the current directory."""
-
-	if not app.config['REDIS_ENABLED']:
-		abort(404)
-
-	if 'layout' in request.form:
-		layout = request.form['layout']
-		
-		if layout == 'grid':
-			bargate.lib.userdata.save('layout','grid')
-		elif layout == 'list':
-			bargate.lib.userdata.save('layout','list')
-		else:
-			bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
-	else:
-		bargate.lib.userdata.save('layout',app.config['LAYOUT_DEFAULT'])
+	elif key == 'theme':
+		for theme in themes:
+			if theme['value'] == value:
+				bargate.lib.userdata.save('theme',value)
+				# TODO return navbar to browser
 
 	return "", 200
 
@@ -179,13 +70,34 @@ def settings_set_layout():
 @app.route('/settings.js')
 @app.login_required
 def settings_js():
-		js = """var userLayout = "{0}";
-var userToken = "{1}";
-var userTheme = "{2}";
-var userNavbar = "{3}";
-""".format(bargate.lib.userdata.get_layout(),app.csrfp_token(),bargate.lib.userdata.get_theme(),bargate.lib.userdata.get_navbar())
 
-		return Response(js, mimetype='application/javascript')
+	if bargate.lib.userdata.get_show_hidden_files():
+		show_hidden = 'true'
+	else:
+		show_hidden = 'false'
+
+	if bargate.lib.userdata.get_overwrite_on_upload():
+		overwrite = 'true'
+	else:
+		overwrite = 'false'
+
+	js = """var $user = {{
+	layout: "{0}",
+	token: "{1}",
+	theme: "{2}",
+	navbar: "{3}",
+	hidden: {4},
+	overwrite: {5},
+	onclick: "{6}"}};
+""".format(bargate.lib.userdata.get_layout(),
+		app.csrfp_token(),
+		bargate.lib.userdata.get_theme(),
+		bargate.lib.userdata.get_navbar(),
+		show_hidden,
+		overwrite,
+		bargate.lib.userdata.get_on_file_click())
+
+	return Response(js, mimetype='application/javascript')
 
 ################################################################################
 #### BOOKMARKS
@@ -203,7 +115,8 @@ def bookmarks():
 
 	if request.method == 'GET':
 		bookmarks = bargate.lib.userdata.get_bookmarks()
-		return render_template('bookmarks.html', active='user',pwd='',bookmarks = bookmarks)
+		return render_template('bookmarks.html', active='user',
+			pwd='', bookmarks = bookmarks)
 		
 	elif request.method == 'POST':
 		action = request.form['action']
@@ -232,7 +145,9 @@ def bookmarks():
 			bookmark_name   = request.form['bookmark_name']
 			
 			if g.redis.exists(user_bookmark_prefix + bookmark_id):
-				g.redis.hset(user_bookmark_prefix + bookmark_id,"name",bookmark_name)
+				g.redis.hset(user_bookmark_prefix + bookmark_id,
+					"name",
+					bookmark_name)
 				flash('Bookmark renamed successfully','alert-success')
 				return redirect(url_for('bookmarks'))
 
@@ -256,8 +171,8 @@ def bookmark(bookmark_id):
 	## Prepare the redis key name
 	redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
 
-	## bookmarks are a hash with the keys 'version', 'function', 'path' and 'custom_uri' (optional)
-	# only proceed if we can find the bookmark in redis
+	## bookmarks are a hash with the keys 'version', 'function', 'path' and 
+	## 'custom_uri' (optional) only proceed if we can find the bookmark in redis
 	if g.redis.exists(redis_key):
 		try:
 			# redis returns 'None' for hget if the hash key doesn't exist
@@ -266,7 +181,8 @@ def bookmark(bookmark_id):
 			bookmark_path       = g.redis.hget(redis_key,'path')
 			bookmark_custom_uri = g.redis.hget(redis_key,'custom_uri')
 		except Exception as ex:
-			app.logger.error('Failed to load v2 bookmark ' + bookmark_id + ' user: ' + session['username'] + ' error: ' + str(ex))
+			app.logger.error('Failed to load v2 bookmark ' + bookmark_id + 
+				' user: ' + session['username'] + ' error: ' + str(ex))
 			abort(404)
 
 		if bookmark_version is None:
@@ -319,4 +235,7 @@ def online(last=5):
 		last_str = str(last) + " minutes"
 
 	usernames = bargate.lib.userdata.get_online_users(last)
-	return render_template('online.html',online=usernames,active="help",last=last_str)
+	return render_template('online.html',
+		online=usernames,
+		active="help",
+		last=last_str)

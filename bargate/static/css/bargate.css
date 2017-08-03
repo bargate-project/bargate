@@ -92,3 +92,15 @@ ul.changelog
 {
 	margin-bottom: 0px;
 }
+
+#prefs-m legend:first-of-type
+{
+	margin-top: 0px;
+}
+
+#prefs-m legend
+{
+	margin-top: 40px;
+	margin-bottom: 10px;
+}
+

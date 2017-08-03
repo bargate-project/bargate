@@ -25,6 +25,23 @@ import time
 import json
 import werkzeug
 
+themes = [{'name':'Lumen','value':'lumen'},
+	{'name':'Cerulean','value':'cerulean'},
+	{'name':'Cosmo','value':'cosmo'},
+	{'name':'Cyborg','value':'cyborg'},
+	{'name':'Journal','value':'journal'},
+	{'name':'Flatly','value':'flatly'},
+	{'name':'Sandstone','value':'sandstone'},
+	{'name':'Paper','value':'paper'},
+	{'name':'Readable','value':'readable'},
+	{'name':'Simplex','value':'simplex'},
+	{'name':'Spacelab','value':'spacelab'},
+	{'name':'United','value':'united'},
+	{'name':'Darkly','value':'darkly'},
+	{'name':'Slate','value':'slate'},
+	{'name':'Yeti','value':'yeti'}
+]
+
 ################################################################################
 
 def record_user_activity(user_id,expire_minutes=1440):

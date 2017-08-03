@@ -769,7 +769,7 @@ class backend_pysmb:
 		"""Takes a smb SharedFile object and returns a dictionary with information
 		about that SharedFile object. 
 		"""
-		app.logger.debug("_sfile_load " + sfile.filename + " " + path + " " + func_name)
+		#app.logger.debug("_sfile_load " + sfile.filename + " " + path + " " + func_name)
 
 		entry = {'skip': False, 'name': sfile.filename, 'size': sfile.file_size }
 

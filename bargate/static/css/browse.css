@@ -1,0 +1,178 @@
+/* overflow text properly on panel labels */
+.grid-entry .panel-footer {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.entry-file .panel-footer {
+	text-align: center;
+}
+
+.entry-share .panel-footer {
+	text-align: center;
+}
+
+/* wrap tooltips properly */
+.grid-entry .tooltip-inner {
+	white-space:pre-wrap;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	-ms-word-break: break-all;
+	word-break: break-all;
+	word-break: break-word;
+	-ms-hyphens: auto;
+	-moz-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+}
+
+/* mobile rules */
+.gridview {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.grid-entry {
+	margin-top: 4px;
+	margin-right: 4px;
+	width: calc(50% - 4px);
+}
+
+.gridview ol.breadcrumb {
+	margin-bottom: 0px;
+}
+
+/* four icons - small desktops */ 
+@media (min-width: 768px) {
+	.gridview {
+		padding-left: 12px;
+		padding-right: 0px;
+		padding-bottom: 12px;
+	}
+	.grid-entry {
+		margin-top: 12px;
+		margin-right: 12px;
+		width: calc(25% - 12px);
+	}
+	.gridview ol.breadcrumb {
+		margin-right: 12px;
+	}
+}
+
+/* six icons - medium desktops */ 
+@media (min-width: 992px) {
+	.grid-entry {
+		width: calc(16.666666667% - 12px);
+	}
+}
+
+/* eight icons - large desktops */ 
+@media (min-width: 1200px) {
+	.grid-entry {
+		width: calc(12.5% - 12px);
+	}
+}
+
+.grid-entry .panel {
+	margin-bottom: 0px;
+}
+.grid-entry .panel-body {
+	height: 160px;
+	padding: 0px;
+}
+.grid-icon {
+	font-size: 6em;
+	line-height: 150px;
+	text-align: center;
+}
+.grid-img {
+	background-size: cover;
+	overflow: hidden;
+}
+
+/* LIST VIEW CSS */
+.listview {
+	padding: 0px;
+}
+
+/* don't put a margin on directory view table - datatables used !important so we have to as well :( */
+.listview #dir
+{
+	margin-top: 0px !important;
+	margin-bottom: 0px !important;
+}
+
+.table-hover thead tr:hover td
+{
+	background-color: #f5f5f5;
+}
+
+.table td
+{
+	vertical-align: middle !important;
+}
+
+/* Make sure no underlines on a's in tables pls - For flatly theme mostly */
+.table a, table a
+{
+	text-decoration: none !important;
+}
+
+tbody
+{
+	text-decoration: none;
+}
+
+/* Browse mode (list) */
+td.dentry
+{
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Table cell widths for multiple sizes */
+@media (max-width: 768px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+}
+
+@media (min-width: 768px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+}
+
+@media (min-width: 992px)
+{
+	td.dentry
+	{
+		max-width: 1px;
+	}
+	td.dentry-mtime
+	{
+		width: 15em;
+	}
+}
+
+@media (min-width: 1200px)
+{
+	td.dentry
+	{
+		max-width: 200px;
+	}
+	td.dentry-mtime
+	{
+		width: 15em;
+	}
+}
+
+.no-items {
+	text-align: center;
+	opacity: 0.6;
+}
