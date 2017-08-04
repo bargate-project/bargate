@@ -25,22 +25,22 @@ import time
 import json
 import werkzeug
 
-themes = [{'name':'Lumen','value':'lumen'},
-	{'name':'Cerulean','value':'cerulean'},
-	{'name':'Cosmo','value':'cosmo'},
-	{'name':'Cyborg','value':'cyborg'},
-	{'name':'Journal','value':'journal'},
-	{'name':'Flatly','value':'flatly'},
-	{'name':'Sandstone','value':'sandstone'},
-	{'name':'Paper','value':'paper'},
-	{'name':'Readable','value':'readable'},
-	{'name':'Simplex','value':'simplex'},
-	{'name':'Spacelab','value':'spacelab'},
-	{'name':'United','value':'united'},
-	{'name':'Darkly','value':'darkly'},
-	{'name':'Slate','value':'slate'},
-	{'name':'Yeti','value':'yeti'}
-]
+themes = {'lumen': 'default', 
+	'cerulean': 'default',
+	'cosmo': 'inverse',
+	'cyborg': 'inverse',
+	'journal': 'inverse',
+	'flatly': 'default',
+	'sandstone': 'default',
+	'paper': 'inverse',
+	'readable': 'default',
+	'simplex': 'inverse',
+	'spacelab': 'default',
+	'united': 'default',
+	'darkly': 'default',
+	'slate': 'inverse',
+	'yeti': 'inverse',
+}
 
 ################################################################################
 
@@ -150,27 +150,22 @@ def get_theme():
 		try:
 			theme = g.redis.get('user:' + session['username'] + ':theme')
 			if theme != None:
-				return theme
+				if theme in themes.keys():
+					return theme
 		
 		except Exception as ex:
 			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
 
-	## If we didn't return a new theme, return the default from the config file
-	return app.config['THEME_DEFAULT']
+	if app.config['THEME_DEFAULT'] not in themes.keys():
+		return 'paper'
+	else:
+		return app.config['THEME_DEFAULT']
 
 ################################################################################
 
-def get_navbar():
-	if 'redis' in g:
-		try:
-			navbar = g.redis.get('user:' + session['username'] + ':navbar_alt')
-			if navbar != None:
-				return navbar
-				
-		except Exception as ex:
-			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
-
-	return 'default'
+def get_theme_navbar():
+	theme = get_theme()
+	return themes[theme]
 
 ################################################################################
 

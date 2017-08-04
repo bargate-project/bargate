@@ -67,14 +67,14 @@ def context_processor():
 	data = {}
 	data['bookmarks']   = []
 	data['user_theme']  = app.config['THEME_DEFAULT']
-	data['user_navbar'] = 'default'
+	data['theme_navbar'] = 'default'
 
 	if app.is_user_logged_in():
 		if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
 			data['user_bookmarks'] = bargate.lib.userdata.get_bookmarks()
 			data['user_theme']     = bargate.lib.userdata.get_theme()
-			data['user_navbar']    = bargate.lib.userdata.get_navbar()
 			data['user_layout']    = bargate.lib.userdata.get_layout()
+			data['theme_navbar']   = bargate.lib.userdata.get_theme_navbar()
 
 	## The favicon
 	if app.config['LOCAL_FAVICON']:

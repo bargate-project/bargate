@@ -21,7 +21,7 @@ from bargate.lib.userdata import themes
 import bargate.lib.errors
 from bargate import app
 from flask import Flask, request, session, redirect, url_for, flash, g, abort
-from flask import render_template, Response
+from flask import render_template, Response, jsonify
 import werkzeug
 
 @app.route('/settings', methods=['POST'])
@@ -58,10 +58,11 @@ def settings():
 			bargate.lib.userdata.save('upload_overwrite','no')
 
 	elif key == 'theme':
-		for theme in themes:
-			if theme['value'] == value:
-				bargate.lib.userdata.save('theme',value)
-				# TODO return navbar to browser
+		if value in themes.keys():
+			bargate.lib.userdata.save('theme',value)
+		else:
+			bargate.lib.userdata.save('theme',app.config['THEME_DEFAULT'])
+		return jsonify({'navbar': themes[value]})
 
 	return "", 200
 
@@ -92,7 +93,7 @@ def settings_js():
 """.format(bargate.lib.userdata.get_layout(),
 		app.csrfp_token(),
 		bargate.lib.userdata.get_theme(),
-		bargate.lib.userdata.get_navbar(),
+		bargate.lib.userdata.get_theme_navbar(),
 		show_hidden,
 		overwrite,
 		bargate.lib.userdata.get_on_file_click())
@@ -164,7 +165,6 @@ def bookmark(bookmark_id):
 	specified by the bookmark in the REDIS database. This only works with 
 	version 2 bookmarks, not version 1 (Bargate v1.4 or earlier)"""
 
-	## Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
 	if not app.config['REDIS_ENABLED']:
 		abort(404)
 
@@ -172,7 +172,7 @@ def bookmark(bookmark_id):
 	redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
 
 	## bookmarks are a hash with the keys 'version', 'function', 'path' and 
-	## 'custom_uri' (optional) only proceed if we can find the bookmark in redis
+	## 'custom_uri' (optional) only proceed if we can find the bmark in redis
 	if g.redis.exists(redis_key):
 		try:
 			# redis returns 'None' for hget if the hash key doesn't exist

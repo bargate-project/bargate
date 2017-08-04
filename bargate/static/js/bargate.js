@@ -816,13 +816,25 @@ function setTheme(themeName) {
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not change theme","An error occured whilst contacting the server. " + errorThrown);
 		})
-		.done(function() {
+		.done(function(data, textStatus, jqXHR) {
 			$("body").fadeOut(200, function() {
-				$("#theme-l2").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
+				$("#theme-l").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
 				$("body").fadeIn(200);
 			});
 
-			$user.theme = themeName;
+			if (data.navbar != $user.navbar) {
+				if (data.navbar == 'default') {
+					$(".navbar").removeClass("navbar-inverse");
+					$(".navbar").addClass("navbar-default");
+				} else if (data.navbar == 'inverse') {
+					$(".navbar").removeClass("navbar-default");
+					$(".navbar").addClass("navbar-inverse");
+				}
+			}
+
+			$user.theme  = themeName;
+			$user.navbar = data.navbar;
+
 		});
 }
 

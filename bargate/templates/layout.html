@@ -75,7 +75,7 @@
 	<div class="modal fade" id="prefs-m">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content" style="min-height: 550px">
-				<div class="modal-header" style="background-color: #e0e0e0">
+				<div class="modal-header mhc">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
 					<ul class="nav nav-pills" role="tablist">
 						<li role="presentation" class="active"><a href="#fopts" aria-controls="fopts" role="tab" data-toggle="tab">Folder options</a></li>
@@ -236,7 +236,7 @@
 	</div>
 	{% block modals %}{% endblock -%}
 
-		<div class="navbar navbar-{{user_navbar}} navbar-fixed-top" role="navigation">
+		<div class="navbar navbar-{{theme_navbar}} navbar-fixed-top" role="navigation">
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
@@ -324,7 +324,7 @@
 		</div>
 		
 		{% if browse_mode %}
-		<div class="navbar navbar-{{user_navbar}} navbar-fixed-bottom visible-xs" role="navigation">
+		<div class="navbar navbar-{{theme_navbar}} navbar-fixed-bottom visible-xs" role="navigation">
 			<div class="container text-center">
 				<div class="text-center inline-block dropup">
 					{{ sortmenu() }}
