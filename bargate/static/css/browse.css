@@ -5,11 +5,16 @@
 	white-space: nowrap;
 }
 
-.entry-file .panel-footer {
+.efile .panel-footer {
 	text-align: center;
 }
 
-.entry-share .panel-footer {
+.efile, .edir, .eshare {
+	cursor: pointer;
+}
+
+
+.eshare .panel-footer {
 	text-align: center;
 }
 

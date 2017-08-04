@@ -179,11 +179,15 @@ function doListView() {
 }
 
 function doBrowse() {
-	$(".tdirclick").children("td").click(function() {
+	/*$(".tdclick").children("td").click(function() {
 		loadDir( $(this).parent().data('url') );
+	});*/
+
+	$(".edir").click(function() {
+		loadDir( $(this).data('url') );
 	});
 
-	$(".dirclick").click(function() {
+	$(".eshare").click(function() {
 		loadDir( $(this).data('url') );
 	});
 
@@ -192,105 +196,19 @@ function doBrowse() {
 	$("#e-copy-b").click(function () { showCopy(); });
 	$("#e-delete-b").click(function () { showDeleteFile(); });
 
-	/* context (right click) menus */
-	(function ($, window)
-	{
-		$.fn.contextMenu = function (settings)
-		{
-			return this.each(function ()
-			{
-				$(this).on("contextmenu", function (e)
-				{
-					if (e.ctrlKey) return;
-
-					var $menu = $(settings.menuSelector).data("invokedOn", $(e.target)).show().css(
-					{
-						position: "absolute",
-						left: getMenuPosition(e.clientX, 'width', 'scrollLeft'),
-						top: getMenuPosition(e.clientY, 'height', 'scrollTop')
-					}).off('click').on('click', 'a', function (e)
-					{
-						$menu.hide();
-						var $invokedOn = $menu.data("invokedOn");
-						var $selectedMenu = $(e.target);
-						settings.menuSelected.call(this, $invokedOn, $selectedMenu);
-					});
-
-					/* Extra code to show/hide view option based on type */
-					$invokedOn = $menu.data("invokedOn");
-					if ($invokedOn.closest(".entry-click").attr('data-view'))
-					{
-						$('#contextmenu_view').removeClass('hidden');
-					}
-					else
-					{
-						$('#contextmenu_view').addClass('hidden');
-					}
-
-					return false;
-				});
-
-				//make sure menu closes on any click
-				$('body').click(function ()
-				{
-					$(settings.menuSelector).hide();
-				});
-			});
-
-			function getMenuPosition(mouse, direction, scrollDir)
-			{
-				var win = $(window)[direction](), scroll = $(window)[scrollDir](), menu = $(settings.menuSelector)[direction](), position = mouse + scroll;
-
-				// opening menu would pass the side of the page
-				if (mouse + menu > win && menu < mouse) 
-				{
-					position -= menu;
-				}
-
-				return position;
+	/* What to do when a user clicks a file entry in a listing */
+	$(".efile").click(function() {
+		if ($user.onclick == 'ask') {
+			showFileDetails($(this));
+		} else if ($user.onclick == 'default') {
+			if ($(this).attr('data-view')) {
+				window.open($(this).data('view'),'_blank');
+			} else {
+				window.open($(this).data('download'),'_blank');
 			}
-		};
-	})(jQuery, window);
-
-	/**************************************************************************/
-	
-	$(".entry-preview").click(function() {
-		var parent = $(this).closest('.entry-click');
-		
-		$('#file-click-filename').text(parent.data('filename'));
-		$('#file-click-size').text(parent.data('size'));
-		$('#file-click-mtime').text(parent.data('mtime'));
-		$('#file-click-mtype').text(parent.data('mtype'));
-		$('#file-click-icon').attr('class',parent.data('icon'));
-		$('#file-click-download').attr('href',parent.data('download'));
-		$('#file-click-details').data('stat',parent.data('stat'));
-		
-		if (parent.attr('data-imgpreview')) {
-			$('#file-click-preview').attr('src',parent.data('imgpreview'));
-			$('#file-click-preview').removeClass('hidden');
-			$('#file-click-icon').addClass('hidden');
-		}
-		else {
-			$('#file-click-preview').attr('src','');
-			$('#file-click-preview').addClass('hidden');
-			$('#file-click-icon').removeClass('hidden');
-		}
-		
-		if (parent.attr('data-view')) {
-			$('#file-click-view').attr('href',parent.data('view'));
-			$('#file-click-view').removeClass('hidden');
-		}
-		else {
-			$('#file-click-view').addClass('hidden');
-		}
-
-		if (parent.attr('data-parent')) {
-			selectEntry(parent.data('filename'),parent.data('parent'));
 		} else {
-			selectEntry(parent.data('filename'),$browse.url);
+			window.open($(this).data('download'),'_blank');
 		}
-
-		$('#file-click').modal('show');
 	});
 
 	$("#file-click-details").click(function()
@@ -299,7 +217,7 @@ function doBrowse() {
 		$('#file-details-data').addClass('hidden');
 		$('#file-details-error').addClass('hidden');
 		$('#file-details-filename').html('Please wait...');
-		$('#file-details').modal({show: true});
+		$('#file-details').modal('show');
 
 		$.getJSON($(this).data('stat'), function(data)
 		{
@@ -326,38 +244,38 @@ function doBrowse() {
 	});
 
 	/* right click menu for files */
-	$(".entry-file").contextMenu({
+	$(".efile").contextMenu({
 		menuSelector: "#fileContextMenu",
 		menuSelected: function (invokedOn, selectedMenu)
 		{
-			var parentRow = invokedOn.closest(".entry-click");
+			var file = invokedOn.closest(".efile");
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'view') {
-				window.open(parentRow.data('view'),'_blank');
+				window.open(file.data('view'),'_blank');
 			}
 			else if ($action == 'download') {
-				window.open(parentRow.data('download'),'_blank');
+				window.open(file.data('download'),'_blank');
 			}
 			else if ($action == 'copy') {
-				selectEntry(parentRow.data('filename'),$browse.url);
+				selectEntry(file.data('filename'),$browse.url);
 				showCopy();
 			}
 			else if ($action == 'rename') {
-				selectEntry(parentRow.data('filename'),$browse.url);
+				selectEntry(file.data('filename'),$browse.url);
 				showRename();
 			}
 			else if ($action == 'delete') {
-				selectEntry(parentRow.data('filename'),$browse.url);
+				selectEntry(file.data('filename'),$browse.url);
 				showDeleteFile();
 			}
 			else if ($action == 'properties') {
 				$('#file-details-loading').removeClass('hidden');
 				$('#file-details-data').addClass('hidden');
 				$('#file-details-filename').html('Please wait...');
-				$('#file-details').modal({show: true});
+				$('#file-details').modal('show');
 
-				$.getJSON(parentRow.data('stat'), function(data)
+				$.getJSON(file.data('stat'), function(data)
 				{
 					$('#file-details-filename').html(data.filename);
 					$('#file-details-size').html(bytesToString(data.size));
@@ -378,20 +296,20 @@ function doBrowse() {
 	});
 
 	/* context menu for directories */
-	$(".entry-dir").contextMenu({
+	$(".edir").contextMenu({
 		menuSelector: "#dirContextMenu",
 		menuSelected: function (invokedOn, selectedMenu) {
-			var parentRow = invokedOn.closest(".entry-click");
+			var dir = invokedOn.closest(".edir");
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'open') {
-				loadDir(parentRow.data('url'));
+				loadDir(dir.data('url'));
 			}
 			else if ($action == 'rename') {
-				showRename(parentRow.data('filename'));
+				showRename(dir.data('filename'));
 			}
 			else if ($action == 'delete') {
-				showDeleteDirectory(parentRow.data('filename'));
+				showDeleteDirectory(dir.data('filename'));
 			}
 
 			event.preventDefault();
@@ -399,31 +317,7 @@ function doBrowse() {
 		}
 	});
 
-	/* focus on inputs when modals open */
-	/* these modals are triggered by data-toggle, so we must do it here */
-	$('#mkdir-m').on('shown.bs.modal', function() {
-		$('#mkdir-m input[type="text"]').focus();
-	});
-	
-	$('#bmark-m').on('shown.bs.modal', function() {
-		$('#bmark-m input[type="text"]').focus();
-	});
 
-	$('#search-m').on('shown.bs.modal', function() {
-		$('#search-m input[type="text"]').focus();
-	});
-
-	/* File uploads - drag files over shows a modal */
-	$('body').dragster({
-		enter: function ()
-		{
-			$('#upload-drag-over').modal()
-		},
-		leave: function ()
-		{
-			$('#upload-drag-over').modal('hide');
-		}
-	});
 }
 
 function doGridView() {
@@ -597,6 +491,43 @@ function prepFileUpload() {
 function selectEntry(name,url) {
 	$browse.entry = name;
 	$browse.entryDirUrl = url;
+}
+
+function showFileDetails(file) {
+	$('#file-click-filename').text(file.data('filename'));
+	$('#file-click-size').text(file.data('size'));
+	$('#file-click-mtime').text(file.data('mtime'));
+	$('#file-click-mtype').text(file.data('mtype'));
+	$('#file-click-icon').attr('class',file.data('icon'));
+	$('#file-click-download').attr('href',file.data('download'));
+	$('#file-click-details').data('stat',file.data('stat'));
+	
+	if (file.attr('data-imgpreview')) {
+		$('#file-click-preview').attr('src',file.data('imgpreview'));
+		$('#file-click-preview').removeClass('hidden');
+		$('#file-click-icon').addClass('hidden');
+	}
+	else {
+		$('#file-click-preview').attr('src','');
+		$('#file-click-preview').addClass('hidden');
+		$('#file-click-icon').removeClass('hidden');
+	}
+	
+	if (file.attr('data-view')) {
+		$('#file-click-view').attr('href',file.data('view'));
+		$('#file-click-view').removeClass('hidden');
+	}
+	else {
+		$('#file-click-view').addClass('hidden');
+	}
+
+	if (file.attr('data-parent')) {
+		selectEntry(file.data('filename'),file.data('parent'));
+	} else {
+		selectEntry(file.data('filename'),$browse.url);
+	}
+
+	$('#file-click').modal('show');
 }
 
 function showRename() {
@@ -840,8 +771,8 @@ function setTheme(themeName) {
 
 $(document).ready(function($) {
 	/* Activate tooltips and enable hiding on clicking */
-	$('[rel="tooltip"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
-	$('[rel="tooltip"]').on('mouseup', function () {$(this).tooltip('hide');});
+	$('[data-tooltip="yes"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
+	$('[data-tooltip="yes"]').on('mouseup', function () {$(this).tooltip('hide');});
 
 	/* Load the preferences into the prefs modal */
 	$('#prefs-m').on('show.bs.modal', function() {
@@ -922,4 +853,86 @@ $(document).ready(function($) {
 			loadDir(requestedUrl,false);
 		}
 	});
+
+	/* focus on inputs when modals open */
+	/* these modals are triggered by data-toggle, so we must do it here */
+	$('#mkdir-m').on('shown.bs.modal', function() {
+		$('#mkdir-m input[type="text"]').focus();
+	});
+	
+	$('#bmark-m').on('shown.bs.modal', function() {
+		$('#bmark-m input[type="text"]').focus();
+	});
+
+	$('#search-m').on('shown.bs.modal', function() {
+		$('#search-m input[type="text"]').focus();
+	});
+
+	/* File uploads - drag files over shows a modal */
+	$('body').dragster({
+		enter: function ()
+		{
+			$('#upload-drag-over').modal()
+		},
+		leave: function ()
+		{
+			$('#upload-drag-over').modal('hide');
+		}
+	});
 });
+
+	/* context (right click) menus */
+	(function ($, window)
+	{
+		$.fn.contextMenu = function (settings)
+		{
+			return this.each(function ()
+			{
+				$(this).on("contextmenu", function (e)
+				{
+					if (e.ctrlKey) return;
+
+					var $menu = $(settings.menuSelector).data("invokedOn", $(e.target)).show().css(
+					{
+						position: "absolute",
+						left: getMenuPosition(e.clientX, 'width', 'scrollLeft'),
+						top: getMenuPosition(e.clientY, 'height', 'scrollTop')
+					}).off('click').on('click', 'a', function (e) {
+						$menu.hide();
+						var $invokedOn = $menu.data("invokedOn");
+						var $selectedMenu = $(e.target);
+						settings.menuSelected.call(this, $invokedOn, $selectedMenu);
+					});
+
+					/* Extra code to show/hide view option based on type */
+					$invokedOn = $menu.data("invokedOn");
+					if ($invokedOn.closest(".entry-click").attr('data-view')) {
+						$('#contextmenu_view').removeClass('hidden');
+					}
+					else {
+						$('#contextmenu_view').addClass('hidden');
+					}
+
+					return false;
+				});
+
+				//make sure menu closes on any click
+				$('body').click(function () {
+					$(settings.menuSelector).hide();
+				});
+			});
+
+			function getMenuPosition(mouse, direction, scrollDir)
+			{
+				var win = $(window)[direction](), scroll = $(window)[scrollDir](), menu = $(settings.menuSelector)[direction](), position = mouse + scroll;
+
+				// opening menu would pass the side of the page
+				if (mouse + menu > win && menu < mouse) 
+				{
+					position -= menu;
+				}
+
+				return position;
+			}
+		};
+	})(jQuery, window);

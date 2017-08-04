@@ -2,7 +2,7 @@
 
 <div id="dirs">
 	{%- for entry in shares -%}
-	<div class="dirclick grid-entry entry-share" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+	<div class="grid-entry eshare" data-url="{{ entry.url }}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-body grid-icon"><span class="fa fa-fw fa-hdd-o"></span></div>
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}>{{ entry.name }}</div>
@@ -10,7 +10,7 @@
 	</div>
 	{%- endfor -%}
 	{%- for entry in dirs -%}
-	<div class="dirclick grid-entry entry-dir" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+	<div class="grid-entry edir" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="{{entry.icon}}"></i> {{ entry.name }}</div>
 		</div>
@@ -22,11 +22,7 @@
 
 <div id="files">
 	{%- for entry in files -%}
-	{%- if on_file_click == 'ask' -%}
-	<div class="grid-entry entry-click entry-file entry-preview" data-raw-mtype="{{entry.mtype_raw}}" data-raw-mtime="{{ entry.mtime_raw }}" data-raw-size="{{ entry.size }}" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-url="{{ entry.open}}" data-stat="{{ entry.stat }}" data-sortname="{{entry.name|lower}}">
-	{%- else %}
-	<div class="entry-click entry-file entry-open" data-raw-mtype="{{entry.mtype_raw}}" data-raw-mtime="{{ entry.mtime_raw }}" data-raw-size="{{ entry.size }}" data-url="{% if on_file_click == 'download' %} {{entry.download}} {% else %} {{entry.open}} {%endif%}" data-filename="{{entry.name}}" data-path="{{entry.path}}" data-download="{{ entry.download }}" data-stat="{{ entry.stat }}" data-sortname="{{entry.name|lower}}">
-	{%- endif %}
+	<div class="grid-entry efile" data-raw-mtype="{{entry.mtype_raw}}" data-raw-mtime="{{ entry.mtime_raw }}" data-raw-size="{{ entry.size }}" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-url="{{ entry.open}}" data-stat="{{ entry.stat }}" data-sortname="{{entry.name|lower}}">
 
 		{%- if entry.img_preview -%}
 		<div class="panel panel-default">

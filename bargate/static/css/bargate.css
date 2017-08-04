@@ -37,11 +37,6 @@ ul.changelog
 	text-align: center;
 }
 
-/* directory/browse mode and bookmark table clickables */
-.entry-click, .dirclick, .tdirclick {
-	cursor: pointer;
-}
-
 /* file uploads */
 .fileinput-button {
 	position: relative;
@@ -88,11 +83,6 @@ ul.changelog
 	margin-top: 20px;
 }
 
-.form-horizontal-compact .form-group
-{
-	margin-bottom: 0px;
-}
-
 #prefs-m legend:first-of-type
 {
 	margin-top: 0px;
@@ -102,4 +92,12 @@ ul.changelog
 {
 	margin-top: 40px;
 	margin-bottom: 10px;
+}
+
+.logo
+{
+	font-family: 'Oswald', sans-serif;
+	margin: 0px;
+	font-size: 8em;
+	line-height: 0.8;
 }

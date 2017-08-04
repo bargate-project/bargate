@@ -175,7 +175,7 @@ class backend_pysmb:
 						no_items = True
 
 					## Render the template
-					return render_template('directory-grid.html',
+					return render_template('directory-' +  bargate.lib.userdata.get_layout() + '.html',
 						active=active,
 						dirs=[], files=[], shares=shares, crumbs=[], path=path,
 						url_home=url_for(func_name),
@@ -403,9 +403,6 @@ class backend_pysmb:
 					if len(files) == 0 and len(dirs) == 0:
 						no_items = True
 
-					## What layout mode does the user want?
-					layout = bargate.lib.userdata.get_layout()
-
 					## Don't allow bookmarks at the root of a function
 					## - that is superfluous
 					bmark_enabled=False
@@ -413,7 +410,7 @@ class backend_pysmb:
 						bmark_enabled = True
 
 					## Render the template
-					return render_template('directory-' + layout + '.html',
+					return render_template('directory-' +  bargate.lib.userdata.get_layout() + '.html',
 						active=active,
 						dirs=dirs,
 						files=files,
