@@ -58,10 +58,10 @@ def settings():
 			bargate.lib.userdata.save('upload_overwrite','no')
 
 	elif key == 'theme':
-		if value in themes.keys():
-			bargate.lib.userdata.save('theme',value)
-		else:
-			bargate.lib.userdata.save('theme',app.config['THEME_DEFAULT'])
+		if value not in themes.keys():
+			value = app.config['THEME_DEFAULT']
+		
+		bargate.lib.userdata.save('theme',value)
 		return jsonify({'navbar': themes[value]})
 
 	return "", 200

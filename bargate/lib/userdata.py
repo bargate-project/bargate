@@ -40,6 +40,7 @@ themes = {'lumen': 'default',
 	'darkly': 'default',
 	'slate': 'inverse',
 	'yeti': 'inverse',
+	'solar': 'default',
 }
 
 ################################################################################
