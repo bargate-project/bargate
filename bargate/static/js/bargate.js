@@ -5,12 +5,8 @@ function showErr(title,desc) {
 	$('#modal-error').modal('show');
 }
 
-var $browse = {url: null,
-	entry: null,
-	entryDirUrl: null,
-	btnsEnabled: false,
-	bmarkEnabled: false,
-	sortBy: 'name'
+var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false,
+	bmarkEnabled: false, sortBy: 'name'
 };
 
 function enableBrowseButts() {
@@ -179,10 +175,6 @@ function doListView() {
 }
 
 function doBrowse() {
-	/*$(".tdclick").children("td").click(function() {
-		loadDir( $(this).parent().data('url') );
-	});*/
-
 	$(".edir").click(function() {
 		loadDir( $(this).data('url') );
 	});
@@ -199,7 +191,7 @@ function doBrowse() {
 	/* What to do when a user clicks a file entry in a listing */
 	$(".efile").click(function() {
 		if ($user.onclick == 'ask') {
-			showFileDetails($(this));
+			showFileOverview($(this));
 		} else if ($user.onclick == 'default') {
 			if ($(this).attr('data-view')) {
 				window.open($(this).data('view'),'_blank');
@@ -211,36 +203,8 @@ function doBrowse() {
 		}
 	});
 
-	$("#file-click-details").click(function()
-	{
-		$('#file-details-loading').removeClass('hidden');
-		$('#file-details-data').addClass('hidden');
-		$('#file-details-error').addClass('hidden');
-		$('#file-details-filename').html('Please wait...');
-		$('#file-details').modal('show');
-
-		$.getJSON($(this).data('stat'), function(data)
-		{
-			if (data.error == 1) {
-				$('#file-details-reason').html(data.reason);
-				$('#file-details-filename').html('Uh oh');
-				$('#file-details-loading').addClass('hidden');
-				$('#file-details-error').removeClass('hidden');
-			}
-			else
-			{
-				$('#file-details-filename').html(data.filename);
-				$('#file-details-size').html(bytesToString(data.size));
-				$('#file-details-atime').html(data.atime);
-				$('#file-details-mtime').html(data.mtime);
-				$('#file-details-ftype').html(data.ftype);
-				$('#file-details-owner').html(data.owner);
-				$('#file-details-group').html(data.group);
-
-				$('#file-details-loading').addClass('hidden');
-				$('#file-details-data').removeClass('hidden');
-			}
-		});
+	$("#file-click-details").click(function() {
+		showFileDetails($(this));
 	});
 
 	/* right click menu for files */
@@ -270,24 +234,7 @@ function doBrowse() {
 				showDeleteFile();
 			}
 			else if ($action == 'properties') {
-				$('#file-details-loading').removeClass('hidden');
-				$('#file-details-data').addClass('hidden');
-				$('#file-details-filename').html('Please wait...');
-				$('#file-details').modal('show');
-
-				$.getJSON(file.data('stat'), function(data)
-				{
-					$('#file-details-filename').html(data.filename);
-					$('#file-details-size').html(bytesToString(data.size));
-					$('#file-details-atime').html(data.atime);
-					$('#file-details-mtime').html(data.mtime);
-					$('#file-details-ftype').html(data.ftype);
-					$('#file-details-owner').html(data.owner);
-					$('#file-details-group').html(data.group);
-
-					$('#file-details-loading').addClass('hidden');
-					$('#file-details-data').removeClass('hidden');
-				});
+				showFileDetails(file);
 			}
 
 			event.preventDefault();
@@ -316,8 +263,6 @@ function doBrowse() {
 			event.stopPropagation();
 		}
 	});
-
-
 }
 
 function doGridView() {
@@ -380,8 +325,7 @@ function formatFileSize(bytes) {
 	}
 	if (bytes >= 1000000000) {
 		return (bytes / 1000000000).toFixed(2) + ' GB';
-	}
-	if (bytes >= 1000000) {
+	} else if (bytes >= 1000000) {
 		return (bytes / 1000000).toFixed(2) + ' MB';
 	}
 	return (bytes / 1000).toFixed(2) + ' KB';
@@ -396,11 +340,9 @@ function formatBitrate(bits) {
 
 	if (bits >= 1000000000) {
 		return (bits / 1000000000).toFixed(2) + ' GiB/s';
-	}
-	if (bits >= 1000000) {
+	} else if (bits >= 1000000) {
 		return (bits / 1000000).toFixed(2) + ' MiB/s';
-	}
-	if (bits >= 1000) {
+	} else if (bits >= 1000) {
 		return (bits / 1000).toFixed(2) + ' KiB/s';
 	}
 	return bits.toFixed(2) + ' bytes/s';
@@ -494,6 +436,30 @@ function selectEntry(name,url) {
 }
 
 function showFileDetails(file) {
+	$('#file-details-loading').removeClass('hidden');
+	$('#file-details-data').addClass('hidden');
+	$('#file-details-filename').html('Please wait...');
+	$('#file-details').modal('show');
+
+	$.getJSON(file.data('stat'), function(data) {
+		if (data.error == 1) {
+			showErr("Could not load file details",data.reason);
+		} else {
+			$('#file-details-filename').html(data.filename);
+			$('#file-details-size').html(bytesToString(data.size));
+			$('#file-details-atime').html(data.atime);
+			$('#file-details-mtime').html(data.mtime);
+			$('#file-details-ftype').html(data.ftype);
+			$('#file-details-owner').html(data.owner);
+			$('#file-details-group').html(data.group);
+
+			$('#file-details-loading').addClass('hidden');
+			$('#file-details-data').removeClass('hidden');
+		}
+	});
+}
+
+function showFileOverview(file) {
 	$('#file-click-filename').text(file.data('filename'));
 	$('#file-click-size').text(file.data('size'));
 	$('#file-click-mtime').text(file.data('mtime'));
@@ -570,7 +536,6 @@ function notifySuccess(msg) {
 
 function doRename() {
 	$('#e-rename-m').modal('hide');
-
 	$.post( $browse.entryDirUrl, { action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not rename","An error occured whilst contacting the server. " + errorThrown);
@@ -578,8 +543,7 @@ function doRename() {
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
 				showErr("Could not rename",data.msg);
-			}
-			else {
+			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
 			}
@@ -588,7 +552,6 @@ function doRename() {
 
 function doCopy() {
 	$('#e-copy-m').modal('hide');
-
 	$.post( $browse.entryDirUrl, { action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not copy","An error occured whilst contacting the server. " + errorThrown);
@@ -596,8 +559,7 @@ function doCopy() {
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
 				showErr("Could not copy",data.msg);
-			}
-			else {
+			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
 			}
@@ -606,7 +568,6 @@ function doCopy() {
 
 function doMkdir() {
 	$('#mkdir-m').modal('hide');
-
 	$.post( $browse.entryDirUrl, { action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not create directory","An error occured whilst contacting the server. " + errorThrown);
@@ -614,8 +575,7 @@ function doMkdir() {
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
 				showErr("Could not create directory",data.msg);
-			}
-			else {
+			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
 			}
@@ -625,7 +585,6 @@ function doMkdir() {
 function doBookmark() {
 	$('#bmark-m').modal('hide');
 	bmarkName = $('#bmark-i').val();
-
 	$.post( $browse.url, { action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not create bookmark","An error occured whilst contacting the server.");
@@ -633,8 +592,7 @@ function doBookmark() {
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
 				showErr("Could not create bookmark",data.msg);
-			}
-			else {
+			} else {
 				notifySuccess(data.msg);
 				$('#bmarks').append('<li><a href="' + data.url + '"><i class="fa fa-arrow-right fa-fw"></i>' + bmarkName + '</a></li>');
 			}
@@ -643,7 +601,6 @@ function doBookmark() {
 
 function doDelete() {
 	$('#e-delete-m').modal('hide');
-
 	$.post( $browse.entryDirUrl, { action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not delete","An error occured whilst contacting the server. " + errorThrown);
@@ -651,8 +608,7 @@ function doDelete() {
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
 				showErr("Could not delete",data.msg);
-			}
-			else {
+			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
 			}
@@ -674,8 +630,7 @@ function setLayoutMode(newLayout) {
 				if ($user.layout == "list") {
 					$("#pdiv").removeClass("listview");
 					$("#pdiv").addClass("gridview");
-				}
-				else {
+				} else {
 					$("#pdiv").removeClass("gridview");
 					$("#pdiv").addClass("listview");
 				}
@@ -686,8 +641,7 @@ function setLayoutMode(newLayout) {
 			if ($user.layout == "list") {
 				$("#layout-button-icon").removeClass("fa-th-large");
 				$("#layout-button-icon").addClass("fa-list");
-			}
-			else {
+			} else {
 				$("#layout-button-icon").removeClass("fa-list");
 				$("#layout-button-icon").addClass("fa-th-large");
 			}
@@ -704,7 +658,6 @@ function setHidden(show_hidden) {
 			showErr("Could not set hidden files mode","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
-
 			if ($browse.btnsEnabled) {
 				loadDir($browse.url);
 			}
@@ -730,7 +683,6 @@ function setClickMode(newMode) {
 
 function setOverwrite(overwrite) {
 	if (overwrite == $user.overwrite) { return; }
-
 	$.post( "/settings", { key: 'overwrite', value: overwrite, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not set upload overwrite mode","An error occured whilst contacting the server. " + errorThrown);
@@ -742,7 +694,6 @@ function setOverwrite(overwrite) {
 
 function setTheme(themeName) {
 	if (themeName == $user.theme) { return; }
-
 	$.post( "/settings", { key: 'theme', value: themeName, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not change theme","An error occured whilst contacting the server. " + errorThrown);
@@ -807,10 +758,6 @@ $(document).ready(function($) {
 	$('input[type=radio][name=prefs-theme-i]').change(function() {
 		setTheme(this.value);
 	});
-
-
-
-
 
 	$("#layout-button").click(function () {
 		switchLayout();
@@ -881,58 +828,51 @@ $(document).ready(function($) {
 	});
 });
 
-	/* context (right click) menus */
-	(function ($, window)
-	{
-		$.fn.contextMenu = function (settings)
-		{
-			return this.each(function ()
-			{
-				$(this).on("contextmenu", function (e)
-				{
-					if (e.ctrlKey) return;
+/* context (right click) menus */
+(function ($, window) {
+	$.fn.contextMenu = function (settings) {
+		return this.each(function () {
+			$(this).on("contextmenu", function (e) {
+				if (e.ctrlKey) return;
 
-					var $menu = $(settings.menuSelector).data("invokedOn", $(e.target)).show().css(
-					{
-						position: "absolute",
-						left: getMenuPosition(e.clientX, 'width', 'scrollLeft'),
-						top: getMenuPosition(e.clientY, 'height', 'scrollTop')
-					}).off('click').on('click', 'a', function (e) {
-						$menu.hide();
-						var $invokedOn = $menu.data("invokedOn");
-						var $selectedMenu = $(e.target);
-						settings.menuSelected.call(this, $invokedOn, $selectedMenu);
-					});
-
-					/* Extra code to show/hide view option based on type */
-					$invokedOn = $menu.data("invokedOn");
-					if ($invokedOn.closest(".entry-click").attr('data-view')) {
-						$('#contextmenu_view').removeClass('hidden');
-					}
-					else {
-						$('#contextmenu_view').addClass('hidden');
-					}
-
-					return false;
+				var $menu = $(settings.menuSelector).data("invokedOn", $(e.target)).show().css({
+					position: "absolute",
+					left: getMenuPosition(e.clientX, 'width', 'scrollLeft'),
+					top: getMenuPosition(e.clientY, 'height', 'scrollTop')
+				}).off('click').on('click', 'a', function (e) {
+					$menu.hide();
+					var $invokedOn = $menu.data("invokedOn");
+					var $selectedMenu = $(e.target);
+					settings.menuSelected.call(this, $invokedOn, $selectedMenu);
 				});
 
-				//make sure menu closes on any click
-				$('body').click(function () {
-					$(settings.menuSelector).hide();
-				});
-			});
-
-			function getMenuPosition(mouse, direction, scrollDir)
-			{
-				var win = $(window)[direction](), scroll = $(window)[scrollDir](), menu = $(settings.menuSelector)[direction](), position = mouse + scroll;
-
-				// opening menu would pass the side of the page
-				if (mouse + menu > win && menu < mouse) 
-				{
-					position -= menu;
+				/* Extra code to show/hide view option based on type */
+				$invokedOn = $menu.data("invokedOn");
+				if ($invokedOn.closest(".efile").attr('data-view')) {
+					$('#contextmenu_view').removeClass('hidden');
+				}
+				else {
+					$('#contextmenu_view').addClass('hidden');
 				}
 
-				return position;
+				return false;
+			});
+
+			//make sure menu closes on any click
+			$('body').click(function () {
+				$(settings.menuSelector).hide();
+			});
+		});
+
+		function getMenuPosition(mouse, direction, scrollDir) {
+			var win = $(window)[direction](), scroll = $(window)[scrollDir](), menu = $(settings.menuSelector)[direction](), position = mouse + scroll;
+
+			// opening menu would pass the side of the page
+			if (mouse + menu > win && menu < mouse) {
+				position -= menu;
 			}
-		};
-	})(jQuery, window);
+
+			return position;
+		}
+	};
+})(jQuery, window);
