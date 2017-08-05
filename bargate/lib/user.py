@@ -20,7 +20,6 @@ from bargate import app
 import bargate.lib.userdata
 import bargate.lib.aes
 import os
-import smbc
 import time
 
 ## load kerberos or ldap auth if needed
@@ -41,14 +40,6 @@ def get_smbc_auth(server,share,workgroup,username,password):
 	by the pysmbc module when accessing CIFS servers
 	"""
 	return (app.config['SMB_WORKGROUP'],session['username'],bargate.lib.user.get_password())
-
-################################################################################
-
-def get_smbc_auth_logon(server,share,workgroup,username,password):
-	"""Returns authentication information for SMB/CIFS as required
-	by the pysmbc module for SMB auth at logon only.
-	"""
-	return (app.config['SMB_WORKGROUP'],g.smb_username,g.smb_password)
 
 ################################################################################
 
@@ -110,23 +101,7 @@ def auth(username, password):
 
 	elif app.config['AUTH_TYPE'] == 'smb':
 		app.logger.debug("bargate.lib.user.auth auth type smb")
-
-		## "SMB" auth. This is a bit odd. It just tries to connect to an SMB share and list the contents. If this succeeds, assume SUCCESS!
-		try:
-			g.smb_username = username
-			g.smb_password = password
-			ctx = smbc.Context(auth_fn=bargate.lib.user.get_smbc_auth_logon)
-			ctx.opendir(app.config['SMB_AUTH_URI']).getdents()
-		except smbc.PermissionError:
-			app.logger.debug("bargate.lib.user.auth smb permission denied")
-			return False
-		except Exception as ex:
-			app.logger.debug("bargate.lib.user.auth smb exception: " + str(ex))
-			flash('Unexpected SMB authentication error: ' + str(ex),'alert-danger')
-			return False
-
-		app.logger.debug("bargate.lib.user.auth auth smb success")
-		return True
+		return app.smblib.smb_auth(request.form['username'], request.form['password'])
 
 	elif app.config['AUTH_TYPE'] == 'ldap':
 		app.logger.debug("bargate.lib.user.auth auth type ldap")

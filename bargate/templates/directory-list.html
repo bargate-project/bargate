@@ -1,7 +1,5 @@
 {%- include 'breadcrumbs.html' -%}
-
 {%- if not no_items -%}
-
 <table id="dir" class="table table-striped table-hover" style="width: 100%">
 	<thead>
 		<tr>
@@ -14,7 +12,6 @@
 			<th></th>
 		</tr>
 	</thead>
-
 	<tbody>
 		{%- for entry in shares -%}
 		<tr class="edir" data-url="{{ entry.url }}">
@@ -27,7 +24,6 @@
 			<td></td>
 		</tr>
 		{%- endfor -%}
-
 		{%- for entry in dirs -%}
 		<tr class="edir" data-icon="{{entry.icon}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
@@ -39,7 +35,6 @@
 			<td>-1</td>
 		</tr>
 		{%- endfor -%}
-
 		{%- for entry in files -%}
 			<tr class="efile" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
@@ -53,6 +48,5 @@
 		{%- endfor -%}
 	</tbody>
 </table>
-
 {%- endif -%}
 {%- include 'directory.html' -%}

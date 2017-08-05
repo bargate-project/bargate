@@ -11,8 +11,7 @@ ul.changelog
 }
 
 /* Word-wrap break word on alerts where very long filenames could overrun */
-.alert
-{
+.alert {
 	word-wrap: break-word;
 }
 
@@ -83,12 +82,12 @@ ul.changelog
 	margin-top: 20px;
 }
 
-#prefs-m legend:first-of-type
+#prefs-m h5:first-of-type
 {
 	margin-top: 0px;
 }
 
-#prefs-m legend
+#prefs-m h5
 {
 	margin-top: 40px;
 	margin-bottom: 10px;
