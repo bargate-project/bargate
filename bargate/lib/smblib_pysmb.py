@@ -16,9 +16,12 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from bargate import app
-import string, os, io, sys, stat, pprint, urllib, re, StringIO, glob, traceback, socket, tempfile
-from flask import Flask, send_file, request, session, g, redirect, url_for, abort, flash, make_response, jsonify, render_template
-import bargate.lib.core
+import string, os, io, sys, stat, re, StringIO, glob
+import traceback, socket, tempfile, time, uuid
+from flask import send_file, request, session, g, url_for, abort
+from flask import flash, make_response, jsonify, render_template
+from bargate.lib.core import banned_file, secure_filename, check_name
+from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
 import bargate.lib.errors
 import bargate.lib.userdata
 import bargate.lib.mime
@@ -28,9 +31,6 @@ from smb.SMBConnection import SMBConnection
 from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
 from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
 from PIL import Image
-
-import time
-import uuid
 
 class backend_pysmb:
 
@@ -52,7 +52,7 @@ class backend_pysmb:
 
 ################################################################################
 
-	def smb_error(self,exception_object,uri="Unknown",redirect_to=None):
+	def smb_error(self,exception_object,uri="Unknown"):
 
 		# pysmb exceptions
 #		if isinstance(exception_object,SMBTimeout):
@@ -163,7 +163,7 @@ class backend_pysmb:
 
 		## Check the path is not bad/dangerous
 		try:
-			bargate.lib.core.check_path(path)
+			check_path(path)
 		except ValueError as e:
 			return bargate.lib.errors.invalid_path()
 
@@ -228,9 +228,8 @@ class backend_pysmb:
 					except Exception as ex:
 						return bargate.lib.errors.stderr("Not found","The path you specified does not exist, or could not be read")
 
-					## if we were asked to 'download' a directory, redirect to browse instead
 					if sfile.isDirectory:
-						return redirect(url_for(func_name,path=path))
+						abort(400)
 
 					## guess a mimetype
 					(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
@@ -315,22 +314,26 @@ class backend_pysmb:
 				if sfile.isDirectory:
 					return jsonify({'error': 1, 'reason': 'You cannot stat a directory!'})
 
-				data = {}	
-				data['filename']              = sfile.filename
-				data['size']                  = sfile.file_size
-				data['atime']                 = bargate.lib.core.ut_to_string(sfile.last_access_time)
-				data['mtime']                 = bargate.lib.core.ut_to_string(sfile.last_write_time)
-				(data['ftype'],data['mtype']) = bargate.lib.mime.filename_to_mimetype(data['filename'])
-				data['owner']                 = "N/A"
-				data['group']                 = "N/A"
-				data['error']                 = 0
+				# guess mimetype
+				(ftype, mtype) = bargate.lib.mime.filename_to_mimetype(sfile.filename)
+
+				data = {
+					'filename': sfile.filename,
+					'size':     sfile.file_size,
+					'atime':    ut_to_string(sfile.last_access_time),
+					'mtime':    ut_to_string(sfile.last_write_time),
+					'ftype':    ftype,
+					'mtype':    mtype,
+					'owner':    "N/A",
+					'group':    "N/A",
+				}
 
 				try:
 					secDesc = conn.getSecurity(share_name,path_without_share)
 
 					if app.config['WBINFO_LOOKUP']:
-						data['owner'] = bargate.lib.core.wb_sid_to_name(str(secDesc.owner))
-						data['group'] = bargate.lib.core.wb_sid_to_name(str(secDesc.group))
+						data['owner'] = wb_sid_to_name(str(secDesc.owner))
+						data['group'] = wb_sid_to_name(str(secDesc.group))
 					else:
 						data['owner'] = str(secDesc.owner)
 						data['group'] = str(secDesc.group)
@@ -380,9 +383,6 @@ class backend_pysmb:
 					)
 
 				elif 'xhr' in request.args:
-
-					## NORMAL BROWSE
-
 					try:
 						directory_entries = conn.listPath(share_name,path_without_share)
 					except Exception as ex:
@@ -453,24 +453,24 @@ class backend_pysmb:
 			###############################
 			# POST: UPLOAD
 			###############################
-			if action == 'jsonupload':
+			if action == 'upload':
 				ret = []
 
 				uploaded_files = request.files.getlist("files[]")
 			
 				for ufile in uploaded_files:
 			
-					if bargate.lib.core.banned_file(ufile.filename):
+					if banned_file(ufile.filename):
 						ret.append({'name' : ufile.filename, 'error': 'Filetype not allowed'})
 						continue
 					
 					## Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
-					filename = bargate.lib.core.secure_filename(ufile.filename)
+					filename = secure_filename(ufile.filename)
 					upload_path = path_without_share + '/' + filename
 
 					## Check the new file name is valid
 					try:
-						bargate.lib.core.check_name(filename)
+						check_name(filename)
 					except ValueError as e:
 						ret.append({'name' : ufile.filename, 'error': 'Filename not allowed'})
 						continue
@@ -532,15 +532,13 @@ class backend_pysmb:
 
 				## Check the new file name is valid
 				try:
-					bargate.lib.core.check_name(new_name)
+					check_name(new_name)
 				except ValueError as e:
 					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
 				## Build paths
 				old_path = path_without_share + "/" + old_name
 				new_path = path_without_share + "/" + new_name
-
-				app.logger.debug("asked to rename from " + old_path + " to " + new_path)
 
 				## Check existing file/directory exists
 				try:
@@ -556,10 +554,8 @@ class backend_pysmb:
 				try:
 					conn.rename(share_name,old_path,new_path)
 				except Exception as ex:
-					app.logger.debug(ex)
 					return jsonify({'code': 1, 'msg': 'Unable to rename: ' + str(type(ex))})
 				else:
-					app.logger.debug("Renamed from " + old_path + " to " + new_path)
 					return jsonify({'code': 0, 'msg': "The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
 
 			###############################
@@ -574,7 +570,7 @@ class backend_pysmb:
 
 				## check the proposed new name is valid
 				try:
-					bargate.lib.core.check_name(dest)
+					check_name(dest)
 				except ValueError as e:
 					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
@@ -630,7 +626,7 @@ class backend_pysmb:
 
 				## check the proposed new name is valid
 				try:
-					bargate.lib.core.check_name(dirname)
+					check_name(dirname)
 				except ValueError as e:
 					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
@@ -638,7 +634,7 @@ class backend_pysmb:
 					conn.createDirectory(share_name,path_without_share + "/" + dirname)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to create the directory'})
-
+				
 				return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
 			###############################
@@ -652,7 +648,7 @@ class backend_pysmb:
 
 				delete_path  = path_without_share + "/" + delete_name
 
-				try:
+				try:/
 					sfile = conn.getAttributes(share_name,delete_path)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to check the file to be deleted'})
@@ -828,7 +824,7 @@ class backend_pysmb:
 
 			# modification time (last write)
 			entry['mtime_raw'] = sfile.last_write_time
-			entry['mtime']     = bargate.lib.core.ut_to_string(sfile.last_write_time)
+			entry['mtime']     = ut_to_string(sfile.last_write_time)
 
 			## Image previews
 			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:

@@ -367,7 +367,7 @@ function prepFileUpload() {
 		url: $browse.url,
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
-		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'jsonupload'}],
+		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}],
 		start: function (e) {
 			$('#upload-drag-over').modal('hide');
 			$('#upload-file').modal()
@@ -525,11 +525,6 @@ function showDelete() {
 	$('#e-delete-m').modal('show');
 }
 
-function showMkdir() {
-	$('#e-mkdir-m').modal('show');
-	$('#e-mkdir-i').focus();
-}
-
 function notifySuccess(msg) {
 	$.notify({ icon: 'fa fa-fw fa-check', message: msg },{ type: 'success', placement: {align: 'center', from: 'bottom'}});
 }
@@ -568,7 +563,7 @@ function doCopy() {
 
 function doMkdir() {
 	$('#mkdir-m').modal('hide');
-	$.post( $browse.entryDirUrl, { action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
+	$.post( $browse.url, { action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Could not create directory","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -577,7 +572,7 @@ function doMkdir() {
 				showErr("Could not create directory",data.msg);
 			} else {
 				notifySuccess(data.msg);
-				loadDir($browse.entryDirUrl);
+				loadDir($browse.url);
 			}
 	});
 }
