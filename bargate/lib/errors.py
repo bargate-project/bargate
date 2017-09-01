@@ -33,12 +33,7 @@ def stderr(title,message,redirect_to=None):
 	shown to the user. Redirect should be a string returned from flask redirect().
 	"""
 	
-	debug = ""
-	
-	if app.debug:
-		if app.config['DEBUG_FULL_ERRORS']:
-			debug = traceback.format_exc()
-			redirect_to = None
+	debug = traceback.format_exc()
 			
 	if redirect_to == None:
 		return render_template('error.html',title=title,message=message,debug=debug), 200

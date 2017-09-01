@@ -25,8 +25,8 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<tr class="edir" data-icon="{{entry.icon}}" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
-			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
+		<tr class="edir" data-icon="fa fa-fw fa-folder" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
+			<td class="text-center"><span class="fa fa-fw fa-folder"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
 			<td>.1111{{entry.name}}</td>

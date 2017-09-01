@@ -159,7 +159,7 @@ class backend_pysmb:
 		if len(path) > 0:
 			(a,b,entry_name) = path.rpartition('/')
 		else:
-			entry_name = ""
+			entry_name = u""
 
 		## Check the path is not bad/dangerous
 		try:
@@ -195,7 +195,6 @@ class backend_pysmb:
 					if len(shares) == 0:
 						no_items = True
 
-					## Render the template
 					return render_template('directory-' +  bargate.lib.userdata.get_layout() + '.html',
 						active=active,
 						dirs=[], files=[], shares=shares, crumbs=[], path=path,
@@ -207,7 +206,6 @@ class backend_pysmb:
 						bmark_enabled=False,
 						func_name = func_name,
 						root_display_name = display_name,
-						on_file_click=bargate.lib.userdata.get_on_file_click(),
 						no_items = no_items,
 					)
 				else:
@@ -367,9 +365,6 @@ class backend_pysmb:
 					self._init_search(conn,func_name,share_name,path,path_without_share,query)
 					results, timeout_reached = self._search()
 
-					#if timeout_reached:
-					#	flash("Some search results have been omitted because the search took too long to perform.","alert-warning")
-
 					return render_template('search.html',
 						timeout_reached = timeout_reached,
 						results=results,
@@ -382,7 +377,7 @@ class backend_pysmb:
 						bmark_enabled=False,
 						url_home=url_for(func_name),
 						crumbs=crumbs,
-						on_file_click=bargate.lib.userdata.get_on_file_click())
+					)
 
 				elif 'xhr' in request.args:
 
@@ -446,7 +441,6 @@ class backend_pysmb:
 						bmark_enabled=bmark_enabled,
 						func_name = func_name,
 						root_display_name = display_name,
-						on_file_click=bargate.lib.userdata.get_on_file_click(),
 						no_items = no_items,
 					)
 				else:
@@ -801,17 +795,12 @@ class backend_pysmb:
 		else:
 			entry['path'] = path + '/' + entry['name']
 
-		## Hide hidden files if the user has selected to do so (the default)
+		## hidden files
 		if not bargate.lib.userdata.get_show_hidden_files():
-			## UNIX hidden files
 			if entry['name'].startswith('.'):
 				entry['skip'] = True
-
-			## Office temporary files
 			if entry['name'].startswith('~$'):
 				entry['skip'] = True
-
-			## Other horrible Windows files
 			if entry['name'] in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
 				entry['skip'] = True
 
@@ -821,7 +810,6 @@ class backend_pysmb:
 		# Directories
 		if sfile.isDirectory:
 			entry['type'] = 'dir'
-			entry['icon'] = 'fa fa-fw fa-folder'
 			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 			entry['url']  = url_for(func_name,path=entry['path'])
 
@@ -837,7 +825,6 @@ class backend_pysmb:
 			## Generate URLs to this file
 			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
 			entry['download']     = url_for(func_name,path=entry['path'],action='download')
-			entry['open']         = entry['download']
 
 			# modification time (last write)
 			entry['mtime_raw'] = sfile.last_write_time
@@ -851,7 +838,6 @@ class backend_pysmb:
 			## View-in-browser download type
 			if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
 				entry['view'] = url_for(func_name,path=entry['path'],action='view')
-				entry['open'] = entry['view']
 
 		return entry
 
