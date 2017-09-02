@@ -15,17 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from bargate import app
-import string, os, io, smbc, sys, stat, pprint, urllib, re, time, glob
-import StringIO, traceback
+# standard library
+import os       # used in file modes when writing to files
+import io       # used for 'default buffer size'
+import stat     # used for checking file type via unix mode
+import urllib   # used in SMBClientWrapper for URL-quoting strings
+import time     # used in search (timeout)
+import StringIO # used in image previews
+import uuid     # used in creating bookmarks
+
+# third party libs
+import smbc
 from flask import send_file, request, session, g, redirect, url_for
 from flask import abort, flash, make_response, jsonify, render_template
+
+# bargate imports
+from bargate import app
 from bargate.lib.core import banned_file, secure_filename, check_path
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_name
-import bargate.lib.errors
-from bargate.lib.errors import stderr
-import bargate.lib.userdata
-import bargate.lib.mime
+from bargate.lib.errors import stderr, invalid_path
+from bargate.lib.user import get_smbc_auth
+from bargate.lib.userdata import get_show_hidden_files, get_layout
+from bargate.lib.userdata import get_overwrite_on_upload 
+from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
+from bargate.lib.mime import view_in_browser, pillow_supported
 
 # pysmbc entry types
 SMB_ERR         = -1
@@ -70,7 +83,7 @@ class SMBClientWrapper:
 	quoted str objects instead, making use of the library a lot easier"""
 
 	def __init__(self):
-		self.smbclient = smbc.Context(auth_fn=bargate.lib.user.get_smbc_auth)
+		self.smbclient = smbc.Context(auth_fn=get_smbc_auth)
 
 	def _convert(self,url):
 		# input will be of the form smb://location.location/path/path/path
@@ -133,7 +146,7 @@ class SMBClientWrapper:
 ################################################################################
 ################################################################################
 
-class backend_pysmbc:
+class BargateSMBLibrary:
 
 ################################################################################
 
@@ -162,7 +175,7 @@ class backend_pysmbc:
 		try:
 			check_path(path)
 		except ValueError as e:
-			return bargate.lib.errors.invalid_path()
+			return invalid_path()
 
 		## Build the URI
 		uri = srv_path + path
@@ -209,11 +222,11 @@ class backend_pysmbc:
 					attach = True
 
 					## guess a mimetype
-					(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
+					(ftype,mtype) = filename_to_mimetype(entry_name)
 
 					## If the user requested to 'view' (don't download as an attachment) make sure we allow it for that filetype
 					if action == 'view':
-						if bargate.lib.mime.view_in_browser(mtype):
+						if view_in_browser(mtype):
 							attach = False
 
 					## Send the file to the user
@@ -241,14 +254,14 @@ class backend_pysmbc:
 					abort(400)
 				
 				## guess a mimetype
-				(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
+				(ftype,mtype) = filename_to_mimetype(entry_name)
 
 				## Check size is not too large for a preview
 				if fstat.size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
 					abort(403)
 
 				## Only preview files that Pillow supports
-				if not mtype in bargate.lib.mime.pillow_supported:
+				if not mtype in pillow_supported:
 					abort(400)
 
 				## Open the file
@@ -288,7 +301,7 @@ class backend_pysmbc:
 					return jsonify({'error': 1, 'reason': 'You cannot stat a directory!'})
 
 				# guess mimetype
-				(ftype, mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
+				(ftype, mtype) = filename_to_mimetype(entry_name)
 
 				data = {
 					'filename': entry_name,
@@ -356,7 +369,7 @@ class backend_pysmbc:
 					try:
 						directory_entries = libsmbclient.ls(uri)
 					except smbc.NotDirectoryError as ex:
-						return bargate.lib.errors.stderr("Bargate is misconfigured","The path given for the share " + func_name + " is not a directory!")
+						return stderr("Bargate is misconfigured","The path given for the share " + func_name + " is not a directory!")
 					except Exception as ex:
 						return self.smb_error(ex)
 
@@ -403,7 +416,7 @@ class backend_pysmbc:
 								crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
 								b4 = b4 + crumb + '/'
 
-					return render_template('directory-' + bargate.lib.userdata.get_layout() + '.html',
+					return render_template('directory-' + get_layout() + '.html',
 						active=active,
 						dirs=dirs,
 						files=files,
@@ -466,7 +479,6 @@ class backend_pysmbc:
 						app.logger.debug("Upload filename of " + upload_uri + " does not exist, ignoring")
 						## It doesn't exist so lets continue to upload
 					except Exception as ex:
-						#app.logger.error("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 						ret.append({'name' : ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
 						continue
 
@@ -482,7 +494,7 @@ class backend_pysmbc:
 							## We're truncating an existing file, or creating a new file
 							## If the file already exists, check to see if we should overwrite
 							if fstat is not None:
-								if not bargate.lib.userdata.get_overwrite_on_upload():
+								if not get_overwrite_on_upload():
 									ret.append({'name' : ufile.filename, 'error': 'File already exists. You can enable overwriting files in Settings.'})
 									continue
 
@@ -511,7 +523,6 @@ class backend_pysmbc:
 						ret.append({'name' : ufile.filename})
 
 					except Exception as ex:
-						#app.logger.error("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 						ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
 						continue
 					
@@ -546,7 +557,7 @@ class backend_pysmbc:
 				elif fstat.type == SMB_DIR:
 					typestr = "directory"
 				else:
-					return bargate.lib.errors.invalid_item_type()
+					return jsonify({'code': 1, 'msg': 'You can only rename files or folders!'})
 
 				try:
 					libsmbclient.rename(old_path,new_path)
@@ -801,7 +812,7 @@ class backend_pysmbc:
 			entry['path'] = path + '/' + entry['name']
 
 		## hide files which we consider 'hidden'
-		if not bargate.lib.userdata.get_show_hidden_files():
+		if not get_show_hidden_files():
 			if entry['name'].startswith('.'):
 				entry['skip'] = True
 			if entry['name'].startswith('~$'):
@@ -828,8 +839,8 @@ class backend_pysmbc:
 		if entry['type'] == SMB_FILE:
 			## Generate 'mtype', 'mtype_raw' and 'icon'
 			entry['icon'] = 'fa fa-fw fa-file-text-o'
-			(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
-			entry['icon'] = bargate.lib.mime.mimetype_to_icon(entry['mtype_raw'])
+			(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
+			entry['icon'] = mimetype_to_icon(entry['mtype_raw'])
 
 			## Generate URLs to this file
 			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
@@ -851,14 +862,14 @@ class backend_pysmbc:
 			entry['size']      = fstat.size
 
 			## Image previews
-			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
+			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in pillow_supported:
 				if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 					entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
 			else:
 				entry['size'] = 0
 
 			## View-in-browser download type
-			if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
+			if view_in_browser(entry['mtype_raw']):
 				entry['view'] = url_for(func_name,path=entry['path'],action='view')
 
 		elif entry['type'] == SMB_DIR:

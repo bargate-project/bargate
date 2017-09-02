@@ -24,11 +24,15 @@ import traceback
 # Load the SMB library
 try:
 	if app.config['SMB_LIBRARY'] == "pysmbc":
-		from bargate.lib.smblib_pysmbc import backend_pysmbc
-		app.set_smb_library(backend_pysmbc())
+		# libsmbclient backend
+		from bargate.lib.smblib_pysmbc import BargateSMBLibrary
 	elif app.config['SMB_LIBRARY'] == "pysmb":
-		from bargate.lib.smblib_pysmb import backend_pysmb
-		app.set_smb_library(backend_pysmb())
+		# pure python pysmb backend
+		from bargate.lib.smblib_pysmb import BargateSMBLibrary
+	else:
+		raise Exception("SMB_LIBRARY is set to an unknown library")
+
+	app.set_smb_library(BargateSMBLibrary())
 except Exception as ex:
 	app.logger.error("Could not load the SMB library: " + str(type(ex)) + " " + str(ex))
 	app.logger.error(traceback.format_exc())

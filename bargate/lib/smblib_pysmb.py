@@ -15,24 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from bargate import app
-import string, os, io, sys, stat, re, StringIO, glob
-import traceback, socket, tempfile, time, uuid
-from flask import send_file, request, session, g, url_for, abort
-from flask import flash, make_response, jsonify, render_template
-from bargate.lib.core import banned_file, secure_filename, check_name
-from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
-from bargate.lib.errors import stderr, invalid_path
-import bargate.lib.userdata
-import bargate.lib.mime
-import bargate.views.errors
+# standard library
+import StringIO # used in image previews
+import time     # used in time
+import socket   # used to get the local hostname to send to the SMB server
+import tempfile # used for reading from files on the smb server
+import time     # used in search (timeout)
+import uuid     # used in creating bookmarks
 
+# third party libs
 from smb.SMBConnection import SMBConnection
 from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
 from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
+from flask import send_file, request, session, g, url_for, abort
+from flask import flash, make_response, jsonify, render_template
 from PIL import Image
 
-class backend_pysmb:
+# bargate imports
+from bargate import app
+from bargate.lib.core import banned_file, secure_filename, check_name
+from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
+from bargate.lib.errors import stderr, invalid_path
+from bargate.lib.userdata import get_show_hidden_files, get_layout
+from bargate.lib.userdata import get_overwrite_on_upload 
+from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
+from bargate.lib.mime import view_in_browser, pillow_supported
+
+class BargateSMBLibrary:
 
 ################################################################################
 
@@ -200,7 +209,7 @@ class backend_pysmb:
 					if len(shares) == 0:
 						no_items = True
 
-					return render_template('directory-' +  bargate.lib.userdata.get_layout() + '.html',
+					return render_template('directory-' +  get_layout() + '.html',
 						active=active,
 						dirs=[], files=[], shares=shares, crumbs=[], path=path,
 						url_home=url_for(func_name),
@@ -237,11 +246,11 @@ class backend_pysmb:
 						abort(400)
 
 					## guess a mimetype
-					(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
+					(ftype,mtype) = filename_to_mimetype(entry_name)
 
 					## If the user requested to 'view' (don't download as an attachment) make sure we allow it for that filetype
 					if action == 'view':
-						if bargate.lib.mime.view_in_browser(mtype):
+						if view_in_browser(mtype):
 							attach = False
 
 					## pysmb wants to write to a file, rather than provide a file-like object to read from. EUGH.
@@ -278,14 +287,14 @@ class backend_pysmb:
 					abort(400)
 			
 				## guess a mimetype
-				(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
+				(ftype,mtype) = filename_to_mimetype(entry_name)
 		
 				## Check size is not too large for a preview
 				if sfile.file_size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
 					abort(403)
 			
 				## Only preview files that Pillow supports
-				if not mtype in bargate.lib.mime.pillow_supported:
+				if not mtype in pillow_supported:
 					abort(400)
 
 				## read the file
@@ -320,7 +329,7 @@ class backend_pysmb:
 					return jsonify({'error': 1, 'reason': 'You cannot stat a directory!'})
 
 				# guess mimetype
-				(ftype, mtype) = bargate.lib.mime.filename_to_mimetype(sfile.filename)
+				(ftype, mtype) = filename_to_mimetype(sfile.filename)
 
 				data = {
 					'filename': sfile.filename,
@@ -431,7 +440,7 @@ class backend_pysmb:
 						bmark_enabled = True
 
 					## Render the template
-					return render_template('directory-' +  bargate.lib.userdata.get_layout() + '.html',
+					return render_template('directory-' +  get_layout() + '.html',
 						active=active,
 						dirs=dirs,
 						files=files,
@@ -500,7 +509,7 @@ class backend_pysmb:
 						## We're truncating an existing file, or creating a new file
 						## If the file already exists, check to see if we should overwrite
 						if file_already_exists:
-							if not bargate.lib.userdata.get_overwrite_on_upload():
+							if not get_overwrite_on_upload():
 								ret.append({'name' : ufile.filename, 'error': 'File already exists. You can enable overwriting files in Settings.'})
 								continue
 
@@ -518,7 +527,6 @@ class backend_pysmb:
 
 						ret.append({'name' : ufile.filename})
 					except Exception as ex:
-						app.logger.debug("Exception when uploading a file: " + str(type(ex)) + ": " + str(ex) + traceback.format_exc())
 						## TODO... need better error handling here, but it means delving through OperationFailure error codes :(
 						ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(type(ex))})
 						continue
@@ -797,7 +805,7 @@ class backend_pysmb:
 			entry['path'] = path + '/' + entry['name']
 
 		## hidden files
-		if not bargate.lib.userdata.get_show_hidden_files():
+		if not get_show_hidden_files():
 			if entry['name'].startswith('.'):
 				entry['skip'] = True
 			if entry['name'].startswith('~$'):
@@ -820,8 +828,8 @@ class backend_pysmb:
 
 			## Generate 'mtype', 'mtype_raw' and 'icon'
 			entry['icon'] = 'fa fa-fw fa-file-text-o'
-			(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
-			entry['icon'] = bargate.lib.mime.mimetype_to_icon(entry['mtype_raw'])
+			(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
+			entry['icon'] = mimetype_to_icon(entry['mtype_raw'])
 
 			## Generate URLs to this file
 			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
@@ -832,12 +840,12 @@ class backend_pysmb:
 			entry['mtime']     = ut_to_string(sfile.last_write_time)
 
 			## Image previews
-			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
+			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in pillow_supported:
 				if int(entry['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 					entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
 
 			## View-in-browser download type
-			if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
+			if view_in_browser(entry['mtype_raw']):
 				entry['view'] = url_for(func_name,path=entry['path'],action='view')
 
 		return entry
