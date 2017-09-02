@@ -28,11 +28,13 @@ import uuid     # used in creating bookmarks
 import smbc
 from flask import send_file, request, session, g, redirect, url_for
 from flask import abort, flash, make_response, jsonify, render_template
+from PIL import Image
 
 # bargate imports
 from bargate import app
 from bargate.lib.core import banned_file, secure_filename, check_path
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_name
+from bargate.lib.core import EntryType
 from bargate.lib.errors import stderr, invalid_path
 from bargate.lib.user import get_smbc_auth
 from bargate.lib.userdata import get_show_hidden_files, get_layout
@@ -40,24 +42,12 @@ from bargate.lib.userdata import get_overwrite_on_upload
 from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
 from bargate.lib.mime import view_in_browser, pillow_supported
 
-# pysmbc entry types
-SMB_ERR         = -1
-SMB_OTHER       = 0
-SMB_WORKGROUP   = 1
-SMB_SERVER      = 2
-SMB_SHARE       = 3
-SMB_PRINTER     = 4
-SMB_COMMS_SHARE = 5
-SMB_IPC         = 6
-SMB_DIR         = 7
-SMB_FILE        = 8
-SMB_LINK        = 9
-
-### Python imaging stuff
-from PIL import Image
-
 class FileStat:
-	def __init(self,fstat):
+	"""A wrapper class to stat data returned from pysmbc. This class just makes
+	it easier to access the data and also provides a 'type' attribute that the
+	normal stat doesn't bother with"""
+
+	def __init__(self,fstat):
 		self.mode  = fstat[0] # permissions mode
 		self.ino   = fstat[1] # inode number
 		self.dev   = fstat[2] # device number
@@ -70,11 +60,11 @@ class FileStat:
 		self.ctime = fstat[9] # change time
 
 		if stat.S_ISDIR(self.mode):
-			self.type = SMB_DIR
+			self.type = EntryType.dir
 		elif stat.S_ISREG(self.mode):
-			self.type = SMB_FILE
+			self.type = EntryType.file
 		else:
-			self.type = SMB_OTHER
+			self.type = EntryType.other
 
 class SMBClientWrapper:
 	"""the pysmbc library expects URL quoted str objects (as in, Python 2.x
@@ -101,7 +91,7 @@ class SMBClientWrapper:
 			return "smb://" + server + "/" + urllib.quote(path.encode('utf-8'))
 		else:
 			# uh.. hope for the best?
-			return var
+			return "smb://" + url
 
 	def stat(self,url):
 		if url.endswith('/'):
@@ -151,8 +141,6 @@ class BargateSMBLibrary:
 ################################################################################
 
 	def smb_action(self,srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
-
-		app.logger.debug("path was " + path + " on " + request.url)
 
 		## default the 'active' variable to the function name
 		if active == None:
@@ -212,7 +200,7 @@ class BargateSMBLibrary:
 				except Exception as ex:
 					return self.smb_error(ex)
 
-				if not fstat.type == SMB_FILE:
+				if not fstat.type == EntryType.file:
 					abort(400)
 
 				try:
@@ -250,7 +238,7 @@ class BargateSMBLibrary:
 					abort(400)
 
 				## ensure item is a file
-				if not fstat.type == SMB_FILE:
+				if not fstat.type == EntryType.file:
 					abort(400)
 				
 				## guess a mimetype
@@ -294,10 +282,12 @@ class BargateSMBLibrary:
 				try:
 					fstat = libsmbclient.stat(uri)
 				except Exception as ex:
+					import traceback
+					app.logger.debug(traceback.format_exc())
 					return jsonify({'error': 1, 'reason': 'An error occured: ' + str(type(ex)) + ": " + str(ex)})
 
 				## ensure item is a file
-				if not fstat.type == SMB_FILE:
+				if not fstat.type == EntryType.file:
 					return jsonify({'error': 1, 'reason': 'You cannot stat a directory!'})
 
 				# guess mimetype
@@ -383,11 +373,11 @@ class BargateSMBLibrary:
 						if not entry['skip']:
 							entry = self._direntry_process(entry,libsmbclient,func_name)
 
-							if entry['type'] == SMB_FILE:
+							if entry['type'] == EntryType.file:
 								files.append(entry)
-							elif entry['type'] == SMB_DIR:
+							elif entry['type'] == EntryType.dir:
 								dirs.append(entry)
-							elif entry['type'] == SMB_SHARE:
+							elif entry['type'] == EntryType.share:
 								shares.append(entry)
 
 					bmark_enabled        = False
@@ -500,7 +490,7 @@ class BargateSMBLibrary:
 
 								## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
 								itemType = self.etype(libsmbclient,upload_uri)
-								if itemType == SMB_DIR:
+								if itemType == EntryType.dir:
 									ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
 									continue
 
@@ -552,9 +542,9 @@ class BargateSMBLibrary:
 				## get the item type of the existing 'filename'
 				fstat = libsmbclient.stat(old_path)
 
-				if fstat.type == SMB_FILE:
+				if fstat.type == EntryType.file:
 					typestr = "file"
-				elif fstat.type == SMB_DIR:
+				elif fstat.type == EntryType.dir:
 					typestr = "directory"
 				else:
 					return jsonify({'code': 1, 'msg': 'You can only rename files or folders!'})
@@ -592,7 +582,7 @@ class BargateSMBLibrary:
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file you tried to copy does not exist or could not be read'})
 
-				if not source_stat.type == SMB_FILE:
+				if not source_stat.type == EntryType.file:
 					return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
 
 				## Make sure the dest file doesn't exist
@@ -665,7 +655,7 @@ class BargateSMBLibrary:
 
 				fstat = libsmbclient.stat(delete_path)
 
-				if fstat.type == SMB_FILE:
+				if fstat.type == EntryType.file:
 					try:
 						libsmbclient.delete(delete_path)
 					except Exception as ex:
@@ -673,7 +663,7 @@ class BargateSMBLibrary:
 					else:
 						return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 
-				elif fstat.type == SMB_DIR:
+				elif fstat.type == EntryType.dir:
 					try:
 						libsmbclient.rmdir(delete_path)
 					except Exception as ex:
@@ -781,7 +771,7 @@ class BargateSMBLibrary:
 				self.results.append(entry)
 
 			## Search subdirectories if we found one
-			if entry['type'] == SMB_DIR:
+			if entry['type'] == EntryType.dir:
 				if len(path) > 0:
 					sub_path = path + "/" + entry['name']
 				else:
@@ -820,15 +810,15 @@ class BargateSMBLibrary:
 			if entry['name'] in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
 				entry['skip'] = True
 
-		if dentry.smbc_type in [SMB_FILE, SMB_DIR, SMB_SHARE]:
+		if dentry.smbc_type in [EntryType.file, EntryType.dir, EntryType.share]:
 			entry['type'] = dentry.smbc_type
 
-			if dentry.smbc_type == SMB_SHARE:
+			if dentry.smbc_type == EntryType.share:
 				if entry['name'].endswith == "$":
 					entry['skip'] = True
 
 		else:
-			entry['type'] = SMB_OTHER
+			entry['type'] = EntryType.other
 			entry['skip'] = True
 
 		return entry
@@ -836,7 +826,7 @@ class BargateSMBLibrary:
 ################################################################################
 
 	def _direntry_process(self,entry,libsmbclient,func_name):
-		if entry['type'] == SMB_FILE:
+		if entry['type'] == EntryType.file:
 			## Generate 'mtype', 'mtype_raw' and 'icon'
 			entry['icon'] = 'fa fa-fw fa-file-text-o'
 			(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
@@ -872,11 +862,11 @@ class BargateSMBLibrary:
 			if view_in_browser(entry['mtype_raw']):
 				entry['view'] = url_for(func_name,path=entry['path'],action='view')
 
-		elif entry['type'] == SMB_DIR:
+		elif entry['type'] == EntryType.dir:
 			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
 			entry['url']  = url_for(func_name,path=entry['path'])
 
-		elif entry['type'] == SMB_SHARE:
+		elif entry['type'] == EntryType.share:
 			entry['url'] = url_for(func_name,path=entry['path'])
 
 		return entry

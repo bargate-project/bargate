@@ -23,6 +23,7 @@
 
 from flask import Flask, request, session, g, abort, render_template, url_for
 from bargate import app
+from bargate.lib.core import EntryType
 import bargate.lib.userdata
 import bargate.lib.errors
 import redis
@@ -81,6 +82,8 @@ def context_processor():
 		data['favicon'] = url_for('local_static', filename='favicon.ico')
 	else:
 		data['favicon'] = url_for('static', filename='favicon.ico')
+
+	data['type'] = EntryType
 
 	return data
 

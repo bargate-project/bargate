@@ -177,6 +177,8 @@ function doListView() {
 function doBrowse() {
 	$(".edir").click(function() {
 		loadDir( $(this).data('url') );
+		event.preventDefault();
+		event.stopPropagation();
 	});
 
 	$(".eshare").click(function() {

@@ -22,6 +22,16 @@ import re
 
 ################################################################################
 
+class EntryType:
+	# these values are taken from libsmbclient/samba
+	other = 0
+	share = 3
+	dir   = 7
+	file  = 8
+	link  = 9
+
+################################################################################
+
 def ut_to_string(ut):
 	"""Converts unix time to a formatted string for human consumption
 	Used by smb.py for turning fstat results into human readable dates.

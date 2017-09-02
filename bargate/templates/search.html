@@ -9,23 +9,15 @@
 	</thead>
 	<tbody>
 		{%- for entry in results -%}
-		{% if entry['type'] == 'dir' %}	
-		<tr class="tdirclick" data-url="{{entry.url}}">
-		{% elif entry['type'] == 'file' %}
-			{%- if on_file_click == 'ask' %}
-			{#- POPUP DIALOG FOR FILES TR -#}
-			{%- set rclick = 'entry-preview' -%}
-		<tr class="entry-click" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-stat="{{ entry.stat }}" data-parent="{{entry.parent_url}}">
-			{%- else %}
-			{#- INSTANTLY VIEW/DOWNLOAD TR -#}
-			{%- set rclick = 'entry-open' -%}
-		<tr class="entry-click" data-url="{% if on_file_click == 'download' %} {{entry.download}} {% else %} {{entry.open}} {%endif%}">
-			{% endif %}
-		{% endif %}
-			<td class="{{rclick}} text-center"><span class="{{ entry.icon }} fa-2x"></span></td>
-			<td class="{{rclick}} dentry">{{ entry.name}}<br/>
-				<span class="text-muted">in <a class="dirclick" data-url="{{entry.parent_url}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
+		{% if entry.type == type.dir %}	
+		<tr class="edir" data-url="{{entry.url}}">
+		{% elif entry.type == type.file %}
+		<tr class="efile" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-stat="{{ entry.stat }}">
+			<td class="text-center"><span class="{{ entry.icon }} fa-2x"></span></td>
+			<td class="dentry">{{ entry.name}}<br/>
+				<span class="text-muted">in <a class="edir" data-url="{{entry.parent_url}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
 			</td>
+		{% endif %}
 		</tr>
 		{%- else -%}
 		<tr><td colspan="2"><em>No results found</em></td></tr>

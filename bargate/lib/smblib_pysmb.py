@@ -35,6 +35,7 @@ from PIL import Image
 from bargate import app
 from bargate.lib.core import banned_file, secure_filename, check_name
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
+from bargate.lib.core import EntryType
 from bargate.lib.errors import stderr, invalid_path
 from bargate.lib.userdata import get_show_hidden_files, get_layout
 from bargate.lib.userdata import get_overwrite_on_upload 
@@ -412,9 +413,9 @@ class BargateSMBLibrary:
 
 						# Don't add hidden files
 						if not entry['skip']:
-							if entry['type'] == 'file':
+							if entry['type'] == EntryType.file:
 								files.append(entry)
-							elif entry['type'] == 'dir':
+							elif entry['type'] == EntryType.dir:
 								dirs.append(entry)
 
 					## Build a breadcrumbs trail ##
@@ -824,7 +825,7 @@ class BargateSMBLibrary:
 
 		# Files
 		else:
-			entry['type'] = 'file'
+			entry['type'] = EntryType.file
 
 			## Generate 'mtype', 'mtype_raw' and 'icon'
 			entry['icon'] = 'fa fa-fw fa-file-text-o'
