@@ -27,11 +27,9 @@ from bargate.lib.errors import stderr
 import bargate.lib.userdata
 import bargate.lib.mime
 
-### Python imaging stuff
-from PIL import Image
-
-#### SMB entry types
+# pysmbc entry types
 SMB_ERR         = -1
+SMB_OTHER       = 0
 SMB_WORKGROUP   = 1
 SMB_SERVER      = 2
 SMB_SHARE       = 3
@@ -41,6 +39,29 @@ SMB_IPC         = 6
 SMB_DIR         = 7
 SMB_FILE        = 8
 SMB_LINK        = 9
+
+### Python imaging stuff
+from PIL import Image
+
+class FileStat:
+	def __init(self,fstat):
+		self.mode  = fstat[0] # permissions mode
+		self.ino   = fstat[1] # inode number
+		self.dev   = fstat[2] # device number
+		self.nlink = fstat[3] # number of links
+		self.uid   = fstat[4] # user ID
+		self.gid   = fstat[5] # group ID
+		self.size  = fstat[6] # size in bytes
+		self.atime = fstat[7] # access time
+		self.mtime = fstat[8] # modify time
+		self.ctime = fstat[9] # change time
+
+		if stat.S_ISDIR(self.mode):
+			self.type = SMB_DIR
+		elif stat.S_ISREG(self.mode):
+			self.type = SMB_FILE
+		else:
+			self.type = SMB_OTHER
 
 class SMBClientWrapper:
 	"""the pysmbc library expects URL quoted str objects (as in, Python 2.x
@@ -70,8 +91,11 @@ class SMBClientWrapper:
 			return var
 
 	def stat(self,url):
+		if url.endswith('/'):
+			url = url[:-1]
+
 		url = self._convert(url)
-		return self.smbclient.stat(url)
+		return FileStat(self.smbclient.stat(url))
 
 	def open(self,url,mode=None):
 		url = self._convert(url)
@@ -113,163 +137,6 @@ class backend_pysmbc:
 
 ################################################################################
 
-	def _estat(self,libsmbclient,url):
-		"""Run stat() on a URI and return a dictionary with friendly named keys"""
-
-		# Strip off trailing slashes as they're useless to us
-		if url.endswith('/'):
-			url = url[:-1]
-
-		fstat = libsmbclient.stat(url)
-
-		return {'mode':  fstat[0], 	## unix mode
-				'ino':   fstat[1], 	## inode number
-				'dev':   fstat[2], 	## device number
-				'nlink': fstat[3],	## number of links
-				'uid':   fstat[4], 	## user ID
-				'gid':   fstat[5], 	## group ID
-				'size':  fstat[6], 	## size in bytes
-				'atime': fstat[7],	## access time
-				'mtime': fstat[8],	## modify time
-				'ctime': fstat[9]	## change time
-		}
-
-################################################################################
-
-	def _etype(self,libsmbclient,uri):
-		## stat the file, st_mode has all the info we need
-
-		## Strip off trailing slashes as they're useless to us
-		if uri.endswith('/'):
-			uri = uri[:-1]
-
-		## stat the URI
-		try:
-			fstat = libsmbclient.stat(uri)
-		except Exception as ex:
-			return self.smb_error(ex,uri)
-
-		return self._stype(fstat)
-
-################################################################################
-
-	def _stype(self,fstat):
-
-		## get st_mode out of the stat tuple
-		st_mode = fstat[0]
-
-		## DIRECTORY
-		if stat.S_ISDIR(st_mode):
-			return SMB_DIR
-		elif stat.S_ISREG(st_mode):
-			return SMB_FILE	
-		elif stat.S_ISLNK(st_mode):
-			return SMB_LINK
-		else:
-			return -1
-
-################################################################################
-
-	def _direntry_load(self,dentry,srv_path, path):
-		entry = {'skip': False, 'name': dentry.name}
-
-		# old versions of pysmbc return 'str' objects rather than unicode
-		if isinstance(entry['name'], str):
-			entry['name'] = entry['name'].decode("utf-8")
-
-		## Skip entries for 'this dir' and 'parent dir'
-		if entry['name'] == '.' or entry['name'] == '..':
-			entry['skip'] = True
-
-		## Build the entire URI
-		entry['uri'] = srv_path + path + '/' + entry['name']
-
-		## Build the path
-		if len(path) == 0:
-			entry['path'] = entry['name']
-		else:
-			entry['path'] = path + '/' + entry['name']
-
-		## hide files which we consider 'hidden'
-		if not bargate.lib.userdata.get_show_hidden_files():
-			if entry['name'].startswith('.'):
-				entry['skip'] = True
-			if entry['name'].startswith('~$'):
-				entry['skip'] = True
-			if entry['name'] in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
-				entry['skip'] = True
-
-		if dentry.smbc_type == SMB_FILE:
-			entry['type'] = 'file'
-		elif dentry.smbc_type == SMB_DIR:
-			entry['type'] = 'dir'
-		elif dentry.smbc_type == SMB_SHARE:
-			entry['type'] = 'share'
-			if entry['name'].endswith == "$":
-				entry['skip'] = True
-		else:
-			entry['type'] = 'other'
-			entry['skip'] = True
-
-		return entry
-
-################################################################################
-
-	def _direntry_process(self,entry,libsmbclient,func_name):
-		if entry['type'] == 'file':
-			## Generate 'mtype', 'mtype_raw' and 'icon'
-			entry['icon'] = 'fa fa-fw fa-file-text-o'
-			(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
-			entry['icon'] = bargate.lib.mime.mimetype_to_icon(entry['mtype_raw'])
-
-			## Generate URLs to this file
-			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
-			entry['download']     = url_for(func_name,path=entry['path'],action='download')
-
-			try:
-				## For files we stat the file and look up a bunch of stuff
-				fstat = self._estat(libsmbclient,entry['uri'])
-			except Exception as ex:
-				## If the file stat failed we return a result with the data missing
-				## rather than fail the entire page load
-				entry['mtime_raw'] = 0
-				entry['mtime'] = "Unknown"
-				entry['size'] = 0
-				entry['error'] = True
-				return entry
-
-			if 'mtime' in fstat:
-				entry['mtime_raw'] = fstat['mtime']
-				entry['mtime']     = ut_to_string(fstat['mtime'])
-			else:
-				entry['mtime']     = 'Unknown'
-				entry['mtime_raw'] = 0
-
-			if 'size' in fstat:
-				entry['size'] = fstat['size']
-
-				## Image previews
-				if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
-					if int(fstat['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
-						entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
-			else:
-				entry['size'] = 0
-
-			## View-in-browser download type
-			if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
-				entry['view'] = url_for(func_name,path=entry['path'],action='view')
-
-		elif entry['type'] == 'dir':
-			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
-			entry['url']  = url_for(func_name,path=entry['path'])
-
-		elif entry['type'] == 'share':
-			entry['url'] = url_for(func_name,path=entry['path'])
-
-		return entry
-
-################################################################################
-
 	def smb_action(self,srv_path,func_name,active=None,display_name="Home",action='browse',path=''):
 
 		app.logger.debug("path was " + path + " on " + request.url)
@@ -289,7 +156,7 @@ class backend_pysmbc:
 
 		## srv_path should always start with smb://, we don't support anything else.
 		if not srv_path.startswith("smb://"):
-			return bargate.lib.errors.stderr("Invalid server path","The server URL must start with smb://")
+			return stderr("Invalid server path","The server URL must start with smb://")
 
 		## Check the path is valid
 		try:
@@ -298,7 +165,9 @@ class backend_pysmbc:
 			return bargate.lib.errors.invalid_path()
 
 		## Build the URI
-		uri        = srv_path + path
+		uri = srv_path + path
+		if uri.endswith('/'):
+			uri = uri[:-1]
 
 		## Work out the 'entry name'
 		if len(path) > 0:
@@ -328,9 +197,9 @@ class backend_pysmbc:
 				try:
 					fstat = libsmbclient.stat(uri)
 				except Exception as ex:
-					return self.smb_error(ex,uri)
+					return self.smb_error(ex)
 
-				if not self._stype(fstat) == SMB_FILE:
+				if not fstat.type == SMB_FILE:
 					abort(400)
 
 				try:
@@ -349,11 +218,11 @@ class backend_pysmbc:
 
 					## Send the file to the user
 					resp = make_response(send_file(file_object,add_etags=False,as_attachment=attach,attachment_filename=entry_name,mimetype=mtype))
-					resp.headers['content-length'] = str(fstat[6])
+					resp.headers['content-length'] = str(fstat.size)
 					return resp
 	
 				except Exception as ex:
-					return self.smb_error(ex,uri)
+					return self.smb_error(ex)
 
 			####################
 			# GET: IMAGE PREVIEW
@@ -368,14 +237,14 @@ class backend_pysmbc:
 					abort(400)
 
 				## ensure item is a file
-				if not self._stype(fstat) == SMB_FILE:
+				if not fstat.type == SMB_FILE:
 					abort(400)
 				
 				## guess a mimetype
 				(ftype,mtype) = bargate.lib.mime.filename_to_mimetype(entry_name)
 
 				## Check size is not too large for a preview
-				if fstat[6] > app.config['IMAGE_PREVIEW_MAX_SIZE']:
+				if fstat.size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
 					abort(403)
 
 				## Only preview files that Pillow supports
@@ -386,7 +255,7 @@ class backend_pysmbc:
 				try:
 					file_object = libsmbclient.open(uri)
 				except Exception as ex:
-					return self.smb_error(ex,uri)
+					abort(400)
 			
 				## Read the file into memory first (hence a file size limit) because PIL/Pillow tries readline()
 				## on pysmbc's File like objects which it doesn't support
@@ -415,7 +284,7 @@ class backend_pysmbc:
 					return jsonify({'error': 1, 'reason': 'An error occured: ' + str(type(ex)) + ": " + str(ex)})
 
 				## ensure item is a file
-				if not self._stype(fstat) == SMB_FILE:
+				if not fstat.type == SMB_FILE:
 					return jsonify({'error': 1, 'reason': 'You cannot stat a directory!'})
 
 				# guess mimetype
@@ -423,9 +292,9 @@ class backend_pysmbc:
 
 				data = {
 					'filename': entry_name,
-					'size':     fstat[6],
-					'atime':    ut_to_string(fstat[7]),
-					'mtime':    ut_to_string(fstat[8]),
+					'size':     fstat.size,
+					'atime':    ut_to_string(fstat.atime),
+					'mtime':    ut_to_string(fstat.mtime),
 					'ftype':    ftype,
 					'mtype':    mtype,
 					'owner':    "N/A",
@@ -466,7 +335,7 @@ class backend_pysmbc:
 							b4 = b4 + crumb + '/'
 
 					query = request.args.get('q')
-					self._init_search(conn,func_name,share_name,path,path_without_share,query)
+					self._init_search(libsmbclient,func_name,path,srv_path,query)
 					results, timeout_reached = self._search()
 
 					return render_template('search.html',
@@ -489,7 +358,7 @@ class backend_pysmbc:
 					except smbc.NotDirectoryError as ex:
 						return bargate.lib.errors.stderr("Bargate is misconfigured","The path given for the share " + func_name + " is not a directory!")
 					except Exception as ex:
-						return self.smb_error(ex,uri)
+						return self.smb_error(ex)
 
 					dirs   = []
 					files  = []
@@ -501,11 +370,11 @@ class backend_pysmbc:
 						if not entry['skip']:
 							entry = self._direntry_process(entry,libsmbclient,func_name)
 
-							if entry['type'] == 'file':
+							if entry['type'] == SMB_FILE:
 								files.append(entry)
-							elif entry['type'] == 'dir':
+							elif entry['type'] == SMB_DIR:
 								dirs.append(entry)
-							elif entry['type'] == 'share':
+							elif entry['type'] == SMB_SHARE:
 								shares.append(entry)
 
 					bmark_enabled        = False
@@ -670,11 +539,11 @@ class backend_pysmbc:
 				new_path = uri + "/" + new_name
 
 				## get the item type of the existing 'filename'
-				itemType = self._etype(libsmbclient,old_path)
+				fstat = libsmbclient.stat(old_path)
 
-				if itemType == SMB_FILE:
+				if fstat.type == SMB_FILE:
 					typestr = "file"
-				elif itemType == SMB_DIR:
+				elif fstat.type == SMB_DIR:
 					typestr = "directory"
 				else:
 					return bargate.lib.errors.invalid_item_type()
@@ -712,10 +581,7 @@ class backend_pysmbc:
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file you tried to copy does not exist or could not be read'})
 
-				source_size = source_stat[6]
-				itemType = self._stype(source_stat)
-
-				if not itemType == SMB_FILE:
+				if not source_stat.type == SMB_FILE:
 					return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
 
 				## Make sure the dest file doesn't exist
@@ -742,7 +608,7 @@ class backend_pysmbc:
 				## copy the data in 1024 byte chunks
 				try:
 					location = 0
-					while(location >= 0 and location < source_size):
+					while(location >= 0 and location < source_stat.size):
 						chunk = source_fh.read(1024)
 						dest_fh.write(chunk)
 						location = source_fh.seek(1024,location)
@@ -775,63 +641,103 @@ class backend_pysmbc:
 
 				return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
-	################################################################################
-	# DELETE FILE
-	################################################################################
-
+			###############################
+			# POST: DELETE
+			###############################
 			elif action == 'delete':
-				## get the item type of the entry we've been asked to delete
-				itemType = self._etype(libsmbclient,uri)
+				try:
+					delete_name = request.form['name']
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
 
-				if itemType == SMB_FILE:
-					try:
-						libsmbclient.delete(uri)
-					except Exception as ex:
-						return self.smb_error(ex,uri)
-					else:
-						flash("The file '" + entry_name + "' was deleted successfully.",'alert-success')
-						return parent_redirect
+				delete_path  = uri + "/" + delete_name
 
-				elif itemType == SMB_DIR:
+				fstat = libsmbclient.stat(delete_path)
+
+				if fstat.type == SMB_FILE:
 					try:
-						libsmbclient.rmdir(uri)
+						libsmbclient.delete(delete_path)
 					except Exception as ex:
-						return self.smb_error(ex,uri)
+						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the file'})
 					else:
-						flash("The directory '" + entry_name + "' was deleted successfully.",'alert-success')
-						return parent_redirect
+						return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
+
+				elif fstat.type == SMB_DIR:
+					try:
+						libsmbclient.rmdir(delete_path)
+					except Exception as ex:
+						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the directory'})
+					else:
+						return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
 				else:
-					return bargate.lib.errors.invalid_item_type()
+					return jsonify({'code': 1, 'msg': 'You tried to delete something other than a file or directory'})
+
+			###############################
+			# POST: BOOKMARK
+			###############################
+			elif action == 'bookmark':
+
+				try:
+					bookmark_name     = request.form['name']
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+
+				try:
+					## Generate a unique identifier for this bookmark
+					bookmark_id = uuid.uuid4().hex
+
+					## Turn this into a redis key for the new bookmark
+					redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
+
+					## Store all the details of this bookmark in REDIS
+					g.redis.hset(redis_key,'version','2')
+					g.redis.hset(redis_key,'function', func_name)
+					g.redis.hset(redis_key,'path',path)
+					g.redis.hset(redis_key,'name',bookmark_name)
+
+					## if we're on a custom server then we need to store the URL 
+					## to that server otherwise the bookmark is useless.
+					if func_name == 'custom':
+						if 'custom_uri' in session:
+							g.redis.hset(redis_key,'custom_uri',session['custom_uri'])
+						else:
+							return jsonify({'code': 1, 'msg': 'Invalid request'})
+
+					## add the new bookmark name to the list of bookmarks for the user
+					g.redis.sadd('user:' + session['username'] + ':bookmarks',bookmark_id)
+
+					return jsonify({'code': 0, 'msg': 'Added bookmark ' + bookmark_name, 'url': url_for('bookmark',bookmark_id=bookmark_id)})
+
+				except Exception as ex:
+					return jsonify({'code': 1, 'msg': 'Could not save bookmark: ' + str(type(ex)) + " " + str(ex)})
 
 			else:
-				abort(400)
+				return jsonify({'code': 1, 'msg': "An invalid action was specified"})
 
 	############################################################################
 
 ################################################################################
 
-	def _init_search(self,libsmbclient,func_name,path,srv_path,uri,query):
-		self.libsmbclient    = libsmbclient
-		self.func_name       = func_name
-		self.path            = path
-		self.path_as_str     = path_as_str
-		self.srv_path_as_str = srv_path_as_str
-		self.uri_as_str      = uri_as_str
-		self.query           = query
+	def _init_search(self,libsmbclient,func_name,path,srv_path,query):
+		self.libsmbclient = libsmbclient
+		self.func_name    = func_name
+		self.path         = path
+		self.srv_path     = srv_path
+		self.query        = query
 
-		self.timeout_at      = int(time.time()) + app.config['SEARCH_TIMEOUT']
 		self.timeout_reached = False
 		self.results         = []
 
 	def _search(self):
-		self._rsearch(self.path,self.path_as_str,self.uri_as_str)
-		return self.results, self.timeout_reached
+		self.timeout_at = int(time.time()) + app.config['SEARCH_TIMEOUT']
+		self._rsearch(self.path)
+		return (self.results, self.timeout_reached)
 
-	def _rsearch(self,path, path_as_str, uri_as_str):
+	def _rsearch(self,path):
 		## Try getting directory contents of where we are
-		app.logger.debug("_rsearch called to search: " + uri_as_str)
+		app.logger.debug("_rsearch called to search: " + path)
 		try:
-			directory_entries = self.libsmbclient.list(uri)
+			directory_entries = self.libsmbclient.ls(self.srv_path + "/" + path)
 		except smbc.NotDirectoryError as ex:
 			return
 
@@ -849,7 +755,7 @@ class backend_pysmbc:
 				self.timeout_reached = True
 				break
 
-			entry = self._direntry_load(dentry, self.srv_path_as_str, path, path_as_str)
+			entry = self._direntry_load(dentry, self.srv_path, path)
 
 			## Skip hidden files
 			if entry['skip']:
@@ -864,101 +770,141 @@ class backend_pysmbc:
 				self.results.append(entry)
 
 			## Search subdirectories if we found one
-			if entry['type'] == 'dir':
+			if entry['type'] == SMB_DIR:
 				if len(path) > 0:
-					new_path        = path + "/" + entry['name']
-					new_path_as_str = path_as_str + "/" + entry['name']
+					sub_path = path + "/" + entry['name']
 				else:
-					new_path        = entry['name']
-					new_path_as_str = entry['name_as_str']
+					sub_path = entry['name']
 
-				self._rsearch(new_path, new_path_as_str, entry['uri'])
+				self._rsearch(sub_path)
+
+	############################################################################
+
+	def _direntry_load(self,dentry,srv_path, path):
+		entry = {'skip': False, 'name': dentry.name}
+
+		# old versions of pysmbc return 'str' objects rather than unicode
+		if isinstance(entry['name'], str):
+			entry['name'] = entry['name'].decode("utf-8")
+
+		## Skip entries for 'this dir' and 'parent dir'
+		if entry['name'] == '.' or entry['name'] == '..':
+			entry['skip'] = True
+
+		## Build the entire URI
+		entry['uri'] = srv_path + path + '/' + entry['name']
+
+		## Build the path
+		if len(path) == 0:
+			entry['path'] = entry['name']
+		else:
+			entry['path'] = path + '/' + entry['name']
+
+		## hide files which we consider 'hidden'
+		if not bargate.lib.userdata.get_show_hidden_files():
+			if entry['name'].startswith('.'):
+				entry['skip'] = True
+			if entry['name'].startswith('~$'):
+				entry['skip'] = True
+			if entry['name'] in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
+				entry['skip'] = True
+
+		if dentry.smbc_type in [SMB_FILE, SMB_DIR, SMB_SHARE]:
+			entry['type'] = dentry.smbc_type
+
+			if dentry.smbc_type == SMB_SHARE:
+				if entry['name'].endswith == "$":
+					entry['skip'] = True
+
+		else:
+			entry['type'] = SMB_OTHER
+			entry['skip'] = True
+
+		return entry
+
+################################################################################
+
+	def _direntry_process(self,entry,libsmbclient,func_name):
+		if entry['type'] == SMB_FILE:
+			## Generate 'mtype', 'mtype_raw' and 'icon'
+			entry['icon'] = 'fa fa-fw fa-file-text-o'
+			(entry['mtype'],entry['mtype_raw']) = bargate.lib.mime.filename_to_mimetype(entry['name'])
+			entry['icon'] = bargate.lib.mime.mimetype_to_icon(entry['mtype_raw'])
+
+			## Generate URLs to this file
+			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
+			entry['download']     = url_for(func_name,path=entry['path'],action='download')
+
+			try:
+				fstat = libsmbclient.stat(entry['uri'])
+			except Exception as ex:
+				## If the file stat failed we return a result with the data missing
+				## rather than fail the entire page load
+				entry['mtime_raw'] = 0
+				entry['mtime'] = "Unknown"
+				entry['size'] = 0
+				entry['error'] = True
+				return entry
+
+			entry['mtime_raw'] = fstat.mtime
+			entry['mtime']     = ut_to_string(fstat.mtime)
+			entry['size']      = fstat.size
+
+			## Image previews
+			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in bargate.lib.mime.pillow_supported:
+				if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
+					entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+			else:
+				entry['size'] = 0
+
+			## View-in-browser download type
+			if bargate.lib.mime.view_in_browser(entry['mtype_raw']):
+				entry['view'] = url_for(func_name,path=entry['path'],action='view')
+
+		elif entry['type'] == SMB_DIR:
+			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
+			entry['url']  = url_for(func_name,path=entry['path'])
+
+		elif entry['type'] == SMB_SHARE:
+			entry['url'] = url_for(func_name,path=entry['path'])
+
+		return entry
 
 	############################################################################
 	############################################################################
 
-	## handler for all exceptions generated by pysmbc
-	def smb_error(self,exception_object,uri="Unknown"):
-		"""Handles exceptions generated by pysmbc functions. It currently deals with
-		all known smbc exceptions. This will generate fancy formatted messages
-		for each smbc type.
-		"""
+	def smb_error_info(self,ex):
 
-		# PERMISSION DENIED
-		if isinstance(exception_object,smbc.PermissionError):
-			return self.smbc_PermissionDenied()
+		if isinstance(ex,smbc.PermissionError):
+			return ("Permission Denied","You do not have permission to perform the action")
 
-		# NO ENTRY (doesn't exist)
-		elif isinstance(exception_object,smbc.NoEntryError):
-			return self.smbc_NoEntryError(uri)
+		elif isinstance(ex,smbc.NoEntryError):
+			return ("No such file or directory","The file or directory was not found")
 
-		# NO SPACE LEFT ON DEVICE
-		elif isinstance(exception_object,smbc.NoSpaceError):
-			return self.smbc_NoSpaceError()
+		elif isinstance(ex,smbc.NoSpaceError):
+			return ("No space left on device","There is no space left on the server. You may have exceeded your usage allowance")
 
-		# FILE OR DIR ALREADY EXISTS
-		elif isinstance(exception_object,smbc.ExistsError):
-			return self.smbc_ExistsError(uri)
+		elif isinstance(ex,smbc.ExistsError):
+			return ("File or directory already exists","The file or directory you attempted to create already exists")
 
-		# DIRECTORY NOT EMPTY
-		elif isinstance(exception_object,smbc.NotEmptyError):
-			return self.smbc_NotEmptyError(uri)
+		elif isinstance(ex,smbc.NotEmptyError):
+			return ("The directory is not empty","The directory is not empty so cannot be deleted")
 
-		# TIMED OUT
-		elif isinstance(exception_object,smbc.TimedOutError):
-			return self.smbc_TimedOutError()
+		elif isinstance(ex,smbc.TimedOutError):
+			return ("Timed out","The current operation timed out. Please try again later")
 
-		# CONNECTION REFUSED
-		elif isinstance(exception_object,smbc.ConnectionRefusedError):
+		elif isinstance(ex,smbc.ConnectionRefusedError):
 			return self.smbc_ConnectionRefusedError()
 		
 		# pysmbc spits out RuntimeError when everything else fails
-		elif isinstance(exception_object,RuntimeError):
-			return self.smbc_RuntimeError()
+		elif isinstance(ex,RuntimeError):
+			return ("File Server Error","An unknown error was returned from the file server. Please contact your support team")
 
 		# ALL OTHER EXCEPTIONS
 		else:
-			return bargate.views.errors.error500(exception_object)
+			return ("Internal error",str(type(ex)) + " - " + str(ex))
 
-	## pysmbc errors
-
-	def smbc_NoEntryError(self,uri):
-		"""Prints out a nice error for smbc.NoEntryError exceptions"""
-		return stderr("No such file or directory","The file or directory '" + uri + "' was not found.")
-
-	def smbc_NotEmptyError(self,uri):
-		"""Prints out a nice error for smbc.NotEmptyError exceptions"""
-		return stderr("The directory is not empty","The directory '" + uri + "' is not empty so cannot be deleted.")
-
-	def smbc_PermissionDenied(self):
-		"""Prints out a nice error for smbc.PermissionDenied exceptions"""
-	
-		## Test to see if the password has changed since logon which would mean perm denied was password related
-		result = bargate.lib.user.auth(session['username'], bargate.lib.user.get_password())
-		if not result:
-			bargate.lib.user.logout()
-			flash('Your password has changed. You must login again.','alert-danger')
-			return redirect(url_for('login'))
-	
-		return stderr("Permission Denied","You do not have permission to perform the action.")
-
-	def smbc_ExistsError(self,uri):
-		"""Prints out a nice error for smbc.ExistsError exceptions"""
-		return stderr("File or directory already exists","The file or directory '" + uri + "' which you attempted to create already exists.")
-
-	def smbc_NoSpaceError(self):
-		"""Prints out a nice error for smbc.NoSpaceError exceptions"""
-		return stderr("No space left on device","There is no space left on the server. You may have exceeded your usage allowance/quota.")
-
-	def smbc_TimedOutError(self):
-		"""Prints out a nice error for smbc.TimedOutError exceptions"""
-		return stderr("Timed out","The current operation timed out. Please try again later.")
-	
-	def smbc_RuntimeError(self):
-		"""Prints out a nice error for RuntimeError when smbc is called"""
-		return stderr("File Server Error","An unknown error was returned from the file server. Please contact your support team.")
-
-	def smbc_ConnectionRefusedError(self):
-		"""Prints out a nice error for smbc.ConnectionRefusedError"""
-		return stderr("Connection Refused","The remote server refused our connection. Check the custom server address and try again")
+	def smb_error(self,ex):
+		(title, desc) = self.smb_error_info(ex)
+		return stderr(title,desc)
 

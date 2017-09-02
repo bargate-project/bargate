@@ -22,7 +22,7 @@ from flask import send_file, request, session, g, url_for, abort
 from flask import flash, make_response, jsonify, render_template
 from bargate.lib.core import banned_file, secure_filename, check_name
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
-import bargate.lib.errors
+from bargate.lib.errors import stderr, invalid_path
 import bargate.lib.userdata
 import bargate.lib.mime
 import bargate.views.errors
@@ -52,26 +52,31 @@ class backend_pysmb:
 
 ################################################################################
 
-	def smb_error(self,exception_object,uri="Unknown"):
+	def smb_error_info(self,ex):
 
 		# pysmb exceptions
-#		if isinstance(exception_object,SMBTimeout):
-#			return self._exSMBTimeout(redirect_to)
-#		if isinstance(exception_object,NotReadyError):
-#			return self._exNotReadyError(redirect_to)
-#		if isinstance(exception_object,NotConnectedError):
-#			return self._exNotConnectedError(redirect_to)
-#		if isinstance(exception_object,UnsupportedFeature):
-#			return self._exUnsupportedFeature(redirect_to)
-#		if isinstance(exception_object,ProtocolError):
-#			return self._exProtocolError(redirect_to)
-#		if isinstance(exception_object,OperationFailure):
-			#return self._exOperationFailure(redirect_to)
-		return bargate.views.errors.error500(exception_object)
+		if isinstance(ex,SMBTimeout):
+			return ("Timed out","The current operation timed out. Please try again later")
 
-#		# anything else
-#		else:
-#			return bargate.views.errors.error500(exception_object)
+		elif isinstance(ex,NotReadyError):
+			return ("Server not ready","Authentication has failed or not yet performed")
+
+		elif isinstance(ex,NotConnectedError):
+			return ("Connection closed","The server closed the connection unexpectedly")
+
+		elif isinstance(ex,UnsupportedFeature):
+			return ("Unsupported SMB feature","The server requires a later version of the SMB protocol than is supported")
+
+		elif isinstance(ex,ProtocolError):
+			return ("Protocol error","The server sent a malformed response")
+
+		elif isinstance(ex,OperationFailure):
+			return ("Operation failed","The current operation failed")
+
+
+	def smb_error(self,ex):
+		(title, desc) = self.smb_error_info(ex)
+		return stderr(title,desc)
 
 ################################################################################
 
@@ -150,7 +155,7 @@ class backend_pysmb:
 
 		## func_path should always start with smb://
 		if not func_path.startswith("smb://"):
-			return bargate.lib.errors.stderr("Invalid server path",'The server URL must start with smb://')
+			return stderr("Invalid server path",'The server URL must start with smb://')
 
 		## Work out the server_name, share name, and the path without the share name
 		server_name, share_name, path_without_share = self._parse_smb_uri_and_path(func_path,path)
@@ -165,13 +170,13 @@ class backend_pysmb:
 		try:
 			check_path(path)
 		except ValueError as e:
-			return bargate.lib.errors.invalid_path()
+			return invalid_path()
 
 		## Connect to the SMB server
 		conn = SMBConnection(session['username'], bargate.lib.user.get_password(), socket.gethostname(), server_name, domain=app.config['SMB_WORKGROUP'], use_ntlm_v2 = True, is_direct_tcp=True)
 
 		if not conn.connect(server_name,port=445,timeout=5):
-			return bargate.lib.errors.stderr("Could not connect","Could not connect to the file server, authentication was unsuccessful")
+			return stderr("Could not connect","Could not connect to the file server, authentication was unsuccessful")
 
 		app.logger.info('user: "' + session['username'] + '", func_path: "' + func_path + '", share_name: "' + unicode(share_name) + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
 
@@ -226,7 +231,7 @@ class backend_pysmb:
 					try:
 						sfile = conn.getAttributes(share_name,path_without_share)
 					except Exception as ex:
-						return bargate.lib.errors.stderr("Not found","The path you specified does not exist, or could not be read")
+						return stderr("Not found","The path you specified does not exist, or could not be read")
 
 					if sfile.isDirectory:
 						abort(400)
@@ -648,7 +653,7 @@ class backend_pysmb:
 
 				delete_path  = path_without_share + "/" + delete_name
 
-				try:/
+				try:
 					sfile = conn.getAttributes(share_name,delete_path)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to check the file to be deleted'})
