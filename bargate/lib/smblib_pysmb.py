@@ -198,7 +198,8 @@ class BargateSMBLibrary:
 					try:
 						smb_shares = conn.listShares()
 					except Exception as ex:
-						return self.smb_error(ex)
+						(title, msg) = self.smb_error_info(ex)
+						return jsonify({'code': 1, 'msg': msg})
 
 					shares = []
 					for share in smb_shares:
@@ -210,21 +211,13 @@ class BargateSMBLibrary:
 					if len(shares) == 0:
 						no_items = True
 
-					return render_template('directory-' +  get_layout() + '.html',
-						active=active,
-						dirs=[], files=[], shares=shares, crumbs=[], path=path,
-						url_home=url_for(func_name),
-						url_bookmark=url_for('bookmarks'),
-						url_search=url_for(func_name,path=path,action="search"),
-						browse_mode=True,
-						browse_butts_enabled=False,
-						bmark_enabled=False,
-						func_name = func_name,
-						root_display_name = display_name,
-						no_items = no_items,
-					)
+					return jsonify({'dirs': [], 'files': [], 'shares': shares,
+						'crumbs': [], 'buttons': False, 'bmark': False, 
+						'root_name': display_name, 'code': 0,
+						'root_url': url_for(func_name), 'no_items': no_items})
+
 				else:
-					return render_template('browse.html',url=url_for(func_name,path=path),browse_mode=True)
+					return render_template('browse.html',active=active,url=url_for(func_name,path=path),browse_mode=True)
 			else:
 				abort(400)
 
@@ -364,102 +357,92 @@ class BargateSMBLibrary:
 			elif action == 'browse':
 				#### SEARCH
 				if 'q' in request.args:
+					try:
+						if not app.config['SEARCH_ENABLED']:
+							return jsonify({'code': 1, 
+								'msg': "Search is not enabled"})
 
-					if not app.config['SEARCH_ENABLED']:
-						abort(404)
+						## Build a breadcrumbs trail ##
+						crumbs = []
+						parts = path.split('/')
+						b4 = ''
 
-					## Build a breadcrumbs trail ##
-					crumbs = []
-					parts = path.split('/')
-					b4 = ''
+						## Build up a list of dicts, each dict representing a crumb
+						for crumb in parts:
+							if len(crumb) > 0:
+								crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+								b4 = b4 + crumb + '/'
 
-					## Build up a list of dicts, each dict representing a crumb
-					for crumb in parts:
-						if len(crumb) > 0:
-							crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
-							b4 = b4 + crumb + '/'
+						query = request.args.get('q')
+						self._init_search(conn,func_name,share_name,path,path_without_share,query)
+						results, timeout_reached = self._search()
 
-					query = request.args.get('q')
-					self._init_search(conn,func_name,share_name,path,path_without_share,query)
-					results, timeout_reached = self._search()
-
-					return render_template('search.html',
-						timeout_reached = timeout_reached,
-						results=results,
-						query=query,
-						path=path,
-						root_display_name = display_name,
-						search_mode=True,
-						browse_mode=False,
-						browse_butts_enabled=False,
-						bmark_enabled=False,
-						url_home=url_for(func_name),
-						crumbs=crumbs,
-					)
+						return jsonify({'code': 0, 
+							'results': results, 
+							'query': query, 
+							'crumbs': crumbs, 
+							'root_name': display_name,
+							'root_url': url_for(func_name), 
+							'timeout_reached': timeout_reached})
+					except Exception as ex:
+						return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
 
 				elif 'xhr' in request.args:
 					try:
-						directory_entries = conn.listPath(share_name,path_without_share)
+
+						try:
+							directory_entries = conn.listPath(share_name,path_without_share)
+						except Exception as ex:
+							(title, msg) = self.smb_error_info(ex)
+							return jsonify({'code': 1, 'msg': msg})
+
+						## Seperate out dirs and files into two lists
+						dirs  = []
+						files = []
+
+						# sfile = shared file (smb.base.SharedFile)
+						for sfile in directory_entries:
+							entry = self._sfile_load(sfile, path, func_name)
+
+							# Don't add hidden files
+							if not entry['skip']:
+								if entry['type'] == EntryType.file:
+									files.append(entry)
+								elif entry['type'] == EntryType.dir:
+									dirs.append(entry)
+
+						## Build a breadcrumbs trail ##
+						crumbs = []
+						parts  = path.split('/')
+						b4     = ''
+
+						## Build up a list of dicts, each dict representing a crumb
+						for crumb in parts:
+							if len(crumb) > 0:
+								crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+								b4 = b4 + crumb + '/'
+
+						## are there any items in the list?
+						no_items = False
+						if len(files) == 0 and len(dirs) == 0:
+							no_items = True
+
+						## Don't allow bookmarks at the root of a function
+						## - that is superfluous
+						bmark_enabled=False
+						if len(path) > 0:
+							bmark_enabled = True
+
+						return jsonify({'dirs': dirs, 'files': files, 'shares': [],
+							'crumbs': crumbs, 'buttons': True, 
+							'bmark': bmark_enabled, 'root_name': display_name,
+							'root_url': url_for(func_name), 'no_items': no_items})
+
 					except Exception as ex:
-						return self.smb_error(ex)
+						return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
 
-					## Seperate out dirs and files into two lists
-					dirs  = []
-					files = []
-
-					# sfile = shared file (smb.base.SharedFile)
-					for sfile in directory_entries:
-						entry = self._sfile_load(sfile, path, func_name)
-
-						# Don't add hidden files
-						if not entry['skip']:
-							if entry['type'] == EntryType.file:
-								files.append(entry)
-							elif entry['type'] == EntryType.dir:
-								dirs.append(entry)
-
-					## Build a breadcrumbs trail ##
-					crumbs = []
-					parts  = path.split('/')
-					b4     = ''
-
-					## Build up a list of dicts, each dict representing a crumb
-					for crumb in parts:
-						if len(crumb) > 0:
-							crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
-							b4 = b4 + crumb + '/'
-
-					## are there any items in the list?
-					no_items = False
-					if len(files) == 0 and len(dirs) == 0:
-						no_items = True
-
-					## Don't allow bookmarks at the root of a function
-					## - that is superfluous
-					bmark_enabled=False
-					if len(path) > 0:
-						bmark_enabled = True
-
-					## Render the template
-					return render_template('directory-' +  get_layout() + '.html',
-						active=active,
-						dirs=dirs,
-						files=files,
-						shares=[],
-						crumbs=crumbs,
-						path=path,
-						url_home=url_for(func_name),
-						url_bookmark=url_for('bookmarks'),
-						url_search=url_for(func_name,path=path,action="search"),
-						browse_mode=True,
-						browse_butts_enabled=True,
-						bmark_enabled=bmark_enabled,
-						func_name = func_name,
-						root_display_name = display_name,
-						no_items = no_items,
-					)
 				else:
-					return render_template('browse.html',path=path,browse_mode=True,url=url_for(func_name,path=path))
+					return render_template('browse.html',active=active,path=path,browse_mode=True,url=url_for(func_name,path=path))
 
 			else:
 				abort(400)
@@ -791,8 +774,6 @@ class BargateSMBLibrary:
 		"""Takes a smb SharedFile object and returns a dictionary with information
 		about that SharedFile object. 
 		"""
-		#app.logger.debug("_sfile_load " + sfile.filename + " " + path + " " + func_name)
-
 		entry = {'skip': False, 'name': sfile.filename, 'size': sfile.file_size }
 
 		## Skip entries for 'this dir' and 'parent dir'

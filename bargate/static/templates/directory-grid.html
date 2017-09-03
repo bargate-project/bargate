@@ -1,5 +1,3 @@
-{%- include 'breadcrumbs.html' -%}
-
 <div id="dirs">
 	{%- for entry in shares -%}
 	<div class="grid-entry eshare" data-url="{{ entry.url }}" data-sortname="{{entry.name|lower}}">
@@ -38,4 +36,3 @@
 	{%- endfor -%}
 </div>
 
-{%- include 'directory.html' -%}

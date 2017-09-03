@@ -197,7 +197,7 @@ class BargateSMBLibrary:
 			entry_name = u""
 
 		## Prepare to talk to the file server
-		libsmbclient = SMBClientWrapper()
+		self.libsmbclient = SMBClientWrapper()
 
 		app.logger.info('user: "' + session['username'] + '", srv_path: "' + srv_path + '", endpoint: "' + func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
 
@@ -216,7 +216,7 @@ class BargateSMBLibrary:
 			if action == 'download' or action == 'view':
 
 				try:
-					fstat = libsmbclient.stat(uri)
+					fstat = self.libsmbclient.stat(uri)
 				except Exception as ex:
 					return self.smb_error(ex)
 
@@ -224,7 +224,7 @@ class BargateSMBLibrary:
 					abort(400)
 
 				try:
-					file_object = libsmbclient.open(uri)
+					file_object = self.libsmbclient.open(uri)
 
 					## Default to sending files as an 'attachment' ("Content-Disposition: attachment")
 					attach = True
@@ -253,7 +253,7 @@ class BargateSMBLibrary:
 					abort(400)
 
 				try:
-					fstat = libsmbclient.stat(uri)
+					fstat = self.libsmbclient.stat(uri)
 				except Exception as ex:
 					abort(400)
 
@@ -274,7 +274,7 @@ class BargateSMBLibrary:
 
 				## Open the file
 				try:
-					file_object = libsmbclient.open(uri)
+					file_object = self.libsmbclient.open(uri)
 				except Exception as ex:
 					abort(400)
 			
@@ -300,7 +300,7 @@ class BargateSMBLibrary:
 			elif action == 'stat':
 
 				try:
-					fstat = libsmbclient.stat(uri)
+					fstat = self.libsmbclient.stat(uri)
 				except Exception as ex:
 					import traceback
 					app.logger.debug(traceback.format_exc())
@@ -325,8 +325,8 @@ class BargateSMBLibrary:
 				}
 
 				try:
-					data['owner'] = libsmbclient.getxattr(uri,smbc.XATTR_OWNER)
-					data['group'] = libsmbclient.getxattr(uri,smbc.XATTR_GROUP)
+					data['owner'] = self.libsmbclient.getxattr(uri,smbc.XATTR_OWNER)
+					data['group'] = self.libsmbclient.getxattr(uri,smbc.XATTR_GROUP)
 
 					if app.config['WBINFO_LOOKUP']:
 						data['owner'] = wb_sid_to_name(data['owner'])
@@ -358,93 +358,72 @@ class BargateSMBLibrary:
 							b4 = b4 + crumb + '/'
 
 					query = request.args.get('q')
-					self._init_search(libsmbclient,func_name,path,srv_path,query)
+					self._init_search(func_name,path,srv_path,query)
 					results, timeout_reached = self._search()
 
-					return render_template('search.html',
-						timeout_reached = timeout_reached,
-						results=results,
-						query=query,
-						path=path,
-						root_display_name = display_name,
-						search_mode=True,
-						browse_mode=False,
-						browse_butts_enabled=False,
-						bmark_enabled=False,
-						url_home=url_for(func_name),
-						crumbs=crumbs,
-					)
+					return jsonify({'results': results, 'query': query,
+						'crumbs': crumbs, 'root_name': display_name,
+						'root_url': url_for(func_name)})
 
 				elif 'xhr' in request.args:
 					try:
-						directory_entries = libsmbclient.ls(uri)
+						directory_entries = self.libsmbclient.ls(uri)
 					except smbc.NotDirectoryError as ex:
 						return stderr("Bargate is misconfigured","The path given for the share " + func_name + " is not a directory!")
 					except Exception as ex:
-						return self.smb_error(ex)
+						(title, msg) = self.smb_error_info(ex)
+						return jsonify({'code': 1, 'msg': msg})
 
-					dirs   = []
-					files  = []
-					shares = []
+					try:
+						dirs   = []
+						files  = []
+						shares = []
 
-					for dentry in directory_entries:
-						entry = self._direntry_load(dentry, srv_path, path)
+						for dentry in directory_entries:
+							entry = self._direntry_load(dentry, srv_path, path, func_name)
 
-						if not entry['skip']:
-							entry = self._direntry_process(entry,libsmbclient,func_name)
+							if not entry['skip']:
+								if entry['type'] == EntryType.file:
+									files.append(entry)
+								elif entry['type'] == EntryType.dir:
+									dirs.append(entry)
+								elif entry['type'] == EntryType.share:
+									shares.append(entry)
 
-							if entry['type'] == EntryType.file:
-								files.append(entry)
-							elif entry['type'] == EntryType.dir:
-								dirs.append(entry)
-							elif entry['type'] == EntryType.share:
-								shares.append(entry)
+						bmark_enabled   = False
+						buttons_enabled = False
+						no_items        = False
+						crumbs          = []
 
-					bmark_enabled        = False
-					browse_butts_enabled = False
-					no_items             = False
-					crumbs               = []
+						if len(shares) == 0:
+							## are there any items?
+							if len(files) == 0 and len(dirs) == 0:
+								no_items = True
 
-					if len(shares) == 0:
-						## are there any items?
-						if len(files) == 0 and len(dirs) == 0:
-							no_items = True
+							# only allow bookmarking if we're not at the root
+							if len(path) > 0:
+								bmark_enabled = True
 
-						# only allow bookmarking if we're not at the root
-						if len(path) > 0:
-							bmark_enabled = True
+							buttons_enabled = True
 
-						browse_butts_enabled = True
+							## Build a breadcrumbs trail ##
+							parts = path.split('/')
+							b4    = ''
 
-						## Build a breadcrumbs trail ##
-						parts = path.split('/')
-						b4    = ''
+							## Build up a list of dicts, each dict representing a crumb
+							for crumb in parts:
+								if len(crumb) > 0:
+									crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
+									b4 = b4 + crumb + '/'
 
-						## Build up a list of dicts, each dict representing a crumb
-						for crumb in parts:
-							if len(crumb) > 0:
-								crumbs.append({'name': crumb, 'url': url_for(func_name,path=b4+crumb)})
-								b4 = b4 + crumb + '/'
-
-					return render_template('directory-' + get_layout() + '.html',
-						active=active,
-						dirs=dirs,
-						files=files,
-						shares=shares,
-						crumbs=crumbs,
-						path=path,
-						url_home=url_for(func_name),
-						url_bookmark=url_for('bookmarks'),
-						url_search=url_for(func_name,path=path,action="search"),
-						browse_mode=True,
-						browse_butts_enabled=browse_butts_enabled,
-						bmark_enabled=bmark_enabled,
-						func_name = func_name,
-						root_display_name = display_name,
-						no_items = no_items,
-					)
+						return jsonify({'dirs': dirs, 'files': files, 'shares': shares,
+							'crumbs': crumbs, 'buttons': buttons_enabled, 
+							'bmark': bmark_enabled, 'root_name': display_name,
+							'root_url': url_for(func_name), 'no_items': no_items})
+					except Exception as ex:
+						return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
 				else:
-					return render_template('browse.html',path=path,browse_mode=True,url=url_for(func_name,path=path))
+					return render_template('browse.html',active=active,path=path,browse_mode=True,url=url_for(func_name,path=path))
 
 			else:
 				abort(400)
@@ -484,7 +463,7 @@ class BargateSMBLibrary:
 					## Check to see if the file exists
 					fstat = None
 					try:
-						fstat = libsmbclient.stat(upload_uri)
+						fstat = self.libsmbclient.stat(upload_uri)
 					except smbc.NoEntryError:
 						app.logger.debug("Upload filename of " + upload_uri + " does not exist, ignoring")
 						## It doesn't exist so lets continue to upload
@@ -509,18 +488,18 @@ class BargateSMBLibrary:
 									continue
 
 								## Now ensure we're not trying to upload a file on top of a directory (can't do that!)
-								itemType = self.etype(libsmbclient,upload_uri)
-								if itemType == EntryType.dir:
+								fstat = self.libsmbclient.stat(upload_uri)
+								if fstat.type == EntryType.dir:
 									ret.append({'name' : ufile.filename, 'error': "That name already exists and is a directory"})
 									continue
 
 							## Open the file for the first time, truncating or creating it if necessary
 							app.logger.debug("Opening for writing with O_CREAT and TRUNC")
-							wfile = libsmbclient.open(upload_uri,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
+							wfile = self.libsmbclient.open(upload_uri,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 						else:
 							## Open the file and seek to where we are going to write the additional data
 							app.logger.debug("Opening for writing with O_WRONLY")
-							wfile = libsmbclient.open(upload_uri,os.O_WRONLY)
+							wfile = self.libsmbclient.open(upload_uri,os.O_WRONLY)
 							wfile.seek(byterange_start)
 
 						while True:
@@ -560,7 +539,7 @@ class BargateSMBLibrary:
 				new_path = uri + "/" + new_name
 
 				## get the item type of the existing 'filename'
-				fstat = libsmbclient.stat(old_path)
+				fstat = self.libsmbclient.stat(old_path)
 
 				if fstat.type == EntryType.file:
 					typestr = "file"
@@ -570,7 +549,7 @@ class BargateSMBLibrary:
 					return jsonify({'code': 1, 'msg': 'You can only rename files or folders!'})
 
 				try:
-					libsmbclient.rename(old_path,new_path)
+					self.libsmbclient.rename(old_path,new_path)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'Unable to rename: ' + str(type(ex))})
 				else:
@@ -598,7 +577,7 @@ class BargateSMBLibrary:
 				dest_path = uri + "/" + dest
 
 				try:
-					source_stat = libsmbclient.stat(src_path)
+					source_stat = self.libsmbclient.stat(src_path)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'The file you tried to copy does not exist or could not be read'})
 
@@ -607,7 +586,7 @@ class BargateSMBLibrary:
 
 				## Make sure the dest file doesn't exist
 				try:
-					libsmbclient.stat(dest_path)
+					self.libsmbclient.stat(dest_path)
 				except smbc.NoEntryError as ex:
 					## This is what we want - i.e. no file/entry
 					pass
@@ -616,13 +595,13 @@ class BargateSMBLibrary:
 
 				## Assuming we got here without an exception, open the source file
 				try:		
-					source_fh = libsmbclient.open(src_path)
+					source_fh = self.libsmbclient.open(src_path)
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'Could not read from the source file'})
 
 				## Assuming we got here without an exception, open the dest file
 				try:
-					dest_fh = libsmbclient.open(dest_path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC )
+					dest_fh = self.libsmbclient.open(dest_path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC )
 				except Exception as ex:
 					return jsonify({'code': 1, 'msg': 'Could not write to the new file'})
 
@@ -656,7 +635,7 @@ class BargateSMBLibrary:
 					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
 				try:
-					libsmbclient.mkdir(uri + '/' + dirname)
+					self.libsmbclient.mkdir(uri + '/' + dirname)
 				except Exce/ption as ex:
 					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to create the directory'})
 
@@ -673,11 +652,11 @@ class BargateSMBLibrary:
 
 				delete_path  = uri + "/" + delete_name
 
-				fstat = libsmbclient.stat(delete_path)
+				fstat = self.libsmbclient.stat(delete_path)
 
 				if fstat.type == EntryType.file:
 					try:
-						libsmbclient.delete(delete_path)
+						self.libsmbclient.delete(delete_path)
 					except Exception as ex:
 						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the file'})
 					else:
@@ -685,7 +664,7 @@ class BargateSMBLibrary:
 
 				elif fstat.type == EntryType.dir:
 					try:
-						libsmbclient.rmdir(delete_path)
+						self.libsmbclient.rmdir(delete_path)
 					except Exception as ex:
 						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the directory'})
 					else:
@@ -739,8 +718,7 @@ class BargateSMBLibrary:
 
 ################################################################################
 
-	def _init_search(self,libsmbclient,func_name,path,srv_path,query):
-		self.libsmbclient = libsmbclient
+	def _init_search(self,func_name,path,srv_path,query):
 		self.func_name    = func_name
 		self.path         = path
 		self.srv_path     = srv_path
@@ -758,10 +736,9 @@ class BargateSMBLibrary:
 		## Try getting directory contents of where we are
 		app.logger.debug("_rsearch called to search: " + path)
 		try:
-			directory_entries = self.libsmbclient.ls(self.srv_path + "/" + path)
+			directory_entries = self.libsmbclient.ls(self.srv_path + path)
 		except smbc.NotDirectoryError as ex:
 			return
-
 		except Exception as ex:
 			app.logger.info("Search encountered an exception " + str(ex) + " " + str(type(ex)))
 			return
@@ -776,7 +753,7 @@ class BargateSMBLibrary:
 				self.timeout_reached = True
 				break
 
-			entry = self._direntry_load(dentry, self.srv_path, path)
+			entry = self._direntry_load(dentry, self.srv_path, path, self.func_name)
 
 			## Skip hidden files
 			if entry['skip']:
@@ -785,7 +762,6 @@ class BargateSMBLibrary:
 			## Check if the filename matched
 			if self.query.lower() in entry['name'].lower():
 				app.logger.debug("_rsearch: Matched: " + entry['name'])
-				entry = self._direntry_process(entry, self.libsmbclient, self.func_name)
 				entry['parent_path'] = path
 				entry['parent_url']  = url_for(self.func_name,path=path)
 				self.results.append(entry)
@@ -801,7 +777,7 @@ class BargateSMBLibrary:
 
 	############################################################################
 
-	def _direntry_load(self,dentry,srv_path, path):
+	def _direntry_load(self,dentry,srv_path, path, func_name):
 		entry = {'skip': False, 'name': dentry.name}
 
 		# old versions of pysmbc return 'str' objects rather than unicode
@@ -811,9 +787,6 @@ class BargateSMBLibrary:
 		## Skip entries for 'this dir' and 'parent dir'
 		if entry['name'] == '.' or entry['name'] == '..':
 			entry['skip'] = True
-
-		## Build the entire URI
-		entry['uri'] = srv_path + path + '/' + entry['name']
 
 		## Build the path
 		if len(path) == 0:
@@ -841,53 +814,49 @@ class BargateSMBLibrary:
 			entry['type'] = EntryType.other
 			entry['skip'] = True
 
-		return entry
+		if not entry['skip']:
+			if entry['type'] == EntryType.file:
+				## Generate 'mtype', 'mtype_raw' and 'icon'
+				entry['icon'] = 'fa fa-fw fa-file-text-o'
+				(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
+				entry['icon'] = mimetype_to_icon(entry['mtype_raw'])
 
-################################################################################
+				## Generate URLs to this file
+				entry['stat']     = url_for(func_name,path=entry['path'],action='stat')
+				entry['download'] = url_for(func_name,path=entry['path'],action='download')
 
-	def _direntry_process(self,entry,libsmbclient,func_name):
-		if entry['type'] == EntryType.file:
-			## Generate 'mtype', 'mtype_raw' and 'icon'
-			entry['icon'] = 'fa fa-fw fa-file-text-o'
-			(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
-			entry['icon'] = mimetype_to_icon(entry['mtype_raw'])
+				try:
+					fstat = self.libsmbclient.stat(srv_path + path + '/' + entry['name'])
+				except Exception as ex:
+					## If the file stat failed we return a result with the data missing
+					## rather than fail the entire page load
+					entry['mtime_raw'] = 0
+					entry['mtime'] = "Unknown"
+					entry['size'] = 0
+					entry['error'] = True
+					return entry
 
-			## Generate URLs to this file
-			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
-			entry['download']     = url_for(func_name,path=entry['path'],action='download')
+				entry['mtime_raw'] = fstat.mtime
+				entry['mtime']     = ut_to_string(fstat.mtime)
+				entry['size']      = fstat.size
 
-			try:
-				fstat = libsmbclient.stat(entry['uri'])
-			except Exception as ex:
-				## If the file stat failed we return a result with the data missing
-				## rather than fail the entire page load
-				entry['mtime_raw'] = 0
-				entry['mtime'] = "Unknown"
-				entry['size'] = 0
-				entry['error'] = True
-				return entry
+				## Image previews
+				if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in pillow_supported:
+					if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
+						entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+				else:
+					entry['size'] = 0
 
-			entry['mtime_raw'] = fstat.mtime
-			entry['mtime']     = ut_to_string(fstat.mtime)
-			entry['size']      = fstat.size
+				## View-in-browser download type
+				if view_in_browser(entry['mtype_raw']):
+					entry['view'] = url_for(func_name,path=entry['path'],action='view')
 
-			## Image previews
-			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in pillow_supported:
-				if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
-					entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
-			else:
-				entry['size'] = 0
+			elif entry['type'] == EntryType.dir:
+				entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
+				entry['url']  = url_for(func_name,path=entry['path'])
 
-			## View-in-browser download type
-			if view_in_browser(entry['mtype_raw']):
-				entry['view'] = url_for(func_name,path=entry['path'],action='view')
-
-		elif entry['type'] == EntryType.dir:
-			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
-			entry['url']  = url_for(func_name,path=entry['path'])
-
-		elif entry['type'] == EntryType.share:
-			entry['url'] = url_for(func_name,path=entry['path'])
+			elif entry['type'] == EntryType.share:
+				entry['url'] = url_for(func_name,path=entry['path'])
 
 		return entry
 

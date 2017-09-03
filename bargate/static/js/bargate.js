@@ -51,11 +51,31 @@ function initDirectory(url) {
 function loadDir(url,alterHistory) {
 	if (alterHistory === undefined) { alterHistory = true; }
 
-	$( "#browse" ).load( url + "?" + $.param({xhr: 1}), function( response, status, xhr ) {
-		if ( status == "error" ) {
-			showErr("Could not open directory","An error occured whilst contacting the server. ");
-		}
-		else {
+	$.getJSON(url, {xhr: 1})
+	.done(function(response) {
+		if (response.code > 0) {
+			showErr("Could not open folder",response.msg);
+		} else {
+			if (response.bmark) {
+				enableBookmark();
+			} else {
+				disableBookmark();
+			}
+
+			if (response.buttons) {
+				enableBrowseButts();
+			} else {
+				disableBrowseButts();
+			}
+
+			$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: response.crumbs, root_name: response.root_name, root_url: response.root_url }));
+
+			if (response.no_items) {
+				$('#browse').append(nunjucks.render('empty.html'));
+			} else {
+				$('#browse').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: response.dirs, files: response.files, shares: response.shares}));
+			}
+
 			if (alterHistory) {
 				history.pushState(url, "", url);
 			}
@@ -71,17 +91,25 @@ function loadDir(url,alterHistory) {
 			doBrowse();
 			prepFileUpload();
 		}
+	})
+	.fail(function() {
+		showErr("Server error","The server returned an error");
 	});
 }
 
 function doSearch() {
 	$('#search-m').modal('hide');
-	$( "#browse" ).load( $browse.url + "?" + $.param({'q': $('#search-i').val() }), function( response, status, xhr )
-	{
-		if ( status == "error" ) {
-			showErr("Could not search","An error occured whilst contacting the server. " + xhr.statusText);
-		}
-		else {
+
+	$.getJSON($browse.url, {q: $('#search-i').val()})
+	.done(function(response) {
+		if (response.code > 0) {
+			showErr("Search failed",response.msg);
+		} else {
+			disableBookmark();
+			disableBrowseButts();
+
+			$('#browse').html(nunjucks.render('search.html', response));
+
 			doListView();
 
 			$('#results').DataTable( {
@@ -97,6 +125,9 @@ function doSearch() {
 
 			doBrowse();
 		}
+	})
+	.fail(function() {
+		showErr("Server error","The server returned an error");
 	});
 }
 
@@ -321,33 +352,43 @@ function doGridView() {
 
 }
 
-function formatFileSize(bytes) {
-	if (typeof bytes !== 'number') {
-		return '';
+function filesizeformat(bytes) {
+	var bytes = parseFloat(bytes);
+	var units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+	if (bytes === 1) {
+		return '1 Byte';
+	} else if (bytes < 1024) {
+		return bytes + ' Bytes';
+	} else {
+		return units.reduce(function (match, unit, index) {
+			var size = Math.pow(1024, index);
+			if (bytes >= size) {
+				return (bytes/size).toFixed(1) + ' ' + unit;
+			}
+			return match;
+		});
 	}
-	if (bytes >= 1000000000) {
-		return (bytes / 1000000000).toFixed(2) + ' GB';
-	} else if (bytes >= 1000000) {
-		return (bytes / 1000000).toFixed(2) + ' MB';
-	}
-	return (bytes / 1000).toFixed(2) + ' KB';
 }
 
-function formatBitrate(bits) {
-	if (typeof bits !== 'number') {
-		return '';
-	}
+function bitrateformat(bits) {
+	var bytes = bytes / 8
+	bytes = parseFloat(bytes);
+	var units = ['Bytes/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'];
 
-	bits = bits / 8
-
-	if (bits >= 1000000000) {
-		return (bits / 1000000000).toFixed(2) + ' GiB/s';
-	} else if (bits >= 1000000) {
-		return (bits / 1000000).toFixed(2) + ' MiB/s';
-	} else if (bits >= 1000) {
-		return (bits / 1000).toFixed(2) + ' KiB/s';
+	if (bytes === 1) {
+		return '1 Byte/s';
+	} else if (bytes < 1024) {
+		return bytes + ' Bytes/s';
+	} else {
+		return units.reduce(function (match, unit, index) {
+			var size = Math.pow(1024, index);
+			if (bytes >= size) {
+				return (bytes/size).toFixed(1) + ' ' + unit;
+			}
+			return match;
+		});
 	}
-	return bits.toFixed(2) + ' bytes/s';
 }
 
 function formatTime (seconds) {
@@ -361,7 +402,7 @@ function formatTime (seconds) {
 }
 
 function renderExtendedProgress(data) {
-	return formatBitrate(data.bitrate) + ', ' + formatTime((data.total - data.loaded) * 8 / data.bitrate) + ' remaining <br/>' + formatFileSize(data.loaded) + ' uploaded of ' + formatFileSize(data.total);
+	return bitrateformat(data.bitrate) + ', ' + formatTime((data.total - data.loaded) * 8 / data.bitrate) + ' remaining <br/>' + filesizeformat(data.loaded) + ' uploaded of ' + formatFileSize(data.total);
 }
 
 function prepFileUpload() {
@@ -718,6 +759,10 @@ function setTheme(themeName) {
 }
 
 $(document).ready(function($) {
+	/* load templating engine */
+	var env = nunjucks.configure('/static/templates/', { autoescape: true });
+	env.addFilter('filesizeformat', filesizeformat);
+	
 	/* Activate tooltips and enable hiding on clicking */
 	$('[data-tooltip="yes"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
 	$('[data-tooltip="yes"]').on('mouseup', function () {$(this).tooltip('hide');});

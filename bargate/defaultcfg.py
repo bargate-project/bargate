@@ -164,3 +164,6 @@ SMB_LIBRARY="pysmbc"
 
 ## Minify the HTML output (only works if htmlmin is installed)
 MINIFY_HTML=True
+
+## Don't pretty print when using jsonify() function
+JSONIFY_PRETTYPRINT_REGULAR=False
