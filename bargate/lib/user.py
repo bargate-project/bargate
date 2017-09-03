@@ -18,7 +18,7 @@
 from flask import Flask, request, redirect, session, url_for, abort, flash, g
 from bargate import app
 import bargate.lib.userdata
-import bargate.lib.aes
+from bargate.lib.aes import aes_decrypt
 import os
 import time
 
@@ -28,18 +28,11 @@ if app.config['AUTH_TYPE'] == 'kerberos' or app.config['AUTH_TYPE'] == 'krb5':
 elif app.config['AUTH_TYPE'] == 'ldap':
 	import ldap
 
-def get_password():
-	"""This function returns the user's decrypted password
-	"""
-	return bargate.lib.aes.decrypt(session['id'],app.config['ENCRYPT_KEY'])
-
 ################################################################################
 
-def get_smbc_auth(server,share,workgroup,username,password):
-	"""Returns authentication information for SMB/CIFS as required
-	by the pysmbc module when accessing CIFS servers
-	"""
-	return (app.config['SMB_WORKGROUP'],session['username'],bargate.lib.user.get_password())
+def get_password():
+	"""This function returns the user's decrypted password"""
+	return aes_decrypt(session['id'],app.config['ENCRYPT_KEY'])
 
 ################################################################################
 

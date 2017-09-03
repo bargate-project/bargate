@@ -161,3 +161,6 @@ SEARCH_TIMEOUT=50
 
 ## Backend library to use to talk SMB over the network
 SMB_LIBRARY="pysmbc"
+
+## Minify the HTML output (only works if htmlmin is installed)
+MINIFY_HTML=True

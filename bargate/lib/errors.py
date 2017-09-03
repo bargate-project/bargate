@@ -25,7 +25,7 @@ import traceback
 ################################################################################
 
 ## standard error (uses render_template and thus standard page layout)
-def stderr(title,message,redirect_to=None):
+def stderr(title,message):
 	"""This function is called by other error functions to show the error to the
 	end user. It takes a title, message and a further error type. If redirect
 	is set then rather than show an error it will return the 'redirect' after
@@ -34,13 +34,7 @@ def stderr(title,message,redirect_to=None):
 	"""
 	
 	debug = traceback.format_exc()
-			
-	if redirect_to == None:
-		return render_template('error.html',title=title,message=message,debug=debug), 200
-	else:
-		## Set error modal and return
-		app.set_modal_error(title,message)
-		return redirect_to
+	return render_template('error.html',title=title,message=message,debug=debug), 200
 
 ################################################################################
 
@@ -101,40 +95,40 @@ def fatalerr(title=u"fatal error ☹",message="Whilst processing your request an
 
 ## Bargate internal errors
 
-def banned_file(redirect_to=None):
+def banned_file():
 	"""Returns a template or redirect to return from the view for when a banned file is uploaded.
 	"""
-	return stderr("Banned File Type","The file type you are trying to upload is banned from being uploaded.",redirect_to)
+	return stderr("Banned File Type","The file type you are trying to upload is banned from being uploaded.")
 
-def no_file_attached(redirect_to=None):
+def no_file_attached():
 	"""Returns a template or redirect to return from the view for when no file is attached during an upload.
 	"""
-	return stderr("No file attached","You did not attach a file when attempting to upload",redirect_to)
+	return stderr("No file attached","You did not attach a file when attempting to upload")
 
-def upload_file_directory(redirect_to=None):
+def upload_file_directory():
 	"""Returns a template or redirect to return from the view for when a user tries to upload a file over the top of a directory (file upload name is same as existing directory name)
 	"""
-	return stderr("Unable to upload file","A directory already exists with the same name as the file you are trying to upload.",redirect_to)
+	return stderr("Unable to upload file","A directory already exists with the same name as the file you are trying to upload.")
 
-def invalid_item_type(redirect_to=None):
+def invalid_item_type():
 	"""Returns a template or redirect to return from the view for when an action is performed on an invalid item type.
 	"""
-	return stderr("Invalid item type","You tried to perform an action on an invalid item type - i.e. a share or printer.",redirect_to)
+	return stderr("Invalid item type","You tried to perform an action on an invalid item type - i.e. a share or printer.")
 
-def invalid_item_download(redirect_to=None):
+def invalid_item_download():
 	"""Returns a template or redirect to return from the view for when an item is downloaded which isn't a file.
 	"""
-	return stderr("Invalid item type","You tried to download an item other than a file.",redirect_to)
+	return stderr("Invalid item type","You tried to download an item other than a file.")
 
-def invalid_item_copy(redirect_to=None):
+def invalid_item_copy():
 	"""Returns a template or redirect to return from the view for when a user tries to copy an item other than a file.
 	"""
-	return stderr("Invalid item type","You tried to copy an item other than a file.",redirect_to)
+	return stderr("Invalid item type","You tried to copy an item other than a file.")
 
-def invalid_path(redirect_to=None):
+def invalid_path():
 	"""Returns a template or redirect to return from the view for when a user navigates to an invalid path."""
-	return stderr("Invalid path","You tried to navigate to an invalid or illegal path.",redirect_to)
+	return stderr("Invalid path","You tried to navigate to an invalid or illegal path.")
 
-def invalid_name(redirect_to=None):
+def invalid_name():
 	"""Returns a template or redirect to return from the view for when a user enters an invalid file name"""
-	return stderr("Invalid file or directory name","The file or directory name you entered is invalid",redirect_to)
+	return stderr("Invalid file or directory name","The file or directory name you entered is invalid")

@@ -17,12 +17,12 @@
 
 from Crypto.Cipher import AES
 import base64
-import os
-import bargate.lib.errors
+from base64 import b64encode, b64decode
+from os import urandom
 
 ################################################################################
 
-def encrypt(s,key):
+def aes_encrypt(s,key):
 	"""This function is used to encrypt a string via AES.
 	Pass it the string to encrypt and the key to use to do so.
 	Returns a base64 encoded string using AES CFB.
@@ -33,20 +33,20 @@ def encrypt(s,key):
 	## 32-bit key is required (AES256)
 	
 	# Create the IV (Initialization Vector)
-	iv = os.urandom(AES.block_size)
+	iv = urandom(AES.block_size)
 	
 	## Create the cipher with the key, mode and iv
 	c = AES.new(key,AES.MODE_CFB,iv)
 	
 	## Base 64 encode the iv and the encrypted data together
-	b64 = base64.b64encode(iv + c.encrypt(s))
+	b64 = b64encode(iv + c.encrypt(s))
 	
 	## return the base64 encoded string
 	return b64
 
 ################################################################################
 
-def decrypt(s,key):
+def aes_decrypt(s,key):
 	"""This function is used to decrypt a base64-encoded
 	AES CFB encrypted string. 
 	Pass it the string to decrypt and the correct key.
@@ -57,7 +57,7 @@ def decrypt(s,key):
 	block_size = AES.block_size
 	
 	# Base64 decode the encrypted data
-	binary = base64.b64decode(s)
+	binary = b64decode(s)
 
 	# Pull out the IV (Initialization Vector) which is the first N bytes where N is the block size 
 	iv = binary[:block_size]

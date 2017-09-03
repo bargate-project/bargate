@@ -20,6 +20,7 @@ if app.config['TOTP_ENABLED']:
 	import bargate.lib.totp
 import bargate.lib.user
 import bargate.lib.userdata
+from bargate.lib.aes import aes_encrypt
 from flask import Flask, request, session, redirect, url_for, flash, g, abort, make_response, render_template, send_from_directory
 import mimetypes
 import os 
@@ -27,7 +28,6 @@ import time
 import json
 import re
 import werkzeug
-from itsdangerous import base64_decode
 
 ################################################################################
 # Default route (login or redirect to the default share if logged in)
@@ -67,7 +67,7 @@ def login():
 				session.permanent = False
 
 			## Encrypt the password and store in the session
-			session['id'] = bargate.lib.aes.encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
+			session['id'] = aes_encrypt(request.form['password'],app.config['ENCRYPT_KEY'])
 
 			## Check if two-factor is enabled for this account
 			if app.config['TOTP_ENABLED']:

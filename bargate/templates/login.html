@@ -2,7 +2,6 @@
 <html lang="en">
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
-		<meta charset="utf-8">
 		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -31,7 +30,7 @@
 				</div>
 				{% endfor %}
 
-				<form role="form" action="{{ url_for('login') }}" method="POST" class="text-left">
+				<form action="{{ url_for('login') }}" method="POST" class="text-left">
 					{% if next %}
 					<input name="next" type="hidden" value="{{next}}"/>
 					{% endif %}

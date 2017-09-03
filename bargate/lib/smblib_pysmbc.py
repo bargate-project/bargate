@@ -36,7 +36,7 @@ from bargate.lib.core import banned_file, secure_filename, check_path
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_name
 from bargate.lib.core import EntryType
 from bargate.lib.errors import stderr, invalid_path
-from bargate.lib.user import get_smbc_auth
+from bargate.lib.user import get_password
 from bargate.lib.userdata import get_show_hidden_files, get_layout
 from bargate.lib.userdata import get_overwrite_on_upload 
 from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
@@ -73,7 +73,9 @@ class SMBClientWrapper:
 	quoted str objects instead, making use of the library a lot easier"""
 
 	def __init__(self):
-		self.smbclient = smbc.Context(auth_fn=get_smbc_auth)
+		cb = lambda se, sh, w, u, p: (app.config['SMB_WORKGROUP'], 
+			session['username'], get_password())
+		self.smbclient = smbc.Context(auth_fn=cb)
 
 	def _convert(self,url):
 		# input will be of the form smb://location.location/path/path/path
@@ -137,6 +139,24 @@ class SMBClientWrapper:
 ################################################################################
 
 class BargateSMBLibrary:
+
+################################################################################
+
+	def smb_auth(self,username,password):
+		try:
+			cb = lambda se, sh, w, u, p: (app.config['SMB_WORKGROUP'], username, password)
+			ctx = smbc.Context(auth_fn=cb)
+			ctx.opendir(app.config['SMB_AUTH_URI']).getdents()
+		except smbc.PermissionError:
+			app.logger.debug("bargate.lib.user.auth smb permission denied")
+			return False
+		except Exception as ex:
+			app.logger.debug("bargate.lib.user.auth smb exception: " + str(ex))
+			flash('Unexpected SMB authentication error: ' + str(ex),'alert-danger')
+			return False
+
+		app.logger.debug("bargate.lib.user.auth auth smb success")
+		return True
 
 ################################################################################
 

@@ -42,6 +42,7 @@
 		<script src="{{ url_for('settings_js') }}"></script>
 		{% include 'javascript.html' %}
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.7/bootstrap-notify.min.js" integrity="sha256-LlN0a0J3hMkDLO1mhcMwy+GIMbIRV7kvKHx4oCxNoxI=" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.0.1/nunjucks.min.js" integrity="sha256-sh9FYQZVVLprCQB3/IcNyCRrZwu9hZ+xLHhUszDfsK4=" crossorigin="anonymous"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.ui.widget.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.fileupload.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/upload/jquery.dragster.js') }}"></script>
@@ -234,7 +235,6 @@
 		</div>
 	</div>
 	{% block modals %}{% endblock -%}
-
 		<div class="navbar navbar-{{theme_navbar}} navbar-fixed-top" role="navigation">
 			<div class="container-fluid">
 				<div class="navbar-header">
