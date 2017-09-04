@@ -110,6 +110,8 @@ def bookmarks():
 	## Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
 	if not app.config['REDIS_ENABLED']:
 		abort(404)
+	if not app.config['BOOKMARKS_ENABLED']:
+		abort(404)
 
 	user_bookmarks_key   = 'user:' + session['username'] + ':bookmarks'
 	user_bookmark_prefix = 'user:' + session['username'] + ':bookmark:'
@@ -166,6 +168,8 @@ def bookmark(bookmark_id):
 	version 2 bookmarks, not version 1 (Bargate v1.4 or earlier)"""
 
 	if not app.config['REDIS_ENABLED']:
+		abort(404)
+	if not app.config['BOOKMARKS_ENABLED']:
 		abort(404)
 
 	## Prepare the redis key name

@@ -6,7 +6,7 @@ function showErr(title,desc) {
 }
 
 var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false,
-	bmarkEnabled: false, sortBy: 'name'
+	bmarkEnabled: false, sortBy: 'name', data: null,
 };
 
 function enableBrowseButts() {
@@ -48,6 +48,26 @@ function initDirectory(url) {
 	loadDir(url,false);
 }
 
+function renderDirectory() {
+	$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: $browse.data.crumbs, root_name: $browse.data.root_name, root_url: $browse.data.root_url }));
+
+	if ($browse.data.no_items) {
+		$('#browse').append(nunjucks.render('empty.html'));
+	} else {
+		$('#browse').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: $browse.data.dirs, files: $browse.data.files, shares: $browse.data.shares, buildurl: buildurl}));
+	}
+
+	if ($user.layout == "list") {
+		doListView();
+	}
+	else {
+		doGridView();
+	}
+
+	doBrowse();
+	prepFileUpload();
+}
+
 function loadDir(url,alterHistory) {
 	if (alterHistory === undefined) { alterHistory = true; }
 
@@ -68,28 +88,14 @@ function loadDir(url,alterHistory) {
 				disableBrowseButts();
 			}
 
-			$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: response.crumbs, root_name: response.root_name, root_url: response.root_url }));
-
-			if (response.no_items) {
-				$('#browse').append(nunjucks.render('empty.html'));
-			} else {
-				$('#browse').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: response.dirs, files: response.files, shares: response.shares, baseurl: baseurl}));
-			}
+			$browse.data = response;
+			renderDirectory()
 
 			if (alterHistory) {
 				history.pushState(url, "", url);
 			}
 			$browse.url = url;
 
-			if ($user.layout == "list") {
-				doListView();
-			}
-			else {
-				doGridView();
-			}
-
-			doBrowse();
-			prepFileUpload();
 		}
 	})
 	.fail(function() {
@@ -227,16 +233,16 @@ function doBrowse() {
 			showFileOverview($(this));
 		} else if ($user.onclick == 'default') {
 			if ($(this).attr('data-view')) {
-				window.open(baseurl($(this).data('burl'),$(this).data('path'),'view'),'_blank');
+				window.open(buildurl($(this).data('burl'),$(this).data('path'),'view'),'_blank');
 			} else {
-				window.open(baseurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
+				window.open(buildurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
 			}
 		} else {
-			window.open(baseurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
+			window.open(buildurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
 		}
 	});
 
-	$("#file-click-details").click(function() {
+	$("#file-m-details").click(function() {
 		showFileDetails($(this));
 	});
 
@@ -249,10 +255,10 @@ function doBrowse() {
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'view') {
-				window.open(baseurl(file.data('burl'),file.data('path'),'view'),'_blank');
+				window.open(buildurl(file.data('burl'),file.data('path'),'view'),'_blank');
 			}
 			else if ($action == 'download') {
-				window.open(baseurl(file.data('burl'),file.data('path'),'download'),'_blank');
+				window.open(buildurl(file.data('burl'),file.data('path'),'download'),'_blank');
 			}
 			else if ($action == 'copy') {
 				selectEntry(file.data('filename'),$browse.url);
@@ -406,17 +412,17 @@ function renderExtendedProgress(data) {
 }
 
 function prepFileUpload() {
-	$('#fileupload').fileupload({
+	$('#upload-i').fileupload({
 		url: $browse.url,
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
 		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}],
 		start: function (e) {
-			$('#upload-drag-over').modal('hide');
-			$('#upload-file').modal()
+			$('#upload-drag-m').modal('hide');
+			$('#upload-m').modal()
 			$('#upload-progress').removeClass('hidden');
 			$('#upload-progress-ext').removeClass('hidden');
-			$('#upload-cancel').removeClass('hidden');
+			$('#upload-cancel-b').removeClass('hidden');
 			
 			$('#upload-button-icon').removeClass('fa-upload');
 			$('#upload-button-icon').addClass('fa-spin');
@@ -429,11 +435,11 @@ function prepFileUpload() {
 
 			$('#upload-progress').addClass('hidden');
 			$('#upload-progress-ext').addClass('hidden');
-			$('#upload-cancel').addClass('hidden');
+			$('#upload-cancel-b').addClass('hidden');
 
-			if (!($("#upload-file").data('bs.modal').isShown)) {
+			if (!($("#upload-m").data('bs.modal').isShown)) {
 				/* if something finished then show the modal if it wasnt already */
-				$('#upload-file').modal('show');
+				$('#upload-m').modal('show');
 			}
 		},
 		done: function (e, data) {
@@ -466,7 +472,7 @@ function prepFileUpload() {
 		},
 		add: function (e, data) {
 			jqXHR = data.submit();
-			$('#upload-cancel').click(function (e) {
+			$('#upload-cancel-b').click(function (e) {
 				jqXHR.abort();
 			});
 		},
@@ -478,62 +484,62 @@ function selectEntry(name,url) {
 	$browse.entryDirUrl = url;
 }
 
-function baseurl(burl,path,action) {
+function buildurl(burl,path,action) {
 	return burl + "/" + action + "/" + path
 }
 
 function showFileDetails(file) {
-	$('#file-details-loading').removeClass('hidden');
-	$('#file-details-data').addClass('hidden');
-	$('#file-details-filename').html('Please wait...');
-	$('#file-details').modal('show');
+	$('#e-details-status').removeClass('hidden');
+	$('#e-details-data').addClass('hidden');
+	$('#e-details-fname').html('Please wait...');
+	$('#e-details-m').modal('show');
 
-	$.getJSON(baseurl(file.data('burl'),file.data('path'),'stat'), function(data) {
+	$.getJSON(buildurl(file.data('burl'),file.data('path'),'stat'), function(data) {
 		if (data.error == 1) {
 			showErr("Could not load file details",data.reason);
 		} else {
-			$('#file-details-filename').html(data.filename);
-			$('#file-details-size').html(bytesToString(data.size));
-			$('#file-details-atime').html(data.atime);
-			$('#file-details-mtime').html(data.mtime);
-			$('#file-details-ftype').html(data.ftype);
-			$('#file-details-owner').html(data.owner);
-			$('#file-details-group').html(data.group);
+			$('#e-details-fname').html(data.filename);
+			$('#e-details-size').html(bytesToString(data.size));
+			$('#e-details-atime').html(data.atime);
+			$('#e-details-mtime').html(data.mtime);
+			$('#e-details-ftype').html(data.ftype);
+			$('#e-details-owner').html(data.owner);
+			$('#e-details-group').html(data.group);
 
-			$('#file-details-loading').addClass('hidden');
-			$('#file-details-data').removeClass('hidden');
+			$('#e-details-status').addClass('hidden');
+			$('#e-details-data').removeClass('hidden');
 		}
 	});
 }
 
 function showFileOverview(file) {
-	$('#file-click-filename').text(file.data('filename'));
-	$('#file-click-size').text(file.data('size'));
-	$('#file-click-mtime').text(file.data('mtime'));
-	$('#file-click-mtype').text(file.data('mtype'));
-	$('#file-click-icon').attr('class',file.data('icon'));
-	$('#file-click-download').attr('href',baseurl(file.data('burl'),file.data('path'),'download'));
-	$('#file-click-details').data('burl',file.data('burl'));
-	$('#file-click-details').data('path',file.data('path'));
+	$('#file-m-name').text(file.data('filename'));
+	$('#file-m-size').text(file.data('size'));
+	$('#file-m-mtime').text(file.data('mtime'));
+	$('#file-m-mtype').text(file.data('mtype'));
+	$('#file-m-icon').attr('class',file.data('icon'));
+	$('#file-m-download').attr('href',buildurl(file.data('burl'),file.data('path'),'download'));
+	$('#file-m-details').data('burl',file.data('burl'));
+	$('#file-m-details').data('path',file.data('path'));
 
 	
 	if (file.attr('data-img')) {
-		$('#file-click-preview').attr('src',baseurl(file.data('burl'),file.data('path'),'preview'));
-		$('#file-click-preview').removeClass('hidden');
-		$('#file-click-icon').addClass('hidden');
+		$('#file-m-preview').attr('src',buildurl(file.data('burl'),file.data('path'),'preview'));
+		$('#file-m-preview').removeClass('hidden');
+		$('#file-m-icon').addClass('hidden');
 	}
 	else {
-		$('#file-click-preview').attr('src','');
-		$('#file-click-preview').addClass('hidden');
-		$('#file-click-icon').removeClass('hidden');
+		$('#file-m-preview').attr('src','');
+		$('#file-m-preview').addClass('hidden');
+		$('#file-m-icon').removeClass('hidden');
 	}
 	
 	if (file.attr('data-view')) {
-		$('#file-click-view').attr('href',baseurl(file.data('burl'),file.data('path'),'view'));
-		$('#file-click-view').removeClass('hidden');
+		$('#file-m-view').attr('href',buildurl(file.data('burl'),file.data('path'),'view'));
+		$('#file-m-view').removeClass('hidden');
 	}
 	else {
-		$('#file-click-view').addClass('hidden');
+		$('#file-m-view').addClass('hidden');
 	}
 
 	if (file.attr('data-parent')) {
@@ -542,7 +548,7 @@ function showFileOverview(file) {
 		selectEntry(file.data('filename'),$browse.url);
 	}
 
-	$('#file-click').modal('show');
+	$('#file-m').modal('show');
 }
 
 function showRename() {
@@ -679,7 +685,7 @@ function setLayoutMode(newLayout) {
 					$("#pdiv").addClass("listview");
 				}
 
-				loadDir($browse.url);
+				//loadDir($browse.url);
 			}
 
 			if ($user.layout == "list") {
@@ -691,6 +697,7 @@ function setLayoutMode(newLayout) {
 			}
 
 			$user.layout = newLayout;
+			renderDirectory();
 		});
 }
 
@@ -766,7 +773,7 @@ function setTheme(themeName) {
 
 $(document).ready(function($) {
 	/* load templating engine */
-	var env = nunjucks.configure('/static/templates/', { autoescape: true });
+	var env = nunjucks.configure('/static/templates', { autoescape: true });
 	env.addFilter('filesizeformat', filesizeformat);
 	
 	/* Activate tooltips and enable hiding on clicking */
@@ -850,7 +857,6 @@ $(document).ready(function($) {
 	});
 
 	/* focus on inputs when modals open */
-	/* these modals are triggered by data-toggle, so we must do it here */
 	$('#mkdir-m').on('shown.bs.modal', function() {
 		$('#mkdir-m input[type="text"]').focus();
 	});
@@ -867,11 +873,11 @@ $(document).ready(function($) {
 	$('body').dragster({
 		enter: function ()
 		{
-			$('#upload-drag-over').modal()
+			$('#upload-drag-m').modal()
 		},
 		leave: function ()
 		{
-			$('#upload-drag-over').modal('hide');
+			$('#upload-drag-m').modal('hide');
 		}
 	});
 });

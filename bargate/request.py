@@ -26,8 +26,10 @@ from bargate import app
 from bargate.lib.core import EntryType
 import bargate.lib.userdata
 import bargate.lib.errors
-import redis
 import time
+
+if app.config['REDIS_ENABLED']:
+	import redis
 
 ################################################################################
 

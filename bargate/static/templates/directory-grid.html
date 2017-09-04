@@ -1,6 +1,6 @@
 <div id="dirs">
 	{%- for entry in shares -%}
-	<div class="grid-entry eshare" data-url="{{ baseurl(entry.burl,entry.name,'browse') }}" data-sortname="{{entry.name|lower}}">
+	<div class="grid-entry eshare" data-url="{{ buildurl(entry.burl,entry.name,'browse') }}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-body grid-icon"><span class="fa fa-fw fa-hdd-o"></span></div>
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}>{{ entry.name }}</div>
@@ -8,7 +8,7 @@
 	</div>
 	{%- endfor -%}
 	{%- for entry in dirs -%}
-	<div class="grid-entry edir" data-url="{{ baseurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+	<div class="grid-entry edir" data-url="{{ buildurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 		<div class="panel panel-default">
 			<div class="panel-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="fa fa-fw fa-folder"></i> {{ entry.name }}</div>
 		</div>
@@ -24,7 +24,7 @@
 
 		{%- if entry.img -%}
 		<div class="panel panel-default">
-			<div class="panel-body grid-img" style="background-image: url('{{ baseurl(entry.burl,entry.path,'preview') }}')"></div>
+			<div class="panel-body grid-img" style="background-image: url('{{ buildurl(entry.burl,entry.path,'preview') }}')"></div>
 		{%- else -%}
 		<div class="panel panel-default">
 			<div class="panel-body grid-icon"><span class="fa fa-fw fa-{{ entry.icon }}"></span></div>

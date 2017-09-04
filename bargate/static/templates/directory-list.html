@@ -12,7 +12,7 @@
 	</thead>
 	<tbody>
 		{%- for entry in shares -%}
-		<tr class="edir" data-url="{{ baseurl(entry.burl,entry.name,'browse') }}">
+		<tr class="edir" data-url="{{ buildurl(entry.burl,entry.name,'browse') }}">
 			<td class="text-center"><span class="fa fa-fw fa-hdd-o"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime"></td>
@@ -23,7 +23,7 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<tr class="edir" data-icon="fa fa-fw fa-folder" data-url="{{ baseurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
+		<tr class="edir" data-icon="fa fa-fw fa-folder" data-url="{{ buildurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="fa fa-fw fa-folder"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>

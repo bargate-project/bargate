@@ -1,32 +1,32 @@
 {#- modal for file click #}
-<div class="modal" id="file-click" tabindex='-1'>
+<div id="file-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-click-filename">Unknown</h4>
+				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-m-name">Unknown</h4>
 			</div>
 			<div class="modal-body text-center">
-				<img src="about:blank" id="file-click-preview" class="hidden" alt="preview">
-				<span id="file-click-icon" style="font-size: 128px"></span>
-				<table class="table table-condensed text-left table-nl table-file-click">
+				<img src="about:blank" id="file-m-preview" class="hidden" alt="preview">
+				<span id="file-m-icon" style="font-size: 128px"></span>
+				<table class="table table-condensed text-left table-nl table-file-m">
 					<tr>
 						<th class="text-right">Size:</th>
-						<td id="file-click-size"></td>
+						<td id="file-m-size"></td>
 					</tr>
 					<tr>
 						<th class="text-right">Modified:</th>
-						<td id="file-click-mtime"></td>
+						<td id="file-m-mtime"></td>
 					</tr>
 					<tr>
 						<th class="text-right">Type:</th>
-						<td id="file-click-mtype"></td>
+						<td id="file-m-mtype"></td>
 					</tr>
 				</table>
 				<div class="btn-group btn-group-justified">
-					<a href="#" target="_blank" id="file-click-download" class="btn btn-default"><i class="fa fa-fw fa-3x fa-download"></i><br/><span class="hidden-xs">Download</span></a>
-					<a href="#" target="_blank" id="file-click-view" class="btn btn-default hidden hidden-xs"><i class="fa fa-fw fa-3x fa-eye"></i><br/><span class="hidden-xs">View</span></a>
-					<a href="#" id="file-click-details" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-info-circle"></i><br/><span class="hidden-xs">Details</span></a>
+					<a href="#" target="_blank" id="file-m-download" class="btn btn-default"><i class="fa fa-fw fa-3x fa-download"></i><br/><span class="hidden-xs">Download</span></a>
+					<a href="#" target="_blank" id="file-m-view" class="btn btn-default hidden hidden-xs"><i class="fa fa-fw fa-3x fa-eye"></i><br/><span class="hidden-xs">View</span></a>
+					<a href="#" id="file-m-details" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-info-circle"></i><br/><span class="hidden-xs">Details</span></a>
 					<a id="e-copy-b" data-dismiss="modal"  class="btn btn-default"><i class="fa fa-fw fa-3x fa-clipboard"></i><br/><span class="hidden-xs">Copy</span></a>
 					<a id="e-rename-b" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-pencil-square-o"></i><br/><span class="hidden-xs">Rename</span></a>
 					<a id="e-delete-b" data-dismiss="modal" class="btn btn-default"><i class="fa fa-fw fa-3x fa-trash"></i><br/><span class="hidden-xs">Delete</span></a>
@@ -36,7 +36,7 @@
 	</div>
 </div>
 
-<div class="modal" id="upload-drag-over">
+<div id="upload-drag-m" class="modal">
 	<div class="modal-dialog">
 		<div class="modal-content" style="opacity: 0.9;">
 			<div class="modal-body text-center">
@@ -47,7 +47,7 @@
 	</div>
 </div>
 
-<div class="modal" id="upload-file" tabindex='-1'>
+<div class="modal" id="upload-m" tabindex='-1'>
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -73,11 +73,11 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-fw fa-times-circle"></i> Close</button>
-				<button id="upload-cancel" type="button" class="btn btn-danger hidden"><i class="fa fa-fw fa-times"></i> Cancel upload</button>
+				<button id="upload-cancel-b" type="button" class="btn btn-danger hidden"><i class="fa fa-fw fa-times"></i> Cancel upload</button>
 				<span class="btn btn-success fileinput-button">
 					<i class="fa fa-fw fa-plus"></i>
 					<span>Select files</span>
-					<input id="fileupload" type="file" name="files[]" multiple>
+					<input id="upload-i" type="file" name="files[]" multiple>
 				</span>
 			</div>
 		</div>
@@ -86,54 +86,54 @@
 
 
 {#- modal for file details (properties?) #}
-<div class="modal" id="file-details">
+<div id="e-details-m" class="modal">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-details-filename">Unknown</h4>
+				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="e-details-fname">Unknown</h4>
 			</div>
 
 			<div class="modal-body">
 				<form class="form-horizontal">
-					<div id="file-details-loading" class="text-center">
+					<div id="e-details-status" class="text-center">
 						<i class="fa fa-spinner fa-spin fa-5x text-muted"></i>
 					</div>
-					<div id="file-details-data">
+					<div id="e-details-data">
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Size:</label>
 							<div class="col-sm-9">
-								<p class="form-control-static" id="file-details-size"></p>
+								<p class="form-control-static" id="e-details-size"></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Type:</label>
 							<div class="col-sm-9">
-								<p class="form-control-static" id="file-details-ftype"></p>
+								<p class="form-control-static" id="e-details-ftype"></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Last accessed:</label>
 							<div class="col-sm-9">
-								<p class="form-control-static" id="file-details-atime"></p>
+								<p class="form-control-static" id="e-details-atime"></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Last modified:</label>
 							<div class="col-sm-9">
-								<p class="form-control-static" id="file-details-mtime"></p>
+								<p class="form-control-static" id="e-details-mtime"></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Owner:</label>
 							<div class="col-sm-9">
-								<p class="form-control-static" id="file-details-owner"></p>
+								<p class="form-control-static" id="e-details-owner"></p>
 							</div>
 						</div>
 						<div class="form-group">
 							<label class="col-sm-3 control-label">Group:</label>
 							<div class="col-sm-9">
-								<p class="form-control-static" id="file-details-group"></p>
+								<p class="form-control-static" id="e-details-group"></p>
 							</div>
 						</div>
 					</div>
@@ -148,7 +148,7 @@
 
 
 {#- RENAME #}
-<div class="modal" id="e-rename-m" tabindex='-1'>
+<div id="e-rename-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
 		<form id="e-rename-f">
 			<div class="modal-content">
@@ -170,7 +170,7 @@
 </div>
 
 {#- DELETE #}
-<div class="modal" id="e-delete-m" tabindex='-1'>
+<div id="e-delete-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
 		<form id="e-delete-f">
 			<div class="modal-content">
@@ -192,7 +192,7 @@
 </div>
 
 {#- COPY #}
-<div class="modal" id="e-copy-m" tabindex='-1'>
+<div id="e-copy-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
 		<form id="e-copy-f">
 			<div class="modal-content">
@@ -214,7 +214,7 @@
 </div>
 
 {#- MKDIR #}
-<div class="modal" id="mkdir-m" tabindex='-1'>
+<div id="mkdir-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
 		<form id="mkdir-f">
 			<div class="modal-content">
@@ -260,6 +260,7 @@
 </div>
 {% endif %}
 
+{% if config['BOOKMARKS_ENABLED'] %}
 {#- ADD BOOKMARK  #}
 <div id="bmark-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
@@ -281,3 +282,4 @@
 		</div>
 	</div>
 </div>
+{% endif %}

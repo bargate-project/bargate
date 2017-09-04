@@ -681,6 +681,11 @@ class BargateSMBLibrary:
 			###############################
 			elif action == 'bookmark':
 
+				if not app.config['REDIS_ENABLED']:
+					abort(404)
+				if not app.config['BOOKMARKS_ENABLED']:
+					abort(404)
+
 				try:
 					bookmark_name     = request.form['name']
 				except Exception as ex:

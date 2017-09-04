@@ -1,4 +1,5 @@
 {%- if config['REDIS_ENABLED'] %}
+{%- if config['BOOKMARKS_ENABLED'] %}
 <li class="dropdown{%if active == 'bookmarks'%} active{%endif%}">
 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">Bookmarks <b class="caret"></b></a>
 	<ul class="dropdown-menu" id="bmarks"	>
@@ -14,4 +15,5 @@
 		{% endif %}
 	</ul>
 </li>
+{%- endif %}
 {%- endif %}

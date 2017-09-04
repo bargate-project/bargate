@@ -79,7 +79,7 @@ REDIS_PORT=6379
 DISABLE_APP=False
 
 ## Default bootstrap/bootswatch theme
-THEME_DEFAULT='lumen'
+THEME_DEFAULT='cerulean'
 
 ## Default directory layout mode
 ## either 'grid' or 'list'
@@ -167,3 +167,6 @@ MINIFY_HTML=True
 
 ## Don't pretty print when using jsonify() function
 JSONIFY_PRETTYPRINT_REGULAR=False
+
+## Enable/disable bookmarking
+BOOKMARKS_ENABLED = False

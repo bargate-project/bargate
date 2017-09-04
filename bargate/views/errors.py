@@ -20,7 +20,9 @@ from bargate import app
 import bargate.lib.errors
 from flask import Flask, request, session, g, redirect, url_for, abort, flash, render_template, make_response
 import traceback
-import redis
+
+if app.config['REDIS_ENABLED']:
+	import redis
 
 @app.errorhandler(500)
 def error500(error):
