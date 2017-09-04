@@ -204,7 +204,7 @@ class BargateSMBLibrary:
 					shares = []
 					for share in smb_shares:
 						if share.type == SharedDevice.DISK_TREE:
-							shares.append({'name': share.name, 'url': url_for(func_name,path=share.name)})
+							shares.append({'name': share.name, 'burl': url_for(func_name))})
 
 					## are there any items in the list?
 					no_items = False
@@ -406,9 +406,13 @@ class BargateSMBLibrary:
 
 							# Don't add hidden files
 							if not entry['skip']:
-								if entry['type'] == EntryType.file:
+								etype = entry['type']
+								entry.pop('skip',None)
+								entry.pop('type',None)
+
+								if etype == EntryType.file:
 									files.append(entry)
-								elif entry['type'] == EntryType.dir:
+								elif etype == EntryType.dir:
 									dirs.append(entry)
 
 						## Build a breadcrumbs trail ##
@@ -774,17 +778,19 @@ class BargateSMBLibrary:
 		"""Takes a smb SharedFile object and returns a dictionary with information
 		about that SharedFile object. 
 		"""
-		entry = {'skip': False, 'name': sfile.filename, 'size': sfile.file_size }
+		entry = {'skip': False, 
+			'name': sfile.filename, 
+			'burl': url_for(func_name),
+		}
 
-		## Skip entries for 'this dir' and 'parent dir'
-		if entry['name'] == '.' or entry['name'] == '..':
-			entry['skip'] = True
-
-		## Build the path
 		if len(path) == 0:
 			entry['path'] = entry['name']
 		else:
 			entry['path'] = path + '/' + entry['name']
+
+		## Skip entries for 'this dir' and 'parent dir'
+		if entry['name'] == '.' or entry['name'] == '..':
+			entry['skip'] = True
 
 		## hidden files
 		if not get_show_hidden_files():
@@ -801,34 +807,29 @@ class BargateSMBLibrary:
 		# Directories
 		if sfile.isDirectory:
 			entry['type'] = 'dir'
-			entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
-			entry['url']  = url_for(func_name,path=entry['path'])
 
 		# Files
 		else:
 			entry['type'] = EntryType.file
+			entry['size'] = sfile.file_size
 
-			## Generate 'mtype', 'mtype_raw' and 'icon'
-			entry['icon'] = 'fa fa-fw fa-file-text-o'
-			(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
-			entry['icon'] = mimetype_to_icon(entry['mtype_raw'])
-
-			## Generate URLs to this file
-			entry['stat']         = url_for(func_name,path=entry['path'],action='stat')
-			entry['download']     = url_for(func_name,path=entry['path'],action='download')
+			## Generate 'mtype', 'mtyper' and 'icon'
+			entry['icon'] = 'file-text-o'
+			(entry['mtype'],entry['mtyper']) = filename_to_mimetype(entry['name'])
+			entry['icon'] = mimetype_to_icon(entry['mtyper'])
 
 			# modification time (last write)
-			entry['mtime_raw'] = sfile.last_write_time
+			entry['mtimer'] = sfile.last_write_time
 			entry['mtime']     = ut_to_string(sfile.last_write_time)
 
 			## Image previews
-			if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in pillow_supported:
+			if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in pillow_supported:
 				if int(entry['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
-					entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+					entry['img'] = True
 
 			## View-in-browser download type
-			if view_in_browser(entry['mtype_raw']):
-				entry['view'] = url_for(func_name,path=entry['path'],action='view')
+			if view_in_browser(entry['mtyper']):
+				entry['view'] = True
 
 		return entry
 

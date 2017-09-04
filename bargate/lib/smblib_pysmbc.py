@@ -383,11 +383,15 @@ class BargateSMBLibrary:
 							entry = self._direntry_load(dentry, srv_path, path, func_name)
 
 							if not entry['skip']:
-								if entry['type'] == EntryType.file:
+								etype = entry['type']
+								entry.pop('skip',None)
+								entry.pop('type',None)
+
+								if etype == EntryType.file:
 									files.append(entry)
-								elif entry['type'] == EntryType.dir:
+								elif etype == EntryType.dir:
 									dirs.append(entry)
-								elif entry['type'] == EntryType.share:
+								elif etype == EntryType.share:
 									shares.append(entry)
 
 						bmark_enabled   = False
@@ -778,21 +782,23 @@ class BargateSMBLibrary:
 	############################################################################
 
 	def _direntry_load(self,dentry,srv_path, path, func_name):
-		entry = {'skip': False, 'name': dentry.name}
+		entry = {'skip': False, 
+			'name': dentry.name,
+			'burl': url_for(func_name),
+		}
 
 		# old versions of pysmbc return 'str' objects rather than unicode
 		if isinstance(entry['name'], str):
 			entry['name'] = entry['name'].decode("utf-8")
 
-		## Skip entries for 'this dir' and 'parent dir'
-		if entry['name'] == '.' or entry['name'] == '..':
-			entry['skip'] = True
-
-		## Build the path
 		if len(path) == 0:
 			entry['path'] = entry['name']
 		else:
 			entry['path'] = path + '/' + entry['name']
+
+		## Skip entries for 'this dir' and 'parent dir'
+		if entry['name'] == '.' or entry['name'] == '..':
+			entry['skip'] = True
 
 		## hide files which we consider 'hidden'
 		if not get_show_hidden_files():
@@ -816,47 +822,36 @@ class BargateSMBLibrary:
 
 		if not entry['skip']:
 			if entry['type'] == EntryType.file:
-				## Generate 'mtype', 'mtype_raw' and 'icon'
-				entry['icon'] = 'fa fa-fw fa-file-text-o'
-				(entry['mtype'],entry['mtype_raw']) = filename_to_mimetype(entry['name'])
-				entry['icon'] = mimetype_to_icon(entry['mtype_raw'])
-
-				## Generate URLs to this file
-				entry['stat']     = url_for(func_name,path=entry['path'],action='stat')
-				entry['download'] = url_for(func_name,path=entry['path'],action='download')
+				## Generate 'mtype', 'mtyper' and 'icon'
+				entry['icon'] = 'file-text-o'
+				(entry['mtype'],entry['mtyper']) = filename_to_mimetype(entry['name'])
+				entry['icon'] = mimetype_to_icon(entry['mtyper'])
 
 				try:
 					fstat = self.libsmbclient.stat(srv_path + path + '/' + entry['name'])
 				except Exception as ex:
 					## If the file stat failed we return a result with the data missing
 					## rather than fail the entire page load
-					entry['mtime_raw'] = 0
+					entry['mtimer'] = 0
 					entry['mtime'] = "Unknown"
 					entry['size'] = 0
 					entry['error'] = True
 					return entry
 
-				entry['mtime_raw'] = fstat.mtime
+				entry['mtimer'] = fstat.mtime
 				entry['mtime']     = ut_to_string(fstat.mtime)
 				entry['size']      = fstat.size
 
 				## Image previews
-				if app.config['IMAGE_PREVIEW'] and entry['mtype_raw'] in pillow_supported:
+				if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in pillow_supported:
 					if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
-						entry['img_preview'] = url_for(func_name,path=entry['path'],action='preview')
+						entry['img'] = True
 				else:
 					entry['size'] = 0
 
 				## View-in-browser download type
-				if view_in_browser(entry['mtype_raw']):
-					entry['view'] = url_for(func_name,path=entry['path'],action='view')
-
-			elif entry['type'] == EntryType.dir:
-				entry['stat'] = url_for(func_name,path=entry['path'],action='stat')
-				entry['url']  = url_for(func_name,path=entry['path'])
-
-			elif entry['type'] == EntryType.share:
-				entry['url'] = url_for(func_name,path=entry['path'])
+				if view_in_browser(entry['mtyper']):
+					entry['view'] = True
 
 		return entry
 

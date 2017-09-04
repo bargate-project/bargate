@@ -12,7 +12,7 @@
 	</thead>
 	<tbody>
 		{%- for entry in shares -%}
-		<tr class="edir" data-url="{{ entry.url }}">
+		<tr class="edir" data-url="{{ baseurl(entry.burl,entry.name,'browse') }}">
 			<td class="text-center"><span class="fa fa-fw fa-hdd-o"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime"></td>
@@ -23,7 +23,7 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<tr class="edir" data-icon="fa fa-fw fa-folder" data-url="{{ entry.url }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
+		<tr class="edir" data-icon="fa fa-fw fa-folder" data-url="{{ baseurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="fa fa-fw fa-folder"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
@@ -34,13 +34,13 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in files -%}
-			<tr class="efile" data-icon="{{entry.icon}}" {% if entry.img_preview %}data-imgpreview="{{ entry.img_preview }}" {%endif%} {% if entry.view %}data-view="{{ entry.view }}" {%endif%} data-download="{{ entry.download }}" data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-stat="{{ entry.stat }}">
-			<td class="text-center"><span class="{{ entry.icon }}"></span></td>
+			<tr class="efile" data-icon="fa fa-fw fa-{{entry.icon}}" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-burl="{{entry.burl}}">
+			<td class="text-center"><span class="fa fa-fw fa-{{ entry.icon }}"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">{{ entry.mtime }}</td>
 			<td>{{ entry.name }}</td>
-			<td>{{ entry.mtime_raw }}</td>
-			<td>{{ entry.mtype_raw }}</td>
+			<td>{{ entry.mtimer }}</td>
+			<td>{{ entry.mtyper }}</td>
 			<td>{{ entry.size }}</td>
 		</tr>
 		{%- endfor -%}

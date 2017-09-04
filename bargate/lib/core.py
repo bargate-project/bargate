@@ -36,7 +36,7 @@ def ut_to_string(ut):
 	"""Converts unix time to a formatted string for human consumption
 	Used by smb.py for turning fstat results into human readable dates.
 	"""
-	return datetime.datetime.fromtimestamp(int(ut)).strftime('%Y-%m-%d %H:%M:%S %Z')
+	return datetime.datetime.fromtimestamp(int(ut)).strftime('%Y-%m-%d %H:%M:%S')
 
 ################################################################################
 

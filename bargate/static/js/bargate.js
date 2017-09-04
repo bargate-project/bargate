@@ -73,7 +73,7 @@ function loadDir(url,alterHistory) {
 			if (response.no_items) {
 				$('#browse').append(nunjucks.render('empty.html'));
 			} else {
-				$('#browse').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: response.dirs, files: response.files, shares: response.shares}));
+				$('#browse').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: response.dirs, files: response.files, shares: response.shares, baseurl: baseurl}));
 			}
 
 			if (alterHistory) {
@@ -227,12 +227,12 @@ function doBrowse() {
 			showFileOverview($(this));
 		} else if ($user.onclick == 'default') {
 			if ($(this).attr('data-view')) {
-				window.open($(this).data('view'),'_blank');
+				window.open(baseurl($(this).data('burl'),$(this).data('path'),'view'),'_blank');
 			} else {
-				window.open($(this).data('download'),'_blank');
+				window.open(baseurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
 			}
 		} else {
-			window.open($(this).data('download'),'_blank');
+			window.open(baseurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
 		}
 	});
 
@@ -249,10 +249,10 @@ function doBrowse() {
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'view') {
-				window.open(file.data('view'),'_blank');
+				window.open(baseurl(file.data('burl'),file.data('path'),'view'),'_blank');
 			}
 			else if ($action == 'download') {
-				window.open(file.data('download'),'_blank');
+				window.open(baseurl(file.data('burl'),file.data('path'),'download'),'_blank');
 			}
 			else if ($action == 'copy') {
 				selectEntry(file.data('filename'),$browse.url);
@@ -303,9 +303,9 @@ function doGridView() {
 		getSortData:
 		{
 			name: '[data-sortname]',
-			type: '[data-raw-mtype]',
-			mtime: '[data-raw-mtime] parseInt',
-			size: '[data-raw-size] parseInt',
+			type: '[data-mtyper]',
+			mtime: '[data-mtimer] parseInt',
+			size: '[data-sizer] parseInt',
 		},
 		transitionDuration: '0.2s',
 		percentPosition: true,
@@ -478,13 +478,17 @@ function selectEntry(name,url) {
 	$browse.entryDirUrl = url;
 }
 
+function baseurl(burl,path,action) {
+	return burl + "/" + action + "/" + path
+}
+
 function showFileDetails(file) {
 	$('#file-details-loading').removeClass('hidden');
 	$('#file-details-data').addClass('hidden');
 	$('#file-details-filename').html('Please wait...');
 	$('#file-details').modal('show');
 
-	$.getJSON(file.data('stat'), function(data) {
+	$.getJSON(baseurl(file.data('burl'),file.data('path'),'stat'), function(data) {
 		if (data.error == 1) {
 			showErr("Could not load file details",data.reason);
 		} else {
@@ -508,11 +512,13 @@ function showFileOverview(file) {
 	$('#file-click-mtime').text(file.data('mtime'));
 	$('#file-click-mtype').text(file.data('mtype'));
 	$('#file-click-icon').attr('class',file.data('icon'));
-	$('#file-click-download').attr('href',file.data('download'));
-	$('#file-click-details').data('stat',file.data('stat'));
+	$('#file-click-download').attr('href',baseurl(file.data('burl'),file.data('path'),'download'));
+	$('#file-click-details').data('burl',file.data('burl'));
+	$('#file-click-details').data('path',file.data('path'));
+
 	
-	if (file.attr('data-imgpreview')) {
-		$('#file-click-preview').attr('src',file.data('imgpreview'));
+	if (file.attr('data-img')) {
+		$('#file-click-preview').attr('src',baseurl(file.data('burl'),file.data('path'),'preview'));
 		$('#file-click-preview').removeClass('hidden');
 		$('#file-click-icon').addClass('hidden');
 	}
@@ -523,7 +529,7 @@ function showFileOverview(file) {
 	}
 	
 	if (file.attr('data-view')) {
-		$('#file-click-view').attr('href',file.data('view'));
+		$('#file-click-view').attr('href',baseurl(file.data('burl'),file.data('path'),'view'));
 		$('#file-click-view').removeClass('hidden');
 	}
 	else {
