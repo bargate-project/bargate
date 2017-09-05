@@ -52,12 +52,12 @@
 		<script src="{{ url_for('static', filename='js/bargate.js') }}"></script>
 	</head>
 	<body>
-	<div class="modal fade" id="modal-error">
+	<div class="modal" id="modal-error">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title" id="modal-error-title"></h4>
+					<h4 class="modal-title text-danger"><span class="fa fa-fw fa-exclamation-triangle"></span> <span id="modal-error-title"></span></h4>
 				</div>
 				<div class="modal-body"><p id="modal-error-desc"></p></div>
 				<div class="modal-footer">
@@ -66,7 +66,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="prefs-m">
+	<div class="modal" id="prefs-m">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content" style="min-height: 600px">
 				<div class="modal-header mhc">

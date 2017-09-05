@@ -1,8 +1,14 @@
 function showErr(title,desc) {
-	$('.modal').modal('hide');
+	var openModal = $('.modal.in').attr('id'); 
+	if (openModal) {
+		$('#' + openModal).modal('hide');
+	}
+
 	$("#modal-error-title").text(title);
 	$("#modal-error-desc").text(desc);
 	$('#modal-error').modal('show');
+	event.preventDefault();
+	event.stopPropagation();
 }
 
 var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false,
@@ -494,21 +500,25 @@ function showFileDetails(file) {
 	$('#e-details-fname').html('Please wait...');
 	$('#e-details-m').modal('show');
 
-	$.getJSON(buildurl(file.data('burl'),file.data('path'),'stat'), function(data) {
-		if (data.error == 1) {
-			showErr("Could not load file details",data.reason);
+	$.getJSON(buildurl(file.data('burl'),file.data('path'),'stat'))
+	.done(function(response) {
+		if (response.code != 0) {
+			showErr("Could not load file details",response.msg);
 		} else {
-			$('#e-details-fname').html(data.filename);
-			$('#e-details-size').html(bytesToString(data.size));
-			$('#e-details-atime').html(data.atime);
-			$('#e-details-mtime').html(data.mtime);
-			$('#e-details-ftype').html(data.ftype);
-			$('#e-details-owner').html(data.owner);
-			$('#e-details-group').html(data.group);
+			$('#e-details-fname').html(response.filename);
+			$('#e-details-size').html(bytesToString(response.size));
+			$('#e-details-atime').html(response.atime);
+			$('#e-details-mtime').html(response.mtime);
+			$('#e-details-ftype').html(response.ftype);
+			$('#e-details-owner').html(response.owner);
+			$('#e-details-group').html(response.group);
 
 			$('#e-details-status').addClass('hidden');
 			$('#e-details-data').removeClass('hidden');
 		}
+	})
+	.fail(function() {
+		showErr("Server error","The server returned an error");
 	});
 }
 

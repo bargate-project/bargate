@@ -22,11 +22,14 @@ import socket   # used to get the local hostname to send to the SMB server
 import tempfile # used for reading from files on the smb server
 import time     # used in search (timeout)
 import uuid     # used in creating bookmarks
+import errno    # used in OperationFailureDecode
 
 # third party libs
 from smb.SMBConnection import SMBConnection
 from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
 from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
+from smb.smb_structs import SMBMessage
+from smb.smb2_structs import SMB2Message
 from flask import send_file, request, session, g, url_for, abort
 from flask import flash, make_response, jsonify, render_template
 from PIL import Image
@@ -37,10 +40,66 @@ from bargate.lib.core import banned_file, secure_filename, check_name
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
 from bargate.lib.core import EntryType
 from bargate.lib.errors import stderr, invalid_path
+from bargate.lib.user import get_password
 from bargate.lib.userdata import get_show_hidden_files, get_layout
 from bargate.lib.userdata import get_overwrite_on_upload 
 from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
 from bargate.lib.mime import view_in_browser, pillow_supported
+
+class OperationFailureDecode:
+	errmap = {
+		0xC000000F: (errno.ENOENT,"STATUS_NO_SUCH_FILE"),
+		0xC000000E: (errno.ENOENT,"STATUS_NO_SUCH_DEVICE"),
+		0xC0000034: (errno.ENOENT,"STATUS_OBJECT_NAME_NOT_FOUND"),
+		0xC0000039: (errno.ENOENT,"STATUS_OBJECT_PATH_INVALID"),
+		0xC000003A: (errno.ENOENT,"STATUS_OBJECT_PATH_NOT_FOUND"),
+		0xC000003B: (errno.ENOENT,"STATUS_OBJECT_PATH_SYNTAX_BAD"),
+		0xC000009B: (errno.ENOENT,"STATUS_DFS_EXIT_PATH_FOUND"),
+		0xC00000FB: (errno.ENOENT,"STATUS_REDIRECTOR_NOT_STARTED"),
+		0xC00000CC: (errno.ENOENT,"STATUS_BAD_NETWORK_NAME"),
+		0xC0000022: (errno.EPERM,"STATUS_ACCESS_DENIED"),
+		0xC000001E: (errno.EPERM,"STATUS_INVALID_LOCK_SEQUENCE"),
+		0xC000001F: (errno.EPERM,"STATUS_INVALID_VIEW_SIZE"),
+		0xC0000021: (errno.EPERM,"STATUS_ALREADY_COMMITTED"),
+		0xC0000041: (errno.EPERM,"STATUS_PORT_CONNETION_REFUSED"),
+		0xC000004B: (errno.EPERM,"STATUS_THREAD_IS_TERMINATING"),
+		0xC0000056: (errno.EPERM,"STATUS_DELETE_PENDING"),
+		0xC0000061: (errno.EPERM,"STATUS_PRIVILEGE_NOT_HELD"),
+		0xC000006D: (errno.EPERM,"STATUS_STATUS_LOGON_FAILURE"),
+		0xC00000D5: (errno.EPERM,"STATUS_FILE_RENAMED"),
+		0xC000010A: (errno.EPERM,"STATUS_PROCESS_IS_TERMINATING"),
+		0xC0000121: (errno.EPERM,"STATUS_CANNOT_DELETE"),
+		0xC0000123: (errno.EPERM,"STATUS_FILE_DELETED"),
+		0xC00000CA: (errno.EPERM,"STATUS_NETWORK_ACCESS_DENIED"),
+		0xC0000101: (errno.ENOTEMPTY,"STATUS_DIRECTORY_NOT_EMPTY"),
+		0xC00000BA: (errno.EISDIR,"STATUS_FILE_IS_A_DIRECTORY"),
+		0xC0000035: (errno.EEXIST,"STATUS_OBJECT_NAME_COLLISION"),
+		0xC000007F: (errno.ENOSPC,"STATUS_DISK_FULL"),
+	}
+
+	def __init__(self, ex):
+		self.err      = None
+		self.code     = None
+		self.ntstatus = None
+
+		try:
+
+			if hasattr(ex, 'smb_messages'):
+				for msg in ex.smb_messages:
+					if isinstance(msg,SMBMessage):
+						code = msg.status.internal_value
+					elif isinstance(msg,SMB2Message):
+						code = msg.status
+
+					if code == 0:
+						continue # first message code is always 0
+					else:
+						self.code = code
+
+						if code in self.errmap.keys():
+							(self.err,self.ntstatus) = self.errmap[code]
+		except Exception as failed:
+			pass
 
 class BargateSMBLibrary:
 
@@ -81,12 +140,34 @@ class BargateSMBLibrary:
 			return ("Protocol error","The server sent a malformed response")
 
 		elif isinstance(ex,OperationFailure):
+			failure = OperationFailureDecode(ex)
+			if failure.err is not None:
+				if failure.err is errno.ENOENT:
+					return ("No such entry","The file or directory does not exist")
+				elif failure.err is errno.EPERM:
+					return ("Permission denied","You do not have sufficient permission to complete the operation")
+				elif failure.err is errno.ENOTEMPTY:
+					return ("Directory not empty","The directory is not empty")
+				elif failure.err is errno.EISDIR:
+					return ("Entry is a directory","You attempted to perform a file operation on a directory")
+				elif failure.err is errno.EEXIST:
+					return ("Entry already exists","The file or directory already exists")
+				elif failure.err is errno.ENOSPC:
+					return ("No space left","No space left on device. You may have exceeded your usage allowance.")
+			
 			return ("Operation failed","The current operation failed")
+
+		else:
+			return ("Unknown error","An unknown error occured")
 
 
 	def smb_error(self,ex):
 		(title, desc) = self.smb_error_info(ex)
 		return stderr(title,desc)
+
+	def smb_error_json(self,ex):
+		(title, msg) = self.smb_error_info(ex)
+		return jsonify({'code': 1, 'msg': title + ": " + msg})
 
 ################################################################################
 
@@ -183,7 +264,7 @@ class BargateSMBLibrary:
 			return invalid_path()
 
 		## Connect to the SMB server
-		conn = SMBConnection(session['username'], bargate.lib.user.get_password(), socket.gethostname(), server_name, domain=app.config['SMB_WORKGROUP'], use_ntlm_v2 = True, is_direct_tcp=True)
+		conn = SMBConnection(session['username'], get_password(), socket.gethostname(), server_name, domain=app.config['SMB_WORKGROUP'], use_ntlm_v2 = True, is_direct_tcp=True)
 
 		if not conn.connect(server_name,port=445,timeout=5):
 			return stderr("Could not connect","Could not connect to the file server, authentication was unsuccessful")
@@ -198,13 +279,12 @@ class BargateSMBLibrary:
 					try:
 						smb_shares = conn.listShares()
 					except Exception as ex:
-						(title, msg) = self.smb_error_info(ex)
-						return jsonify({'code': 1, 'msg': msg})
+						return self.smb_error_json(ex)
 
 					shares = []
 					for share in smb_shares:
 						if share.type == SharedDevice.DISK_TREE:
-							shares.append({'name': share.name, 'burl': url_for(func_name))})
+							shares.append({'name': share.name, 'burl': url_for(func_name) })
 
 					## are there any items in the list?
 					no_items = False
@@ -234,7 +314,7 @@ class BargateSMBLibrary:
 					try:
 						sfile = conn.getAttributes(share_name,path_without_share)
 					except Exception as ex:
-						return stderr("Not found","The path you specified does not exist, or could not be read")
+						return self.smb_error(ex)
 
 					if sfile.isDirectory:
 						abort(400)
@@ -291,12 +371,12 @@ class BargateSMBLibrary:
 				if not mtype in pillow_supported:
 					abort(400)
 
-				## read the file
-				tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
-				conn.retrieveFile(share_name,path_without_share,tfile)
-				tfile.seek(0)
-
 				try:
+					## read the file
+					tfile = tempfile.SpooledTemporaryFile(max_size=1048576)
+					conn.retrieveFile(share_name,path_without_share,tfile)
+					tfile.seek(0)
+
 					pil_img = Image.open(tfile).convert('RGB')
 					size = 200, 200
 					pil_img.thumbnail(size, Image.ANTIALIAS)
@@ -316,11 +396,11 @@ class BargateSMBLibrary:
 				try:
 					sfile = conn.getAttributes(share_name,path_without_share)
 				except Exception as ex:
-					return jsonify({'error': 1, 'reason': 'An error occured: ' + str(type(ex)) + ": " + str(ex)})
+					return self.smb_error_json(ex)
 
 				## ensure item is a file
 				if sfile.isDirectory:
-					return jsonify({'error': 1, 'reason': 'You cannot stat a directory!'})
+					return jsonify({'code': 1, 'msg': 'You cannot stat a directory!'})
 
 				# guess mimetype
 				(ftype, mtype) = filename_to_mimetype(sfile.filename)
@@ -334,6 +414,7 @@ class BargateSMBLibrary:
 					'mtype':    mtype,
 					'owner':    "N/A",
 					'group':    "N/A",
+					'code':      0,
 				}
 
 				try:
@@ -347,7 +428,6 @@ class BargateSMBLibrary:
 						data['group'] = str(secDesc.group)
 				except Exception as ex:
 					pass
-
 
 				return jsonify(data)
 
@@ -393,8 +473,7 @@ class BargateSMBLibrary:
 						try:
 							directory_entries = conn.listPath(share_name,path_without_share)
 						except Exception as ex:
-							(title, msg) = self.smb_error_info(ex)
-							return jsonify({'code': 1, 'msg': msg})
+							return self.smb_error_json(ex)
 
 						## Seperate out dirs and files into two lists
 						dirs  = []
@@ -482,9 +561,20 @@ class BargateSMBLibrary:
 						sfile = conn.getAttributes(share_name,upload_path)
 						file_already_exists = True
 					except OperationFailure as ex:
-						pass
+						doesnotexist = False
+						failure = OperationFailureDecode(ex)
+						if failure.err is not None:
+							if failure.err is errorno.ENOENT:
+								doesnotexist = True
+
+						if not doesnotexist:
+							(title, msg) = self.smb_error_info(ex)
+							ret.append({'name' : ufile.filename, 'error': 'Could not check if file already exists: ' + title + " - " + msg})
+							continue
+						
 					except Exception as ex:
-						ret.append({'name' : ufile.filename, 'error': 'Could not check if file already exists: ' + str(type(ex))})
+						(title, msg) = self.smb_error_info(ex)
+						ret.append({'name' : ufile.filename, 'error': 'Could not check if file already exists: ' + title + " - " + msg})
 						continue
 
 					byterange_start = 0
@@ -515,8 +605,8 @@ class BargateSMBLibrary:
 
 						ret.append({'name' : ufile.filename})
 					except Exception as ex:
-						## TODO... need better error handling here, but it means delving through OperationFailure error codes :(
-						ret.append({'name' : ufile.filename, 'error': 'Could not upload file: ' + str(type(ex))})
+						(title, msg) = self.smb_error_info(ex)
+						ret.append({'name' : ufile.filename, 'error': title + ": " + msg})
 						continue
 					
 				return jsonify({'files': ret})
@@ -545,7 +635,7 @@ class BargateSMBLibrary:
 				try:
 					sfile = conn.getAttributes(share_name,old_path)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Unable to read the existing entry'})
+					return self.smb_error_json(ex)
 
 				if sfile.isDirectory:
 					typestr = "directory"
@@ -555,7 +645,7 @@ class BargateSMBLibrary:
 				try:
 					conn.rename(share_name,old_path,new_path)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Unable to rename: ' + str(type(ex))})
+					return self.smb_error_json(ex)
 				else:
 					return jsonify({'code': 0, 'msg': "The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
 
@@ -585,7 +675,7 @@ class BargateSMBLibrary:
 				try:
 					sfile = conn.getAttributes(share_name,src_path)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'The file you tried to copy does not exist'})
+					return self.smb_error_json(ex)
 
 				if sfile.isDirectory:
 					return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
@@ -606,13 +696,12 @@ class BargateSMBLibrary:
 					conn.retrieveFile(share_name, src_path, tfile)
 					tfile.seek(0)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Could not read from the source file'})
+					return self.smb_error_json(ex)
 
 				try:
 					conn.storeFile(share_name, dest_path, tfile, timeout=120)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Could not write to the new file'})
-
+					return self.smb_error_json(ex)
 
 				return jsonify({'code': 0, 'msg': 'A copy of "' + src + '" was created as "' + dest + '"'})
 
@@ -629,13 +718,13 @@ class BargateSMBLibrary:
 				try:
 					check_name(dirname)
 				except ValueError as e:
-					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
+					return jsonify({'code': 1, 'msg': 'The specified directory name is invalid'})
 
 				try:
 					conn.createDirectory(share_name,path_without_share + "/" + dirname)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to create the directory'})
-				
+					return self.smb_error_json(ex)
+
 				return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
 			###############################
@@ -652,13 +741,13 @@ class BargateSMBLibrary:
 				try:
 					sfile = conn.getAttributes(share_name,delete_path)
 				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to check the file to be deleted'})
+					return self.smb_error_json(ex)
 
 				if sfile.isDirectory:
 					try:
 						conn.deleteDirectory(share_name, delete_path)
 					except Exception as ex:
-						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the directory'})
+						return self.smb_error_json(ex)
 
 					return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
 
@@ -666,7 +755,7 @@ class BargateSMBLibrary:
 					try:
 						conn.deleteFiles(share_name, delete_path)
 					except Exception as ex:
-						return jsonify({'code': 1, 'msg': 'The file server returned an error when asked to delete the file'})
+						return self.smb_error_json(ex)
 
 					return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 
@@ -763,7 +852,7 @@ class BargateSMBLibrary:
 				self.results.append(entry)
 
 			## Search subdirectories if we found one
-			if entry['type'] == 'dir':
+			if entry['type'] == EntryType.dir:
 				if len(path) > 0:
 					sub_path = path + "/" + entry['name']
 				else:
@@ -811,7 +900,7 @@ class BargateSMBLibrary:
 
 		# Directories
 		if sfile.isDirectory:
-			entry['type'] = 'dir'
+			entry['type'] = EntryType.dir
 
 		# Files
 		else:
