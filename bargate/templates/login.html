@@ -9,13 +9,13 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<link rel="icon" type="image/png" href="{{ favicon }}">
 		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-		<link href="{{ url_for('static', filename='css/login.css') }}" type="text/css" rel="stylesheet">
+		<link href="{{ url_for('static', filename='css/login.min.css') }}" type="text/css" rel="stylesheet">
 		{% include 'login-head.html' ignore missing %}
 		<noscript>
 			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
 		</noscript>
 		{% include 'javascript.html' %}
-		<script type="text/javascript" src="{{ url_for('static', filename='js/login.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename='js/login.min.js') }}" async></script>
 	</head>
 	<body>
 		{% include 'login-body.html' ignore missing %}

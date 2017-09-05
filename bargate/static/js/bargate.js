@@ -783,7 +783,7 @@ function setTheme(themeName) {
 
 $(document).ready(function($) {
 	/* load templating engine */
-	var env = nunjucks.configure('/static/templates', { autoescape: true });
+	var env = nunjucks.configure('/static/templates/',{ autoescape: true});
 	env.addFilter('filesizeformat', filesizeformat);
 	
 	/* Activate tooltips and enable hiding on clicking */
