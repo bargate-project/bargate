@@ -11,6 +11,7 @@ function showErr(title,desc) {
 	event.stopPropagation();
 }
 
+var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
 var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false,
 	bmarkEnabled: false, sortBy: 'name', data: null,
 };
@@ -49,12 +50,8 @@ function disableBookmark() {
 	}
 }
 
-function initDirectory(url) {
-	history.replaceState(url,"",url);
-	loadDir(url,false);
-}
-
 function renderDirectory() {
+	console.log("renderDirectory()");
 	$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: $browse.data.crumbs, root_name: $browse.data.root_name, root_url: $browse.data.root_url }));
 
 	if ($browse.data.no_items) {
@@ -75,6 +72,7 @@ function renderDirectory() {
 }
 
 function loadDir(url,alterHistory) {
+	console.log("loadDir()");
 	if (alterHistory === undefined) { alterHistory = true; }
 
 	$.getJSON(url, {xhr: 1})
@@ -384,7 +382,7 @@ function filesizeformat(bytes) {
 }
 
 function bitrateformat(bits) {
-	var bytes = bytes / 8
+	var bytes = bits / 8
 	bytes = parseFloat(bytes);
 	var units = ['Bytes/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'];
 
@@ -414,7 +412,7 @@ function formatTime (seconds) {
 }
 
 function renderExtendedProgress(data) {
-	return bitrateformat(data.bitrate) + ', ' + formatTime((data.total - data.loaded) * 8 / data.bitrate) + ' remaining <br/>' + filesizeformat(data.loaded) + ' uploaded of ' + formatFileSize(data.total);
+	return bitrateformat(data.bitrate) + ', ' + formatTime((data.total - data.loaded) * 8 / data.bitrate) + ' remaining <br/>' + filesizeformat(data.loaded) + ' uploaded of ' + filesizeformat(data.total);
 }
 
 function prepFileUpload() {
@@ -776,11 +774,12 @@ function setTheme(themeName) {
 		});
 }
 
-$(document).ready(function($) {
+function onPageLoad() {
+	console.log("third");
 	/* load templating engine */
 	var env = nunjucks.configure('/static/templates/',{ autoescape: true});
 	env.addFilter('filesizeformat', filesizeformat);
-	
+
 	/* Activate tooltips and enable hiding on clicking */
 	$('[data-tooltip="yes"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
 	$('[data-tooltip="yes"]').on('mouseup', function () {$(this).tooltip('hide');});
@@ -885,6 +884,41 @@ $(document).ready(function($) {
 			$('#upload-drag-m').modal('hide');
 		}
 	});
+
+	/* Load initial directory */
+	console.log("initial loadng of: " + $initialUrl);
+	history.replaceState($initialUrl,"",$initialUrl);
+	loadDir($initialUrl,false);
+}
+
+$(document).ready(function($) {
+	console.log("first");
+	/* grab the user's settings from the server */
+	$.getJSON('/settings')
+	.done(function(response) {
+		if (response.code != 0) {
+			showErr("Could not load your settings","The server did not respond correctly to the request for your settings");
+		} else {
+			console.log("second")
+			console.log(response);
+			console.log(response.layout);
+			$user.layout = response.layout;
+			console.log($user.layout);
+			$user.token = response.token;
+			$user.theme = response.theme;
+			$user.navbar = response.navbar;
+			$user.hidden = response.hidden;
+			$user.overwrite = response.overwrite;
+			$user.onclick = response.onclick;
+
+			onPageLoad();
+		}
+	})
+	.fail(function() {
+		showErr("Server error","The server returned an error");
+	});
+
+
 });
 
 /* context (right click) menus */

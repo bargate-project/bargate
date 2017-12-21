@@ -25,80 +25,69 @@ from bargate.lib.userdata import themes
 from bargate import app
 
 
-@app.route('/settings', methods=['POST'])
+@app.route('/settings', methods=['GET', 'POST'])
 @app.login_required
 @app.allow_disable
 def settings():
-	# Settings need redis storage, if redis is disabled we can't do settings
-	if not app.config['REDIS_ENABLED']:
-		abort(404)
+	if request.method == 'GET':
 
-	key   = request.form['key']
-	value = request.form['value']
-
-	if key == 'layout':
-		if value not in ['grid', 'list']:
-			value = app.config['LAYOUT_DEFAULT']
-		bargate.lib.userdata.save('layout', value)
-
-	elif key == 'click':
-		if value not in ['ask', 'default', 'download']:
-			value = 'ask'
-		bargate.lib.userdata.save('on_file_click', value)
-
-	elif key == 'hidden':
-		if value == 'true':
-			bargate.lib.userdata.save('hidden_files', 'show')
+		if bargate.lib.userdata.get_show_hidden_files():
+			show_hidden = 'true'
 		else:
-			bargate.lib.userdata.save('hidden_files', 'hide')
+			show_hidden = 'false'
 
-	elif key == 'overwrite':
-		if value == 'true':
-			bargate.lib.userdata.save('upload_overwrite', 'yes')
+		if bargate.lib.userdata.get_overwrite_on_upload():
+			overwrite = 'true'
 		else:
-			bargate.lib.userdata.save('upload_overwrite', 'no')
+			overwrite = 'false'
 
-	elif key == 'theme':
-		if value not in themes.keys():
-			value = app.config['THEME_DEFAULT']
+		return(jsonify({'code': 0,
+			'layout': bargate.lib.userdata.get_layout(),
+			'token': app.csrfp_token(),
+			'theme': bargate.lib.userdata.get_theme(),
+			'navbar': bargate.lib.userdata.get_theme_navbar(),
+			'hidden': show_hidden,
+			'overwrite': overwrite,
+			'onclick': bargate.lib.userdata.get_on_file_click()}))
 
-		bargate.lib.userdata.save('theme', value)
-		return jsonify({'navbar': themes[value]})
-
-	return "", 200
-
-
-@app.route('/settings.js')
-@app.login_required
-def settings_js():
-
-	if bargate.lib.userdata.get_show_hidden_files():
-		show_hidden = 'true'
 	else:
-		show_hidden = 'false'
+		# Settings need redis storage, if redis is disabled we can't do settings
+		if not app.config['REDIS_ENABLED']:
+			abort(404)
 
-	if bargate.lib.userdata.get_overwrite_on_upload():
-		overwrite = 'true'
-	else:
-		overwrite = 'false'
+		key   = request.form['key']
+		value = request.form['value']
 
-	js = """var $user = {{
-	layout: "{0}",
-	token: "{1}",
-	theme: "{2}",
-	navbar: "{3}",
-	hidden: {4},
-	overwrite: {5},
-	onclick: "{6}"}};
-""".format(bargate.lib.userdata.get_layout(),
-		app.csrfp_token(),
-		bargate.lib.userdata.get_theme(),
-		bargate.lib.userdata.get_theme_navbar(),
-		show_hidden,
-		overwrite,
-		bargate.lib.userdata.get_on_file_click())
+		if key == 'layout':
+			if value not in ['grid', 'list']:
+				value = app.config['LAYOUT_DEFAULT']
+			bargate.lib.userdata.save('layout', value)
 
-	return Response(js, mimetype='application/javascript')
+		elif key == 'click':
+			if value not in ['ask', 'default', 'download']:
+				value = 'ask'
+			bargate.lib.userdata.save('on_file_click', value)
+
+		elif key == 'hidden':
+			if value == 'true':
+				bargate.lib.userdata.save('hidden_files', 'show')
+			else:
+				bargate.lib.userdata.save('hidden_files', 'hide')
+
+		elif key == 'overwrite':
+			if value == 'true':
+				bargate.lib.userdata.save('upload_overwrite', 'yes')
+			else:
+				bargate.lib.userdata.save('upload_overwrite', 'no')
+
+		elif key == 'theme':
+			if value not in themes.keys():
+				value = app.config['THEME_DEFAULT']
+
+			bargate.lib.userdata.save('theme', value)
+			return jsonify({'navbar': themes[value]})
+
+		return "", 200
 
 
 @app.route('/bookmarks', methods=['GET', 'POST'])

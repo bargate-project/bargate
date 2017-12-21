@@ -4,6 +4,32 @@
 
 <h3><i class="fa fa-fw fa-list-alt"></i> Bargate Changelog<h3>
 <hr/>
+		<h3>2.0.0</h3>
+		<p><em>Not yet released</em></p>
+		<ul class="changelog">
+			<li><i class="fa fa-fw fa-bolt"></i> Added basic text/code editing support</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Entirely rewritten to use AJAX/JSON to perform nearly all functions</li>
+			<li><i class="fa fa-fw fa-bolt"></i> The page layout can now be changed at the press of a button, dynamically</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Settings are now in a modal and all changes take effect straight away</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added support for using the pysmb library in addition to pysmbc</li>
+			<li><i class="fa fa-fw fa-bolt"></i> The directory sort mode is kept as you change directories</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Major re-write of the pysmbc backend, many issues resolved</li>
+			<li><i class="fa fa-fw fa-bolt"></i> All code re-written to conform to PEP8, except for tabs.</li>
+			<li><i class="fa fa-fw fa-bolt"></i> All HTML, Javascript and CSS are now minified to improve peformance</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Improvements throughout to reduce file sizes and thus improve effiency</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added new themes</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added config option to disable bookmarks</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Bookmarks are now disabled by default</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Assets are now loaded asynchronously </li>
+			<li><i class="fa fa-fw fa-bolt"></i> The navigation bar colour is now automatically picked based on the theme </li>
+			<li><i class="fa fa-fw fa-bolt"></i> The empty directory view is now more useful </li>
+			<li><i class="fa fa-fw fa-bolt"></i> The on-drag over modal is simpler and easier to understand </li>
+			<li><i class="fa fa-fw fa-wrench"></i> Several bugs in the underlying SMB code fixed</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Links now use rel noopener</li>
+			<li><i class="fa fa-fw fa-wrench"></i> REDIS can now be fully disabled/not used</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Disabled JSON pretty printing to improve performance</li>
+		</ul>
+
 		<h3>1.5.7</h3>
 		<p><em>Released 2017-05-03</em></p>
 		<ul class="changelog">
@@ -73,63 +99,41 @@
 		<h3>1.4</h3>
 		<p>Released 2016-04-03</p>
 		<ul class="changelog">
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Internet Explorer version check is fixed </li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Corrected an error message spelling mistake </li>
-			<li><i class="fa fa-fw fa-bolt"></i> Removed login image random functionality - replaced by Jinja filters </li>
-			<li><i class="fa fa-fw fa-bolt"></i> Added URLs to the bookmark manager to identify what the bookmarks are </li>
-		</ul>
-
-		<h3>1.4 Beta 4</h3>
-		<p>Released 2016-03-30</p>
-		<ul class="changelog">
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Cannot click on items in Firefox <a href="https://github.com/divad/bargate/issues/84">[84]</a></li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: File preview popup now correctly hides the image on non-previewable files <a href="https://github.com/divad/bargate/issues/85">[85]</a></li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Grid layout file 'view' now working correctly</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: File details error message hidden by default</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Modals on mobile now appear at the top of the screen</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Mobile view on file click only shows icons rather than text that does not fit the screen</li>
-		</ul>
-
-		<h3>1.4 Beta 3</h3>
-		<p>Released 2016-03-30</p>
-		<ul class="changelog">
-			<li><i class="fa fa-fw fa-bolt"></i> View properties is now provided by a pop-up modal</li>
-			<li><i class="fa fa-fw fa-bolt"></i> Cleanup/re-write of the core smb functions, fixing many unicode and path quoting issues</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Custom connections (Connect to server) are now working again</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Context menu right click icons now trigger actions correctly</li>
-		</ul>
-
-		<h3>1.4 Beta 2</h3>
-		<p>Released 2016-03-28</p>
-		<ul class="changelog">
+			<li><i class="fa fa-fw fa-bolt"></i> New default 'grid' layout <a href="https://github.com/divad/bargate/issues/30">[30]</a></li>
+			<li><i class="fa fa-fw fa-bolt"></i> Revamped 'list' view layout with much better sorting</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added several more Bootswatch themes</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Significant code cleanup and rewrite <a href="https://github.com/divad/bargate/issues/63">[63]</a> <a href="https://github.com/divad/bargate/issues/65">[65]</a> <a href="https://github.com/divad/bargate/issues/67">[67]</a> <a href="https://github.com/divad/bargate/issues/68">[68]</a> <a href="https://github.com/divad/bargate/issues/69">[69]</a> <a href="https://github.com/divad/bargate/issues/55">[55]</a></li>
+			<li><i class="fa fa-fw fa-bolt"></i> Removed all University of Southampton specific code <a href="https://github.com/divad/bargate/issues/61">[61]</a></li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added several more templates to allow local-site customisation</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added more config options to disable features <a href="https://github.com/divad/bargate/issues/72">[72]</a> <a href="https://github.com/divad/bargate/issues/54">[54]</a></li>
 			<li><i class="fa fa-fw fa-bolt"></i> Grid layout is now responsive based on page width <a href="https://github.com/divad/bargate/issues/77">[77]</a></li>
 			<li><i class="fa fa-fw fa-bolt"></i> The 'bargate' menu moved to the top navbar on mobile <a href="https://github.com/divad/bargate/issues/76">[76]</a></li>
 			<li><i class="fa fa-fw fa-bolt"></i> URLs now include the action without using ?variable= syntax <a href="https://github.com/divad/bargate/issues/78">[78]</a></li>
 			<li><i class="fa fa-fw fa-bolt"></i> Left clicking on files now lets users easily see all available actions <a href="https://github.com/divad/bargate/issues/79">[79]</a></li>
 			<li><i class="fa fa-fw fa-bolt"></i> Modal close buttons are now more visible (larger) <a href="https://github.com/divad/bargate/issues/80">[80]</a></li>
 			<li><i class="fa fa-fw fa-bolt"></i> The file delete modal now includes a warning icon <a href="https://github.com/divad/bargate/issues/81">[81]</a></li>
-
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Directory sort now present on mobile view <a href="https://github.com/divad/bargate/issues/75">[75]</a></li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: URLs generated by bargate will no longer always end with a forward slash </li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Missing leading forward slashes on urls in share configs are dealt with automatically </li>
-		</ul>
-
-		<h3>1.4 Beta 1</h3>
-		<p>Released 2016-03-28</p>
-		<ul class="changelog">
-			<li><i class="fa fa-fw fa-bolt"></i> New default 'grid' layout <a href="https://github.com/divad/bargate/issues/30">[30]</a></li>
-			<li><i class="fa fa-fw fa-bolt"></i> Revamped 'list' view layout with much better sorting</li>
-			<li><i class="fa fa-fw fa-bolt"></i> Added sveral more Bootswatch themes</li>
-			<li><i class="fa fa-fw fa-bolt"></i> Significant code cleanup and rewrite <a href="https://github.com/divad/bargate/issues/63">[63]</a> <a href="https://github.com/divad/bargate/issues/65">[65]</a> <a href="https://github.com/divad/bargate/issues/67">[67]</a> <a href="https://github.com/divad/bargate/issues/68">[68]</a> <a href="https://github.com/divad/bargate/issues/69">[69]</a> <a href="https://github.com/divad/bargate/issues/55">[55]</a></li>
-			<li><i class="fa fa-fw fa-bolt"></i> Removed all University of Southampton specific code <a href="https://github.com/divad/bargate/issues/61">[61]</a></li>
-			<li><i class="fa fa-fw fa-bolt"></i> Added several more templates to allow local-site customisation</li>
-			<li><i class="fa fa-fw fa-bolt"></i> Added more config options to disable features <a href="https://github.com/divad/bargate/issues/72">[72]</a> <a href="https://github.com/divad/bargate/issues/54">[54]</a></li>
-
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Body padding (header and footer) changed to match the theme in use</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Footer padding fixed on mobile</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Removed forced dependencies on kerberos and ldap when not in use</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Closing the file upload dialog no longer automatically reloads even when files are not uploaded</li>
-			<li><i class="fa fa-fw fa-wrench"></i> FIX: Many other small bug fixes and cleanups</li>
+			<li><i class="fa fa-fw fa-bolt"></i> View properties is now provided by a pop-up modal</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Cleanup/re-write of the core smb functions, fixing many unicode and path quoting issues</li>
+			<li><i class="fa fa-fw fa-bolt"></i> Removed login image random functionality - replaced by Jinja filters </li>
+			<li><i class="fa fa-fw fa-bolt"></i> Added URLs to the bookmark manager to identify what the bookmarks are </li>
+			<li><i class="fa fa-fw fa-wrench"></i> Internet Explorer version check is fixed </li>
+			<li><i class="fa fa-fw fa-wrench"></i> Corrected an error message spelling mistake </li>
+			<li><i class="fa fa-fw fa-wrench"></i> Cannot click on items in Firefox <a href="https://github.com/divad/bargate/issues/84">[84]</a></li>
+			<li><i class="fa fa-fw fa-wrench"></i> File preview popup now correctly hides the image on non-previewable files <a href="https://github.com/divad/bargate/issues/85">[85]</a></li>
+			<li><i class="fa fa-fw fa-wrench"></i> Grid layout file 'view' now working correctly</li>
+			<li><i class="fa fa-fw fa-wrench"></i> File details error message hidden by default</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Modals on mobile now appear at the top of the screen</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Mobile view on file click only shows icons rather than text that does not fit the screen</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Custom connections (Connect to server) are now working again</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Context menu right click icons now trigger actions correctly</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Directory sort now present on mobile view <a href="https://github.com/divad/bargate/issues/75">[75]</a></li>
+			<li><i class="fa fa-fw fa-wrench"></i> URLs generated by bargate will no longer always end with a forward slash </li>
+			<li><i class="fa fa-fw fa-wrench"></i> Missing leading forward slashes on urls in share configs are dealt with automatically </li>
+			<li><i class="fa fa-fw fa-wrench"></i> Body padding (header and footer) changed to match the theme in use</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Footer padding fixed on mobile</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Removed forced dependencies on kerberos and ldap when not in use</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Closing the file upload dialog no longer automatically reloads even when files are not uploaded</li>
+			<li><i class="fa fa-fw fa-wrench"></i> Many other small bug fixes and cleanups</li>
 		</ul>
 
 		<h3>1.3.4</h3>
