@@ -8,7 +8,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
 	name='bargate',
-	version='1.5.7',
+	version='2.0.0',
 	packages=find_packages(),
 	include_package_data=True,
 	license='GNU General Public License v3',
@@ -36,7 +36,7 @@ setup(
 		'Natural Language :: English',
 	],
 	install_requires=[
-		'Flask>=0.10',
+		'Flask>=0.12',
 		'pysmbc>=1.0.15.5',
 		'pycrypto>=2.6.1',
 		'Pillow>=3.0',
