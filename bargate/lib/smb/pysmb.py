@@ -562,7 +562,7 @@ class BargateSMBLibrary:
 						doesnotexist = False
 						failure = OperationFailureDecode(ex)
 						if failure.err is not None:
-							if failure.err is errorno.ENOENT:
+							if failure.err is errno.ENOENT:
 								doesnotexist = True
 
 						if not doesnotexist:
