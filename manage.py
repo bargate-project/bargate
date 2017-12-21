@@ -86,6 +86,25 @@ class Manager():
 			print("FATAL: " + msg)
 		exit(1)
 
+	def cmd_flake(self):
+		self.header("running flake8")
+
+		flake8 = find_executable("flake8-python2")
+		if not flake8:
+			flake8 = find_executable("flake8")
+			if not flake8:
+				self.fatal("Could not find the flake8 command. Please install it with: \nsudo pip install flake8")
+
+		self.debug('found flake8 at path: ' + flake8)
+
+		(result, output) = self.sysexec([flake8, '--ignore=E126,E128,E221,W191', '--max-line-length=120', '.'])
+
+		if result == 0:
+			self.info("all tests passed!")
+		else:
+			self.error("flake8 errors found")
+			print(output)
+
 	def cmd_compile(self):
 		self.info("running compile\n")
 
