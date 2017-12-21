@@ -15,89 +15,78 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import bargate
-from bargate import app
-from flask import Flask, request, session, redirect, url_for, render_template, flash
+from flask import request, session, redirect, url_for, render_template
 
-################################################################################
-#### SHARE HANDLER
+from bargate import app
+
 
 @app.login_required
 @app.allow_disable
 def share_handler(path, action="browse"):
 
-	## Get the path variable
-	svrpath = app.sharesConfig.get(request.endpoint,'path')
+	svrpath = app.sharesConfig.get(request.endpoint, 'path')
 
-	## Variable substition for username
-	svrpath = svrpath.replace("%USERNAME%",session['username'])
-	svrpath = svrpath.replace("%USER%",session['username'])
+	# Variable substition for username
+	svrpath = svrpath.replace("%USERNAME%", session['username'])
+	svrpath = svrpath.replace("%USER%", session['username'])
 
-	## LDAP home dir substitution support
+	# LDAP home dir substitution support
 	if app.config['LDAP_HOMEDIR']:
 		if 'ldap_homedir' in session:
-			if not session['ldap_homedir'] == None:
-				svrpath = svrpath.replace("%LDAP_HOMEDIR%",session['ldap_homedir'])
+			if session['ldap_homedir'] is not None:
+				svrpath = svrpath.replace("%LDAP_HOMEDIR%", session['ldap_homedir'])
 
-	## Get the display name
-	display = app.sharesConfig.get(request.endpoint,'display')
+	display = app.sharesConfig.get(request.endpoint, 'display')
+	menu    = app.sharesConfig.get(request.endpoint, 'menu')
 
-	## What menu is active?
-	menu = app.sharesConfig.get(request.endpoint,'menu')
+	return app.smblib.smb_action(svrpath, request.endpoint, menu, display, action, path)
 
-	## Run the page!
-	return app.smblib.smb_action(svrpath,request.endpoint,menu,display,action,path)
-	#return bargate.lib.smb.connection(svrpath,request.endpoint,menu,display,action,path)
-
-################################################################################
 
 @app.route('/other')
 @app.login_required
 @app.allow_disable
 def other():
-	return render_template('other.html', active='shared',pwd='')
+	return render_template('other.html', active='shared', pwd='')
 
-################################################################################
 
 @app.route('/custom')
 @app.login_required
 @app.allow_disable
 def custom_server():
-	return render_template('custom.html', active='shared',pwd='')
+	return render_template('custom.html', active='shared', pwd='')
 
-################################################################################
 
-@app.route('/c', methods=['GET','POST'], defaults={'path': '', 'action': 'browse'})
-@app.route('/c/browse/<path:path>', methods=['GET','POST'], defaults={'action': 'browse'})
-@app.route('/c/browse/<path:path>/', methods=['GET','POST'], defaults={'action': 'browse'})
-@app.route('/c/<action>', methods=['GET','POST'], defaults={'path': ''})
-@app.route('/c/<action>/', methods=['GET','POST'], defaults={'path': ''})
-@app.route('/c/<action>/<path:path>', methods=['GET','POST'])
-@app.route('/c/<action>/<path:path>/', methods=['GET','POST'])
+@app.route('/c', methods=['GET', 'POST'], defaults={'path': '', 'action': 'browse'})
+@app.route('/c/browse/<path:path>', methods=['GET', 'POST'], defaults={'action': 'browse'})
+@app.route('/c/browse/<path:path>/', methods=['GET', 'POST'], defaults={'action': 'browse'})
+@app.route('/c/<action>', methods=['GET', 'POST'], defaults={'path': ''})
+@app.route('/c/<action>/', methods=['GET', 'POST'], defaults={'path': ''})
+@app.route('/c/<action>/<path:path>', methods=['GET', 'POST'])
+@app.route('/c/<action>/<path:path>/', methods=['GET', 'POST'])
 @app.login_required
 @app.allow_disable
-def custom(path,action="browse"):
+def custom(path, action="browse"):
 
 	if request.method == 'POST':
 		try:
 			server_uri = request.form['open_server_uri']
-			## validate the path...somehow?
+			# validate the path...somehow?
 
 			session['custom_uri'] = server_uri
 			session.modified = True
-			## redirect to custom so its now a GET request
+			# redirect to custom so its now a GET request
 			return redirect(url_for('custom'))
 
 		except KeyError as ex:
-			## standard POST, not setting up a new server
+			# standard POST, not setting up a new server
 			pass
 
-	## ensure the custom_uri is set
+	# ensure the custom_uri is set
 	if 'custom_uri' in session:
 		if len(session['custom_uri']) == 0:
 			return redirect(url_for('custom_server'))
 	else:
 		return redirect(url_for('custom_server'))
 
-	#return bargate.lib.smb.connection(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],action,path)
-	return app.smblib.smb_action(unicode(session['custom_uri']),"custom","shared",session['custom_uri'],action,path)
+	return app.smblib.smb_action(unicode(session['custom_uri']),
+		"custom", "shared", session['custom_uri'], action, path)
