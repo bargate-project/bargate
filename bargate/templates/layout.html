@@ -278,6 +278,14 @@
 						</div>
 					
 					{% if browse_mode %}
+						{% if config['REDIS_ENABLED'] %}
+						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
+							<a id="layout-button" class="btn navbar-btn btn-default btn" data-tooltip="yes" title="Switch layout">
+								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
+							</a>
+						</div>
+						{% endif %}
+
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a id="create-directory-button" data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default browse-b disabled" data-tooltip="yes" title="Create a directory">
 								<i class="fa fa-fw fa-lg fa-folder-open"></i>
@@ -289,14 +297,6 @@
 								<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
 							</a>
 						</div>
-
-						{% if config['REDIS_ENABLED'] %}
-						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
-							<a id="layout-button" class="btn navbar-btn btn-default btn browse-b disabled" data-tooltip="yes" title="Switch layout">
-								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
-							</a>
-						</div>
-						{% endif %}
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							{{ sortmenu() }}

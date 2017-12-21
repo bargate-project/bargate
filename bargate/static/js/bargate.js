@@ -684,18 +684,13 @@ function setLayoutMode(newLayout) {
 			showErr("Could not switch layout","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
-			if ($browse.btnsEnabled) {
-
-				// Now change view class
-				if ($user.layout == "list") {
-					$("#pdiv").removeClass("listview");
-					$("#pdiv").addClass("gridview");
-				} else {
-					$("#pdiv").removeClass("gridview");
-					$("#pdiv").addClass("listview");
-				}
-
-				//loadDir($browse.url);
+			// Now change view class
+			if ($user.layout == "list") {
+				$("#pdiv").removeClass("listview");
+				$("#pdiv").addClass("gridview");
+			} else {
+				$("#pdiv").removeClass("gridview");
+				$("#pdiv").addClass("listview");
 			}
 
 			if ($user.layout == "list") {
