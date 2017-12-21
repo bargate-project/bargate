@@ -15,27 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-## request.py
+# request.py
 # all Flask per-request decorators live here
 # to avoid making app.py a very long file
 # functions in here register per-request functionality
 # with decorators
 
-from flask import Flask, request, session, g, abort, render_template, url_for
+import time
+
+from flask import request, session, g, render_template, url_for
+
 from bargate import app
 from bargate.lib.core import EntryType
 import bargate.lib.userdata
 import bargate.lib.errors
-import time
 
 if app.config['REDIS_ENABLED']:
 	import redis
 
-################################################################################
 
 @app.before_request
 def before_request():
-	"""This function is run before the request is handled by Flask. It connects 
+	"""This function is run before the request is handled by Flask. It connects
 	connects to REDIS, logs the user access time and asks IE users using version
 	10 or lower to upgrade their web browser.
 	"""
@@ -48,28 +49,27 @@ def before_request():
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 10):
 		return render_template('foad.html')
 
-	## Connect to redis
+	# Connect to redis
 	if app.config['REDIS_ENABLED']:
 		try:
 			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=0)
 			g.redis.get('foo')
 		except Exception as ex:
-			return bargate.lib.errors.fatalerr(message='Bargate could not connect to the REDIS server',debug=str(ex))
-			
-	## Log user last access time
+			return bargate.lib.errors.fatalerr(message='Bargate could not connect to the REDIS server', debug=str(ex))
+
+	# Log user last access time
 	if 'username' in session:
-		bargate.lib.userdata.save('last',str(time.time()))
+		bargate.lib.userdata.save('last', str(time.time()))
 		bargate.lib.userdata.record_user_activity(session['username'])
 
-################################################################################
 
 @app.context_processor
 def context_processor():
 	"""This function injects additional variables into Jinja's context"""
 
 	data = {}
-	data['bookmarks']   = []
-	data['user_theme']  = app.config['THEME_DEFAULT']
+	data['bookmarks']    = []
+	data['user_theme']   = app.config['THEME_DEFAULT']
 	data['theme_navbar'] = 'default'
 
 	if app.is_user_logged_in():
@@ -79,7 +79,6 @@ def context_processor():
 			data['user_layout']    = bargate.lib.userdata.get_layout()
 			data['theme_navbar']   = bargate.lib.userdata.get_theme_navbar()
 
-	## The favicon
 	if app.config['LOCAL_FAVICON']:
 		data['favicon'] = url_for('local_static', filename='favicon.ico')
 	else:
@@ -88,4 +87,3 @@ def context_processor():
 	data['type'] = EntryType
 
 	return data
-
