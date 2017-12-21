@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-JS_TEMPLATES_DIR = './bargate/jstemplates'
-JS_TEMPLATE_FILE = './bargate/static/templates.js'
-JAVASCRIPT_DIR   = './bargate/static/js'
-CSS_DIR          = './bargate/static/css'
-
-import logging
 import subprocess
 import argparse
 import os
 
 from distutils.spawn import find_executable
+
+JS_TEMPLATES_DIR = './bargate/jstemplates'
+JS_TEMPLATE_FILE = './bargate/static/templates.js'
+JAVASCRIPT_DIR   = './bargate/static/js'
+CSS_DIR          = './bargate/static/css'
 
 
 class Manager():
@@ -34,18 +33,18 @@ class Manager():
 			description='manage.py',
 			formatter_class=argparse.RawDescriptionHelpFormatter)
 		self.parser.add_argument('function', metavar='function', type=str, help='the function to perform')
-		self.parser.add_argument('-d', '--debug', action='store_true', help='turn on debugging output',dest='debug')
+		self.parser.add_argument('-d', '--debug', action='store_true', help='turn on debugging output', dest='debug')
 
 		self.args = self.parser.parse_args()
 
 		try:
 			method = getattr(self, 'cmd_' + self.args.function)
-		except AttributeError as ex:
+		except AttributeError:
 			self.fatal("No function named '" + self.args.function + "'")
 
 		method()
 
-	def sysexec(self,command,shell=False):
+	def sysexec(self, command, shell=False):
 		if self.debug:
 			if type(command) is list:
 				self.debug("Executing command " + str(" ".join(command)))
@@ -53,7 +52,11 @@ class Manager():
 				self.debug("Executing command " + str(command))
 
 		try:
-			proc = subprocess.Popen(command,stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=shell,close_fds=True)
+			proc = subprocess.Popen(command,
+				stdout=subprocess.PIPE,
+				stderr=subprocess.STDOUT,
+				shell=shell,
+				close_fds=True)
 			(stdoutdata, stderrdata) = proc.communicate()
 			if stdoutdata is None:
 				stdoutdata = ""
@@ -61,24 +64,24 @@ class Manager():
 			if self.args.debug:
 				self.debug("command return code: " + str(proc.returncode))
 
-			return (proc.returncode,str(stdoutdata))
+			return (proc.returncode, str(stdoutdata))
 		except Exception as ex:
-			return (1,str(type(ex)) + " " + str(ex))
+			return (1, str(type(ex)) + " " + str(ex))
 
-	def info(self,msg):
+	def info(self, msg):
 		print("INFO:  " + msg)
 
-	def header(self,msg):
+	def header(self, msg):
 		print('\033[1mINFO:  ' + msg + '\033[0m')
 
-	def debug(self,msg):
+	def debug(self, msg):
 		if self.args.debug:
 			print("DEBUG: " + msg)
 
-	def error(self,msg):
+	def error(self, msg):
 		print("ERROR: " + msg)
 
-	def fatal(self,msg=None):
+	def fatal(self, msg=None):
 		if msg:
 			print("FATAL: " + msg)
 		exit(1)
@@ -89,11 +92,11 @@ class Manager():
 		self.header("precompiling nunjucks templates")
 		nunjucks_precompile = find_executable("nunjucks-precompile")
 		if not nunjucks_precompile:
-			self.fatal("Could not find the nunjuncks-precompile command. Please install it with: \nsudo npm install nunjucks -g")
+			self.fatal("Could not find the nunjuncks-precompile command. Please install it with: \nsudo npm install nunjucks -g") # noqa
 		else:
 			self.debug('found nunjucks-precompile at path: ' + nunjucks_precompile)
 
-		(result,output) = self.sysexec([nunjucks_precompile,JS_TEMPLATES_DIR])
+		(result, output) = self.sysexec([nunjucks_precompile, JS_TEMPLATES_DIR])
 
 		if result != 0:
 			self.error(output)
@@ -102,13 +105,12 @@ class Manager():
 		self.debug("writing out precompiled templates to " + JS_TEMPLATE_FILE)
 
 		try:
-			with open(JS_TEMPLATE_FILE,'w') as f:
+			with open(JS_TEMPLATE_FILE, 'w') as f:
 				f.write(output)
 		except Exception as ex:
 			self.fatal("Could not write to " + JS_TEMPLATE_FILE + ": " + str(ex))
 
 		self.info("nunjucks templates precompiled\n")
-
 
 		self.header("minifying javascript")
 		uglifyjs = find_executable("uglifyjs")
@@ -125,16 +127,16 @@ class Manager():
 			if name.endswith('.js'):
 				if not name.endswith(".min.js"):
 					self.info("minifying " + JAVASCRIPT_DIR + "/" + name)
-					new_name = name.replace(".js",".min.js")
+					new_name = name.replace(".js", ".min.js")
 
-					(result,output) = self.sysexec([uglifyjs, '-c', '-m', '-o', JAVASCRIPT_DIR + "/" + new_name, '--', JAVASCRIPT_DIR + "/" + name])
+					(result, output) = self.sysexec([uglifyjs, '-c', '-m', '-o',
+						JAVASCRIPT_DIR + "/" + new_name, '--', JAVASCRIPT_DIR + "/" + name])
 
 					if result != 0:
 						self.error(output)
 						self.fatal("non-zero exit from uglifyjs")
 
 		self.info("javascript minified\n")
-
 
 		self.header("minifying css")
 		crass = find_executable("crass")
@@ -151,9 +153,9 @@ class Manager():
 			if name.endswith('.css'):
 				if not name.endswith(".min.css"):
 					self.info("minifying " + CSS_DIR + "/" + name)
-					new_name = name.replace(".css",".min.css")
+					new_name = name.replace(".css", ".min.css")
 
-					(result,output) = self.sysexec([crass, CSS_DIR + "/" + name, '--optimize'])
+					(result, output) = self.sysexec([crass, CSS_DIR + "/" + name, '--optimize'])
 
 					if result != 0:
 						self.error(output)
@@ -161,12 +163,13 @@ class Manager():
 
 					self.debug("writing out minified CSS to " + CSS_DIR + "/" + new_name)
 					try:
-						with open(CSS_DIR + "/" + new_name,'w') as f:
+						with open(CSS_DIR + "/" + new_name, 'w') as f:
 							f.write(output)
 					except Exception as ex:
 						self.fatal("Could not write to " + CSS_DIR + "/" + name + ": " + str(ex))
 
 		self.info("css minified")
+
 
 if __name__ == '__main__':
 	Manager()
