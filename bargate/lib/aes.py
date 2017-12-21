@@ -15,58 +15,53 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from Crypto.Cipher import AES
-import base64
+import os
 from base64 import b64encode, b64decode
-from os import urandom
 
-################################################################################
+from Crypto.Cipher import AES
 
-def aes_encrypt(s,key):
+
+def aes_encrypt(s, key):
 	"""This function is used to encrypt a string via AES.
 	Pass it the string to encrypt and the key to use to do so.
 	Returns a base64 encoded string using AES CFB.
 	"""
-	
-	## https://www.dlitz.net/software/pycrypto/api/current/Crypto.Cipher.blockalgo-module.html#MODE_CFB
-	## CFB does not require padding
-	## 32-bit key is required (AES256)
-	
+
+	# https://www.dlitz.net/software/pycrypto/api/current/Crypto.Cipher.blockalgo-module.html#MODE_CFB
+	# CFB does not require padding
+	# 32-bit key is required (AES256)
+
 	# Create the IV (Initialization Vector)
-	iv = urandom(AES.block_size)
-	
-	## Create the cipher with the key, mode and iv
-	c = AES.new(key,AES.MODE_CFB,iv)
-	
-	## Base 64 encode the iv and the encrypted data together
-	b64 = b64encode(iv + c.encrypt(s))
-	
-	## return the base64 encoded string
-	return b64
+	iv = os.urandom(AES.block_size)
 
-################################################################################
+	# Create the cipher with the key, mode and iv
+	c = AES.new(key, AES.MODE_CFB, iv)
 
-def aes_decrypt(s,key):
+	# Base 64 encode the iv and the encrypted data together
+	return b64encode(iv + c.encrypt(s))
+
+
+def aes_decrypt(s, key):
 	"""This function is used to decrypt a base64-encoded
-	AES CFB encrypted string. 
+	AES CFB encrypted string.
 	Pass it the string to decrypt and the correct key.
 	Returns an unencrypted string.
 	"""
 
 	# Get the block size for AES
 	block_size = AES.block_size
-	
+
 	# Base64 decode the encrypted data
 	binary = b64decode(s)
 
-	# Pull out the IV (Initialization Vector) which is the first N bytes where N is the block size 
+	# Pull out the IV (Initialization Vector) which is the first N bytes where N is the block size
 	iv = binary[:block_size]
-	
+
 	# Pull out the data
 	e = binary[block_size:]
-	
+
 	# Set up the cipher object with the key, the mode (CFB) and the IV
-	c = AES.new(key,AES.MODE_CFB,iv)
-	
+	c = AES.new(key, AES.MODE_CFB, iv)
+
 	# return decrypted data
 	return c.decrypt(e)
