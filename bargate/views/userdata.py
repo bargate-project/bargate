@@ -15,20 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import bargate
-import bargate.lib.userdata
-from bargate.lib.userdata import themes
-import bargate.lib.errors
-from bargate import app
-from flask import Flask, request, session, redirect, url_for, flash, g, abort
+from flask import request, session, redirect, url_for, flash, g, abort
 from flask import render_template, Response, jsonify
 import werkzeug
+
+import bargate.lib.userdata
+import bargate.lib.errors
+from bargate.lib.userdata import themes
+from bargate import app
+
 
 @app.route('/settings', methods=['POST'])
 @app.login_required
 @app.allow_disable
 def settings():
-	## Settings need redis storage, if redis is disabled we can't do settings
+	# Settings need redis storage, if redis is disabled we can't do settings
 	if not app.config['REDIS_ENABLED']:
 		abort(404)
 
@@ -38,35 +39,34 @@ def settings():
 	if key == 'layout':
 		if value not in ['grid', 'list']:
 			value = app.config['LAYOUT_DEFAULT']
-		bargate.lib.userdata.save('layout',value)
+		bargate.lib.userdata.save('layout', value)
 
 	elif key == 'click':
 		if value not in ['ask', 'default', 'download']:
 			value = 'ask'
-		bargate.lib.userdata.save('on_file_click',value)
+		bargate.lib.userdata.save('on_file_click', value)
 
 	elif key == 'hidden':
 		if value == 'true':
-			bargate.lib.userdata.save('hidden_files','show')
+			bargate.lib.userdata.save('hidden_files', 'show')
 		else:
-			bargate.lib.userdata.save('hidden_files','hide')
+			bargate.lib.userdata.save('hidden_files', 'hide')
 
 	elif key == 'overwrite':
 		if value == 'true':
-			bargate.lib.userdata.save('upload_overwrite','yes')
+			bargate.lib.userdata.save('upload_overwrite', 'yes')
 		else:
-			bargate.lib.userdata.save('upload_overwrite','no')
+			bargate.lib.userdata.save('upload_overwrite', 'no')
 
 	elif key == 'theme':
 		if value not in themes.keys():
 			value = app.config['THEME_DEFAULT']
-		
-		bargate.lib.userdata.save('theme',value)
+
+		bargate.lib.userdata.save('theme', value)
 		return jsonify({'navbar': themes[value]})
 
 	return "", 200
 
-################################################################################
 
 @app.route('/settings.js')
 @app.login_required
@@ -100,14 +100,12 @@ def settings_js():
 
 	return Response(js, mimetype='application/javascript')
 
-################################################################################
-#### BOOKMARKS
 
-@app.route('/bookmarks', methods=['GET','POST'])
+@app.route('/bookmarks', methods=['GET', 'POST'])
 @app.login_required
 @app.allow_disable
 def bookmarks():
-	## Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
+	# Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
 	if not app.config['REDIS_ENABLED']:
 		abort(404)
 	if not app.config['BOOKMARKS_ENABLED']:
@@ -118,53 +116,49 @@ def bookmarks():
 
 	if request.method == 'GET':
 		bookmarks = bargate.lib.userdata.get_bookmarks()
-		return render_template('bookmarks.html', active='user',
-			pwd='', bookmarks = bookmarks)
-		
+		return render_template('bookmarks.html', active='user', pwd='', bookmarks=bookmarks)
+
 	elif request.method == 'POST':
 		action = request.form['action']
-		
+
 		if action == 'delete':
 			bookmark_id     = request.form['bookmark_id']
-			
+
 			if g.redis.exists(user_bookmarks_key):
-				if g.redis.sismember(user_bookmarks_key,bookmark_id):
-				
-					## Delete from the bookmarks key
-					g.redis.srem(user_bookmarks_key,bookmark_id)
-					
-					## Delete the bookmark hash
+				if g.redis.sismember(user_bookmarks_key, bookmark_id):
+
+					# Delete from the bookmarks key
+					g.redis.srem(user_bookmarks_key, bookmark_id)
+
+					# Delete the bookmark hash
 					g.redis.delete(user_bookmark_prefix + bookmark_id)
-					
-					## Let the user know and redirect
-					flash('Bookmark deleted successfully','alert-success')
+
+					# Let the user know and redirect
+					flash('Bookmark deleted successfully', 'alert-success')
 					return redirect(url_for('bookmarks'))
 
-			flash('Bookmark not found!','alert-danger')
+			flash('Bookmark not found!', 'alert-danger')
 			return redirect(url_for('bookmarks'))
 
 		elif action == 'rename':
 			bookmark_id     = request.form['bookmark_id']
 			bookmark_name   = request.form['bookmark_name']
-			
+
 			if g.redis.exists(user_bookmark_prefix + bookmark_id):
-				g.redis.hset(user_bookmark_prefix + bookmark_id,
-					"name",
-					bookmark_name)
-				flash('Bookmark renamed successfully','alert-success')
+				g.redis.hset(user_bookmark_prefix + bookmark_id, "name", bookmark_name)
+				flash('Bookmark renamed successfully', 'alert-success')
 				return redirect(url_for('bookmarks'))
 
-			flash('Bookmark not found!','alert-danger')
+			flash('Bookmark not found!', 'alert-danger')
 			return redirect(url_for('bookmarks'))
 
-################################################################################
 
 @app.route('/bookmark/<string:bookmark_id>')
 @app.login_required
 @app.allow_disable
 def bookmark(bookmark_id):
 	"""This function takes a bookmark ID and redirects the user to the location
-	specified by the bookmark in the REDIS database. This only works with 
+	specified by the bookmark in the REDIS database. This only works with
 	version 2 bookmarks, not version 1 (Bargate v1.4 or earlier)"""
 
 	if not app.config['REDIS_ENABLED']:
@@ -172,20 +166,20 @@ def bookmark(bookmark_id):
 	if not app.config['BOOKMARKS_ENABLED']:
 		abort(404)
 
-	## Prepare the redis key name
+	# Prepare the redis key name
 	redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
 
-	## bookmarks are a hash with the keys 'version', 'function', 'path' and 
-	## 'custom_uri' (optional) only proceed if we can find the bmark in redis
+	# bookmarks are a hash with the keys 'version', 'function', 'path' and
+	# 'custom_uri' (optional) only proceed if we can find the bmark in redis
 	if g.redis.exists(redis_key):
 		try:
 			# redis returns 'None' for hget if the hash key doesn't exist
-			bookmark_version    = g.redis.hget(redis_key,'version')
-			bookmark_function   = g.redis.hget(redis_key,'function')
-			bookmark_path       = g.redis.hget(redis_key,'path')
-			bookmark_custom_uri = g.redis.hget(redis_key,'custom_uri')
+			bookmark_version    = g.redis.hget(redis_key, 'version')
+			bookmark_function   = g.redis.hget(redis_key, 'function')
+			bookmark_path       = g.redis.hget(redis_key, 'path')
+			bookmark_custom_uri = g.redis.hget(redis_key, 'custom_uri')
 		except Exception as ex:
-			app.logger.error('Failed to load v2 bookmark ' + bookmark_id + 
+			app.logger.error('Failed to load v2 bookmark ' + bookmark_id +
 				' user: ' + session['username'] + ' error: ' + str(ex))
 			abort(404)
 
@@ -195,7 +189,7 @@ def bookmark(bookmark_id):
 		if bookmark_version != '2':
 			abort(404)
 
-		## Handle custom URI bookmarks
+		# Handle custom URI bookmarks
 		if bookmark_function == 'custom':
 			# Set the custom_uri in the session so when the custom function is
 			# hit then the user is sent to the right place (maybe)
@@ -203,23 +197,21 @@ def bookmark(bookmark_id):
 			session.modified      = True
 
 			# redirect the user to the custom function
-			return redirect(url_for('custom',path=bookmark_path))
+			return redirect(url_for('custom', path=bookmark_path))
 
-		## Handle standard non-custom bookmarks
+		# Handle standard non-custom bookmarks
 		else:
 			try:
-				return redirect(url_for(bookmark_function,path=bookmark_path))
+				return redirect(url_for(bookmark_function, path=bookmark_path))
 			except werkzeug.routing.BuildError as ex:
-				## could not build a URL for that function_name
-				## it could be that the function was removed by the admin
-				## so we should say 404 not found.
+				# could not build a URL for that function_name
+				# it could be that the function/share was removed by the admin
+				# so we should say 404 not found.
 				abort(404)
 
 	else:
-		## bookmark not found
 		abort(404)
 
-################################################################################
 
 @app.route('/online/<last>')
 @app.login_required
@@ -239,7 +231,4 @@ def online(last=5):
 		last_str = str(last) + " minutes"
 
 	usernames = bargate.lib.userdata.get_online_users(last)
-	return render_template('online.html',
-		online=usernames,
-		active="help",
-		last=last_str)
+	return render_template('online.html', online=usernames, active="help", last=last_str)
