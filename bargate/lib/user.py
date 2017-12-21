@@ -100,16 +100,16 @@ def auth(username, password):
 		# LDAP auth. This is preferred as of May 2015 due to issues with python-kerberos.
 
 		# connect to LDAP and turn off referals
-		l = ldap.initialize(app.config['LDAP_URI'])
-		l.set_option(ldap.OPT_REFERRALS, 0)
+		ldap_conn = ldap.initialize(app.config['LDAP_URI'])
+		ldap_conn.set_option(ldap.OPT_REFERRALS, 0)
 
 		# and bind to the server with a username/password if needed in
 		# order to search for the full DN for the user who is logging in
 		try:
 			if app.config['LDAP_ANON_BIND']:
-				l.simple_bind_s()
+				ldap_conn.simple_bind_s()
 			else:
-				l.simple_bind_s((app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']))
+				ldap_conn.simple_bind_s((app.config['LDAP_BIND_USER']), (app.config['LDAP_BIND_PW']))
 		except ldap.LDAPError as e:
 			flash('Internal Error - Could not connect to LDAP server: ' + str(e), 'alert-danger')
 			app.logger.error("Could not bind to LDAP: " + str(e))
@@ -120,7 +120,7 @@ def auth(username, password):
 
 		# Now search for the user object to bind as
 		try:
-			results = l.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,
+			results = ldap_conn.search_s(app.config['LDAP_SEARCH_BASE'], ldap.SCOPE_SUBTREE,
 				app.config['LDAP_USER_ATTRIBUTE'] + "=" + username)
 		except ldap.LDAPError as e:
 			app.logger.debug("bargate.lib.user.auth no object found in ldap")

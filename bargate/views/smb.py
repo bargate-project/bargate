@@ -77,7 +77,7 @@ def custom(path, action="browse"):
 			# redirect to custom so its now a GET request
 			return redirect(url_for('custom'))
 
-		except KeyError as ex:
+		except KeyError:
 			# standard POST, not setting up a new server
 			pass
 

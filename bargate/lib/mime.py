@@ -179,7 +179,7 @@ def filename_to_mimetype(filename):
 
 	try:
 		friendly = mimemap[mtype]
-	except KeyError as e:
+	except KeyError:
 		friendly = mtype
 
 	return (friendly, mtype)
