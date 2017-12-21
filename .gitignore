@@ -1,6 +1,7 @@
 # Minified files
 *.min.js
 *.min.css
+bargate/static/templates.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
