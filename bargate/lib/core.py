@@ -15,12 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from bargate import app
 import os
 import datetime
 import re
+import subprocess
+from unicodedata import normalize
+import zlib
+import json
+import uuid
+from base64 import b64decode
 
-################################################################################
+from itsdangerous import base64_decode
+from flask import Markup
+from werkzeug.http import parse_date
+
+from bargate import app
+
 
 class EntryType:
 	# these values are taken from libsmbclient/samba
@@ -30,7 +40,6 @@ class EntryType:
 	file  = 8
 	link  = 9
 
-################################################################################
 
 def ut_to_string(ut):
 	"""Converts unix time to a formatted string for human consumption
@@ -38,7 +47,6 @@ def ut_to_string(ut):
 	"""
 	return datetime.datetime.fromtimestamp(int(ut)).strftime('%Y-%m-%d %H:%M:%S')
 
-################################################################################
 
 def banned_file(filename):
 	"""Takes a filename string and checks to see if has a banned
@@ -54,38 +62,36 @@ def banned_file(filename):
 	else:
 		return False
 
-################################################################################
 
 def secure_filename(filename):
-	r"""Pass it a filename and it will return a secure version of it.  This
-    filename can then safely be stored on a regular file system and passed
-    to :func:`os.path.join`.  The filename returned is an ASCII only string
-    for maximum portability.
+	r"""Pass it a filename and it will return a secure version of it. This
+	filename can then safely be stored on a regular file system and passed
+	to :func:`os.path.join`.  The filename returned is an ASCII only string
+	for maximum portability.
 
-    On windows system the function also makes sure that the file is not
-    named after one of the special device files.
+	On windows system the function also makes sure that the file is not
+	named after one of the special device files.
 
-    >>> secure_filename("My cool movie.mov")
-    'My_cool_movie.mov'
-    >>> secure_filename("../../../etc/passwd")
-    'etc_passwd'
-    >>> secure_filename(u'i contain cool \xfcml\xe4uts.txt')
-    'i_contain_cool_umlauts.txt'
+	>>> secure_filename("My cool movie.mov")
+	'My_cool_movie.mov'
+	>>> secure_filename("../../../etc/passwd")
+	'etc_passwd'
+	>>> secure_filename(u'i contain cool \xfcml\xe4uts.txt')
+	'i_contain_cool_umlauts.txt'
 
-    The function might return an empty filename.  It's your responsibility
-    to ensure that the filename is unique and that you generate random
-    filename if the function returned an empty one.
+	The function might return an empty filename.  It's your responsibility
+	to ensure that the filename is unique and that you generate random
+	filename if the function returned an empty one.
 
 	This is a modified version of the werkzeug secure filename modified
 	for bargate to allow spaces in filenames.
 
-    .. versionadded:: 0.5
+	.. versionadded:: 0.5
 
-    :param filename: the filename to secure
-    """
+	:param filename: the filename to secure
+	"""
 
 	if isinstance(filename, unicode):
-		from unicodedata import normalize
 		filename = normalize('NFKD', filename).encode('ascii', 'ignore')
 
 	for sep in os.path.sep, os.path.altsep:
@@ -93,7 +99,7 @@ def secure_filename(filename):
 			filename = filename.replace(sep, ' ')
 
 	regex = re.compile(r'[^ A-Za-z0-9_.-]')
-	filename = str(regex.sub('_',filename))
+	filename = str(regex.sub('_', filename))
 
 	# on windows a couple of special files are present in each folder.  We
 	# have to ensure that the target file is not such a filename.  In
@@ -105,13 +111,9 @@ def secure_filename(filename):
 
 	return filename
 
-################################################################################
-#### Cookie decode for portal login
 
+# Cookie decode for portal login
 def decode_session_cookie(cookie_data):
-	import zlib
-	from itsdangerous import base64_decode
-
 	compressed = False
 	payload    = cookie_data
 
@@ -126,16 +128,8 @@ def decode_session_cookie(cookie_data):
 
 	return data
 
-################################################################################
 
 def flask_load_session_json(value):
-
-	import json
-	import uuid
-	from base64 import b64decode
-	from flask import Markup
-	from werkzeug.http import parse_date
-
 	def object_hook(obj):
 		if (len(obj) != 1):
 			return obj
@@ -154,39 +148,37 @@ def flask_load_session_json(value):
 
 	return json.loads(value, object_hook=object_hook)
 
-################################################################################
 
 def check_name(name):
 	"""This function checks for invalid characters in a folder or file name or similar
-	strings. It checks for a range of characters and invalid conditions as defined 
+	strings. It checks for a range of characters and invalid conditions as defined
 	by Microsoft here: http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx
 	Raises an exception of ValueError if any failure condition is met by the string.
 	"""
-		
-	## File names MUST NOT end in a space or a period (full stop)
+
+	# File names MUST NOT end in a space or a period (full stop)
 	if name.endswith(' ') or name.endswith('.'):
 		raise ValueError('File and folder names must not end in a space or period (full stop) character')
-		
-	## Run the file/folder name check through the generic path checker
+
+	# Run the file/folder name check through the generic path checker
 	check_path(name)
-	
-	## banned characters which CIFS servers reject!
-	invalidchars = re.compile(r'[<>/\\\":\|\?\*\x00]');
-	
-	## Check for the chars
+
+	# banned characters which CIFS servers reject
+	invalidchars = re.compile(r'[<>/\\\":\|\?\*\x00]')
+
+	# Check for the chars
 	if invalidchars.search(name):
-		raise ValueError('Invalid characters found. You cannot use the following characters in file or folder names: < > \ / : " ? *')
-		
+		raise ValueError('Invalid characters found. You cannot use the following: < > \ / : " ? *')
+
 	return name
 
-################################################################################
 
 def check_path(path):
 	"""This function checks for invalid characters in an entire path. It checks to ensure
 	that paths don't contain strings which manipulate the path e.g up path or similar.
 	Raises an exception of ValueError if any failure condition is met by the string.
 	"""
-	
+
 	if path.startswith(".."):
 		raise ValueError('Invalid path. Paths cannot start with ".."')
 
@@ -207,14 +199,12 @@ def check_path(path):
 
 	if '/./' in path:
 		raise ValueError('Invalid path. Paths cannot contain "/./"')
-		
+
 	return path
-	
-################################################################################
+
 
 def wb_sid_to_name(sid):
-	import subprocess
-	process = subprocess.Popen([app.config['WBINFO_BINARY'], '--sid-to-name',sid], stdout=subprocess.PIPE)
+	process = subprocess.Popen([app.config['WBINFO_BINARY'], '--sid-to-name', sid], stdout=subprocess.PIPE)
 	code = process.wait()
 	sout, serr = process.communicate()
 
@@ -227,4 +217,3 @@ def wb_sid_to_name(sid):
 			return sout
 	else:
 		return "Unable to communicate with winbind"
-
