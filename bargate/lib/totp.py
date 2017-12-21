@@ -15,51 +15,42 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-# pip install onetimepass
-# pip install pyqrcode
-
 from bargate import app
 import os
 import base64
-import redis
-from flask import g, Flask, session, render_template, redirect, url_for, request, flash, abort
+from flask import g, session
 import onetimepass
 import pyqrcode
 import StringIO
 
-################################################################################
 
 def generate_secret_key():
 	return base64.b32encode(os.urandom(10)).decode('utf-8')
 
-################################################################################
 
 def get_secret_key(userid):
 	return g.redis.get('totp.%s.key' % userid)
 
-################################################################################
 
 def get_uri(userid):
-	## check the user has a key, if not generate it.
+	# check the user has a key, if not generate it.
 	otp_secret = get_secret_key(userid)
 
-	if otp_secret == None:
+	if otp_secret is None:
 		otp_secret = generate_secret_key()
-		g.redis.set('totp.%s.key' % userid,otp_secret)
+		g.redis.set('totp.%s.key' % userid, otp_secret)
 
 	return 'otpauth://totp/{0}?secret={1}&issuer={2}'.format(session['username'], otp_secret, app.config['TOTP_IDENT'])
 
-################################################################################
 
 def verify_token(userid, token):
 	otp_secret = get_secret_key(userid)
 
-	if otp_secret == None:
+	if otp_secret is None:
 		return False
 	else:
 		return onetimepass.valid_totp(token, otp_secret)
 
-################################################################################
 
 def return_qrcode(userid):
 	url = pyqrcode.create(get_uri(userid))
@@ -71,12 +62,11 @@ def return_qrcode(userid):
 		'Pragma': 'no-cache',
 		'Expires': '0'}
 
-################################################################################
 
 def user_enabled(userid):
 	totp_enable = g.redis.get('totp.%s.enabled' % userid)
 
-	if totp_enable == None:
+	if totp_enable is None:
 		return False
 	else:
 		return True

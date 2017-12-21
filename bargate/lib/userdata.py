@@ -15,17 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import bargate
-from bargate import app
-from flask import Flask, request, session, redirect, url_for, flash, g, abort, render_template
-import mimetypes
-import os
-from random import randint
+
 import time
-import json
 import werkzeug
 
-themes = {'lumen': 'default', 
+from flask import session, url_for, g
+
+from bargate import app
+
+themes = {'lumen': 'default',
 	'cerulean': 'default',
 	'cosmo': 'inverse',
 	'cyborg': 'inverse',
@@ -40,12 +38,10 @@ themes = {'lumen': 'default',
 	'darkly': 'default',
 	'slate': 'inverse',
 	'yeti': 'inverse',
-	'solar': 'default',
-}
+	'solar': 'default'}
 
-################################################################################
 
-def record_user_activity(user_id,expire_minutes=1440):
+def record_user_activity(user_id, expire_minutes=1440):
 	if app.config['REDIS_ENABLED']:
 		now = int(time.time())
 		expires = now + (expire_minutes * 60) + 10
@@ -59,73 +55,76 @@ def record_user_activity(user_id,expire_minutes=1440):
 		p.expireat(user_key, expires)
 		p.execute()
 
-################################################################################
 
-def save(key,value):
+def save(key, value):
 	if app.config['REDIS_ENABLED']:
-		g.redis.set('user:' + session['username'] + ':' + key,value)
+		g.redis.set('user:' + session['username'] + ':' + key, value)
 
-################################################################################
 
 def get_bookmarks():
 	user_bookmarks_key = 'user:' + session['username'] + ':bookmarks'
 	user_bookmark_key  = 'user:' + session['username'] + ':bookmark:'
 	bookmarks          = list()
 
-	if app.config['REDIS_ENABLED'] and 'redis' in g:	
+	if app.config['REDIS_ENABLED'] and 'redis' in g:
 		if g.redis.exists(user_bookmarks_key):
 			try:
 				user_bookmarks = g.redis.smembers(user_bookmarks_key)
-			except Exception as ex:	
+			except Exception as ex:
 				app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
-				return bookmarks_list
+				return user_bookmarks
 
-			if user_bookmarks != None:
-				if isinstance(user_bookmarks,set):
+			if user_bookmarks is not None:
+				if isinstance(user_bookmarks, set):
 					for bookmark_id in user_bookmarks:
 
 						try:
 							bookmark = g.redis.hgetall(user_bookmark_key + bookmark_id)
 						except Exception as ex:
-							app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': ' + str(ex))
+							app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
+								session['username'] + ': ' + str(ex))
 							continue
 
 						if 'version' not in bookmark:
-							## Version 1 bookmark - we link directly from here
+							# Version 1 bookmark - we link directly from here
 							if 'function' not in bookmark or 'path' not in bookmark:
-								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': ', 'function and/or path was not set')
-								continue
-		
-							try:
-								bookmark['url'] = url_for(bookmark['function'],path=bookmark['path'])
-							except werkzeug.routing.BuildError as ex:
-								app.logger.error('Failed to load bookmark ' + bookmark_name + ' for ' + session['username'] + ': Invalid bookmark function: ', str(ex))
+								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
+									session['username'] + ': ', 'function and/or path was not set')
 								continue
 
-							## Version 1 bookmarks stored the name of the bookmark as the ID :(
+							try:
+								bookmark['url'] = url_for(bookmark['function'], path=bookmark['path'])
+							except werkzeug.routing.BuildError as ex:
+								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
+									session['username'] + ': Invalid bookmark function: ', str(ex))
+								continue
+
+							# Version 1 bookmarks stored the name of the bookmark as the ID :(
 							bookmark['name'] = bookmark_id
 
 						else:
 							if bookmark['version'] == '2':
-								## Version 2 bookmark - use a resolver / redirector function
+								# Version 2 bookmark - use a resolver / redirector function
 								if 'name' not in bookmark:
-									app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': No name set')
+									app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
+										session['username'] + ': No name set')
 									continue
 
-								bookmark['url'] = url_for('bookmark',bookmark_id=bookmark_id)
+								bookmark['url'] = url_for('bookmark', bookmark_id=bookmark_id)
 							else:
-								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' + session['username'] + ': Invalid value for version field')
+								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
+									session['username'] + ': Invalid value for version field')
 								continue
 
 						bookmark['id'] = bookmark_id
 						bookmarks.append(bookmark)
 
 				else:
-					app.logger.error('Failed to load bookmarks','Invalid redis data type when loading bookmarks set for ' + session['username'])
-			
+					app.logger.error('Failed to load bookmarks',
+						'Invalid redis data type when loading bookmarks set for ' + session['username'])
+
 	return bookmarks
 
-################################################################################
 
 def get_layout():
 	if 'redis' in g:
@@ -137,23 +136,22 @@ def get_layout():
 				return 'list'
 			else:
 				return app.config['LAYOUT_DEFAULT']
-		
+
 		except Exception as ex:
 			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
 
-	## If we didn't return a new theme, return the default from the config file
+	# If we didn't return a new theme, return the default from the config file
 	return app.config['LAYOUT_DEFAULT']
 
-################################################################################
 
 def get_theme():
 	if 'redis' in g:
 		try:
 			theme = g.redis.get('user:' + session['username'] + ':theme')
-			if theme != None:
+			if theme is not None:
 				if theme in themes.keys():
 					return theme
-		
+
 		except Exception as ex:
 			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
 
@@ -162,27 +160,25 @@ def get_theme():
 	else:
 		return app.config['THEME_DEFAULT']
 
-################################################################################
 
 def get_theme_navbar():
 	theme = get_theme()
 	return themes[theme]
 
-################################################################################
 
 def get_show_hidden_files():
 	if 'username' in session:
-	
-		## Get a cached response rather than asking REDIS every time
+
+		# Get a cached response rather than asking REDIS every time
 		hidden_files = g.get('hidden_files', None)
-		if not hidden_files == None:
+		if hidden_files is not None:
 			return hidden_files
 		else:
 			if app.config['REDIS_ENABLED']:
 				try:
 					hidden_files = g.redis.get('user:' + session['username'] + ':hidden_files')
 
-					if hidden_files != None:
+					if hidden_files is not None:
 						if hidden_files == 'show':
 							g.hidden_files = True
 							return True
@@ -192,8 +188,7 @@ def get_show_hidden_files():
 
 	g.hidden_files = False
 	return False
-	
-################################################################################
+
 
 def get_overwrite_on_upload():
 	if 'username' in session:
@@ -201,7 +196,7 @@ def get_overwrite_on_upload():
 			try:
 				overwrite_on_upload = g.redis.get('user:' + session['username'] + ':upload_overwrite')
 
-				if overwrite_on_upload != None:
+				if overwrite_on_upload is not None:
 					if overwrite_on_upload == 'yes':
 						return True
 
@@ -209,22 +204,21 @@ def get_overwrite_on_upload():
 				app.logger.error('Unable to speak to redis: ' + str(ex))
 
 	return False
-	
-################################################################################
+
 
 def get_on_file_click():
 	if 'username' in session:
-	
-		## Get a cached response rather than asking REDIS every time
+
+		# Get a cached response rather than asking REDIS every time
 		on_file_click = g.get('on_file_click', None)
-		if not on_file_click == None:
+		if on_file_click is not None:
 			return on_file_click
 		else:
 			if app.config['REDIS_ENABLED']:
 				try:
 					on_file_click = g.redis.get('user:' + session['username'] + ':on_file_click')
 
-					if on_file_click != None:
+					if on_file_click is not None:
 						g.on_file_click = on_file_click
 						return on_file_click
 					else:
@@ -236,16 +230,14 @@ def get_on_file_click():
 
 	g.on_file_click = 'ask'
 	return 'ask'
-	
-################################################################################
+
 
 def get_online_users(minutes=15):
 	if app.config['REDIS_ENABLED']:
 		if minutes > 86400:
-		    minutes = 86400
+			minutes = 86400
 		current = int(time.time()) // 60
 		minutes = xrange(minutes)
 		return g.redis.sunion(['online-users/%d' % (current - x) for x in minutes])
 	else:
 		return []
-
