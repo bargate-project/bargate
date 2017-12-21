@@ -59,13 +59,13 @@
 				Choose files to upload. You can select more than one file at a time. You can also drag and drop files anywhere on this page to start uploading. The maximum file size is {{config['MAX_CONTENT_LENGTH']|filesizeformat(binary=True)}}.
 				</p>
 
-				<div id="upload-progress" class="progress progress-striped hidden active">
-					<div class="progress-bar progress-bar-info" style="min-width: 2em; width: 2%;">
+				<div id="upload-progress" class="progress hidden active" style="height: 25px">
+					<div class="progress-bar progress-bar-striped progress-bar-info" style="min-width: 2em; width: 2%;">
 						<span id="upload-progress-pc">2</span>%
 					</div>
 				</div>
 
-				<div id="upload-progress-ext" class="text-muted text-center hidden">
+				<div id="upload-progress-ext" class="text-center hidden">
 				</div>
 
 				<ul id="upload-files" class="files list-unstyled" style="max-height: 250px; margin-top: 25px; overflow-y: auto">
