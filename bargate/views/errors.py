@@ -16,22 +16,22 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from bargate import app
-import bargate.lib.errors
-from flask import Flask, request, session, g, redirect, url_for, abort, flash, render_template, make_response
 import traceback
 
-if app.config['REDIS_ENABLED']:
-	import redis
+from flask import request, session, g, render_template
+
+from bargate import app
+import bargate.lib.errors
+
 
 @app.errorhandler(500)
 def error500(error):
 	"""Handles abort(500) calls in code"""
-	
+
 	# Default error title/msg
 	err_title  = "Internal Error"
 	err_msg    = "An internal error has occured and has been forwarded to our support team."
-	
+
 	# Take title/msg from global object if set
 	if hasattr(g, 'fault_title'):
 		err_title = g.fault_title
@@ -43,14 +43,14 @@ def error500(error):
 		usr = session['username']
 	else:
 		usr = 'Not logged in'
-		
+
 	# Get exception traceback
 	if app.debug:
 		debug = traceback.format_exc()
 	else:
 		debug = None
 
-	## send a log about this
+	# send a log about this
 	app.logger.error("""
 Title:                %s
 Message:              %s
@@ -82,61 +82,71 @@ Traceback:
 			request.user_agent.browser,
 			request.user_agent.version,
 			usr,
-			debug,	
+			debug,
 		))
-		
-	return render_template('error.html',title=err_title,message=err_msg,debug=debug), 500
+
+	return render_template('error.html', title=err_title, message=err_msg, debug=debug), 500
+
 
 @app.errorhandler(400)
 def error400(error):
-	"""Handles abort(400) calls in code.
-	"""
+	"""Handles abort(400) calls in code."""
 	if app.debug:
 		debug = traceback.format_exc()
 	else:
 		debug = None
-		
+
 	app.logger.info('abort400 was called! ' + str(debug))
-		
-	return render_template('error.html',title="Bad Request",message='Your request was invalid or malformed, please try again.',debug=debug), 400
+
+	return render_template('error.html',
+		title="Bad Request",
+		message='Your request was invalid or malformed, please try again.',
+		debug=debug), 400
+
 
 @app.errorhandler(403)
 def error403(error):
-	"""Handles abort(403) calls in code.
-	"""
-	
+	"""Handles abort(403) calls in code."""
+
 	if app.debug:
 		debug = traceback.format_exc()
 	else:
 		debug = None
-		
+
 	app.logger.info('abort403 was called!')
-	
-	return render_template('error.html',title="Permission Denied",message='You do not have permission to access that resource.',debug=debug), 403
+
+	return render_template('error.html',
+		title="Permission Denied",
+		message='You do not have permission to access that resource.',
+		debug=debug), 403
+
 
 @app.errorhandler(404)
 def error404(error):
-	"""Handles abort(404) calls in code.
-	"""
+	"""Handles abort(404) calls in code."""
 
 	if app.debug:
 		debug = traceback.format_exc()
 	else:
 		debug = None
 
-	return render_template('error.html',title="Not found",message="Sorry, I couldn't find what you requested.",debug=debug), 404
+	return render_template('error.html',
+		title="Not found",
+		message="Sorry, I couldn't find what you requested.",
+		debug=debug), 404
+
 
 @app.errorhandler(405)
 def error405(error):
 	"""Handles abort(405) calls in code.
 	"""
-	
+
 	if app.debug:
 		debug = traceback.format_exc()
 	else:
 		debug = None
-	
-	return render_template('error.html',title="Not allowed",message="Method not allowed. This usually happens when your browser sent a POST rather than a GET, or vice versa.",debug=debug), 405
+
+	return render_template('error.html', title="Not allowed", message="HTTP Method not allowed", debug=debug), 405
 
 
 @app.errorhandler(app.CsrfpException)
@@ -147,10 +157,12 @@ def csrfp_error(error):
 		debug = traceback.format_exc()
 	else:
 		debug = None
-	
-	return render_template('error.html',title="Security Error",message="Your browser failed to present a valid security token (CSRF protection token).",debug=debug), 400
 
-################################################################################
+	return render_template('error.html',
+		title="Security Error",
+		message="Your browser failed to present a valid security token (CSRF protection token).",
+		debug=debug), 400
+
 
 @app.errorhandler(Exception)
 def error_handler(error):
@@ -169,7 +181,7 @@ def error_handler(error):
 	else:
 		username = 'Not logged in'
 
-	## Log the critical error (so that it goes to e-mail)
+	# Log the critical error (so that it goes to e-mail)
 	app.logger.error("""Fatal Error
 HTTP Path:            %s
 HTTP Method:          %s
@@ -191,7 +203,7 @@ Traceback:
 			request.user_agent.browser,
 			request.user_agent.version,
 			username,
-			trace,			
+			trace,
 		))
 
 	return bargate.lib.errors.fatalerr(debug=debug)
