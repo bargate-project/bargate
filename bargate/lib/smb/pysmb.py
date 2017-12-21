@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-# standard library
 import StringIO # used in image previews
 import time     # used in time
 import socket   # used to get the local hostname to send to the SMB server
@@ -24,7 +23,6 @@ import time     # used in search (timeout)
 import uuid     # used in creating bookmarks
 import errno    # used in OperationFailureDecode
 
-# third party libs
 from smb.SMBConnection import SMBConnection
 from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
 from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
@@ -34,7 +32,6 @@ from flask import send_file, request, session, g, url_for, abort
 from flask import flash, make_response, jsonify, render_template
 from PIL import Image
 
-# bargate imports
 from bargate import app
 from bargate.lib.core import banned_file, secure_filename, check_name
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_path
@@ -45,6 +42,7 @@ from bargate.lib.userdata import get_show_hidden_files, get_layout
 from bargate.lib.userdata import get_overwrite_on_upload 
 from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
 from bargate.lib.mime import view_in_browser, pillow_supported
+
 
 class OperationFailureDecode:
 	errmap = {

@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-# standard library
 import os       # used in file modes when writing to files
 import io       # used for 'default buffer size'
 import stat     # used for checking file type via unix mode
@@ -24,13 +23,11 @@ import time     # used in search (timeout)
 import StringIO # used in image previews
 import uuid     # used in creating bookmarks
 
-# third party libs
 import smbc
 from flask import send_file, request, session, g, redirect, url_for
 from flask import abort, flash, make_response, jsonify, render_template
 from PIL import Image
 
-# bargate imports
 from bargate import app
 from bargate.lib.core import banned_file, secure_filename, check_path
 from bargate.lib.core import ut_to_string, wb_sid_to_name, check_name
@@ -41,6 +38,7 @@ from bargate.lib.userdata import get_show_hidden_files, get_layout
 from bargate.lib.userdata import get_overwrite_on_upload 
 from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
 from bargate.lib.mime import view_in_browser, pillow_supported
+
 
 class FileStat:
 	"""A wrapper class to stat data returned from pysmbc. This class just makes
