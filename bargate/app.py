@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import Flask, request, session, g, abort, flash, redirect, url_for
+from flask import Flask, request, session, g, abort, flash, redirect, url_for, render_template
 from ConfigParser import RawConfigParser
 import jinja2 
 import logging
@@ -233,8 +233,7 @@ Further Details:
 		def decorated_function(*args, **kwargs):
 			if self.config['DISABLE_APP']:
 				flash('Service Temporarily Unavailable - Normal service will be restored as soon as possible.','alert-warning')
-				bgnumber = randint(1,2)
-				return render_template('login.html', bgnumber=bgnumber)
+				return render_template('login.html')
 			return f(*args, **kwargs)
 		return decorated_function
 

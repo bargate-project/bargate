@@ -140,6 +140,7 @@ def statEntry(libsmbclient,url):
 	if url.endswith('/'):
 		url = url[:-1]
 
+	app.logger.debug("libsmbclient.stat('{}')".format(url))
 	fstat = libsmbclient.stat(url)
 
 	return {'mode': fstat[0], 	## unix mode
@@ -167,6 +168,7 @@ def getEntryType(libsmbclient,uri):
 
 	## stat the URI
 	try:
+		app.logger.debug("libsmbclient.stat('{}')".format(uri))
 		fstat = libsmbclient.stat(uri)
 	except Exception as ex:
 		return bargate.lib.errors.smbc_handler(ex,uri)
@@ -484,6 +486,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		if action == 'download' or action == 'view':
 
 			try:
+				app.logger.debug("libsmbclient.stat('{}')".format(uri_as_str))
 				fstat    = libsmbclient.stat(uri_as_str)
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri_as_str,error_redirect)
@@ -493,6 +496,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.invalid_item_download(error_redirect)
 
 			try:
+				app.logger.debug("libsmbclient.open('{}')".format(uri_as_str))
 				file_object = libsmbclient.open(uri_as_str)
 
 				## Default to sending files as an 'attachment' ("Content-Disposition: attachment")
@@ -523,6 +527,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				abort(400)
 
 			try:
+				app.logger.debug("libsmbclient.stat('{}')".format(uri_as_str))
 				fstat = libsmbclient.stat(uri_as_str)
 			except Exception as ex:
 				abort(400)
@@ -544,6 +549,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			## Open the file
 			try:
+				app.logger.debug("libsmbclient.open('{}')".format(uri_as_str))
 				file_object = libsmbclient.open(uri_as_str)
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri_as_str,error_redirect)
@@ -570,6 +576,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 		elif action == 'stat':
 
 			try:
+				app.logger.debug("libsmbclient.stat('{}')".format(uri_as_str))
 				fstat = libsmbclient.stat(uri_as_str)
 			except Exception as ex:
 				return jsonify({'error': 1, 'reason': 'An error occured: ' + str(type(ex)) + ": " + str(ex)})
@@ -583,7 +590,9 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			
 			if app.config['WBINFO_LOOKUP']:
 				try:
+					app.logger.debug("libsmbclient.getxattr('{}',smbc.XATTR_OWNER)".format(uri_as_str))
 					data['owner'] = bargate.lib.smb.wb_sid_to_name(libsmbclient.getxattr(uri_as_str,smbc.XATTR_OWNER))
+					app.logger.debug("libsmbclient.getxattr('{}',smbc.XATTR_GROUP)".format(uri_as_str))
 					data['group'] = bargate.lib.smb.wb_sid_to_name(libsmbclient.getxattr(uri_as_str,smbc.XATTR_GROUP))
 				except Exception as ex:
 					data['owner'] = "Unknown"
@@ -645,6 +654,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			## Try getting directory contents
 			try:
+				app.logger.debug("libsmbclient.opendir('{}').getdents()".format(uri_as_str))
 				directory_entries = libsmbclient.opendir(uri_as_str).getdents()
 			except smbc.NotDirectoryError as ex:
 				## If there is a parent directory, go up to it
@@ -809,6 +819,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				## Check to see if the file exists
 				fstat = None
 				try:
+					app.logger.debug("libsmbclient.stat('{}')".format(upload_uri_as_str))
 					fstat = libsmbclient.stat(upload_uri_as_str)
 				except smbc.NoEntryError:
 					app.logger.debug("Upload filename of " + upload_uri_as_str + " does not exist, ignoring")
@@ -841,11 +852,11 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 								continue
 
 						## Open the file for the first time, truncating or creating it if necessary
-						app.logger.debug("Opening for writing with O_CREAT and TRUNC")
+						app.logger.debug("libsmbclient.open('{}',os.O_CREAT | os.O_TRUNC | os.O_WRONLY)".format(upload_uri_as_str))
 						wfile = libsmbclient.open(upload_uri_as_str,os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 					else:
 						## Open the file and seek to where we are going to write the additional data
-						app.logger.debug("Opening for writing with O_WRONLY")
+						app.logger.debug("libsmbclient.open('{}',os.O_WRONLY)".format(upload_uri_as_str))
 						wfile = libsmbclient.open(upload_uri_as_str,os.O_WRONLY)
 						wfile.seek(byterange_start)
 
@@ -898,6 +909,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.invalid_item_type(error_redirect)
 
 			try:
+				app.logger.debug("libsmbclient.rename('{}','{}')".format(uri_as_str,new_uri_as_str))
 				libsmbclient.rename(uri_as_str,new_uri_as_str)
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
@@ -913,6 +925,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			try:
 				## stat the source file first
+				app.logger.debug("libsmbclient.stat('{}')".format(uri_as_str))
 				source_stat = libsmbclient.stat(uri_as_str)
 
 				## size of source
@@ -945,6 +958,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			## Make sure the dest file doesn't exist
 			try:
+				app.logger.debug("libsmbclient.stat('{}')".format(dest))
 				libsmbclient.stat(dest)
 			except smbc.NoEntryError as ex:
 				## This is what we want - i.e. no file/entry
@@ -953,13 +967,15 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 
 			## Assuming we got here without an exception, open the source file
-			try:		
+			try:
+				app.logger.debug("libsmbclient.open('{}')".format(uri_as_str))
 				source_fh = libsmbclient.open(uri_as_str)
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
 
 			## Assuming we got here without an exception, open the dest file
-			try:		
+			try:
+				app.logger.debug("libsmbclient.open('{}', os.O_CREAT | os.O_WRONLY | os.O_TRUNC)".format(dest))
 				dest_fh = libsmbclient.open(dest, os.O_CREAT | os.O_WRONLY | os.O_TRUNC )
 
 			except Exception as ex:
@@ -993,6 +1009,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 			mkdir_uri = uri_as_str + '/' + urllib.quote(request.form['directory_name'].encode('utf-8'))
 
 			try:
+				app.logger.debug("libsmbclient.mkdir('{}',0755)".format(mkdir_uri))
 				libsmbclient.mkdir(mkdir_uri,0755)
 			except Exception as ex:
 				return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
@@ -1012,6 +1029,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			if itemType == bargate.lib.smb.SMB_FILE:
 				try:
+					app.logger.debug("libsmbclient.unlink('{}')".format(uri_as_str))
 					libsmbclient.unlink(uri_as_str)
 				except Exception as ex:
 					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
@@ -1021,6 +1039,7 @@ def connection(srv_path,func_name,active=None,display_name="Home",action='browse
 
 			elif itemType == bargate.lib.smb.SMB_DIR:
 				try:
+					app.logger.debug("libsmbclient.rmdir('{}')".format(uri_as_str))
 					libsmbclient.rmdir(uri_as_str)
 				except Exception as ex:
 					return bargate.lib.errors.smbc_handler(ex,uri,error_redirect)
