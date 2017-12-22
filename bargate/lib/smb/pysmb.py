@@ -509,7 +509,7 @@ class BargateSMBLibrary:
 							bmark_enabled = True
 
 						return jsonify({'dirs': dirs, 'files': files, 'shares': [],
-							'crumbs': crumbs, 'buttons': True,
+							'crumbs': crumbs, 'buttons': True, 'bmark_path': path + ' in ' + display_name,
 							'bmark': bmark_enabled, 'root_name': display_name,
 							'root_url': url_for(func_name), 'no_items': no_items})
 

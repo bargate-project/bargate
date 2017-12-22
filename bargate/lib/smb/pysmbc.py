@@ -407,7 +407,7 @@ class BargateSMBLibrary:
 									b4 = b4 + crumb + '/'
 
 						return jsonify({'dirs': dirs, 'files': files, 'shares': shares,
-							'crumbs': crumbs, 'buttons': buttons_enabled,
+							'crumbs': crumbs, 'buttons': buttons_enabled, 'bmark_path': path + ' in ' + display_name,
 							'bmark': bmark_enabled, 'root_name': display_name,
 							'root_url': url_for(func_name), 'no_items': no_items})
 					except Exception as ex:

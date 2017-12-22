@@ -865,6 +865,7 @@ function onPageLoad() {
 	});
 	
 	$('#bmark-m').on('shown.bs.modal', function() {
+		$('#bmark-m input[type="text"]').val($browse.data.bmark_path);
 		$('#bmark-m input[type="text"]').focus();
 	});
 
