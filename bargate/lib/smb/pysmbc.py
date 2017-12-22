@@ -22,6 +22,7 @@ import urllib    # used in SMBClientWrapper for URL-quoting strings
 import time      # used in search (timeout)
 import StringIO  # used in image previews
 import uuid      # used in creating bookmarks
+import traceback # used in smb_error_json
 
 import smbc
 from flask import send_file, request, session, g, url_for
@@ -100,39 +101,48 @@ class SMBClientWrapper:
 			url = url[:-1]
 
 		url = self._convert(url)
+		app.logger.debug("smbclient call: stat('" + url + "')")
 		return FileStat(self.smbclient.stat(url))
 
 	def open(self, url, mode=None):
 		url = self._convert(url)
 
 		if mode is None:
+			app.logger.debug("smbclient call: open('" + url + "')")
 			return self.smbclient.open(url)
 		else:
+			app.logger.debug("smbclient call: open('" + url + "','" + str(mode) + "')")
 			return self.smbclient.open(url, mode)
 
 	def ls(self, url):
 		url = self._convert(url)
+		app.logger.debug("smbclient call: opendir('" + url + "').getdents()")
 		return self.smbclient.opendir(url).getdents()
 
 	def rename(self, old, new):
 		old = self._convert(old)
 		new = self._convert(new)
-		return self.smbclient.rename(old, new)
+		app.logger.debug("smbclient call: rename('" + old + "','" + new + "')")
+		self.smbclient.rename(old, new)
 
 	def mkdir(self, url, mode=0755):
 		url = self._convert(url)
-		return self.smbclient.mkdir(url, mode)
+		app.logger.debug("smbclient call: mkdir('" + url + "','" + str(mode) + "')")
+		self.smbclient.mkdir(url, mode)
 
 	def rmdir(self, url):
 		url = self._convert(url)
-		return self.smblcient.rmdir(url)
+		app.logger.debug("smbclient call: rmdir('" + url + "')")
+		self.smbclient.rmdir(url)
 
 	def delete(self, url):
 		url = self._convert(url)
-		return self.smbclient.unlink(url)
+		app.logger.debug("smbclient call: unlink('" + url + "')")
+		self.smbclient.unlink(url)
 
 	def getxattr(self, url, attr):
 		url = self._convert(url)
+		app.logger.debug("smbclient call: getxattr('" + url + "','" + str(xattr) + "')")
 		return self.smbclient.getxattr(url, attr)
 
 
@@ -605,6 +615,8 @@ class BargateSMBLibrary:
 					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
 				try:
+					app.logger.debug(uri)
+					app.logger.debug(dirname)
 					self.libsmbclient.mkdir(uri + '/' + dirname)
 				except Exception as ex:
 					return self.smb_error_json(ex)
@@ -854,4 +866,6 @@ class BargateSMBLibrary:
 
 	def smb_error_json(self, ex):
 		(title, msg) = self.smb_error_info(ex)
+		app.logger.debug("smb_error_json: '" + title + "', '" + msg + "'")
+		app.logger.debug(traceback.format_exc())
 		return jsonify({'code': 1, 'msg': title + ": " + msg})

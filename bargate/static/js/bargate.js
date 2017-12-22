@@ -51,7 +51,6 @@ function disableBookmark() {
 }
 
 function renderDirectory() {
-	console.log("renderDirectory()");
 	$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: $browse.data.crumbs, root_name: $browse.data.root_name, root_url: $browse.data.root_url }));
 
 	if ($browse.data.no_items) {
@@ -72,7 +71,6 @@ function renderDirectory() {
 }
 
 function loadDir(url,alterHistory) {
-	console.log("loadDir()");
 	if (alterHistory === undefined) { alterHistory = true; }
 
 	$.getJSON(url, {xhr: 1})
@@ -296,9 +294,11 @@ function doBrowse() {
 				loadDir(dir.data('url'));
 			}
 			else if ($action == 'rename') {
+				selectEntry(dir.data('filename'),$browse.url);
 				showRename(dir.data('filename'));
 			}
 			else if ($action == 'delete') {
+				selectEntry(dir.data('filename'),$browse.url);
 				showDeleteDirectory(dir.data('filename'));
 			}
 
@@ -775,7 +775,6 @@ function setTheme(themeName) {
 }
 
 function onPageLoad() {
-	console.log("third");
 	/* load templating engine */
 	var env = nunjucks.configure('/static/templates/',{ autoescape: true});
 	env.addFilter('filesizeformat', filesizeformat);
@@ -886,24 +885,18 @@ function onPageLoad() {
 	});
 
 	/* Load initial directory */
-	console.log("initial loadng of: " + $initialUrl);
 	history.replaceState($initialUrl,"",$initialUrl);
 	loadDir($initialUrl,false);
 }
 
 $(document).ready(function($) {
-	console.log("first");
 	/* grab the user's settings from the server */
 	$.getJSON('/settings')
 	.done(function(response) {
 		if (response.code != 0) {
 			showErr("Could not load your settings","The server did not respond correctly to the request for your settings");
 		} else {
-			console.log("second")
-			console.log(response);
-			console.log(response.layout);
 			$user.layout = response.layout;
-			console.log($user.layout);
 			$user.token = response.token;
 			$user.theme = response.theme;
 			$user.navbar = response.navbar;

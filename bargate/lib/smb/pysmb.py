@@ -143,7 +143,7 @@ class BargateSMBLibrary:
 				elif failure.err is errno.EPERM:
 					return ("Permission denied", "You do not have sufficient permission to complete the operation")
 				elif failure.err is errno.ENOTEMPTY:
-					return ("Directory not empty", "The directory is not empty")
+					return ("Directory not empty", "You can only delete empty directories.")
 				elif failure.err is errno.EISDIR:
 					return ("Entry is a directory", "You attempted to perform a file operation on a directory")
 				elif failure.err is errno.EEXIST:
@@ -162,6 +162,8 @@ class BargateSMBLibrary:
 
 	def smb_error_json(self, ex):
 		(title, msg) = self.smb_error_info(ex)
+		app.logger.debug("smb_error_json: '" + title + "', '" + msg + "'")
+		app.logger.debug(traceback.format_exc())
 		return jsonify({'code': 1, 'msg': title + ": " + msg})
 
 	def _parse_smb_uri_and_path(self, uri, path=""):
