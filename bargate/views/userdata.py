@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import request, session, redirect, url_for, flash, g, abort
-from flask import render_template, Response, jsonify
+from flask import request, session, redirect, url_for, flash, g, abort, render_template, jsonify
 import werkzeug
 
 import bargate.lib.userdata
@@ -26,7 +25,6 @@ from bargate import app
 
 
 @app.route('/settings', methods=['GET', 'POST'])
-@app.login_required
 @app.allow_disable
 def settings():
 	if request.method == 'GET':
@@ -51,6 +49,9 @@ def settings():
 			'onclick': bargate.lib.userdata.get_on_file_click()}))
 
 	else:
+		if not app.is_user_logged_in():
+			abort(403)
+
 		# Settings need redis storage, if redis is disabled we can't do settings
 		if not app.config['REDIS_ENABLED']:
 			abort(404)

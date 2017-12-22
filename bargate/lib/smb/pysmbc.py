@@ -72,9 +72,10 @@ class SMBClientWrapper:
 	quoted str objects instead, making use of the library a lot easier"""
 
 	def __init__(self):
-		cb = lambda se, sh, w, u, p: (app.config['SMB_WORKGROUP'],
-			session['username'], get_password())  # noqa
-		self.smbclient = smbc.Context(auth_fn=cb)
+		self.smbclient = smbc.Context(auth_fn=self._get_auth)
+
+	def _get_auth(self, server, share, workgroup, username, password):
+		return (app.config['SMB_WORKGROUP'], session['username'], get_password())
 
 	def _convert(self, url):
 		# input will be of the form smb://location.location/path/path/path
