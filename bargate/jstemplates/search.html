@@ -14,8 +14,8 @@
 		{% if entry.type == 7 %}
 		<tr class="edir" data-url="{{entry.url}}">
 		{% elif entry.type == 8 %}
-		<tr class="efile" data-icon="fa fa-fw fa-{{entry.icon}}" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-burl="{{entry.burl}}" data-path="{{entry.path}}" {% if entry.view %}data-view="true"{%endif%}>
-			<td class="text-center"><span class="fa fa-{{ entry.icon }} fa-2x"></span></td>
+		<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-burl="{{entry.burl}}" data-path="{{entry.path}}" {% if entry.view %}data-view="true"{%endif%}>
+			<td class="text-center"><span class="{{ entry.icon }} fa-fw fa-2x"></span></td>
 			<td class="dentry">{{ entry.name}}<br/>
 				<span class="text-muted">in <a class="edir" data-url="{{entry.parent_url}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
 			</td>

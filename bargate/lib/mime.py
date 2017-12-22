@@ -94,74 +94,74 @@ def mimetype_to_icon(mtype):
 	to be displayed next to the file name.
 	"""
 
-	ficon = 'file'
+	ficon = 'far fa-file-alt'
 
 	if mtype.startswith('image'):
-		ficon = 'file-image'
+		ficon = 'far fa-file-image'
 	elif mtype.startswith('audio'):
-		ficon = 'file-audio'
+		ficon = 'far fa-file-audio'
 	elif mtype.startswith('video'):
-		ficon = 'file-video'
+		ficon = 'far fa-file-video'
 	elif mtype.startswith('message'):
-		ficon = 'envelope'
+		ficon = 'far fa-envelope-open'
 	elif mtype.startswith('application/vnd.visio'):
-		ficon = 'sitemap'
+		ficon = 'fas fa-sitemap'
 	elif mtype.startswith('application/octet-stream'):
-		ficon = 'cogs'
+		ficon = 'fas fa-cogs'
 	elif mtype.startswith('application/x-gzip'):
-		ficon = 'file-archive'
+		ficon = 'far fa-file-archive'
 	elif mtype.startswith('application/x-gtar'):
-		ficon = 'file-archive'
+		ficon = 'far fa-file-archive'
 	elif mtype.startswith('application/x-tar'):
-		ficon = 'file-archive'
+		ficon = 'far fa-file-archive'
 	elif mtype.startswith('application/zip'):
-		ficon = 'file-archive'
+		ficon = 'far fa-file-archive'
 	elif mtype.startswith('application/vnd.ms-cab-compressed'):
-		ficon = 'file-archive'
+		ficon = 'far fa-file-archive'
 	elif mtype.startswith('application/x-rpm'):
-		ficon = 'file-archive'
+		ficon = 'far fa-file-archive'
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'):
-		ficon = 'file-excel'
+		ficon = 'far fa-file-excel'
 	elif mtype.startswith('application/vnd.ms-excel'):
-		ficon = 'file-excel'
+		ficon = 'far fa-file-excel'
 	elif mtype.startswith('application/vnd.oasis.opendocument.spreadsheet'):
-		ficon = 'table'
+		ficon = 'far fa-file-excel'
 	elif mtype.startswith('application/msword'):
-		ficon = 'file-word'
+		ficon = 'far fa-file-word'
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.wordprocessingml.document'):
-		ficon = 'file-word'
+		ficon = 'far fa-file-word'
 	elif mtype.startswith('application/vnd.oasis.opendocument.text'):
-		ficon = 'file-text'
+		ficon = 'far fa-file-alt'
 	elif mtype.startswith('application/vnd.ms-powerpoint'):
-		ficon = 'file-powerpoint'
+		ficon = 'far fa-file-powerpoint'
 	elif mtype.startswith('application/vnd.openxmlformats-officedocument.presentationml.presentation'):
-		ficon = 'file-powerpoint'
+		ficon = 'far fa-file-powerpoint'
 	elif mtype.startswith('application/vnd.oasis.opendocument.presentation'):
-		ficon = 'slideshare'
+		ficon = 'far fa-file-powerpoint'
 	elif mtype.startswith('application/pdf'):
-		ficon = 'file-pdf'
+		ficon = 'far fa-file-pdf'
 	elif mtype.startswith('text/html'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('application/xhtml+xml'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('text/css'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('text/xml') or mtype.startswith('application/xml'):
-		ficon = 'code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('application/x-perl'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('application/x-python'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('text/x-python'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('application/x-perl'):
-		ficon = 'file-code'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('application/x-sh'):
-		ficon = 'terminal'
+		ficon = 'far fa-file-code'
 	elif mtype.startswith('text/plain'):
-		ficon = 'file-text'
+		ficon = 'far fa-file-alt'
 	elif mtype.startswith('application'):
-		ficon = 'cog'
+		ficon = 'fas fa-cog'
 	return ficon
 
 

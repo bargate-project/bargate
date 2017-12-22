@@ -2,15 +2,15 @@
 {%- if config['BOOKMARKS_ENABLED'] %}
 <li class="dropdown{%if active == 'bookmarks'%} active{%endif%}">
 	<a href="#" class="dropdown-toggle" data-toggle="dropdown">Bookmarks <b class="caret"></b></a>
-	<ul class="dropdown-menu" id="bmarks"	>
-		<li><a href="{{ url_for('bookmarks') }}"><i class="fa fa-tags fa-fw"></i> Bookmark Manager</a></li>
+	<ul class="dropdown-menu" id="bmarks">
+		<li><a href="{{ url_for('bookmarks') }}"><i class="fas fa-tags fa-fw"></i> Bookmark Manager</a></li>
 		<li id="bmark-l" class="disabled">
-			<a href="#bmark-m" data-toggle="modal"><i class="fa fa-fw fa-bookmark"></i> Bookmark this folder</a>
+			<a href="#bmark-m" data-toggle="modal"><i class="fas fa-fw fa-bookmark"></i> Bookmark this folder</a>
 		</li>
 		{% if user_bookmarks %}
 		<li class="divider"></li>
 			{% for mark in user_bookmarks %}
-		<li><a href="{{ mark.url }}"><i class="fa fa-arrow-right fa-fw"></i> {{mark.name|truncate(30, True) }}</a></li>
+		<li><a href="{{ mark.url }}"><i class="fas fa-arrow-right fa-fw"></i> {{mark.name|truncate(30, True) }}</a></li>
 			{% endfor %}
 		{% endif %}
 	</ul>

@@ -1,27 +1,27 @@
 {%- macro logoutmenu(class) -%}
-	<li class="{{class}}"><a href="{{ url_for('logout') }}"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a></li>
+	<li class="{{class}}"><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt fa-fw"></i> Sign Out</a></li>
 {%- endmacro -%}
 {%- macro bargatemenu() -%}
 	{% if config['REDIS_ENABLED'] %}
-	<li><a href="#prefs-m" data-toggle="modal"><i class="fa fa-gears fa-fw"></i> Settings</a></li>
+	<li><a href="#prefs-m" data-toggle="modal"><i class="fas fa-cog fa-fw"></i> Settings</a></li>
 	{% if config['TOTP_ENABLED'] %}
-	<li><a href="{{ url_for('totp_user_view') }}"><i class="fa fa-lock fa-fw"></i> Two Step Protection</a></li>
+	<li><a href="{{ url_for('totp_user_view') }}"><i class="fas fa-lock fa-fw"></i> Two Step Protection</a></li>
 	{% endif %}
 	<li class="divider"></li>
 	{% endif %}
 	{%- include 'user-menu.html' %}
 	{%- include 'help-menu.html' %}
-	<li><a href="{{ url_for('about') }}"><i class="fa fa-fw fa-star"></i> About</a></li>
+	<li><a href="{{ url_for('about') }}"><i class="fas fa-fw fa-info-circle"></i> About</a></li>
 {%- endmacro -%}
 {%- macro sortmenu() -%}
 <a class="btn navbar-btn btn-default browse-b disabled" data-tooltip="yes" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-title="Sort by">
-	<i class="fa fa-fw fa-lg fa-sort"></i>
+	<i class="fas fa-fw fa-lg fa-sort"></i>
 </a>
 <ul class="dropdown-menu dropdown-menu-auto">
-	<li style="cursor: pointer"><a class="dir-sortby-name"><span class="sortby-check"><i class="fa fa-fw fa-check"></i></span> Name</a></li>
-	<li style="cursor: pointer"><a class="dir-sortby-type"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Type</a></li>
-	<li style="cursor: pointer"><a class="dir-sortby-mtime"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Modified</a></li>
-	<li style="cursor: pointer"><a class="dir-sortby-size"><span class="sortby-check invisible"><i class="fa fa-fw fa-check"></i></span> Size</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-name"><span class="sortby-check"><i class="fas fa-fw fa-check"></i></span> Name</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-type"><span class="sortby-check invisible"><i class="fas fa-fw fa-check"></i></span> Type</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-mtime"><span class="sortby-check invisible"><i class="fas fa-fw fa-check"></i></span> Modified</a></li>
+	<li style="cursor: pointer"><a class="dir-sortby-size"><span class="sortby-check invisible"><i class="fas fa-fw fa-check"></i></span> Size</a></li>
 </ul>
 {%- endmacro -%}
 <!doctype html>
@@ -54,8 +54,8 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
-					<h4 class="modal-title text-danger"><span class="fa fa-fw fa-exclamation-triangle"></span> <span id="modal-error-title"></span></h4>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fas fa-fw fa-times"></i></button>
+					<h4 class="modal-title text-danger"><span class="fas fa-fw fa-exclamation-triangle"></span> <span id="modal-error-title"></span></h4>
 				</div>
 				<div class="modal-body"><p id="modal-error-desc"></p></div>
 				<div class="modal-footer">
@@ -68,7 +68,7 @@
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content" style="min-height: 600px">
 				<div class="modal-header mhc">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-fw fa-times"></i></button>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fas fa-fw fa-times"></i></button>
 					<ul class="nav nav-pills" role="tablist">
 						<li role="presentation" class="active"><a href="#fopts" aria-controls="fopts" role="tab" data-toggle="tab">Folder options</a></li>
 						<li role="presentation"><a href="#uploadprefs" aria-controls="uploadprefs" role="tab" data-toggle="tab">Uploads</a></li>
@@ -246,7 +246,7 @@
 					<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand visible-xs visible-md visible-lg">{{ config['APP_DISPLAY_NAME'] }}</a>
 					<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand visible-sm">{{ config['APP_DISPLAY_NAME_SHORT'] }}</a>
 					{%- else %}
-					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fa fa-arrow-circle-o-left"></i> Back to Login</a>
+					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fas fa-arrow-circle-left"></i> Back to Login</a>
 					{%- endif %}
 				</div>
 			
@@ -266,7 +266,7 @@
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a class="btn navbar-btn btn-default" data-tooltip="yes" data-toggle="dropdown" title="Menu" aria-haspopup="true" aria-expanded="false">
-								<i class="fa fa-bars fa-fw fa-lg"></i>
+								<i class="fas fa-bars fa-fw fa-lg"></i>
 							</a>
 							<ul class="dropdown-menu dropdown-menu-right">
 							{{ bargatemenu() }}
@@ -279,20 +279,20 @@
 						{% if config['REDIS_ENABLED'] %}
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a id="layout-button" class="btn navbar-btn btn-default btn" data-tooltip="yes" title="Switch layout">
-								<i id="layout-button-icon" class="fa fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
+								<i id="layout-button-icon" class="fas fa-fw fa-lg {% if user_layout == 'grid' %}fa-list{%else%}fa-th-large{%endif%}"></i>
 							</a>
 						</div>
 						{% endif %}
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a id="create-directory-button" data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default browse-b disabled" data-tooltip="yes" title="Create a directory">
-								<i class="fa fa-fw fa-lg fa-folder-open"></i>
+								<i class="fas fa-fw fa-lg fa-folder-open"></i>
 							</a>
 						</div>
 
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a id="upload-button" data-toggle="modal" href="#upload-m" class="btn navbar-btn btn-default btn browse-b disabled" data-tooltip="yes" title="Upload a file">
-								<i id="upload-button-icon" class="fa fa-fw fa-lg fa-upload"></i>
+								<i id="upload-button-icon" class="fas fa-fw fa-lg fa-upload"></i>
 							</a>
 						</div>
 
@@ -303,7 +303,7 @@
 						{% if config['SEARCH_ENABLED'] %}
 						<div class="nav navbar-nav navbar-right hidden-xs bargate-navbar-btn">
 							<a data-toggle="modal" href="#search-m" class="btn navbar-btn btn-default btn browse-b disabled" data-tooltip="yes" title="Search">
-								<i class="fa fa-fw fa-lg fa-search"></i>
+								<i class="fas fa-fw fa-lg fa-search"></i>
 							</a>
 						</div>
 						{% endif %}
@@ -328,19 +328,19 @@
 				</div>
 				<div class="text-center inline-block">
 					<a data-toggle="modal" href="#upload-m" class="btn navbar-btn btn-default browse-b disabled">
-						<i class="fa fa-fw fa-upload"></i>
+						<i class="fas fa-fw fa-upload"></i>
 					</a>
 				</div>
 				<div class="text-center inline-block">
 					<a data-toggle="modal" href="#mkdir-m" class="btn navbar-btn btn-default browse-b disabled">
-						<i class="fa fa-fw fa-folder-open"></i>
+						<i class="fas fa-fw fa-folder-open"></i>
 					</a>
 				</div>
 				{%- if config['REDIS_ENABLED'] %}
 				{% if config['BOOKMARKS_ENABLED'] %}
 				<div class="text-center inline-block">
 					<a href="#bmark-m" class="btn navbar-btn btn-default bmark-b disabled" data-toggle="modal">
-						<i class="fa fa-fw fa-bookmark"></i>
+						<i class="fas fa-fw fa-bookmark"></i>
 					</a>
 				</div>
 				{%- endif %}

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<h2><i class="fa fa-hdd-o"></i> Connect to server</h2>
+<h2><i class="far fa-hdd"></i> Connect to server</h2>
 <hr/>
 <p>You can use this to connect to file servers available on the network. The computers you connect to must be part of the {{config['SMB_WORKGROUP']}} domain/workgroup.</p>
 <form action="{{ url_for('custom') }}" method="POST">

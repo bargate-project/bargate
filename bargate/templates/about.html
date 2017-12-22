@@ -9,15 +9,12 @@
 			</div>
 			<div class="panel-body">
 				<div class="text-center">
-					<h1 class="logo"><span class="fa-stack fa-lg" aria-hidden="true">
-          <i class="fa fa-star fa-spin fa-stack-2x"></i>
-          <i class="fa fa-university fa-stack-1x fa-inverse"></i>
-        </span>
-</h1>
-					<h1 class="logo"><strong>bargate</strong></h1>
-					<br/>
-					<h3>A lightweight web based SMB file browser</h3>
-					<h3>Version {{ config.VERSION }}</h3>
+					<span class="fa-layers fa-fw" style="font-size: 20vw; color: #666">
+						<i class="fas fa-fw fa-university"></i>
+						<span class="fa-layers-text fa-inverse" data-fa-transform="shrink-15 down-6.2 left-0.6" style="font-weight:900; color: #fff">{{config.VERSION}}</span>
+						<span class="fa-layers-text fa-inverse" data-fa-transform="shrink-14 up-4 left-0.6" style="font-weight:900; font-family: Oswald; color: #fff">bargate</span>
+					</span>
+					<h3>a lightweight web based SMB file browser</h3>
 				</div>
 			</div>
 		</div>
@@ -33,9 +30,9 @@
 				Bargate was written by <a href="http://www.evad.io">David Bell</a>, <a href="http://www.claytonpeters.co.uk">Clayton Peters</a> and <a href="http://unixnation.net">Steve Kirk</a> to provide academic instituions with a free and modern file store client for the web.
 				</p>
 				<ul class="nav nav-list">
-					<li><a href="http://bargate.io"><i class="fa fa-fw fa-globe"></i> Bargate Website</a></li>
-					<li><a href="http://github.com/divad/bargate"><i class="fa fa-fw fa-github-alt"></i> GitHub Project Page</a></li>
-					<li><a href="{{ url_for('changelog') }}"><i class="fa fa-fw fa-list-alt"></i> View Changelog</a></li>
+					<li><a href="http://bargate.io"><i class="fas fa-fw fa-external-link-square-alt"></i> Website</a></li>
+					<li><a href="http://github.com/divad/bargate"><i class="fab fa-fw fa-github-alt"></i> GitHub</a></li>
+					<li><a href="{{ url_for('changelog') }}"><i class="fas fa-fw fa-list-alt"></i> Changelog</a></li>
 				</ul>
 			</div>
 		</div>

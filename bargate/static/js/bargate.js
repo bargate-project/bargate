@@ -450,10 +450,10 @@ function prepFileUpload() {
 			window.uploadsuccess = 1;
 			$.each(data.result.files, function (index, file) {
 				if (file.error) {
-					$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').prependTo('#upload-files');
+					$('<li><span class="label label-danger"><i class="fas fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').prependTo('#upload-files');
 				}
 				else {
-					$('<li><span class="label label-success"><i class="fa fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').prependTo('#upload-files');
+					$('<li><span class="label label-success"><i class="fas fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').prependTo('#upload-files');
 					loadDir($browse.url);
 				}
 			});
@@ -462,10 +462,10 @@ function prepFileUpload() {
 			window.uploadsuccess = 0;
 
 			if (data.errorThrown === 'abort') {
-				$('<li><span class="label label-warning"><i class="fa fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').prependTo('#upload-files');
+				$('<li><span class="label label-warning"><i class="fas fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').prependTo('#upload-files');
 			}
 			else {
-				$('<li><span class="label label-danger"><i class="fa fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').prependTo('#upload-files');
+				$('<li><span class="label label-danger"><i class="fas fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').prependTo('#upload-files');
 			}
 		},
 		progressall: function (e, data) {
@@ -589,7 +589,7 @@ function showDelete() {
 }
 
 function notifySuccess(msg) {
-	$.notify({ icon: 'fa fa-fw fa-check', message: msg },{ type: 'success', placement: {align: 'center', from: 'bottom'}});
+	$.notify({ icon: 'fas fa-fw fa-check', message: msg },{ type: 'success', placement: {align: 'center', from: 'bottom'}});
 }
 
 function doRename() {
@@ -652,7 +652,7 @@ function doBookmark() {
 				showErr("Could not create bookmark",data.msg);
 			} else {
 				notifySuccess(data.msg);
-				$('#bmarks').append('<li><a href="' + data.url + '"><i class="fa fa-arrow-right fa-fw"></i>' + bmarkName + '</a></li>');
+				$('#bmarks').append('<li><a href="' + data.url + '"><i class="fas fa-arrow-right fa-fw"></i>' + bmarkName + '</a></li>');
 			}
 	});
 }
