@@ -67,7 +67,6 @@ function renderDirectory() {
 	}
 
 	doBrowse();
-	prepFileUpload();
 }
 
 function loadDir(url,alterHistory) {
@@ -92,6 +91,7 @@ function loadDir(url,alterHistory) {
 
 			$browse.data = response;
 			renderDirectory()
+			prepFileUpload();
 
 			if (alterHistory) {
 				history.pushState(url, "", url);
@@ -401,83 +401,82 @@ function bitrateformat(bits) {
 	}
 }
 
-function formatTime (seconds) {
-	var date = new Date(seconds * 1000),
-		days = Math.floor(seconds / 86400);
-	days = days ? days + 'd ' : '';
-	return days +
-		('0' + date.getUTCHours()).slice(-2) + ':' +
-		('0' + date.getUTCMinutes()).slice(-2) + ':' +
-		('0' + date.getUTCSeconds()).slice(-2);
-}
-
-function renderExtendedProgress(data) {
-	return bitrateformat(data.bitrate) + ', ' + formatTime((data.total - data.loaded) * 8 / data.bitrate) + ' remaining <br/>' + filesizeformat(data.loaded) + ' uploaded of ' + filesizeformat(data.total);
-}
-
 function prepFileUpload() {
 	$('#upload-i').fileupload({
 		url: $browse.url,
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
 		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}],
-		start: function (e) {
-			$('#upload-drag-m').modal('hide');
-			$('#upload-m').modal()
-			$('#upload-progress').removeClass('hidden');
-			$('#upload-progress-ext').removeClass('hidden');
-			$('#upload-cancel-b').removeClass('hidden');
-			
-			$('#upload-button-icon').removeClass('fa-upload');
-			$('#upload-button-icon').addClass('fa-spin');
-			$('#upload-button-icon').addClass('fa-cog');
-		},
 		stop: function (e, data) {
-			$('#upload-button-icon').addClass('fa-upload');
-			$('#upload-button-icon').removeClass('fa-spin');
-			$('#upload-button-icon').removeClass('fa-cog');
-
-			$('#upload-progress').addClass('hidden');
-			$('#upload-progress-ext').addClass('hidden');
-			$('#upload-cancel-b').addClass('hidden');
-
-			if (!($("#upload-m").data('bs.modal').isShown)) {
-				/* if something finished then show the modal if it wasnt already */
-				$('#upload-m').modal('show');
+			window.uploadNotify.close();
+			delete window.uploadNotify;
+			if (window.numUploadsDone > 1) {
+				notifySuccess(window.numUploadsDone + " files uploaded");
 			}
 		},
 		done: function (e, data) {
-			window.uploadsuccess = 1;
 			$.each(data.result.files, function (index, file) {
 				if (file.error) {
-					$('<li><span class="label label-danger"><i class="fas fa-fw fa-exclamation"></i></span> &nbsp; Could not upload ' + file.name + ': ' + file.error + ' </li>').prependTo('#upload-files');
+					notifyError("Could not upload '" + file.name + "': " + file.error);
 				}
 				else {
-					$('<li><span class="label label-success"><i class="fas fa-fw fa-check"></i></span> &nbsp; Uploaded ' + file.name + '</li>').prependTo('#upload-files');
+					window.numUploadsDone = window.numUploadsDone + 1;
+					if (window.numUploads == 1) {
+						notifySuccess("Uploaded " + file.name);
+					}
+
 					loadDir($browse.url);
 				}
 			});
 		},
 		fail: function (e, data) {
-			window.uploadsuccess = 0;
-
-			if (data.errorThrown === 'abort') {
-				$('<li><span class="label label-warning"><i class="fas fa-fw fa-check"></i></span> &nbsp; Upload cancelled </li>').prependTo('#upload-files');
-			}
-			else {
-				$('<li><span class="label label-danger"><i class="fas fa-fw fa-exclamation"></i></span> &nbsp; Could not upload file(s). The server said: ' + data.errorThrown + ' </li>').prependTo('#upload-files');
+			if (data.errorThrown != 'abort') {
+				notifyError("Upload failed: " + data.errorThrown);
 			}
 		},
 		progressall: function (e, data) {
-			var progress = parseInt(data.loaded / data.total * 100, 10);
-			$('#upload-progress-pc').html(progress);
-			$('#upload-progress .progress-bar').css('width', progress + '%');
-			$('#upload-progress-ext').html(renderExtendedProgress(data));
+			progress = parseInt(data.loaded / data.total * 100, 10);
+			window.uploadNotify.update('progress', progress);
+			window.uploadNotify.update('message', progress + "% " + filesizeformat(data.loaded) + ' out of ' + filesizeformat(data.total) + ", " + bitrateformat(data.bitrate))
 		},
 		add: function (e, data) {
-			jqXHR = data.submit();
-			$('#upload-cancel-b').click(function (e) {
-				jqXHR.abort();
+			$('#upload-drag-m').modal('hide');
+			$('#upload-m').modal('hide');
+
+			if (window.uploadNotify === undefined) {
+				window.uploadNotify = $.notify({ icon: 'fas fa-fw fa-cloud-upload-alt', message: '', title: 'Uploading one file <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>' },
+					{ allow_dismiss: false, showProgressbar: true, delay: 0, type: 'info', placement: {align: 'center', from: 'bottom'},
+					template: nunjucks.render('notify.html') });
+				window.numUploads = 1;
+				window.numUploadsDone = 0;
+				window.uploads = [];
+			} else {
+				if (!window.numUploads > 0) {
+					window.numUploads = 1;
+					window.uploadNotify.update('title','Uploading one file <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>')
+				} else {
+					window.numUploads = window.numUploads + 1;
+					window.uploadNotify.update('title','Uploading ' + window.numUploads + ' files <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>')
+				}
+			}
+
+			if (window.uploads === undefined) {
+				window.uploads = [];
+			}
+
+			promise = data.submit();
+			window.uploads.push(promise);
+
+			$('.upload-cancel-b').click(function (e) {
+				for (i=0; i < window.uploads.length; i++)
+				{
+					window.uploads[i].abort();
+				}
+				if (window.numUploads == 1) {
+					notifyError("Upload cancelled");
+				} else {
+					notifyError("Uploads cancelled");
+				}
 			});
 		},
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
@@ -589,7 +588,11 @@ function showDelete() {
 }
 
 function notifySuccess(msg) {
-	$.notify({ icon: 'fas fa-fw fa-check', message: msg },{ type: 'success', placement: {align: 'center', from: 'bottom'}});
+	$.notify({ icon: 'fas fa-fw fa-check', message: msg },{ type: 'success', template: nunjucks.render('notify.html'), placement: {align: 'center', from: 'bottom'}});
+}
+
+function notifyError(msg) {
+	$.notify({ icon: 'fas fa-fw fa-exclamation-triangle', message: msg },{ type: 'danger', delay: 10000, template: nunjucks.render('notify.html'), placement: {align: 'center', from: 'bottom'}});
 }
 
 function doRename() {

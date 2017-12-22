@@ -536,7 +536,7 @@ class BargateSMBLibrary:
 				for ufile in uploaded_files:
 
 					if banned_file(ufile.filename):
-						ret.append({'name': ufile.filename, 'error': 'Filetype not allowed'})
+						ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
 						continue
 
 					# Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
