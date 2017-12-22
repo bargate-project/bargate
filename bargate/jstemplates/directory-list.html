@@ -13,7 +13,7 @@
 	<tbody>
 		{%- for entry in shares -%}
 		<tr class="edir" data-url="{{ buildurl(entry.burl,entry.name,'browse') }}">
-			<td class="text-center"><span class="fa fa-fw fa-hdd-o"></span></td>
+			<td class="text-center"><span class="fas fa-fw fa-hdd"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime"></td>
 			<td>{{entry.name}}</td>
@@ -23,8 +23,8 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<tr class="edir" data-icon="fa fa-fw fa-folder" data-url="{{ buildurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
-			<td class="text-center"><span class="fa fa-fw fa-folder"></span></td>
+		<tr class="edir" data-icon="fas fa-fw fa-folder" data-url="{{ buildurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
+			<td class="text-center"><span class="fas fa-fw fa-folder"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
 			<td>.1111{{entry.name}}</td>
@@ -34,7 +34,7 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in files -%}
-			<tr class="efile" data-icon="fa fa-fw fa-{{entry.icon}}" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-burl="{{entry.burl}}">
+			<tr class="efile" data-icon="fas fa-fw fa-{{entry.icon}}" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-burl="{{entry.burl}}">
 			<td class="text-center"><span class="fa fa-fw fa-{{ entry.icon }}"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">{{ entry.mtime }}</td>
