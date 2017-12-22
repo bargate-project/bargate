@@ -314,7 +314,7 @@
 			</div>
 		</div>
 
-		<div id="pdiv" class="container-fluid{% if browse_mode %} {% if user_layout == 'list' %}listview{%else%}gridview{%endif%}{%endif%} container-body">
+		<div {% if browse_mode %}id="pdiv"{%endif%} class="container-fluid{% if browse_mode %} {% if user_layout == 'list' %}listview{%else%}gridview{%endif%}{%endif%} container-body">
 			{% for category, message in get_flashed_messages(with_categories=true) %}
 				<div class="alert alert-dismissable {{category}}"><button type="button" class="close" data-dismiss="alert">×</button>{{message}}</div>
 			{% endfor %}
@@ -338,11 +338,13 @@
 					</a>
 				</div>
 				{%- if config['REDIS_ENABLED'] %}
+				{% if config['BOOKMARKS_ENABLED'] %}
 				<div class="text-center inline-block">
 					<a href="#bmark-m" class="btn navbar-btn btn-default bmark-b disabled" data-toggle="modal">
 						<i class="fa fa-fw fa-bookmark"></i>
 					</a>
 				</div>
+				{%- endif %}
 				{%- endif %}
 			</div>
 		</div>

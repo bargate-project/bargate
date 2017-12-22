@@ -22,3 +22,10 @@ body {
 .mhc {
 	background-color: #f5f5f5;
 }
+
+/* Fix so the drop-up buttons on mobile can be seen. weird. */
+@media (max-width: 767px) {
+	.navbar .dropdown-menu a {
+		color: #333333;
+	}
+}
