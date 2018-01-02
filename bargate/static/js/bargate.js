@@ -78,7 +78,7 @@ function loadDir(url,alterHistory) {
 	$.getJSON(url, {xhr: 1})
 	.done(function(response) {
 		if (response.code > 0) {
-			showErr("Could not open folder", response.msg);
+			showErr("Unable to open folder", response.msg);
 		} else {
 			if (response.bmark) {
 				enableBookmark();
@@ -430,7 +430,7 @@ function prepFileUpload() {
 		done: function (e, data) {
 			$.each(data.result.files, function (index, file) {
 				if (file.error) {
-					notifyError("Could not upload '" + file.name + "': " + file.error);
+					notifyError("Upload of '" + file.name + "' failed: " + file.error);
 				}
 				else {
 					window.numUploadsDone = window.numUploadsDone + 1;
@@ -513,7 +513,7 @@ function showFileDetails(file) {
 	$.getJSON(buildurl(file.data('burl'),file.data('path'),'stat'))
 	.done(function(response) {
 		if (response.code != 0) {
-			showErr("Could not load file details", response.msg);
+			showErr("Error loading file details", response.msg);
 		} else {
 			$('#e-details-fname').html(response.filename);
 			$('#e-details-size').html(bytesToString(response.size));
@@ -612,11 +612,11 @@ function doRename() {
 	$('#e-rename-m').modal('hide');
 	$.post( $browse.entryDirUrl, { action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not rename","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Unable to rename","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Could not rename",data.msg);
+				showErr("Unable to rename",data.msg);
 			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
@@ -628,11 +628,11 @@ function doCopy() {
 	$('#e-copy-m').modal('hide');
 	$.post( $browse.entryDirUrl, { action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not copy","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Unable to copy","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Could not copy",data.msg);
+				showErr("Unable to copy",data.msg);
 			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
@@ -644,11 +644,11 @@ function doMkdir() {
 	$('#mkdir-m').modal('hide');
 	$.post( $browse.url, { action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not create directory","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Error creating directory","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Could not create directory",data.msg);
+				showErr("Error creating directory",data.msg);
 			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.url);
@@ -661,11 +661,11 @@ function doBookmark() {
 	bmarkName = $('#bmark-i').val();
 	$.post( $browse.url, { action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not create bookmark","An error occured whilst contacting the server.");
+			showErr("Unable to create bookmark","An error occured whilst contacting the server.");
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Could not create bookmark",data.msg);
+				showErr("Unable to create bookmark", data.msg);
 			} else {
 				notifySuccess(data.msg);
 				$('#bmarks').append('<li><a href="' + data.url + '"><i class="fas fa-arrow-right fa-fw"></i>' + bmarkName + '</a></li>');
@@ -677,11 +677,11 @@ function doDelete() {
 	$('#e-delete-m').modal('hide');
 	$.post( $browse.entryDirUrl, { action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not delete","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Unable to delete","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Could not delete",data.msg);
+				showErr("Unable to delete", data.msg);
 			} else {
 				notifySuccess(data.msg);
 				loadDir($browse.entryDirUrl);
@@ -695,7 +695,7 @@ function setLayoutMode(newLayout) {
 
 	$.post( "/settings", { key: 'layout', value: newLayout, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not switch layout","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Error switching layout", "An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
 			// Now change view class
@@ -725,7 +725,7 @@ function setHidden(show_hidden) {
 
 	$.post( "/settings", { key: 'hidden', value: show_hidden, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not set hidden files mode","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Unable to set hidden files mode","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
 			if ($browse.btnsEnabled) {
@@ -741,7 +741,7 @@ function setClickMode(newMode) {
 
 	$.post( "/settings", { key: 'click', value: newMode, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not set on click mode","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Unable to set on click mode","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
 			if ($browse.btnsEnabled) {
@@ -755,7 +755,7 @@ function setOverwrite(overwrite) {
 	if (overwrite == $user.overwrite) { return; }
 	$.post( "/settings", { key: 'overwrite', value: overwrite, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not set upload overwrite mode","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Unable to set upload overwrite mode","An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function() {
 			$user.overwrite = overwrite;
@@ -766,7 +766,7 @@ function setTheme(themeName) {
 	if (themeName == $user.theme) { return; }
 	$.post( "/settings", { key: 'theme', value: themeName, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Could not change theme","An error occured whilst contacting the server. " + errorThrown);
+			showErr("Error changing theme", "An error occured whilst contacting the server. " + errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			$("body").fadeOut(200, function() {
@@ -957,7 +957,7 @@ $(document).ready(function($) {
 	$.getJSON('/settings')
 	.done(function(response) {
 		if (response.code != 0) {
-			showErr("Could not load your settings","The server did not respond correctly to the request for your settings");
+			showErr("Unable to load settings","The server did not respond correctly to the request for your settings");
 		} else {
 			$user.layout = response.layout;
 			$user.token = response.token;
@@ -971,7 +971,7 @@ $(document).ready(function($) {
 		}
 	})
 	.fail(function() {
-		showErr("Server error","The server returned an error");
+		showErr("Server error", "The server returned an error");
 	});
 });
 
