@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import StringIO  # used in image previews
-import socket    # used to get the local hostname to send to the SMB server
-import tempfile  # used for reading from files on the smb server
-import time      # used in search (timeout)
-import uuid      # used in creating bookmarks
-import errno     # used in OperationFailureDecode
+import StringIO   # used in image previews
+import socket     # used to get the local hostname to send to the SMB server
+import tempfile   # used for reading from files on the smb server
+import time       # used in search (timeout)
+import uuid       # used in creating bookmarks
+import errno      # used in OperationFailureDecode
+import traceback  # used in smb_error_json
 
 from smb.SMBConnection import SMBConnection
 from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
@@ -374,13 +375,12 @@ class BargateSMBLibrary:
 					tfile.seek(0)
 
 					pil_img = Image.open(tfile).convert('RGB')
-					size = 200, 200
-					pil_img.thumbnail(size, Image.ANTIALIAS)
+					pil_img.thumbnail((app.config['IMAGE_PREVIEW_WIDTH'], app.config['IMAGE_PREVIEW_HEIGHT']))
 
 					ifile = StringIO.StringIO()
-					pil_img.save(ifile, 'JPEG', quality=85)
+					pil_img.save(ifile, 'PNG', compress_level=app.config['IMAGE_PREVIEW_LEVEL'])
 					ifile.seek(0)
-					return send_file(ifile, mimetype='image/jpeg', add_etags=False)
+					return send_file(ifile, mimetype='image/png', add_etags=False)
 				except Exception as ex:
 					abort(400)
 

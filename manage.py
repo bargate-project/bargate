@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import subprocess
 import argparse
 import os
@@ -86,6 +88,15 @@ class Manager():
 			print("FATAL: " + msg)
 		exit(1)
 
+	def cmd_run(self):
+		from bargate import app
+		app.run(debug=True)
+
+	def cmd_dev(self):
+		self.cmd_flake()
+		self.cmd_compile()
+		self.cmd_run()
+
 	def cmd_flake(self):
 		self.header("running flake8")
 
@@ -101,9 +112,10 @@ class Manager():
 
 		if result == 0:
 			self.info("all tests passed!")
+			return True
 		else:
-			self.error("flake8 errors found")
 			print(output)
+			self.fatal("flake8 test failed")
 
 	def cmd_compile(self):
 		self.info("running compile\n")

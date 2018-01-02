@@ -133,3 +133,8 @@ def local_static(filename):
 		return send_from_directory(app.config['LOCAL_STATIC_DIR'], filename)
 	else:
 		abort(404)
+
+
+@app.route('/edit')
+def edit_test():
+	pass
