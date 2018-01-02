@@ -1,14 +1,17 @@
 function showErr(title,desc) {
-	var openModal = $('.modal.in').attr('id'); 
-	if (openModal) {
-		$('#' + openModal).modal('hide');
-	}
-
+	closeModals();
 	$("#modal-error-title").text(title);
 	$("#modal-error-desc").text(desc);
 	$('#modal-error').modal('show');
 	event.preventDefault();
 	event.stopPropagation();
+}
+
+function closeModals() {
+	var openModal = $('.modal.in').attr('id'); 
+	if (openModal) {
+		$('#' + openModal).modal('hide');
+	}
 }
 
 var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
@@ -510,7 +513,7 @@ function showFileDetails(file) {
 	$.getJSON(buildurl(file.data('burl'),file.data('path'),'stat'))
 	.done(function(response) {
 		if (response.code != 0) {
-			showErr("Could not load file details",response.msg);
+			showErr("Could not load file details", response.msg);
 		} else {
 			$('#e-details-fname').html(response.filename);
 			$('#e-details-size').html(bytesToString(response.size));
@@ -793,23 +796,50 @@ function onPageLoad() {
 	env.addFilter('filesizeformat', filesizeformat);
 
 	/* Enable shortcuts */
-	Mousetrap.bind('alt+up', function() { browseParent(); });
-	Mousetrap.bind('alt+p', function() { $('#prefs-m').modal('show'); });
-	Mousetrap.bind('alt+s', function() { 
-		if ($browse.btnsEnabled === true) { 
+	Mousetrap.bind('alt+up', function() { 
+		closeModals();
+		browseParent(); 
+	});
+
+	Mousetrap.bind('alt+p', function() { 
+		closeModals();
+		$('#prefs-m').modal('show'); 
+	});
+
+	Mousetrap.bind('alt+s', function() {
+		if ($browse.btnsEnabled === true) {
+			closeModals();
 			$('#search-m').modal('show'); 
 		}
 	});
-	Mousetrap.bind('alt+n', function() { 
-		if ($browse.btnsEnabled === true) { 
+
+	Mousetrap.bind('alt+n', function() {
+		if ($browse.btnsEnabled === true) {
+			closeModals();
 			$('#mkdir-m').modal('show'); 
 		}
 	});
-	Mousetrap.bind('alt+u', function() { 
-		if ($browse.btnsEnabled === true) { 
+
+	Mousetrap.bind('alt+l', function() {
+		switchLayout();
+	});
+
+	Mousetrap.bind('alt+u', function() {
+		if ($browse.btnsEnabled === true) {
+			closeModals();
 			$('#upload-m').modal('show'); 
 		}
 	});
+
+	Mousetrap.bind('alt+b', function() {
+		if ($browse.btnsEnabled === true) {
+			if ($browse.bmarkEnabled) {
+				closeModals();
+				$('#bmark-m').modal('show'); 
+			}
+		}
+	});
+
 
 	/* Activate tooltips and enable hiding on clicking */
 	$('[data-tooltip="yes"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});

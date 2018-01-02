@@ -408,6 +408,7 @@ class BargateSMBLibrary:
 				(ftype, mtype) = filename_to_mimetype(sfile.filename)
 
 				data = {
+					'code': 0,
 					'filename': sfile.filename,
 					'size': sfile.file_size,
 					'atime': ut_to_string(sfile.last_access_time),
@@ -416,7 +417,6 @@ class BargateSMBLibrary:
 					'mtype': mtype,
 					'owner': "N/A",
 					'group': "N/A",
-					'code': 0,
 				}
 
 				try:

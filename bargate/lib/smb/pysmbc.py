@@ -303,6 +303,7 @@ class BargateSMBLibrary:
 				(ftype, mtype) = filename_to_mimetype(entry_name)
 
 				data = {
+					'code': 0,
 					'filename': entry_name,
 					'size': fstat.size,
 					'atime': ut_to_string(fstat.atime),
@@ -845,25 +846,25 @@ class BargateSMBLibrary:
 
 				try:
 					fstat = self.libsmbclient.stat(srv_path + path + '/' + entry['name'])
-				except Exception:
+				except Exception as ex:
+					app.logger.debug("stat failed against " + srv_path + path + '/' + entry['name'])
+					app.logger.debug(str(ex))
 					# If the file stat failed we return a result with the data missing
 					# rather than fail the entire page load
 					entry['mtimer'] = 0
-					entry['mtime'] = "Unknown"
-					entry['size'] = 0
-					entry['error'] = True
+					entry['mtime']  = "Unknown"
+					entry['size']   = 0
+					entry['error']  = True
 					return entry
 
 				entry['mtimer'] = fstat.mtime
-				entry['mtime']     = ut_to_string(fstat.mtime)
-				entry['size']      = fstat.size
+				entry['mtime']  = ut_to_string(fstat.mtime)
+				entry['size']   = fstat.size
 
 				# Image previews
 				if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in pillow_supported:
 					if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 						entry['img'] = True
-				else:
-					entry['size'] = 0
 
 				# View-in-browser download type
 				if view_in_browser(entry['mtyper']):
