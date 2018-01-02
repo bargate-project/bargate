@@ -12,8 +12,8 @@ function showErr(title,desc) {
 }
 
 var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
-var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false,
-	bmarkEnabled: false, sortBy: 'name', data: null,
+var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false, bmarkEnabled: false,
+	sortBy: 'name', data: null,
 };
 
 function enableBrowseButts() {
@@ -75,7 +75,7 @@ function loadDir(url,alterHistory) {
 	$.getJSON(url, {xhr: 1})
 	.done(function(response) {
 		if (response.code > 0) {
-			showErr("Could not open folder",response.msg);
+			showErr("Could not open folder", response.msg);
 		} else {
 			if (response.bmark) {
 				enableBookmark();
@@ -101,8 +101,14 @@ function loadDir(url,alterHistory) {
 		}
 	})
 	.fail(function() {
-		showErr("Server error","The server returned an error");
+		showErr("Server error", "The server returned an error");
 	});
+}
+
+function browseParent() {
+	if ($browse.data.parent) {
+		loadDir($browse.data.parent_url);
+	}
 }
 
 function doSearch() {
@@ -111,8 +117,12 @@ function doSearch() {
 	$.getJSON($browse.url, {q: $('#search-i').val()})
 	.done(function(response) {
 		if (response.code > 0) {
-			showErr("Search failed",response.msg);
+			showErr("Search failed", response.msg);
 		} else {
+			$browse.data = response;
+			$browse.parent = false;
+			$browse.parent_url = null;
+
 			disableBookmark();
 			disableBrowseButts();
 
@@ -782,6 +792,25 @@ function onPageLoad() {
 	var env = nunjucks.configure('/static/templates/',{ autoescape: true});
 	env.addFilter('filesizeformat', filesizeformat);
 
+	/* Enable shortcuts */
+	Mousetrap.bind('alt+up', function() { browseParent(); });
+	Mousetrap.bind('alt+p', function() { $('#prefs-m').modal('show'); });
+	Mousetrap.bind('alt+s', function() { 
+		if ($browse.btnsEnabled === true) { 
+			$('#search-m').modal('show'); 
+		}
+	});
+	Mousetrap.bind('alt+n', function() { 
+		if ($browse.btnsEnabled === true) { 
+			$('#mkdir-m').modal('show'); 
+		}
+	});
+	Mousetrap.bind('alt+u', function() { 
+		if ($browse.btnsEnabled === true) { 
+			$('#upload-m').modal('show'); 
+		}
+	});
+
 	/* Activate tooltips and enable hiding on clicking */
 	$('[data-tooltip="yes"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
 	$('[data-tooltip="yes"]').on('mouseup', function () {$(this).tooltip('hide');});
@@ -858,7 +887,7 @@ function onPageLoad() {
 	window.addEventListener('popstate', function(e) {
 		var requestedUrl = e.state;
 		if (requestedUrl != null) {
-			loadDir(requestedUrl,false);
+			loadDir(requestedUrl, false);
 		}
 	});
 
@@ -914,8 +943,6 @@ $(document).ready(function($) {
 	.fail(function() {
 		showErr("Server error","The server returned an error");
 	});
-
-
 });
 
 /* context (right click) menus */

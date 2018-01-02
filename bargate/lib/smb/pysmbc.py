@@ -342,13 +342,28 @@ class BargateSMBLibrary:
 							crumbs.append({'name': crumb, 'url': url_for(func_name, path=b4 + crumb)})
 							b4 = b4 + crumb + '/'
 
+					parent     = False
+					parent_url = None
+					if len(crumbs) > 1:
+						parent     = True
+						parent_url = crumbs[-2]['url']
+					elif len(crumbs) == 1:
+						parent = True
+						parent_url = url_for(func_name)
+
 					query = request.args.get('q')
 					self._init_search(func_name, path, srv_path, query)
 					results, timeout_reached = self._search()
 
-					return jsonify({'results': results, 'query': query,
-						'crumbs': crumbs, 'root_name': display_name,
-						'root_url': url_for(func_name)})
+					return jsonify({'code': 0,
+						'results': results,
+						'query': query,
+						'crumbs': crumbs,
+						'root_name': display_name,
+						'root_url': url_for(func_name),
+						'timeout_reached': timeout_reached,
+						'parent': parent,
+						'parent_url': parent_url})
 
 				elif 'xhr' in request.args:
 					try:
@@ -383,6 +398,8 @@ class BargateSMBLibrary:
 						buttons_enabled = False
 						no_items        = False
 						crumbs          = []
+						parent          = False
+						parent_url      = None
 
 						if len(shares) == 0:
 							# are there any items?
@@ -405,10 +422,27 @@ class BargateSMBLibrary:
 									crumbs.append({'name': crumb, 'url': url_for(func_name, path=b4 + crumb)})
 									b4 = b4 + crumb + '/'
 
-						return jsonify({'dirs': dirs, 'files': files, 'shares': shares,
-							'crumbs': crumbs, 'buttons': buttons_enabled, 'bmark_path': path + ' in ' + display_name,
-							'bmark': bmark_enabled, 'root_name': display_name,
-							'root_url': url_for(func_name), 'no_items': no_items})
+							if len(crumbs) > 1:
+								parent     = True
+								parent_url = crumbs[-2]['url']
+							elif len(crumbs) == 1:
+								parent = True
+								parent_url = url_for(func_name)
+
+						return jsonify({'code': 0,
+							'dirs': dirs,
+							'files': files,
+							'shares': shares,
+							'crumbs': crumbs,
+							'buttons': buttons_enabled,
+							'bmark_path': path + ' in ' + display_name,
+							'bmark': bmark_enabled,
+							'root_name': display_name,
+							'root_url': url_for(func_name),
+							'no_items': no_items,
+							'parent': parent,
+							'parent_url': parent_url})
+
 					except Exception as ex:
 						return self.smb_error_json(ex)
 				else:

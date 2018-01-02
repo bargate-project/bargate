@@ -289,10 +289,18 @@ class BargateSMBLibrary:
 					if len(shares) == 0:
 						no_items = True
 
-					return jsonify({'dirs': [], 'files': [], 'shares': shares,
-						'crumbs': [], 'buttons': False, 'bmark': False,
-						'root_name': display_name, 'code': 0,
-						'root_url': url_for(func_name), 'no_items': no_items})
+					return jsonify({'code': 0,
+						'dirs': [],
+						'files': [],
+						'shares': shares,
+						'crumbs': [],
+						'buttons': False,
+						'bmark': False,
+						'root_name': display_name,
+						'root_url': url_for(func_name),
+						'no_items': no_items,
+						'parent': False,
+						'parent_url': None})
 
 				else:
 					return render_template('browse.html', active=active,
@@ -445,6 +453,15 @@ class BargateSMBLibrary:
 								crumbs.append({'name': crumb, 'url': url_for(func_name, path=b4 + crumb)})
 								b4 = b4 + crumb + '/'
 
+						parent     = False
+						parent_url = None
+						if len(crumbs) > 1:
+							parent     = True
+							parent_url = crumbs[-2]['url']
+						elif len(crumbs) == 1:
+							parent = True
+							parent_url = url_for(func_name)
+
 						query = request.args.get('q')
 						self._init_search(conn, func_name, share_name, path, path_without_share, query)
 						results, timeout_reached = self._search()
@@ -455,7 +472,10 @@ class BargateSMBLibrary:
 							'crumbs': crumbs,
 							'root_name': display_name,
 							'root_url': url_for(func_name),
-							'timeout_reached': timeout_reached})
+							'timeout_reached': timeout_reached,
+							'parent': parent,
+							'parent_url': parent_url})
+
 					except Exception as ex:
 						return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
 
@@ -497,21 +517,38 @@ class BargateSMBLibrary:
 								crumbs.append({'name': crumb, 'url': url_for(func_name, path=b4 + crumb)})
 								b4 = b4 + crumb + '/'
 
+						parent     = False
+						parent_url = None
+						if len(crumbs) > 1:
+							parent     = True
+							parent_url = crumbs[-2]['url']
+						elif len(crumbs) == 1:
+							parent = True
+							parent_url = url_for(func_name)
+
 						# are there any items in the list?
 						no_items = False
 						if len(files) == 0 and len(dirs) == 0:
 							no_items = True
 
 						# Don't allow bookmarks at the root of a function
-						# - that is superfluous
 						bmark_enabled = False
 						if len(path) > 0:
 							bmark_enabled = True
 
-						return jsonify({'dirs': dirs, 'files': files, 'shares': [],
-							'crumbs': crumbs, 'buttons': True, 'bmark_path': path + ' in ' + display_name,
-							'bmark': bmark_enabled, 'root_name': display_name,
-							'root_url': url_for(func_name), 'no_items': no_items})
+						return jsonify({'code': 0,
+							'dirs': dirs,
+							'files': files,
+							'shares': [],
+							'crumbs': crumbs,
+							'buttons': True,
+							'bmark_path': path + ' in ' + display_name,
+							'bmark': bmark_enabled,
+							'root_name': display_name,
+							'root_url': url_for(func_name),
+							'no_items': no_items,
+							'parent': parent,
+							'parent_url': parent_url})
 
 					except Exception as ex:
 						return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
