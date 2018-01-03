@@ -90,7 +90,7 @@ class Manager():
 
 	def cmd_run(self):
 		from bargate import app
-		app.run(debug=True)
+		app.run()
 
 	def cmd_dev(self):
 		self.cmd_flake()

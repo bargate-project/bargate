@@ -21,24 +21,20 @@ import stat       # used for checking file type via unix mode
 import urllib     # used in SMBClientWrapper for URL-quoting strings
 import time       # used in search (timeout)
 import StringIO   # used in image previews
-import uuid       # used in creating bookmarks
 import traceback  # used in smb_error_json
 
 import smbc
-from flask import send_file, request, session, g, url_for
-from flask import abort, flash, make_response, jsonify, render_template
+from flask import send_file, request, session, render_template
+from flask import abort, flash, make_response, jsonify
 from PIL import Image
 
 from bargate import app
-from bargate.lib.core import banned_file, secure_filename, check_path
-from bargate.lib.core import ut_to_string, wb_sid_to_name, check_name
-from bargate.lib.core import EntryType
-from bargate.lib.errors import stderr, invalid_path
+from bargate.lib.core import banned_file, secure_filename, check_path, ut_to_string
+from bargate.lib.core import wb_sid_to_name, check_name, EntryType
+from bargate.lib.errors import stderr
 from bargate.lib.user import get_password
-from bargate.lib.userdata import get_show_hidden_files
-from bargate.lib.userdata import get_overwrite_on_upload
-from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon
-from bargate.lib.mime import view_in_browser, pillow_supported
+from bargate.lib.userdata import get_show_hidden_files, get_overwrite_on_upload, set_bookmark
+from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon, view_in_browser, pillow_supported
 
 
 class FileStat:
@@ -147,7 +143,28 @@ class SMBClientWrapper:
 
 
 class BargateSMBLibrary:
+	response_type = 'http'
+
+	def set_response(self, response_type):
+		"""Use this to tell the library what sort of error response is expected if an error is generated"""
+
+		self.response_type = response_type
+
+	def error(self, message):
+		"""Returns an error to the client, the format of which is based on a previous call to :meth:set_response"""
+
+		if self.response_type == 'http':
+			abort(400)
+
+		elif self.response_type == 'html':
+			return stderr("Error", message)
+
+		elif self.response_type == 'json':
+			return jsonify({'code': 1, 'msg': message})
+
 	def smb_auth(self, username, password):
+		"""Tries to 'authenticate' the user/pass by conneting to a remote share and listing contents"""
+
 		try:
 			cb = lambda se, sh, w, u, p: (app.config['SMB_WORKGROUP'], username, password)  # noqa
 			ctx = smbc.Context(auth_fn=cb)
@@ -161,599 +178,607 @@ class BargateSMBLibrary:
 			return False
 
 		app.logger.debug("bargate.lib.user.auth auth smb success")
-		return True
 
-	def smb_action(self, srv_path, func_name, active=None, display_name="Home", action='browse', path=''):
+	def smb_action(self, endpoint, action, path):
+		"""Performs an action on a remote SMB server"""
 
-		# default the 'active' variable to the function name
-		if active is None:
-			active = func_name
+		app.logger.debug("smb_action('" + endpoint + "','" + action + "','" + path + "')")
 
-		# If the method is POST then 'action' is sent via a POST parameter
-		# rather than via a so-called "GET" parameter in the URL
-		if request.method == 'POST':
-			action = request.form['action']
+		self.endpoint = endpoint
+		self.action   = action
+		self.path     = path
 
-		# ensure srv_path (the server URI and share) ends with a trailing slash
-		if not srv_path.endswith('/'):
-			srv_path = srv_path + '/'
+		if not app.sharesConfig.has_section(self.endpoint):
+			return self.error('The share specified was not found')
 
-		# srv_path should always start with smb://, we don't support anything else.
-		if not srv_path.startswith("smb://"):
-			return stderr("Invalid server path", "The server URL must start with smb://")
+		if not app.sharesConfig.has_option(self.endpoint, 'path'):
+			return self.error('The server configuration is invalid, path is not set on share "' + self.endpoint + '"')
+
+		self.addr = app.sharesConfig.get(self.endpoint, 'path')
+		self.addr = self.addr.replace("%USERNAME%", session['username'])
+		self.addr = self.addr.replace("%USER%", session['username'])
+
+		if app.config['LDAP_HOMEDIR']:
+			if 'ldap_homedir' in session:
+				if session['ldap_homedir'] is not None:
+					self.addr = self.addr.replace("%LDAP_HOMEDIR%", session['ldap_homedir'])
+
+		if not app.sharesConfig.has_option(self.endpoint, 'display'):
+			self.root_name = self.endpoint
+		else:
+			self.root_name = app.sharesConfig.get(self.endpoint, 'display')
+
+		if not app.sharesConfig.has_option(self.endpoint, 'menu'):
+			self.active = self.endpoint
+		else:
+			self.active = app.sharesConfig.get(self.endpoint, 'menu')
+
+		# the address should always start with smb://, we don't support anything else.
+		if not self.addr.startswith("smb://"):
+			return self.error('The server URL must start with smb://')
 
 		# Check the path is valid
 		try:
-			check_path(path)
+			check_path(self.path)
 		except ValueError:
-			return invalid_path()
+			return self.error('You tried to navigate to an invalid or illegal path.')
 
-		# Build the URI
-		uri = srv_path + path
-		if uri.endswith('/'):
-			uri = uri[:-1]
+		# ensure addr (the server URI and share) ends with a trailing slash
+		if not self.addr.endswith('/'):
+			self.addr = self.addr + '/'
+
+		# All requests to the SMB library need to include the addr (defined in shares.conf)
+		# and the path the user has navigated to, combined.
+		self.full_addr = self.addr + self.path
+		if self.full_addr.endswith('/'):
+			self.full_addr = self.full_addr[:-1]
 
 		# Work out the 'entry name'
-		if len(path) > 0:
-			(a, b, entry_name) = path.rpartition('/')
+		if len(self.path) > 0:
+			(a, b, self.entry_name) = self.path.rpartition('/')
 		else:
-			entry_name = u""
+			self.entry_name = u''
 
 		# Prepare to talk to the file server
 		self.libsmbclient = SMBClientWrapper()
 
-		app.logger.info('user: "' + session['username'] + '", srv_path: "' + srv_path + '", endpoint: "' +
-			func_name + '", action: "' + action + '", method: ' + str(request.method) + ', path: "' + path +
-			'", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
+		app.logger.debug("Connection preperation complete")
+		app.logger.debug("Going to call: _action_" + self.action)
 
-		if request.method == 'GET':
-			if action == 'download' or action == 'view':
+		try:
+			method = getattr(self, '_action_' + self.action)
+		except AttributeError:
+			return self.error('Invalid action')
 
-				try:
-					fstat = self.libsmbclient.stat(uri)
-				except Exception as ex:
-					return self.smb_error(ex)
+		app.logger.info('user: "' + session['username'] + '", addr: "' + self.addr + '", endpoint: "' +
+			self.endpoint + '", action: "' + self.action + '", method: ' + str(request.method) +
+			', path: "' + self.path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
 
-				if not fstat.type == EntryType.file:
-					abort(400)
+		return method()
 
-				try:
-					file_object = self.libsmbclient.open(uri)
+	def _action_browse(self):
+		app.logger.debug("_action_browse()")
 
-					# Default to sending files as an 'attachment' ("Content-Disposition: attachment")
-					attach = True
+		return render_template('browse.html',
+			active=self.endpoint,
+			browse_mode=True,
+			share=self.endpoint,
+			path=self.path)
 
-					# guess a mimetype
-					(ftype, mtype) = filename_to_mimetype(entry_name)
+	def _action_view(self):
+		app.logger.debug("_action_view()")
 
-					# If the user requested to 'view' (don't download as an attachment)
-					# make sure we allow it for that filetype
-					if action == 'view':
-						if view_in_browser(mtype):
-							attach = False
+		return self._action_download(view=True)
 
-					# Send the file to the user
-					resp = make_response(send_file(file_object,
-						add_etags=False,
-						as_attachment=attach,
-						attachment_filename=entry_name,
-						mimetype=mtype))
-					resp.headers['content-length'] = str(fstat.size)
-					return resp
+	def _action_download(self, view=False):
+		app.logger.debug("_action_download()")
 
-				except Exception as ex:
-					return self.smb_error(ex)
+		try:
+			fstat = self.libsmbclient.stat(self.full_addr)
+		except Exception as ex:
+			return self.smb_error(ex)
 
-			elif action == 'preview':
-				if not app.config['IMAGE_PREVIEW']:
-					abort(400)
+		if not fstat.type == EntryType.file:
+			abort(400)
 
-				try:
-					fstat = self.libsmbclient.stat(uri)
-				except Exception as ex:
-					abort(400)
+		try:
+			file_object = self.libsmbclient.open(self.full_addr)
 
-				# ensure item is a file
-				if not fstat.type == EntryType.file:
-					abort(400)
+			# Default to sending files as an 'attachment' ("Content-Disposition: attachment")
+			attach = True
 
-				# guess a mimetype
-				(ftype, mtype) = filename_to_mimetype(entry_name)
+			# guess a mimetype
+			(ftype, mtype) = filename_to_mimetype(self.entry_name)
 
-				# Check size is not too large for a preview
-				if fstat.size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
-					abort(403)
+			# If the user requested to 'view' (don't download as an attachment)
+			# make sure we allow it for that filetype
+			if view:
+				if view_in_browser(mtype):
+					attach = False
 
-				# Only preview files that Pillow supports
-				if mtype not in pillow_supported:
-					abort(400)
+			# Send the file to the user
+			resp = make_response(send_file(file_object,
+				add_etags=False,
+				as_attachment=attach,
+				attachment_filename=self.entry_name,
+				mimetype=mtype))
+			resp.headers['content-length'] = str(fstat.size)
+			app.logger.debug("returning response")
+			return resp
 
-				# Open the file
-				try:
-					file_object = self.libsmbclient.open(uri)
-				except Exception as ex:
-					abort(400)
+		except Exception as ex:
+			return self.smb_error(ex)
 
-				# Read the file into memory first (hence a file size limit) because PIL/Pillow tries readline()
-				# on pysmbc's File like objects which it doesn't support
-				try:
-					sfile = StringIO.StringIO(file_object.read())
-					pil_img = Image.open(sfile).convert('RGB')
-					pil_img.thumbnail((app.config['IMAGE_PREVIEW_WIDTH'], app.config['IMAGE_PREVIEW_HEIGHT']))
+	def _action_preview(self):
+		app.logger.debug("_action_image_preview()")
 
-					ifile = StringIO.StringIO()
-					pil_img.save(ifile, 'PNG', compress_level=app.config['IMAGE_PREVIEW_LEVEL'])
-					ifile.seek(0)
-					return send_file(ifile, mimetype='image/jpeg', add_etags=False)
-				except Exception as ex:
-					abort(400)
+		if not app.config['IMAGE_PREVIEW']:
+			abort(400)
 
-			elif action == 'stat':
+		try:
+			fstat = self.libsmbclient.stat(self.full_addr)
+		except Exception:
+			abort(400)
 
-				try:
-					fstat = self.libsmbclient.stat(uri)
-				except Exception as ex:
-					return self.smb_error_json(ex)
+		# ensure item is a file
+		if not fstat.type == EntryType.file:
+			abort(400)
 
-				# ensure item is a file
-				if not fstat.type == EntryType.file:
-					return jsonify({'code': 1, 'msg': 'You cannot stat a directory!'})
+		# guess a mimetype
+		(ftype, mtype) = filename_to_mimetype(self.entry_name)
 
-				# guess mimetype
-				(ftype, mtype) = filename_to_mimetype(entry_name)
+		# Check size is not too large for a preview
+		if fstat.size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
+			abort(403)
 
-				data = {
-					'code': 0,
-					'filename': entry_name,
-					'size': fstat.size,
-					'atime': ut_to_string(fstat.atime),
-					'mtime': ut_to_string(fstat.mtime),
-					'ftype': ftype,
-					'mtype': mtype,
-					'owner': "N/A",
-					'group': "N/A",
-				}
+		# Only preview files that Pillow supports
+		if mtype not in pillow_supported:
+			abort(400)
 
-				try:
-					data['owner'] = self.libsmbclient.getxattr(uri, smbc.XATTR_OWNER)
-					data['group'] = self.libsmbclient.getxattr(uri, smbc.XATTR_GROUP)
+		# Open the file
+		try:
+			file_object = self.libsmbclient.open(self.full_addr)
+		except Exception:
+			abort(400)
 
-					if app.config['WBINFO_LOOKUP']:
-						data['owner'] = wb_sid_to_name(data['owner'])
-						data['group'] = wb_sid_to_name(data['group'])
-				except Exception as ex:
-					pass
+		# Read the file into memory first (hence a file size limit) because PIL/Pillow tries readline()
+		# on pysmbc's File like objects which it doesn't support
+		try:
+			sfile = StringIO.StringIO(file_object.read())
+			pil_img = Image.open(sfile).convert('RGB')
+			pil_img.thumbnail((app.config['IMAGE_PREVIEW_WIDTH'], app.config['IMAGE_PREVIEW_HEIGHT']))
 
-				return jsonify(data)
+			ifile = StringIO.StringIO()
+			pil_img.save(ifile, 'PNG', compress_level=app.config['IMAGE_PREVIEW_LEVEL'])
+			ifile.seek(0)
 
-			elif action == 'browse':
-				if 'q' in request.args:
+			return send_file(ifile, mimetype='image/jpeg', add_etags=False)
+		except Exception:
+			abort(400)
 
-					if not app.config['SEARCH_ENABLED']:
-						abort(404)
+	def _action_stat(self):
+		app.logger.debug("_action_stat()")
 
-					# Build a breadcrumbs trail #
-					crumbs = []
-					parts = path.split('/')
-					b4 = ''
+		try:
+			fstat = self.libsmbclient.stat(self.full_addr)
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-					# Build up a list of dicts, each dict representing a crumb
-					for crumb in parts:
-						if len(crumb) > 0:
-							crumbs.append({'name': crumb, 'url': url_for(func_name, path=b4 + crumb)})
-							b4 = b4 + crumb + '/'
+		# ensure item is a file
+		if not fstat.type == EntryType.file:
+			return jsonify({'code': 1, 'msg': 'You cannot stat a directory!'})
 
-					parent     = False
-					parent_url = None
-					if len(crumbs) > 1:
-						parent     = True
-						parent_url = crumbs[-2]['url']
-					elif len(crumbs) == 1:
-						parent = True
-						parent_url = url_for(func_name)
+		# guess mimetype
+		(ftype, mtype) = filename_to_mimetype(self.entry_name)
 
-					query = request.args.get('q')
-					self._init_search(func_name, path, srv_path, query)
-					results, timeout_reached = self._search()
+		data = {
+			'code': 0,
+			'filename': self.entry_name,
+			'size': fstat.size,
+			'atime': ut_to_string(fstat.atime),
+			'mtime': ut_to_string(fstat.mtime),
+			'ftype': ftype,
+			'mtype': mtype,
+			'owner': "N/A",
+			'group': "N/A",
+		}
 
-					return jsonify({'code': 0,
-						'results': results,
-						'query': query,
-						'crumbs': crumbs,
-						'root_name': display_name,
-						'root_url': url_for(func_name),
-						'timeout_reached': timeout_reached,
-						'parent': parent,
-						'parent_url': parent_url})
+		try:
+			data['owner'] = self.libsmbclient.getxattr(self.full_addr, smbc.XATTR_OWNER)
+			data['group'] = self.libsmbclient.getxattr(self.full_addr, smbc.XATTR_GROUP)
 
-				elif 'xhr' in request.args:
-					try:
-						directory_entries = self.libsmbclient.ls(uri)
-					except smbc.NotDirectoryError as ex:
-						return stderr("Bargate is misconfigured",
-							"The path given for the share " + func_name + " is not a directory!")
-					except Exception as ex:
-						return self.smb_error_json(ex)
+			if app.config['WBINFO_LOOKUP']:
+				data['owner'] = wb_sid_to_name(data['owner'])
+				data['group'] = wb_sid_to_name(data['group'])
+		except Exception as ex:
+			pass
 
-					try:
-						dirs   = []
-						files  = []
-						shares = []
+		return jsonify(data)
 
-						for dentry in directory_entries:
-							entry = self._direntry_load(dentry, srv_path, path, func_name)
+	def _action_search(self):
+		app.logger.debug("_action_seach()")
 
-							if not entry['skip']:
-								etype = entry['type']
-								entry.pop('skip', None)
-								entry.pop('type', None)
+		if not app.config['SEARCH_ENABLED']:
+			abort(404)
 
-								if etype == EntryType.file:
-									files.append(entry)
-								elif etype == EntryType.dir:
-									dirs.append(entry)
-								elif etype == EntryType.share:
-									shares.append(entry)
+		# Build a breadcrumbs trail #
+		crumbs = []
+		parts = self.path.split('/')
+		b4 = ''
 
-						bmark_enabled   = False
-						buttons_enabled = False
-						no_items        = False
-						crumbs          = []
-						parent          = False
-						parent_url      = None
+		# Build up a list of dicts, each dict representing a crumb
+		for crumb in parts:
+			if len(crumb) > 0:
+				crumbs.append({'name': crumb, 'path': b4 + crumb})
+				b4 = b4 + crumb + '/'
 
-						if len(shares) == 0:
-							# are there any items?
-							if len(files) == 0 and len(dirs) == 0:
-								no_items = True
+		parent      = False
+		parent_path = None
+		if len(crumbs) > 1:
+			parent      = True
+			parent_path = crumbs[-2]['path']
+		elif len(crumbs) == 1:
+			parent      = True
+			parent_path = ''
 
-							# only allow bookmarking if we're not at the root
-							if len(path) > 0:
-								bmark_enabled = True
+		query = request.args.get('q')
+		results, timeout_reached = self._search(query)
 
-							buttons_enabled = True
+		return jsonify({'code': 0,
+			'results': results,
+			'query': query,
+			'crumbs': crumbs,
+			'root_name': self.root_name,
+			'share': self.endpoint,
+			'path': self.path,
+			'timeout_reached': timeout_reached,
+			'parent': parent,
+			'parent_path': parent_path})
 
-							# Build a breadcrumbs trail #
-							parts = path.split('/')
-							b4    = ''
+	def _action_ls(self):
+		app.logger.debug("_action_ls()")
 
-							# Build up a list of dicts, each dict representing a crumb
-							for crumb in parts:
-								if len(crumb) > 0:
-									crumbs.append({'name': crumb, 'url': url_for(func_name, path=b4 + crumb)})
-									b4 = b4 + crumb + '/'
+		try:
+			directory_entries = self.libsmbclient.ls(self.full_addr)
+		except smbc.NotDirectoryError as ex:
+			return jsonify({'code': 1, 'msg': 'The given path is not a directory'})
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-							if len(crumbs) > 1:
-								parent     = True
-								parent_url = crumbs[-2]['url']
-							elif len(crumbs) == 1:
-								parent = True
-								parent_url = url_for(func_name)
+		try:
+			dirs   = []
+			files  = []
+			shares = []
 
-						return jsonify({'code': 0,
-							'dirs': dirs,
-							'files': files,
-							'shares': shares,
-							'crumbs': crumbs,
-							'buttons': buttons_enabled,
-							'bmark_path': path + ' in ' + display_name,
-							'bmark': bmark_enabled,
-							'root_name': display_name,
-							'root_url': url_for(func_name),
-							'no_items': no_items,
-							'parent': parent,
-							'parent_url': parent_url})
+			for dentry in directory_entries:
+				entry = self._direntry_load(dentry)
 
-					except Exception as ex:
-						return self.smb_error_json(ex)
-				else:
-					return render_template('browse.html',
-						active=active,
-						path=path,
-						browse_mode=True,
-						url=url_for(func_name, path=path))
+				if not entry['skip']:
+					etype = entry['type']
+					entry.pop('skip', None)
+					entry.pop('type', None)
 
-			else:
-				abort(400)
+					if etype == EntryType.file:
+						files.append(entry)
+					elif etype == EntryType.dir:
+						dirs.append(entry)
+					elif etype == EntryType.share:
+						shares.append(entry)
 
-		elif request.method == 'POST':
-			if action == 'upload':
+			bmark_enabled   = False
+			buttons_enabled = False
+			no_items        = False
+			crumbs          = []
+			parent          = False
+			parent_path     = None
 
-				ret = []
+			if len(shares) == 0:
+				# are there any items?
+				if len(files) == 0 and len(dirs) == 0:
+					no_items = True
 
-				uploaded_files = request.files.getlist("files[]")
+				# only allow bookmarking if we're not at the root
+				if len(self.path) > 0:
+					bmark_enabled = True
 
-				for ufile in uploaded_files:
+				buttons_enabled = True
 
-					if banned_file(ufile.filename):
-						ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
-						continue
+				# Build a breadcrumbs trail #
+				parts = self.path.split('/')
+				b4    = ''
 
-					# Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
-					filename = secure_filename(ufile.filename)
-					upload_uri = uri + '/' + filename
+				# Build up a list of dicts, each dict representing a crumb
+				for crumb in parts:
+					if len(crumb) > 0:
+						crumbs.append({'name': crumb, 'path': b4 + crumb})
+						b4 = b4 + crumb + '/'
 
-					# Check the new file name is valid
-					try:
-						check_name(filename)
-					except ValueError:
-						ret.append({'name': ufile.filename, 'error': 'Filename not allowed'})
-						continue
+				if len(crumbs) > 1:
+					parent     = True
+					parent_path = crumbs[-2]['path']
+				elif len(crumbs) == 1:
+					parent = True
+					parent_path = ''
 
-					# Check to see if the file exists
-					fstat = None
-					try:
+			return jsonify({'code': 0,
+				'dirs': dirs,
+				'files': files,
+				'shares': shares,
+				'crumbs': crumbs,
+				'buttons': buttons_enabled,
+				'bmark_path': self.path + ' in ' + self.root_name,
+				'bmark': bmark_enabled,
+				'root_name': self.root_name,
+				'share': self.endpoint,
+				'path': self.path,
+				'no_items': no_items,
+				'parent': parent,
+				'parent_path': parent_path})
+
+		except Exception as ex:
+			return self.smb_error_json(ex)
+
+	def _action_upload(self):
+		app.logger.debug("_action_upload()")
+
+		ret = []
+
+		uploaded_files = request.files.getlist("files[]")
+
+		for ufile in uploaded_files:
+
+			if banned_file(ufile.filename):
+				ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
+				continue
+
+			# Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
+			filename = secure_filename(ufile.filename)
+			upload_uri = self.full_addr + '/' + filename
+
+			# Check the new file name is valid
+			try:
+				check_name(filename)
+			except ValueError:
+				ret.append({'name': ufile.filename, 'error': 'Filename not allowed'})
+				continue
+
+			# Check to see if the file exists
+			fstat = None
+			try:
+				fstat = self.libsmbclient.stat(upload_uri)
+			except smbc.NoEntryError:
+				app.logger.debug("Upload filename of " + upload_uri + " does not exist, ignoring")
+				# It doesn't exist so lets continue to upload
+			except Exception as ex:
+				ret.append({'name': ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
+				continue
+
+			byterange_start = 0
+			if 'Content-Range' in request.headers:
+				byterange_start = int(request.headers['Content-Range'].split(' ')[1].split('-')[0])
+				app.logger.debug("Chunked file upload request: Content-Range sent with byte range start of " +
+					str(byterange_start) + " with filename " + filename)
+
+			try:
+				# Check if we're writing from the start of the file
+				if byterange_start == 0:
+					# We're truncating an existing file, or creating a new file
+					# If the file already exists, check to see if we should overwrite
+					if fstat is not None:
+						if not get_overwrite_on_upload():
+							ret.append({'name': ufile.filename,
+								'error': 'File already exists. You can enable overwriting files in Settings.'})
+							continue
+
+						# Now ensure we're not trying to upload a file on top of a directory (can't do that!)
 						fstat = self.libsmbclient.stat(upload_uri)
-					except smbc.NoEntryError:
-						app.logger.debug("Upload filename of " + upload_uri + " does not exist, ignoring")
-						# It doesn't exist so lets continue to upload
-					except Exception as ex:
-						ret.append({'name': ufile.filename, 'error': 'Failed to stat existing file: ' + str(ex)})
-						continue
+						if fstat.type == EntryType.dir:
+							ret.append({'name': ufile.filename, 'error':
+								"That name already exists and is a directory"})
+							continue
 
-					byterange_start = 0
-					if 'Content-Range' in request.headers:
-						byterange_start = int(request.headers['Content-Range'].split(' ')[1].split('-')[0])
-						app.logger.debug("Chunked file upload request: Content-Range sent with byte range start of " +
-							str(byterange_start) + " with filename " + filename)
-
-					# Actual upload
-					try:
-						# Check if we're writing from the start of the file
-						if byterange_start == 0:
-							# We're truncating an existing file, or creating a new file
-							# If the file already exists, check to see if we should overwrite
-							if fstat is not None:
-								if not get_overwrite_on_upload():
-									ret.append({'name': ufile.filename,
-										'error': 'File already exists. You can enable overwriting files in Settings.'})
-									continue
-
-								# Now ensure we're not trying to upload a file on top of a directory (can't do that!)
-								fstat = self.libsmbclient.stat(upload_uri)
-								if fstat.type == EntryType.dir:
-									ret.append({'name': ufile.filename, 'error':
-										"That name already exists and is a directory"})
-									continue
-
-							# Open the file for the first time, truncating or creating it if necessary
-							app.logger.debug("Opening for writing with O_CREAT and TRUNC")
-							wfile = self.libsmbclient.open(upload_uri, os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
-						else:
-							# Open the file and seek to where we are going to write the additional data
-							app.logger.debug("Opening for writing with O_WRONLY")
-							wfile = self.libsmbclient.open(upload_uri, os.O_WRONLY)
-							wfile.seek(byterange_start)
-
-						while True:
-							buff = ufile.read(io.DEFAULT_BUFFER_SIZE)
-							if not buff:
-								break
-							wfile.write(buff)
-
-						wfile.close()
-						ret.append({'name': ufile.filename})
-
-					except Exception as ex:
-						ret.append({'name': ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
-						continue
-
-				return jsonify({'files': ret})
-
-			elif action == 'rename':
-
-				try:
-					old_name = request.form['old_name']
-					new_name = request.form['new_name']
-				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Invalid parameter(s)'})
-
-				# Check the new file name is valid
-				try:
-					check_name(new_name)
-				except ValueError:
-					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
-
-				# Build paths
-				old_path = uri + "/" + old_name
-				new_path = uri + "/" + new_name
-
-				# get the item type of the existing 'filename'
-				fstat = self.libsmbclient.stat(old_path)
-
-				if fstat.type == EntryType.file:
-					typestr = "file"
-				elif fstat.type == EntryType.dir:
-					typestr = "directory"
+					# Open the file for the first time, truncating or creating it if necessary
+					app.logger.debug("Opening for writing with O_CREAT and TRUNC")
+					wfile = self.libsmbclient.open(upload_uri, os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 				else:
-					return jsonify({'code': 1, 'msg': 'You can only rename files or folders!'})
+					# Open the file and seek to where we are going to write the additional data
+					app.logger.debug("Opening for writing with O_WRONLY")
+					wfile = self.libsmbclient.open(upload_uri, os.O_WRONLY)
+					wfile.seek(byterange_start)
 
-				try:
-					self.libsmbclient.rename(old_path, new_path)
-				except Exception as ex:
-					return self.smb_error_json(ex)
+				while True:
+					buff = ufile.read(io.DEFAULT_BUFFER_SIZE)
+					if not buff:
+						break
+					wfile.write(buff)
 
-				return jsonify({'code': 0, 'msg':
-					"The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
+				wfile.close()
+				ret.append({'name': ufile.filename})
 
-			elif action == 'copy':
+			except Exception as ex:
+				ret.append({'name': ufile.filename, 'error': 'Could not upload file: ' + str(ex)})
+				continue
 
-				try:
-					src  = request.form['src']
-					dest = request.form['dest']
-				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Invalid parameter(s)'})
+		return jsonify({'files': ret})
 
-				# check the proposed new name is valid
-				try:
-					check_name(dest)
-				except ValueError:
-					return jsonify({'code': 1, 'msg': 'The new name is invalid'})
+	def _action_rename(self):
+		app.logger.debug("_action_rename()")
 
-				# Build paths
-				src_path  = uri + "/" + src
-				dest_path = uri + "/" + dest
+		try:
+			old_name = request.form['old_name']
+			new_name = request.form['new_name']
+		except Exception as ex:
+			return jsonify({'code': 1, 'msg': 'Invalid parameter(s)'})
 
-				try:
-					source_stat = self.libsmbclient.stat(src_path)
-				except Exception as ex:
-					return self.smb_error_json(ex)
+		# Check the new file name is valid
+		try:
+			check_name(new_name)
+		except ValueError:
+			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
-				if not source_stat.type == EntryType.file:
-					return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
+		# Build paths
+		old_path = self.full_addr + "/" + old_name
+		new_path = self.full_addr + "/" + new_name
 
-				# Make sure the dest file doesn't exist
-				try:
-					self.libsmbclient.stat(dest_path)
-					return jsonify({'code': 1, 'msg': 'The destination filename already exists'})
-				except smbc.NoEntryError as ex:
-					pass
-				except Exception as ex:
-					return self.smb_error_json(ex)
+		# get the item type of the existing 'filename'
+		fstat = self.libsmbclient.stat(old_path)
 
-				# Open the source so we can read from it
-				try:
-					source_fh = self.libsmbclient.open(src_path)
-				except Exception as ex:
-					return self.smb_error_json(ex)
+		if fstat.type == EntryType.file:
+			typestr = "file"
+		elif fstat.type == EntryType.dir:
+			typestr = "directory"
+		else:
+			return jsonify({'code': 1, 'msg': 'You can only rename files or folders!'})
 
-				# Open the destination file to write to
-				try:
-					dest_fh = self.libsmbclient.open(dest_path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC)
-				except Exception as ex:
-					return self.smb_error_json(ex)
+		try:
+			self.libsmbclient.rename(old_path, new_path)
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-				# copy the data in 1024 byte chunks
-				try:
-					location = 0
-					while(location >= 0 and location < source_stat.size):
-						chunk = source_fh.read(1024)
-						dest_fh.write(chunk)
-						location = source_fh.seek(1024, location)
+		return jsonify({'code': 0, 'msg':
+			"The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
 
-				except Exception as ex:
-					return self.smb_error_json(ex)
+	def _action_copy(self):
+		app.logger.debug("_action_copy()")
 
-				return jsonify({'code': 0, 'msg': 'A copy of "' + src + '" was created as "' + dest + '"'})
+		try:
+			src  = request.form['src']
+			dest = request.form['dest']
+		except Exception as ex:
+			return jsonify({'code': 1, 'msg': 'Invalid parameter(s)'})
 
-			elif action == 'mkdir':
-				try:
-					dirname = request.form['name']
-				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+		# check the proposed new name is valid
+		try:
+			check_name(dest)
+		except ValueError:
+			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
-				# check the proposed new name is valid
-				try:
-					check_name(dirname)
-				except ValueError:
-					return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
+		# Build paths
+		src_path  = self.full_addr + "/" + src
+		dest_path = self.full_addr + "/" + dest
 
-				try:
-					app.logger.debug(uri)
-					app.logger.debug(dirname)
-					self.libsmbclient.mkdir(uri + '/' + dirname)
-				except Exception as ex:
-					return self.smb_error_json(ex)
+		try:
+			source_stat = self.libsmbclient.stat(src_path)
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-				return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
+		if not source_stat.type == EntryType.file:
+			return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
 
-			elif action == 'delete':
-				try:
-					delete_name = request.form['name']
-				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+		# Make sure the dest file doesn't exist
+		try:
+			self.libsmbclient.stat(dest_path)
+			return jsonify({'code': 1, 'msg': 'The destination filename already exists'})
+		except smbc.NoEntryError as ex:
+			pass
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-				delete_path  = uri + "/" + delete_name
+		# Open the source so we can read from it
+		try:
+			source_fh = self.libsmbclient.open(src_path)
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-				fstat = self.libsmbclient.stat(delete_path)
+		# Open the destination file to write to
+		try:
+			dest_fh = self.libsmbclient.open(dest_path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC)
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-				if fstat.type == EntryType.file:
-					try:
-						self.libsmbclient.delete(delete_path)
-					except Exception as ex:
-						return self.smb_error_json(ex)
-					else:
-						return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
+		# copy the data in 1024 byte chunks
+		try:
+			location = 0
+			while(location >= 0 and location < source_stat.size):
+				chunk = source_fh.read(1024)
+				dest_fh.write(chunk)
+				location = source_fh.seek(1024, location)
 
-				elif fstat.type == EntryType.dir:
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-					# Against some SMB servers (Samba!) no error is generated by pysmbc when trying to delete a
-					# directory which is not empty (!). Thus, sadly, we must check to see if the directory is empty
-					# first and then raise an error if it is not.
-					try:
-						contents = self.libsmbclient.ls(delete_path)
-					except Exception as ex:
-						return self.smb_error_json(ex)
+		return jsonify({'code': 0, 'msg': 'A copy of "' + src + '" was created as "' + dest + '"'})
 
-					# the directory contents always returns '.' and '..'
-					contents = filter(lambda s: not (s.name == '.' or s.name == '..'), contents)
-					if len(contents) > 0:
-						return jsonify({'code': 1, 'msg': "The directory '" + delete_name + "' is not empty"})
+	def _action_mkdir(self):
+		app.logger.debug("_action_mkdir()")
 
-					try:
-						self.libsmbclient.rmdir(delete_path)
-					except Exception as ex:
-						return self.smb_error_json(ex)
-					else:
-						return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
-				else:
-					return jsonify({'code': 1, 'msg': 'You tried to delete something other than a file or directory'})
+		try:
+			dirname = request.form['name']
+		except Exception as ex:
+			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
 
-			elif action == 'bookmark':
+		# check the proposed new name is valid
+		try:
+			check_name(dirname)
+		except ValueError:
+			return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
-				if not app.config['REDIS_ENABLED']:
-					abort(404)
-				if not app.config['BOOKMARKS_ENABLED']:
-					abort(404)
+		try:
+			self.libsmbclient.mkdir(self.full_addr + '/' + dirname)
+		except Exception as ex:
+			return self.smb_error_json(ex)
 
-				try:
-					bookmark_name     = request.form['name']
-				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+		return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
-				try:
-					# Generate a unique identifier for this bookmark
-					bookmark_id = uuid.uuid4().hex
+	def _action_delete(self):
+		app.logger.debug("_action_delete()")
 
-					# Turn this into a redis key for the new bookmark
-					redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
+		try:
+			delete_name = request.form['name']
+		except Exception as ex:
+			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
 
-					# Store all the details of this bookmark in REDIS
-					g.redis.hset(redis_key, 'version', '2')
-					g.redis.hset(redis_key, 'function', func_name)
-					g.redis.hset(redis_key, 'path', path)
-					g.redis.hset(redis_key, 'name', bookmark_name)
+		delete_path  = self.full_addr + "/" + delete_name
 
-					# if we're on a custom server then we need to store the URL
-					# to that server otherwise the bookmark is useless.
-					if func_name == 'custom':
-						if 'custom_uri' in session:
-							g.redis.hset(redis_key, 'custom_uri', session['custom_uri'])
-						else:
-							return jsonify({'code': 1, 'msg': 'Invalid request'})
+		fstat = self.libsmbclient.stat(delete_path)
 
-					# add the new bookmark name to the list of bookmarks for the user
-					g.redis.sadd('user:' + session['username'] + ':bookmarks', bookmark_id)
-
-					return jsonify({'code': 0, 'msg': 'Added bookmark ' + bookmark_name,
-						'url': url_for('bookmark', bookmark_id=bookmark_id)})
-
-				except Exception as ex:
-					return jsonify({'code': 1, 'msg': 'Could not save bookmark: ' + str(type(ex)) + " " + str(ex)})
-
+		if fstat.type == EntryType.file:
+			try:
+				self.libsmbclient.delete(delete_path)
+			except Exception as ex:
+				return self.smb_error_json(ex)
 			else:
-				return jsonify({'code': 1, 'msg': "An invalid action was specified"})
+				return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 
-	def _init_search(self, func_name, path, srv_path, query):
-		self.func_name    = func_name
-		self.path         = path
-		self.srv_path     = srv_path
-		self.query        = query
+		elif fstat.type == EntryType.dir:
 
+			# Against some SMB servers (Samba!) no error is generated by pysmbc when trying to delete a
+			# directory which is not empty (!). Thus, sadly, we must check to see if the directory is empty
+			# first and then raise an error if it is not.
+			try:
+				contents = self.libsmbclient.ls(delete_path)
+			except Exception as ex:
+				return self.smb_error_json(ex)
+
+			# the directory contents always returns '.' and '..'
+			contents = filter(lambda s: not (s.name == '.' or s.name == '..'), contents)
+			if len(contents) > 0:
+				return jsonify({'code': 1, 'msg': "The directory '" + delete_name + "' is not empty"})
+
+			try:
+				self.libsmbclient.rmdir(delete_path)
+			except Exception as ex:
+				return self.smb_error_json(ex)
+			else:
+				return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
+		else:
+			return jsonify({'code': 1, 'msg': 'You tried to delete something other than a file or directory'})
+
+	def _action_bookmark(self):
+		app.logger.debug("_action_bookmark()")
+
+		try:
+			bookmark_name = request.form['name']
+		except Exception:
+			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
+
+		set_bookmark(bookmark_name, self.endpoint, self.path)
+
+	def _search(self, query):
+		self.query           = query
 		self.timeout_reached = False
 		self.results         = []
 
-	def _search(self):
 		self.timeout_at = int(time.time()) + app.config['SEARCH_TIMEOUT']
 		self._rsearch(self.path)
 		return (self.results, self.timeout_reached)
@@ -762,7 +787,7 @@ class BargateSMBLibrary:
 		# Try getting directory contents of where we are
 		app.logger.debug("_rsearch called to search: " + path)
 		try:
-			directory_entries = self.libsmbclient.ls(self.srv_path + path)
+			directory_entries = self.libsmbclient.ls(self.addr + path)
 		except smbc.NotDirectoryError as ex:
 			return
 		except Exception as ex:
@@ -779,7 +804,7 @@ class BargateSMBLibrary:
 				self.timeout_reached = True
 				break
 
-			entry = self._direntry_load(dentry, self.srv_path, path, self.func_name)
+			entry = self._direntry_load(dentry, path)
 
 			# Skip hidden files
 			if entry['skip']:
@@ -789,7 +814,6 @@ class BargateSMBLibrary:
 			if self.query.lower() in entry['name'].lower():
 				app.logger.debug("_rsearch: Matched: " + entry['name'])
 				entry['parent_path'] = path
-				entry['parent_url']  = url_for(self.func_name, path=path)
 				self.results.append(entry)
 
 			# Search subdirectories if we found one
@@ -801,14 +825,17 @@ class BargateSMBLibrary:
 
 				self._rsearch(sub_path)
 
-	def _direntry_load(self, dentry, srv_path, path, func_name):
-		entry = {'skip': False, 'name': dentry.name, 'burl': url_for(func_name)}
+	def _direntry_load(self, dentry, path=None):
+		entry = {'skip': False, 'name': dentry.name, 'share': self.endpoint}
+
+		if path is None:
+			path = self.path
 
 		# old versions of pysmbc return 'str' objects rather than unicode
 		if isinstance(entry['name'], str):
 			entry['name'] = entry['name'].decode("utf-8")
 
-		if len(path) == 0:
+		if len(self.path) == 0:
 			entry['path'] = entry['name']
 		else:
 			entry['path'] = path + '/' + entry['name']
@@ -845,9 +872,9 @@ class BargateSMBLibrary:
 				entry['icon'] = mimetype_to_icon(entry['mtyper'])
 
 				try:
-					fstat = self.libsmbclient.stat(srv_path + path + '/' + entry['name'])
+					fstat = self.libsmbclient.stat(self.full_addr + '/' + entry['name'])
 				except Exception as ex:
-					app.logger.debug("stat failed against " + srv_path + path + '/' + entry['name'])
+					app.logger.debug("stat failed against " + self.full_addr + '/' + entry['name'])
 					app.logger.debug(str(ex))
 					# If the file stat failed we return a result with the data missing
 					# rather than fail the entire page load
@@ -886,8 +913,12 @@ class BargateSMBLibrary:
 				"There is no space left on the server. You may have exceeded your usage allowance")
 
 		elif isinstance(ex, smbc.ExistsError):
-			return ("File or directory already exists",
-				"The file or directory you attempted to create already exists")
+			if self.action == 'ls':
+				return ("Not found",
+					"The directory specified does not exist")
+			else:
+				return ("File or directory already exists",
+					"The file or directory you attempted to create already exists")
 
 		elif isinstance(ex, smbc.NotEmptyError):
 			return ("The directory is not empty",

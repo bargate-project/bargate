@@ -15,7 +15,7 @@ function closeModals() {
 }
 
 var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
-var $browse = {url: null, entry: null, entryDirUrl: null, btnsEnabled: false, bmarkEnabled: false,
+var $browse = {share: null, path: null, entry: null, entryDirPath: null, btnsEnabled: false, bmarkEnabled: false,
 	sortBy: 'name', data: null,
 };
 
@@ -54,7 +54,7 @@ function disableBookmark() {
 }
 
 function renderDirectory() {
-	$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: $browse.data.crumbs, root_name: $browse.data.root_name, root_url: $browse.data.root_url }));
+	$('#browse').html(nunjucks.render('breadcrumbs.html', { crumbs: $browse.data.crumbs, root_name: $browse.data.root_name }));
 
 	if ($browse.data.no_items) {
 		$('#browse').append(nunjucks.render('empty.html'));
@@ -72,10 +72,14 @@ function renderDirectory() {
 	doBrowse();
 }
 
-function loadDir(url,alterHistory) {
+function reloadDir() {
+	loadDir($browse.share, $browse.path, false);
+}
+
+function loadDir(share, path, alterHistory) {
 	if (alterHistory === undefined) { alterHistory = true; }
 
-	$.getJSON(url, {xhr: 1})
+	$.getJSON('/smb/ls/' + share + '/' + path)
 	.done(function(response) {
 		if (response.code > 0) {
 			showErr("Unable to open folder", response.msg);
@@ -97,9 +101,11 @@ function loadDir(url,alterHistory) {
 			prepFileUpload();
 
 			if (alterHistory) {
-				history.pushState(url, "", url);
+				new_url = '/' + share + '/browse/' + path
+				history.pushState({share: share, path: path}, '', new_url);
 			}
-			$browse.url = url;
+			$browse.share = share;
+			$browse.path  = path;
 
 		}
 	})
@@ -110,21 +116,21 @@ function loadDir(url,alterHistory) {
 
 function browseParent() {
 	if ($browse.data.parent) {
-		loadDir($browse.data.parent_url);
+		loadDir($browse.data.share, $browse.data.parent_path);
 	}
 }
 
 function doSearch() {
 	$('#search-m').modal('hide');
 
-	$.getJSON($browse.url, {q: $('#search-i').val()})
+	$.getJSON('/' + $browse.share + "/search/" + $browse.path, {q: $('#search-i').val()})
 	.done(function(response) {
 		if (response.code > 0) {
 			showErr("Search failed", response.msg);
 		} else {
 			$browse.data = response;
 			$browse.parent = false;
-			$browse.parent_url = null;
+			$browse.parent_path = null;
 
 			disableBookmark();
 			disableBrowseButts();
@@ -228,13 +234,13 @@ function doListView() {
 
 function doBrowse() {
 	$(".edir").click(function() {
-		loadDir( $(this).data('url') );
+		loadDir( $browse.share, $(this).data('path') );
 		event.preventDefault();
 		event.stopPropagation();
 	});
 
 	$(".eshare").click(function() {
-		loadDir( $(this).data('url') );
+		loadDir( $browse.share, $(this).data('path') );
 	});
 
 	// Bind actions to buttons in the 'file show' modal
@@ -248,12 +254,12 @@ function doBrowse() {
 			showFileOverview($(this));
 		} else if ($user.onclick == 'default') {
 			if ($(this).attr('data-view')) {
-				window.open(buildurl($(this).data('burl'),$(this).data('path'),'view'),'_blank');
+				window.open(buildurl($(this).data('share'), $(this).data('path'), 'view'),'_blank');
 			} else {
-				window.open(buildurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
+				window.open(buildurl($(this).data('share'), $(this).data('path'), 'download'),'_blank');
 			}
 		} else {
-			window.open(buildurl($(this).data('burl'),$(this).data('path'),'download'),'_blank');
+			window.open(buildurl($(this).data('share'), $(this).data('path'), 'download'),'_blank');
 		}
 	});
 
@@ -270,21 +276,21 @@ function doBrowse() {
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'view') {
-				window.open(buildurl(file.data('burl'),file.data('path'),'view'),'_blank');
+				window.open(buildurl(file.data('share'), file.data('path'),'view'),'_blank');
 			}
 			else if ($action == 'download') {
-				window.open(buildurl(file.data('burl'),file.data('path'),'download'),'_blank');
+				window.open(buildurl(file.data('share'), file.data('path'),'download'),'_blank');
 			}
 			else if ($action == 'copy') {
-				selectEntry(file.data('filename'),$browse.url);
+				selectEntry(file.data('filename'), $browse.path);
 				showCopy();
 			}
 			else if ($action == 'rename') {
-				selectEntry(file.data('filename'),$browse.url);
+				selectEntry(file.data('filename'), $browse.path);
 				showRename();
 			}
 			else if ($action == 'delete') {
-				selectEntry(file.data('filename'),$browse.url);
+				selectEntry(file.data('filename'), $browse.path);
 				showDeleteFile();
 			}
 			else if ($action == 'properties') {
@@ -304,14 +310,14 @@ function doBrowse() {
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'open') {
-				loadDir(dir.data('url'));
+				loadDir($browse.share, dir.data('path'));
 			}
 			else if ($action == 'rename') {
-				selectEntry(dir.data('filename'),$browse.url);
+				selectEntry(dir.data('filename'), $browse.path);
 				showRename(dir.data('filename'));
 			}
 			else if ($action == 'delete') {
-				selectEntry(dir.data('filename'),$browse.url);
+				selectEntry(dir.data('filename'), $browse.path);
 				showDeleteDirectory(dir.data('filename'));
 			}
 
@@ -416,10 +422,10 @@ function bitrateformat(bits) {
 
 function prepFileUpload() {
 	$('#upload-i').fileupload({
-		url: $browse.url,
+		url: '/smb',
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
-		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}],
+		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}, {name: 'share', value: $browse.share}, {name: 'path', value: $browse.path}],
 		stop: function (e, data) {
 			window.uploadNotify.close();
 			delete window.uploadNotify;
@@ -438,7 +444,7 @@ function prepFileUpload() {
 						notifySuccess("Uploaded " + file.name);
 					}
 
-					loadDir($browse.url);
+					reloadDir();
 				}
 			});
 		},
@@ -495,13 +501,13 @@ function prepFileUpload() {
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
 }
 
-function selectEntry(name,url) {
+function selectEntry(name, path) {
 	$browse.entry = name;
-	$browse.entryDirUrl = url;
+	$browse.entryDirPath = path;
 }
 
-function buildurl(burl,path,action) {
-	return burl + "/" + action + "/" + path
+function buildurl(share, path, action) {
+	return '/' + share + "/" + action + "/" + path
 }
 
 function showFileDetails(file) {
@@ -510,7 +516,7 @@ function showFileDetails(file) {
 	$('#e-details-fname').html('Please wait...');
 	$('#e-details-m').modal('show');
 
-	$.getJSON(buildurl(file.data('burl'),file.data('path'),'stat'))
+	$.getJSON(buildurl(file.data('share'), file.data('path'),'stat'))
 	.done(function(response) {
 		if (response.code != 0) {
 			showErr("Error loading file details", response.msg);
@@ -537,14 +543,14 @@ function showFileOverview(file) {
 	$('#file-m-size').text(file.data('size'));
 	$('#file-m-mtime').text(file.data('mtime'));
 	$('#file-m-mtype').text(file.data('mtype'));
-	$('#file-m-icon').attr('class',file.data('icon'));
-	$('#file-m-download').attr('href',buildurl(file.data('burl'),file.data('path'),'download'));
-	$('#file-m-details').data('burl',file.data('burl'));
+	$('#file-m-icon').addClass(file.data('icon'));
+	$('#file-m-download').attr('href',buildurl(file.data('share'), file.data('path'), 'download'));
+	$('#file-m-details').data('share',file.data('share'));
 	$('#file-m-details').data('path',file.data('path'));
 
 	
 	if (file.attr('data-img')) {
-		$('#file-m-preview').attr('src',buildurl(file.data('burl'),file.data('path'),'preview'));
+		$('#file-m-preview').attr('src',buildurl(file.data('share'), file.data('path'), 'preview'));
 		$('#file-m-preview').removeClass('hidden');
 		$('#file-m-icon').addClass('hidden');
 	}
@@ -555,7 +561,7 @@ function showFileOverview(file) {
 	}
 	
 	if (file.attr('data-view')) {
-		$('#file-m-view').attr('href',buildurl(file.data('burl'),file.data('path'),'view'));
+		$('#file-m-view').attr('href',buildurl(file.data('share'), file.data('path'), 'view'));
 		$('#file-m-view').removeClass('hidden');
 	}
 	else {
@@ -565,7 +571,7 @@ function showFileOverview(file) {
 	if (file.attr('data-parent')) {
 		selectEntry(file.data('filename'),file.data('parent'));
 	} else {
-		selectEntry(file.data('filename'),$browse.url);
+		selectEntry(file.data('filename'),$browse.path);
 	}
 
 	$('#file-m').modal('show');
@@ -610,7 +616,7 @@ function notifyError(msg) {
 
 function doRename() {
 	$('#e-rename-m').modal('hide');
-	$.post( $browse.entryDirUrl, { action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
+	$.post( '/smb', { share: $browse.share, path: $browse.entryDirPath, action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Unable to rename","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -619,14 +625,18 @@ function doRename() {
 				showErr("Unable to rename",data.msg);
 			} else {
 				notifySuccess(data.msg);
-				loadDir($browse.entryDirUrl);
+				if ($browse.entryDirPath === $browse.path) {
+					reloadDir();
+				} else {
+					loadDir($browse.share, $browse.EntryDirPath);
+				}
 			}
 	});
 }
 
 function doCopy() {
 	$('#e-copy-m').modal('hide');
-	$.post( $browse.entryDirUrl, { action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
+	$.post( '/smb', { share: $browse.share, path: $browse.entryDirPath, action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Unable to copy","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -635,14 +645,18 @@ function doCopy() {
 				showErr("Unable to copy",data.msg);
 			} else {
 				notifySuccess(data.msg);
-				loadDir($browse.entryDirUrl);
+				if ($browse.entryDirPath === $browse.path) {
+					reloadDir();
+				} else {
+					loadDir($browse.share, $browse.entryDirPath);
+				}
 			}
 	});
 }
 
 function doMkdir() {
 	$('#mkdir-m').modal('hide');
-	$.post( $browse.url, { action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
+	$.post( '/smb', { share: $browse.share, path: $browse.path, action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Error creating directory","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -651,7 +665,7 @@ function doMkdir() {
 				showErr("Error creating directory",data.msg);
 			} else {
 				notifySuccess(data.msg);
-				loadDir($browse.url);
+				reloadDir();
 			}
 	});
 }
@@ -659,7 +673,7 @@ function doMkdir() {
 function doBookmark() {
 	$('#bmark-m').modal('hide');
 	bmarkName = $('#bmark-i').val();
-	$.post( $browse.url, { action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
+	$.post( '/smb', { share: $browse.share, path: $browse.path, action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Unable to create bookmark","An error occured whilst contacting the server.");
 		})
@@ -675,7 +689,7 @@ function doBookmark() {
 
 function doDelete() {
 	$('#e-delete-m').modal('hide');
-	$.post( $browse.entryDirUrl, { action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
+	$.post( '/smb', { share: $browse.share, path: $browse.entryDirPath, action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			showErr("Unable to delete","An error occured whilst contacting the server. " + errorThrown);
 		})
@@ -684,7 +698,11 @@ function doDelete() {
 				showErr("Unable to delete", data.msg);
 			} else {
 				notifySuccess(data.msg);
-				loadDir($browse.entryDirUrl);
+				if ($browse.entryDirPath === $browse.path) {
+					reloadDir();
+				} else {
+					loadDir($browse.share, $browse.entryDirPath);
+				}
 			}
 	});
 }
@@ -729,7 +747,7 @@ function setHidden(show_hidden) {
 		})
 		.done(function() {
 			if ($browse.btnsEnabled) {
-				loadDir($browse.url);
+				reloadDir();
 			}
 			$user.hidden = show_hidden;
 		});
@@ -745,7 +763,7 @@ function setClickMode(newMode) {
 		})
 		.done(function() {
 			if ($browse.btnsEnabled) {
-				loadDir($browse.url);
+				reloadDir();
 			}
 			$user.onclick = newMode;
 		});
@@ -915,9 +933,9 @@ function onPageLoad() {
 
 	/* handle back/forward buttons */
 	window.addEventListener('popstate', function(e) {
-		var requestedUrl = e.state;
-		if (requestedUrl != null) {
-			loadDir(requestedUrl, false);
+		var previousState = e.state;
+		if (previousState != null) {
+			loadDir(previousState.share, previousState.path, false);
 		}
 	});
 
@@ -948,8 +966,9 @@ function onPageLoad() {
 	});
 
 	/* Load initial directory */
-	history.replaceState($initialUrl,"",$initialUrl);
-	loadDir($initialUrl,false);
+	init_url = '/' + $init.share + '/browse/' + $init.path
+	history.replaceState({share: $init.share, path: $init.path}, '', init_url);
+	loadDir($init.share, $init.path, false);
 }
 
 $(document).ready(function($) {

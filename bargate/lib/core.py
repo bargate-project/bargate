@@ -204,7 +204,9 @@ def check_path(path):
 
 
 def wb_sid_to_name(sid):
-	process = subprocess.Popen([app.config['WBINFO_BINARY'], '--sid-to-name', sid], stdout=subprocess.PIPE)
+	process = subprocess.Popen([app.config['WBINFO_BINARY'], '--sid-to-name', sid],
+		stdout=subprocess.PIPE,
+		stderr=subprocess.PIPE)
 	code = process.wait()
 	sout, serr = process.communicate()
 
@@ -216,4 +218,5 @@ def wb_sid_to_name(sid):
 		else:
 			return sout
 	else:
-		return "Unable to communicate with winbind"
+		app.logger.warn("wbinfo returned an error: " + str(sout) + " " + str(serr))
+		return "Unknown"

@@ -12,7 +12,7 @@
 	</thead>
 	<tbody>
 		{%- for entry in shares -%}
-		<tr class="edir" data-url="{{ buildurl(entry.burl,entry.name,'browse') }}">
+		<tr class="eshare" data-path="{{entry.name}}">
 			<td class="text-center"><span class="fas fa-fw fa-hdd"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime"></td>
@@ -23,7 +23,7 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<tr class="edir" data-icon="fas fa-fw fa-folder" data-url="{{ buildurl(entry.burl,entry.path,'browse') }}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
+		<tr class="edir" data-icon="fas fa-fw fa-folder" data-path="{{entry.path}}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
 			<td class="text-center"><span class="fas fa-fw fa-folder"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
@@ -34,7 +34,7 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in files -%}
-			<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-burl="{{entry.burl}}">
+			<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-share="{{entry.share}}">
 			<td class="text-center"><span class="{{ entry.icon }} fa-fw"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">{{ entry.mtime }}</td>

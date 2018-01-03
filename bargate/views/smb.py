@@ -15,31 +15,51 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import request, session, redirect, url_for, render_template
+from flask import request, session, redirect, url_for, render_template, jsonify
 
 from bargate import app
 
 
 @app.login_required
 @app.allow_disable
-def share_handler(path, action="browse"):
+def share_handler(path, action):
+	if action == 'browse':
+		app.smblib.set_response('html')
+	else:
+		app.smblib.set_response('http')
 
-	svrpath = app.sharesConfig.get(request.endpoint, 'path')
+	return app.smblib.smb_action(request.endpoint, action, path)
 
-	# Variable substition for username
-	svrpath = svrpath.replace("%USERNAME%", session['username'])
-	svrpath = svrpath.replace("%USER%", session['username'])
 
-	# LDAP home dir substitution support
-	if app.config['LDAP_HOMEDIR']:
-		if 'ldap_homedir' in session:
-			if session['ldap_homedir'] is not None:
-				svrpath = svrpath.replace("%LDAP_HOMEDIR%", session['ldap_homedir'])
+@app.route('/smb/<action>/<share>/', defaults={'path': ''})
+@app.route('/smb/<action>/<share>/<path:path>')
+@app.login_required
+@app.allow_disable
+def smb_get_json(share, action, path):
+	app.smblib.set_response('json')
+	return app.smblib.smb_action(share, action, path)
 
-	display = app.sharesConfig.get(request.endpoint, 'display')
-	menu    = app.sharesConfig.get(request.endpoint, 'menu')
 
-	return app.smblib.smb_action(svrpath, request.endpoint, menu, display, action, path)
+@app.route('/smb', methods=['POST'])
+@app.login_required
+@app.allow_disable
+def smb_post():
+	app.smblib.set_response('json')
+
+	if 'action' not in request.form:
+		return jsonify({'code': 1, 'msg': 'No action specified'})
+
+	if 'share' not in request.form:
+		return jsonify({'code': 1, 'msg': 'No share name specified'})
+
+	if 'path' in request.form:
+		app.logger.debug("path set to: " + request.form['path'])
+		path = request.form['path']
+	else:
+		app.logger.debug("path not set in call to smb_post")
+		path = ''
+
+	return app.smblib.smb_action(request.form['share'], request.form['action'], path)
 
 
 @app.route('/other')
