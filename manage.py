@@ -27,6 +27,7 @@ JS_TEMPLATES_DIR = './bargate/jstemplates'
 JS_TEMPLATE_FILE = './bargate/static/templates.js'
 JAVASCRIPT_DIR   = './bargate/static/js'
 CSS_DIR          = './bargate/static/css'
+JSHINT_FILES     = ['./bargate/static/js/bargate.js', './bargate/static/js/login.js']
 
 
 class Manager():
@@ -93,11 +94,11 @@ class Manager():
 		app.run()
 
 	def cmd_dev(self):
-		self.cmd_flake()
-		self.cmd_compile()
+		self.cmd_lint()
+		self.cmd_build()
 		self.cmd_run()
 
-	def cmd_flake(self):
+	def cmd_flake8(self):
 		self.header("running flake8")
 
 		flake8 = find_executable("flake8-python2")
@@ -111,15 +112,59 @@ class Manager():
 		(result, output) = self.sysexec([flake8, '--ignore=E126,E128,E221,W191', '--max-line-length=120', '.'])
 
 		if result == 0:
-			self.info("all tests passed!")
+			self.info("flake8: OK")
 			return True
 		else:
 			print(output)
-			self.fatal("flake8 test failed")
+			self.fatal("flake8 returned errors")
 
-	def cmd_compile(self):
-		self.info("running compile\n")
+	def cmd_jshint(self):
+		self.header("running jshint")
 
+		jshint = find_executable("jshint")
+		if not jshint:
+			self.fatal("Could not find the jshint command. Please install it with: \nsudo npm install jshint -g")
+
+		self.debug('found jshint at path: ' + jshint)
+
+		for filename in JSHINT_FILES:
+			self.info("checking " + filename)
+			(result, output) = self.sysexec([jshint, filename])
+
+			if result == 0:
+				self.info("jshint: OK")
+				return True
+			else:
+				print(output)
+				self.fatal("jshint returned errors")
+
+	def cmd_csslint(self):
+
+		self.header("running csslint")
+		csslint = find_executable("csslint")
+		if not csslint:
+			self.fatal("Could not find the csslint command. Please install it with: \nsudo npm install csslint -g")
+		else:
+			self.debug('found csslint at path: ' + csslint)
+
+		files = os.listdir(CSS_DIR)
+		if len(files) == 0:
+			self.fatal("Did not find any files in " + CSS_DIR)
+
+		for name in files:
+			if name.endswith('.css'):
+				if not name.endswith(".min.css"):
+					self.info("checking " + CSS_DIR + "/" + name)
+
+					(result, output) = self.sysexec([csslint, CSS_DIR + "/" + name])
+
+					if len(output) > 0:
+						self.error(output)
+						self.fatal("csslint returned errors")
+
+		self.info("csslint: OK")
+
+	def cmd_nunjucks_precompile(self):
 		self.header("precompiling nunjucks templates")
 		nunjucks_precompile = find_executable("nunjucks-precompile")
 		if not nunjucks_precompile:
@@ -142,6 +187,8 @@ class Manager():
 			self.fatal("Could not write to " + JS_TEMPLATE_FILE + ": " + str(ex))
 
 		self.info("nunjucks templates precompiled\n")
+
+	def cmd_uglifyjs(self):
 
 		self.header("minifying javascript")
 		uglifyjs = find_executable("uglifyjs")
@@ -168,6 +215,8 @@ class Manager():
 						self.fatal("non-zero exit from uglifyjs")
 
 		self.info("javascript minified\n")
+
+	def cmd_crass(self):
 
 		self.header("minifying css")
 		crass = find_executable("crass")
@@ -200,6 +249,20 @@ class Manager():
 						self.fatal("Could not write to " + CSS_DIR + "/" + name + ": " + str(ex))
 
 		self.info("css minified")
+
+	def cmd_minify(self):
+		self.cmd_uglifyjs()
+		self.cmd_crass()
+
+	def cmd_build(self):
+		self.cmd_nunjucks_precompile()
+		self.cmd_uglifyjs()
+		self.cmd_crass()
+
+	def cmd_lint(self):
+		self.cmd_flake8()
+		self.cmd_jshint()
+		self.cmd_csslint()
 
 
 if __name__ == '__main__':
