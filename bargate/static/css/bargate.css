@@ -1,10 +1,8 @@
-html, body
-{
+html, body {
 	height: 100%;
 }
 
-ul.changelog
-{
+.changelog {
 	list-style: none;
 	margin: 0 0 10px 10px;
 }
@@ -13,69 +11,66 @@ ul.changelog
 .inline-block {
 	display: inline-block;
 }
+
 .bargate-navbar-btn {
 	padding-right: 5px;
 }
+
 .navbar-right .dropdown-menu-auto {
 	left: auto;
 	right: auto;
 }
 
 /* Error pages error in middle of screen */
-.jumbotron-alert
-{
-	width: 80%;
+.jumbotron-alert {
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
+	width: 80%;
 }
 
 /* file uploads */
 .fileinput-button {
-	position: relative;
 	overflow: hidden;
+	position: relative;
 }
+
 .fileinput-button input {
-	position: absolute;
-	top: 0;
-	right: 0;
+	cursor: pointer;
+	direction: ltr;
+	font-size: 200px;
 	margin: 0;
 	opacity: 0;
-	-ms-filter: 'alpha(opacity=0)';
-	font-size: 200px;
-	direction: ltr;
-	cursor: pointer;
+	position: absolute;
+	right: 0;
+	top: 0;
 }
 
 /* Prevent themes from putting borders on tables */ 
-.table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td
-{
+.table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td {
 	border-bottom: none;
 	border-top: none;
 }
 
 /* On the popup dialog for file clicking the table needs padding above it */
-.table-file-click
-{
+.table-file-click {
 	margin-top: 20px;
 }
 
-#prefs-m h5:first-of-type
-{
-	margin-top: 0px;
+.prefsh:first-of-type {
+	margin-top: 0;
 }
 
-#prefs-m h5
-{
-	margin-top: 40px;
+.prefsh {
 	margin-bottom: 10px;
+	margin-top: 40px;
 }
 
 
 /* overflow text properly on panel labels */
 .grid-entry .panel-footer {
-	text-overflow: ellipsis;
 	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
@@ -87,39 +82,39 @@ ul.changelog
 	cursor: pointer;
 }
 
-
 .eshare .panel-footer {
 	text-align: center;
 }
 
 /* wrap tooltips properly */
 .grid-entry .tooltip-inner {
-	white-space:pre-wrap;
+	hyphens: auto;
 	overflow-wrap: break-word;
 	word-wrap: break-word;
+	white-space:pre-wrap;
 	-ms-word-break: break-all;
+	-epub-word-break: break-all;
 	word-break: break-all;
-	word-break: break-word;
 	-ms-hyphens: auto;
 	-moz-hyphens: auto;
+	-epub-hyphens: auto;
 	-webkit-hyphens: auto;
-	hyphens: auto;
 }
 
 /* mobile rules */
 .gridview {
-	padding-left: 0px;
-	padding-right: 0px;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .grid-entry {
-	margin-top: 4px;
 	margin-right: 4px;
+	margin-top: 4px;
 	width: calc(50% - 4px);
 }
 
 .gridview ol.breadcrumb {
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 
 @media (max-width: 768px) {
@@ -132,7 +127,7 @@ ul.changelog
 @media (min-width: 768px) {
 	.gridview {
 		padding-left: 12px;
-		padding-right: 0px;
+		padding-right: 0;
 		padding-bottom: 12px;
 	}
 	.grid-entry {
@@ -161,11 +156,11 @@ ul.changelog
 }
 
 .grid-entry .panel {
-	margin-bottom: 0px;
+	margin-bottom: 0;
 }
 .grid-entry .panel-body {
 	height: 160px;
-	padding: 0px;
+	padding: 0;
 }
 .grid-icon {
 	font-size: 6em;
@@ -179,95 +174,70 @@ ul.changelog
 
 /* LIST VIEW CSS */
 .listview {
-	padding: 0px;
+	padding: 0;
 }
 
 /* don't put a margin on directory view table - datatables used !important so we have to as well :( */
-.listview #dir
-{
-	margin-top: 0px !important;
-	margin-bottom: 0px !important;
+.listview #dir {
+	margin-bottom: 0 !important; /* csslint allow: important */
+	margin-top: 0 !important; /* csslint allow: important */
 }
 
-.table-hover thead tr:hover td
-{
+.table-hover thead tr:hover td {
 	background-color: #f5f5f5;
 }
 
-.table td
-{
-	vertical-align: middle !important;
-}
-
-/* Make sure no underlines on a's in tables pls - For flatly theme mostly */
-.table a, table a
-{
-	text-decoration: none !important;
-}
-
-tbody
-{
+tbody {
 	text-decoration: none;
 }
 
 /* Browse mode (list) */
-td.dentry
-{
+td.dentry {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 /* Table cell widths for multiple sizes */
-@media (max-width: 768px)
-{
-	td.dentry
-	{
+@media (max-width: 768px) {
+	td.dentry {
 		max-width: 1px;
 	}
 }
 
-@media (min-width: 768px)
-{
-	td.dentry
-	{
+@media (min-width: 768px) {
+	td.dentry {
 		max-width: 1px;
 	}
 }
 
-@media (min-width: 992px)
-{
-	td.dentry
-	{
+@media (min-width: 992px) {
+	td.dentry {
 		max-width: 1px;
 	}
-	td.dentry-mtime
-	{
+	td.dentry-mtime {
 		width: 15em;
 	}
 }
 
-@media (min-width: 1200px)
-{
-	td.dentry
-	{
+@media (min-width: 1200px) {
+	td.dentry {
 		max-width: 200px;
 	}
-	td.dentry-mtime
-	{
+	td.dentry-mtime {
 		width: 15em;
 	}
 }
 
 .no-items {
-	text-align: center;
 	opacity: 0.6;
+	text-align: center;
 }
 
 [data-notify="progressbar"] {
-	margin-bottom: 0px;
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
-	width: 100%;
+	bottom: 0;
 	height: 5px;
+	left: 0;
+	margin-bottom: 0;
+	position: absolute;
+	width: 100%;
 }

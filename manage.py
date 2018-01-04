@@ -130,11 +130,11 @@ class Manager():
 			self.info("checking " + filename)
 			(result, output) = self.sysexec([jshint, filename])
 
-			if result == 0:
-				self.info("jshint: OK")
-			else:
+			if result != 0:
 				print(output)
 				self.fatal("jshint returned errors")
+
+		self.info("jshint: OK")
 
 	def cmd_csslint(self):
 
@@ -154,7 +154,8 @@ class Manager():
 				if not name.endswith(".min.css"):
 					self.info("checking " + CSS_DIR + "/" + name)
 
-					(result, output) = self.sysexec([csslint, CSS_DIR + "/" + name])
+					(result, output) = self.sysexec([csslint, CSS_DIR + "/" + name, '--quiet',
+						'--ignore=ids,order-alphabetical,unqualified-attributes'])
 
 					if len(output) > 0:
 						self.error(output)
@@ -184,7 +185,7 @@ class Manager():
 		except Exception as ex:
 			self.fatal("Could not write to " + JS_TEMPLATE_FILE + ": " + str(ex))
 
-		self.info("nunjucks templates precompiled\n")
+		self.info("nunjucks templates precompiled")
 
 	def cmd_uglifyjs(self):
 
@@ -212,7 +213,7 @@ class Manager():
 						self.error(output)
 						self.fatal("non-zero exit from uglifyjs")
 
-		self.info("javascript minified\n")
+		self.info("javascript minified")
 
 	def cmd_crass(self):
 
