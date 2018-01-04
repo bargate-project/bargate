@@ -18,11 +18,17 @@
 		<script type="text/javascript" src="{{ url_for('static', filename='js/login.min.js') }}" async></script>
 	</head>
 	<body>
+		{% include 'about.html' %}
 		{% include 'login-body.html' ignore missing %}
-		<div class="container">
+		<div class="container-fluid" style="height: 100%">
 			{% include 'login-container.html' ignore missing %}
-			<div class="loginbox">
-				<h1>{{ config['APP_DISPLAY_NAME'] }}</h1>
+			<div class="row" style="height: 100%">
+			<div class="col-sm-8 col-md-6 col-lg-4" style="height: 100%; background: #fff; max-width: 500px">
+
+			<div class="visible-xs" style="height: 5px; background-color: blue; margin-left: -15px; margin-right: -15px;">
+			</div>
+			<div style="padding: 20px; height: 100%">
+				<h1 class="title" style="font-size: 4vh; display: block">{{ config['APP_DISPLAY_NAME'] }}</h1>
 				{% for category, message in get_flashed_messages(with_categories=true) %}
 				<div class="alert {{ category }} fade in">
 					<a data-dismiss="alert" class="close" href="#">×</a>
@@ -30,33 +36,41 @@
 				</div>
 				{% endfor %}
 
-				<form action="{{ url_for('login') }}" method="POST" class="text-left">
+				<form action="{{ url_for('login') }}" method="POST" class="text-left" style="display: block">
 					{% if next %}
 					<input name="next" type="hidden" value="{{next}}"/>
 					{% endif %}
 					<div class="form-group">
-						<label>Username:</label>
-						<input type="text" class="login-input form-control" id="loginUsername" name="username">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fas fa-user fa-2x"></span></div>
+							<input type="text" class="login-input form-control" id="loginUsername" name="username" placeholder="Username">
+						</div>
 					</div>
 					<div class="form-group">
-						<label>Password:</label>
-						<input type="password" class="login-input form-control" id="loginPassword" name="password">
+						<div class="input-group">
+							<div class="input-group-addon"><span class="fas fa-key fa-2x"></span></div>
+							<input type="password" class="login-input form-control" id="loginPassword" name="password" placeholder="Password">
+						</div>
 					</div>
 					{% if config['REMEMBER_ME_ENABLED'] %}
-					<div class="checkbox">
+					<!--<div class="checkbox">
 						<label>
 							<input type="checkbox" class="" value="sec" id="sec" name="sec"> Keep me logged in on this device <span class="hidden-xs glyphicon glyphicon-question-sign" data-toggle="popover" data-placement="bottom" title="Login Security" data-trigger="hover" data-content="If you are on a private computer you trust then selecting this option will keep you logged in even if you close the browser window. Do not use this on public or shared computers."></span>
 						</label>
-					</div>
+					</div>-->
 					{% endif %}
-					<div class="form-group text-center">
-						<button class="btn btn-default btn-lg" type="submit">Login</button>
+					<div class="form-group">
+						<button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
 					</div>
 				</form>
-				<p class="text-center">
+				<footer class="footer" style="position: absolute; bottom: 30px">
 					{% include 'login-footer.html' ignore missing %}
-				</p>
+				</footer>
 			</div>
+
+			</div>
+			</div>
+
 		</div>
 	</body>
 </html>

@@ -22,35 +22,29 @@ from bargate import app
 
 @app.login_required
 @app.allow_disable
-def share_handler(path, action):
-	if action == 'browse':
-		app.smblib.set_response('html')
-	else:
-		app.smblib.set_response('http')
-
+def endpoint_handler(path, action):
 	return app.smblib.smb_action(request.endpoint, action, path)
 
 
-@app.route('/smb/<action>/<share>/', defaults={'path': ''})
-@app.route('/smb/<action>/<share>/<path:path>')
+@app.route('/smb/<action>/<epname>/', defaults={'path': ''})
+@app.route('/smb/<action>/<epname>/<path:path>')
+@app.set_response_type('json')
 @app.login_required
 @app.allow_disable
-def smb_get_json(share, action, path):
-	app.smblib.set_response('json')
-	return app.smblib.smb_action(share, action, path)
+def smb_get_json(epname, action, path):
+	return app.smblib.smb_action(epname, action, path)
 
 
 @app.route('/smb', methods=['POST'])
+@app.set_response_type('json')
 @app.login_required
 @app.allow_disable
 def smb_post():
-	app.smblib.set_response('json')
-
 	if 'action' not in request.form:
 		return jsonify({'code': 1, 'msg': 'No action specified'})
 
-	if 'share' not in request.form:
-		return jsonify({'code': 1, 'msg': 'No share name specified'})
+	if 'epname' not in request.form:
+		return jsonify({'code': 1, 'msg': 'No endpoint name name specified'})
 
 	if 'path' in request.form:
 		app.logger.debug("path set to: " + request.form['path'])
@@ -59,54 +53,43 @@ def smb_post():
 		app.logger.debug("path not set in call to smb_post")
 		path = ''
 
-	return app.smblib.smb_action(request.form['share'], request.form['action'], path)
+	return app.smblib.smb_action(request.form['epname'], request.form['action'], path)
 
 
 @app.route('/other')
 @app.login_required
 @app.allow_disable
 def other():
-	return render_template('other.html', active='shared', pwd='')
+	return render_template('other.html', active='other', pwd='')
 
 
-@app.route('/custom')
+@app.route('/connect', methods=['GET', 'POST'])
 @app.login_required
 @app.allow_disable
-def custom_server():
-	return render_template('custom.html', active='shared', pwd='')
-
-
-@app.route('/c', methods=['GET', 'POST'], defaults={'path': '', 'action': 'browse'})
-@app.route('/c/browse/<path:path>', methods=['GET', 'POST'], defaults={'action': 'browse'})
-@app.route('/c/browse/<path:path>/', methods=['GET', 'POST'], defaults={'action': 'browse'})
-@app.route('/c/<action>', methods=['GET', 'POST'], defaults={'path': ''})
-@app.route('/c/<action>/', methods=['GET', 'POST'], defaults={'path': ''})
-@app.route('/c/<action>/<path:path>', methods=['GET', 'POST'])
-@app.route('/c/<action>/<path:path>/', methods=['GET', 'POST'])
-@app.login_required
-@app.allow_disable
-def custom(path, action="browse"):
-
+def connect():
 	if request.method == 'POST':
-		try:
-			server_uri = request.form['open_server_uri']
-			# validate the path...somehow?
+		server_uri = request.form['open_server_uri']
+		session['custom_uri'] = server_uri
+		session.modified = True
+		return redirect(url_for('custom'))
+	else:
+		return render_template('custom.html', active='custom', pwd='')
 
-			session['custom_uri'] = server_uri
-			session.modified = True
-			# redirect to custom so its now a GET request
-			return redirect(url_for('custom'))
 
-		except KeyError:
-			# standard POST, not setting up a new server
-			pass
-
-	# ensure the custom_uri is set
+@app.route('/custom/browse/', defaults={'action': 'browse', 'path': ''})
+@app.route('/custom/browse', defaults={'action': 'browse', 'path': ''})
+@app.route('/custom', defaults={'path': '', 'action': 'browse'})
+@app.route('/custom/browse/<path:path>/', defaults={'action': 'browse'})
+@app.route('/custom/browse/<path:path>', defaults={'action': 'browse'})
+@app.route('/custom/<action>/<path:path>/')
+@app.route('/custom/<action>/<path:path>')
+@app.login_required
+@app.allow_disable
+def custom(path, action):
 	if 'custom_uri' in session:
 		if len(session['custom_uri']) == 0:
 			return redirect(url_for('custom_server'))
 	else:
 		return redirect(url_for('custom_server'))
 
-	return app.smblib.smb_action(unicode(session['custom_uri']),
-		"custom", "shared", session['custom_uri'], action, path)
+	return app.smblib.smb_action('custom', action, path)

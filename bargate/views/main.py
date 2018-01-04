@@ -86,11 +86,6 @@ def logout():
 	return redirect(url_for('login'))
 
 
-@app.route('/about')
-def about():
-	return render_template('about.html', active='help')
-
-
 @app.route('/about/changelog')
 def changelog():
 	return render_template('changelog.html', active='help')

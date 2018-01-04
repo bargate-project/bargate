@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -21,20 +20,18 @@ import stat       # used for checking file type via unix mode
 import urllib     # used in SMBClientWrapper for URL-quoting strings
 import time       # used in search (timeout)
 import StringIO   # used in image previews
-import traceback  # used in smb_error_json
 
 import smbc
-from flask import send_file, request, session, render_template
+from flask import send_file, request, session
 from flask import abort, flash, make_response, jsonify
 from PIL import Image
 
 from bargate import app
-from bargate.lib.core import banned_file, secure_filename, check_path, ut_to_string
-from bargate.lib.core import wb_sid_to_name, check_name, EntryType
-from bargate.lib.errors import stderr
+from bargate.lib.core import banned_file, secure_filename, ut_to_string, wb_sid_to_name, check_name, EntryType
 from bargate.lib.user import get_password
 from bargate.lib.userdata import get_show_hidden_files, get_overwrite_on_upload, set_bookmark
 from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon, view_in_browser, pillow_supported
+from bargate.lib.smb.base import LibraryBase
 
 
 class FileStat:
@@ -142,26 +139,7 @@ class SMBClientWrapper:
 		return self.smbclient.getxattr(url, attr)
 
 
-class BargateSMBLibrary:
-	response_type = 'http'
-
-	def set_response(self, response_type):
-		"""Use this to tell the library what sort of error response is expected if an error is generated"""
-
-		self.response_type = response_type
-
-	def error(self, message):
-		"""Returns an error to the client, the format of which is based on a previous call to :meth:set_response"""
-
-		if self.response_type == 'http':
-			abort(400)
-
-		elif self.response_type == 'html':
-			return stderr("Error", message)
-
-		elif self.response_type == 'json':
-			return jsonify({'code': 1, 'msg': message})
-
+class BargateSMBLibrary(LibraryBase):
 	def smb_auth(self, username, password):
 		"""Tries to 'authenticate' the user/pass by conneting to a remote share and listing contents"""
 
@@ -179,96 +157,29 @@ class BargateSMBLibrary:
 
 		app.logger.debug("bargate.lib.user.auth auth smb success")
 
-	def smb_action(self, endpoint, action, path):
-		"""Performs an action on a remote SMB server"""
+	def smb_action(self, endpoint_name, action, path):
+		app.logger.debug("smb_action('" + endpoint_name + "','" + action + "','" + path + "')")
 
-		app.logger.debug("smb_action('" + endpoint + "','" + action + "','" + path + "')")
+		self.smb_connection_init(endpoint_name, action, path)
 
-		self.endpoint = endpoint
-		self.action   = action
-		self.path     = path
-
-		if not app.sharesConfig.has_section(self.endpoint):
-			return self.error('The share specified was not found')
-
-		if not app.sharesConfig.has_option(self.endpoint, 'path'):
-			return self.error('The server configuration is invalid, path is not set on share "' + self.endpoint + '"')
-
-		self.addr = app.sharesConfig.get(self.endpoint, 'path')
-		self.addr = self.addr.replace("%USERNAME%", session['username'])
-		self.addr = self.addr.replace("%USER%", session['username'])
-
-		if app.config['LDAP_HOMEDIR']:
-			if 'ldap_homedir' in session:
-				if session['ldap_homedir'] is not None:
-					self.addr = self.addr.replace("%LDAP_HOMEDIR%", session['ldap_homedir'])
-
-		if not app.sharesConfig.has_option(self.endpoint, 'display'):
-			self.root_name = self.endpoint
-		else:
-			self.root_name = app.sharesConfig.get(self.endpoint, 'display')
-
-		if not app.sharesConfig.has_option(self.endpoint, 'menu'):
-			self.active = self.endpoint
-		else:
-			self.active = app.sharesConfig.get(self.endpoint, 'menu')
-
-		# the address should always start with smb://, we don't support anything else.
-		if not self.addr.startswith("smb://"):
-			return self.error('The server URL must start with smb://')
-
-		# Check the path is valid
-		try:
-			check_path(self.path)
-		except ValueError:
-			return self.error('You tried to navigate to an invalid or illegal path.')
-
-		# ensure addr (the server URI and share) ends with a trailing slash
-		if not self.addr.endswith('/'):
-			self.addr = self.addr + '/'
+		if not self.endpoint_path.endswith('/'):
+			self.endpoint_path = self.endpoint_path + '/'
 
 		# All requests to the SMB library need to include the addr (defined in shares.conf)
 		# and the path the user has navigated to, combined.
-		self.full_addr = self.addr + self.path
-		if self.full_addr.endswith('/'):
-			self.full_addr = self.full_addr[:-1]
-
-		# Work out the 'entry name'
-		if len(self.path) > 0:
-			(a, b, self.entry_name) = self.path.rpartition('/')
-		else:
-			self.entry_name = u''
+		self.addr = self.endpoint_path + self.path
+		if self.addr.endswith('/'):
+			self.addr = self.addr[:-1]
 
 		# Prepare to talk to the file server
 		self.libsmbclient = SMBClientWrapper()
 
-		app.logger.debug("Connection preperation complete")
-		app.logger.debug("Going to call: _action_" + self.action)
-
-		try:
-			method = getattr(self, '_action_' + self.action)
-		except AttributeError:
-			return self.error('Invalid action')
-
 		app.logger.info('user: "' + session['username'] + '", addr: "' + self.addr + '", endpoint: "' +
-			self.endpoint + '", action: "' + self.action + '", method: ' + str(request.method) +
-			', path: "' + self.path + '", addr: "' + request.remote_addr + '", ua: ' + request.user_agent.string)
+			self.endpoint_name + '", endpoint_url: "' + self.endpoint_url + '", action: "' + self.action +
+			'", method: ' + str(request.method) + ', path: "' + self.path + '", addr: "' + request.remote_addr +
+			'", ua: ' + request.user_agent.string)
 
-		return method()
-
-	def _action_browse(self):
-		app.logger.debug("_action_browse()")
-
-		return render_template('browse.html',
-			active=self.endpoint,
-			browse_mode=True,
-			share=self.endpoint,
-			path=self.path)
-
-	def _action_view(self):
-		app.logger.debug("_action_view()")
-
-		return self._action_download(view=True)
+		return self.action_dispatch()
 
 	def _action_download(self, view=False):
 		app.logger.debug("_action_download()")
@@ -428,8 +339,9 @@ class BargateSMBLibrary:
 			'results': results,
 			'query': query,
 			'crumbs': crumbs,
-			'root_name': self.root_name,
-			'share': self.endpoint,
+			'root_name': self.endpoint_title,
+			'epname': self.endpoint_name,
+			'epurl': self.endpoint_url,
 			'path': self.path,
 			'timeout_reached': timeout_reached,
 			'parent': parent,
@@ -506,10 +418,11 @@ class BargateSMBLibrary:
 				'shares': shares,
 				'crumbs': crumbs,
 				'buttons': buttons_enabled,
-				'bmark_path': self.path + ' in ' + self.root_name,
+				'bmark_path': self.path + ' in ' + self.endpoint_title,
 				'bmark': bmark_enabled,
-				'root_name': self.root_name,
-				'share': self.endpoint,
+				'root_name': self.endpoint_title,
+				'epname': self.endpoint_name,
+				'epurl': self.endpoint_url,
 				'path': self.path,
 				'no_items': no_items,
 				'parent': parent,
@@ -772,7 +685,7 @@ class BargateSMBLibrary:
 		except Exception:
 			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
 
-		set_bookmark(bookmark_name, self.endpoint, self.path)
+		set_bookmark(bookmark_name, self.endpoint_name, self.path)
 
 	def _search(self, query):
 		self.query           = query
@@ -826,7 +739,7 @@ class BargateSMBLibrary:
 				self._rsearch(sub_path)
 
 	def _direntry_load(self, dentry, path=None):
-		entry = {'skip': False, 'name': dentry.name, 'share': self.endpoint}
+		entry = {'skip': False, 'name': dentry.name, 'epurl': self.endpoint_url}
 
 		if path is None:
 			path = self.path
@@ -843,6 +756,7 @@ class BargateSMBLibrary:
 		# Skip entries for 'this dir' and 'parent dir'
 		if entry['name'] == '.' or entry['name'] == '..':
 			entry['skip'] = True
+			return entry
 
 		# hide files which we consider 'hidden'
 		if not get_show_hidden_files():
@@ -899,7 +813,7 @@ class BargateSMBLibrary:
 
 		return entry
 
-	def smb_error_info(self, ex):
+	def decode_exception(self, ex):
 		if isinstance(ex, smbc.PermissionError):
 			return ("Permission Denied",
 				"You do not have permission to perform the action")
@@ -938,13 +852,3 @@ class BargateSMBLibrary:
 		# ALL OTHER EXCEPTIONS
 		else:
 			return ("Error", str(type(ex)) + " - " + str(ex))
-
-	def smb_error(self, ex):
-		(title, desc) = self.smb_error_info(ex)
-		return stderr(title, desc)
-
-	def smb_error_json(self, ex):
-		(title, msg) = self.smb_error_info(ex)
-		app.logger.debug("smb_error_json: '" + title + "', '" + msg + "'")
-		app.logger.debug(traceback.format_exc())
-		return jsonify({'code': 1, 'msg': title + ": " + msg})

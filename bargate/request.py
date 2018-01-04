@@ -62,6 +62,9 @@ def before_request():
 		bargate.lib.userdata.save('last', str(time.time()))
 		bargate.lib.userdata.record_user_activity(session['username'])
 
+	# Default to sending HTML responses
+	g.response_type = 'html'
+
 
 @app.context_processor
 def context_processor():

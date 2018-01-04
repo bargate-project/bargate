@@ -7,46 +7,14 @@ html, body {
 }
 
 body {
-	background: rgba(245, 245, 245, 0.90);
+	background: rgba(245, 245, 245, 0.85);
 	height: 100%;
+	color: #777777;
 }
 
-@media (min-width: 768px) {
-	body {
-		color: #777777;
-	}
-}
-
-label {
-	font-size: 1em;
-	font-weight: 200;
-}
-
-.loginbox h1 {
-	margin-bottom: 20px;
-	text-align: center;
-	font-weight: 200;
-	font-size: 22px;
-}
-
-@media (min-width: 768px) {
-	.loginbox {
-		margin-top: 70px;
-		width: 450px;
-		background: rgba(245, 245, 245, 0.90);
-		padding: 20px;
-		margin-left: auto;
-		margin-right: auto;
-		border: 1px solid #777777;
-		border-radius: 20px;
-		-webkit-border-radius: 20px;
-		-moz-border-radius: 20px;
-	}
-
-	.loginbox h1 {
-		margin-top: 10px;
-		font-size: 40px;
-	}
+h1.title {
+	margin-top: 15vh;
+	margin-bottom: 8vh;
 }
 
 .form-group {

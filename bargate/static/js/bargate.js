@@ -7,6 +7,24 @@ function showErr(title,desc) {
 	event.stopPropagation();
 }
 
+function raiseFail(title, message, jqXHR, textStatus, errorThrown) {
+	if (jqXHR.status === 0) {
+		reason = "a network error occured."
+	} else {
+		reason = textStatus;
+	}
+
+	showErr(title, message + ": " + reason);
+}
+
+function raiseNonZero(title, message, code) {
+	if (code == 401) {
+		location.reload(true); // redirect to login
+	} else {
+		showErr(title, message);
+	}
+}
+
 function closeModals() {
 	var openModal = $('.modal.in').attr('id'); 
 	if (openModal) {
@@ -15,7 +33,7 @@ function closeModals() {
 }
 
 var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
-var $browse = {share: null, path: null, entry: null, entryDirPath: null, btnsEnabled: false, bmarkEnabled: false,
+var $browse = {epname: null, epurl: null, path: null, entry: null, entryDirPath: null, btnsEnabled: false, bmarkEnabled: false,
 	sortBy: 'name', data: null,
 };
 
@@ -73,16 +91,16 @@ function renderDirectory() {
 }
 
 function reloadDir() {
-	loadDir($browse.share, $browse.path, false);
+	loadDir($browse.epname, $browse.path, false);
 }
 
-function loadDir(share, path, alterHistory) {
+function loadDir(epname, path, alterHistory) {
 	if (alterHistory === undefined) { alterHistory = true; }
 
-	$.getJSON('/smb/ls/' + share + '/' + path)
+	$.getJSON('/smb/ls/' + epname + '/' + path)
 	.done(function(response) {
 		if (response.code > 0) {
-			showErr("Unable to open folder", response.msg);
+			raiseNonZero("Unable to open directory", response.msg, response.code);
 		} else {
 			if (response.bmark) {
 				enableBookmark();
@@ -101,32 +119,33 @@ function loadDir(share, path, alterHistory) {
 			prepFileUpload();
 
 			if (alterHistory) {
-				new_url = '/' + share + '/browse/' + path
-				history.pushState({share: share, path: path}, '', new_url);
+				new_url = response.epurl + '/browse/' + path
+				history.pushState({epname: epname, epurl: response.epurl, path: path}, '', new_url);
 			}
-			$browse.share = share;
+			$browse.epurl = response.epurl;
+			$browse.epname = epname;
 			$browse.path  = path;
 
 		}
 	})
-	.fail(function() {
-		showErr("Server error", "The server returned an error");
+	.fail(function(jqXHR, textStatus, errorThrown) {
+		raiseFail("Unable to open folder", "Could not load folder contents", jqXHR, textStatus, errorThrown);
 	});
 }
 
 function browseParent() {
 	if ($browse.data.parent) {
-		loadDir($browse.data.share, $browse.data.parent_path);
+		loadDir($browse.epname, $browse.data.parent_path);
 	}
 }
 
 function doSearch() {
 	$('#search-m').modal('hide');
 
-	$.getJSON('/' + $browse.share + "/search/" + $browse.path, {q: $('#search-i').val()})
+	$.getJSON('/smb/search/' + $browse.epname + '/' + $browse.path, {q: $('#search-i').val()})
 	.done(function(response) {
 		if (response.code > 0) {
-			showErr("Search failed", response.msg);
+			raiseNonZero("Search failed", response.msg, response.code);
 		} else {
 			$browse.data = response;
 			$browse.parent = false;
@@ -153,8 +172,8 @@ function doSearch() {
 			doBrowse();
 		}
 	})
-	.fail(function() {
-		showErr("Server error","The server returned an error");
+	.fail(function(jqXHR, textStatus, errorThrown) {
+		raiseFail("Unable to search", "Could not obtain search results", jqXHR, textStatus, errorThrown);
 	});
 }
 
@@ -234,13 +253,13 @@ function doListView() {
 
 function doBrowse() {
 	$(".edir").click(function() {
-		loadDir( $browse.share, $(this).data('path') );
+		loadDir( $browse.epname, $(this).data('path') );
 		event.preventDefault();
 		event.stopPropagation();
 	});
 
 	$(".eshare").click(function() {
-		loadDir( $browse.share, $(this).data('path') );
+		loadDir( $browse.epname, $(this).data('path') );
 	});
 
 	// Bind actions to buttons in the 'file show' modal
@@ -254,12 +273,12 @@ function doBrowse() {
 			showFileOverview($(this));
 		} else if ($user.onclick == 'default') {
 			if ($(this).attr('data-view')) {
-				window.open(buildurl($(this).data('share'), $(this).data('path'), 'view'),'_blank');
+				window.open(buildurl($(this).data('epurl'), $(this).data('path'), 'view'),'_blank');
 			} else {
-				window.open(buildurl($(this).data('share'), $(this).data('path'), 'download'),'_blank');
+				window.open(buildurl($(this).data('epurl'), $(this).data('path'), 'download'),'_blank');
 			}
 		} else {
-			window.open(buildurl($(this).data('share'), $(this).data('path'), 'download'),'_blank');
+			window.open(buildurl($(this).data('epurl'), $(this).data('path'), 'download'),'_blank');
 		}
 	});
 
@@ -276,10 +295,10 @@ function doBrowse() {
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'view') {
-				window.open(buildurl(file.data('share'), file.data('path'),'view'),'_blank');
+				window.open(buildurl(file.data('epurl'), file.data('path'),'view'),'_blank');
 			}
 			else if ($action == 'download') {
-				window.open(buildurl(file.data('share'), file.data('path'),'download'),'_blank');
+				window.open(buildurl(file.data('epurl'), file.data('path'),'download'),'_blank');
 			}
 			else if ($action == 'copy') {
 				selectEntry(file.data('filename'), $browse.path);
@@ -310,7 +329,7 @@ function doBrowse() {
 			var $action = selectedMenu.closest("a").data("action");
 
 			if ($action == 'open') {
-				loadDir($browse.share, dir.data('path'));
+				loadDir($browse.epname, dir.data('path'));
 			}
 			else if ($action == 'rename') {
 				selectEntry(dir.data('filename'), $browse.path);
@@ -425,7 +444,7 @@ function prepFileUpload() {
 		url: '/smb',
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
-		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}, {name: 'share', value: $browse.share}, {name: 'path', value: $browse.path}],
+		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}, {name: 'epname', value: $browse.epname}, {name: 'path', value: $browse.path}],
 		stop: function (e, data) {
 			window.uploadNotify.close();
 			delete window.uploadNotify;
@@ -506,8 +525,8 @@ function selectEntry(name, path) {
 	$browse.entryDirPath = path;
 }
 
-function buildurl(share, path, action) {
-	return '/' + share + "/" + action + "/" + path
+function buildurl(epurl, path, action) {
+	return epurl + "/" + action + "/" + path
 }
 
 function showFileDetails(file) {
@@ -516,10 +535,10 @@ function showFileDetails(file) {
 	$('#e-details-fname').html('Please wait...');
 	$('#e-details-m').modal('show');
 
-	$.getJSON(buildurl(file.data('share'), file.data('path'),'stat'))
+	$.getJSON('/smb/stat/' + $browse.epname + '/' + file.data('path'))
 	.done(function(response) {
 		if (response.code != 0) {
-			showErr("Error loading file details", response.msg);
+			raiseNonZero("Error loading file details", response.msg, response.code);
 		} else {
 			$('#e-details-fname').html(response.filename);
 			$('#e-details-size').html(bytesToString(response.size));
@@ -533,8 +552,8 @@ function showFileDetails(file) {
 			$('#e-details-data').removeClass('hidden');
 		}
 	})
-	.fail(function() {
-		showErr("Server error","The server returned an error");
+	.fail(function(jqXHR, textStatus, errorThrown) {
+		raiseFail("Unable to view file details", "Could not obtain file details", jqXHR, textStatus, errorThrown);
 	});
 }
 
@@ -544,13 +563,13 @@ function showFileOverview(file) {
 	$('#file-m-mtime').text(file.data('mtime'));
 	$('#file-m-mtype').text(file.data('mtype'));
 	$('#file-m-icon').addClass(file.data('icon'));
-	$('#file-m-download').attr('href',buildurl(file.data('share'), file.data('path'), 'download'));
-	$('#file-m-details').data('share',file.data('share'));
+	$('#file-m-download').attr('href',buildurl(file.data('epurl'), file.data('path'), 'download'));
+	$('#file-m-details').data('epurl',file.data('epurl'));
 	$('#file-m-details').data('path',file.data('path'));
 
 	
 	if (file.attr('data-img')) {
-		$('#file-m-preview').attr('src',buildurl(file.data('share'), file.data('path'), 'preview'));
+		$('#file-m-preview').attr('src',buildurl(file.data('epurl'), file.data('path'), 'preview'));
 		$('#file-m-preview').removeClass('hidden');
 		$('#file-m-icon').addClass('hidden');
 	}
@@ -561,7 +580,7 @@ function showFileOverview(file) {
 	}
 	
 	if (file.attr('data-view')) {
-		$('#file-m-view').attr('href',buildurl(file.data('share'), file.data('path'), 'view'));
+		$('#file-m-view').attr('href',buildurl(file.data('epurl'), file.data('path'), 'view'));
 		$('#file-m-view').removeClass('hidden');
 	}
 	else {
@@ -616,19 +635,19 @@ function notifyError(msg) {
 
 function doRename() {
 	$('#e-rename-m').modal('hide');
-	$.post( '/smb', { share: $browse.share, path: $browse.entryDirPath, action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
+	$.post( '/smb', { epname: $browse.epname, path: $browse.entryDirPath, action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to rename","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Unable to rename", "Could not rename", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Unable to rename",data.msg);
+				raiseNonZero("Unable to rename", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
 				if ($browse.entryDirPath === $browse.path) {
 					reloadDir();
 				} else {
-					loadDir($browse.share, $browse.EntryDirPath);
+					loadDir($browse.epname, $browse.EntryDirPath);
 				}
 			}
 	});
@@ -636,19 +655,19 @@ function doRename() {
 
 function doCopy() {
 	$('#e-copy-m').modal('hide');
-	$.post( '/smb', { share: $browse.share, path: $browse.entryDirPath, action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
+	$.post( '/smb', { epname: $browse.epname, path: $browse.entryDirPath, action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to copy","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Unable to copy", "Could not copy file", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Unable to copy",data.msg);
+				raiseNonZero("Unable to copy", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
 				if ($browse.entryDirPath === $browse.path) {
 					reloadDir();
 				} else {
-					loadDir($browse.share, $browse.entryDirPath);
+					loadDir($browse.epname, $browse.entryDirPath);
 				}
 			}
 	});
@@ -656,13 +675,13 @@ function doCopy() {
 
 function doMkdir() {
 	$('#mkdir-m').modal('hide');
-	$.post( '/smb', { share: $browse.share, path: $browse.path, action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
+	$.post( '/smb', { epname: $browse.epname, path: $browse.path, action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Error creating directory","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Unable to create directory", "Could not create directory", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Error creating directory",data.msg);
+				raiseNonZero("Unable to create directory", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
 				reloadDir();
@@ -673,13 +692,13 @@ function doMkdir() {
 function doBookmark() {
 	$('#bmark-m').modal('hide');
 	bmarkName = $('#bmark-i').val();
-	$.post( '/smb', { share: $browse.share, path: $browse.path, action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
+	$.post( '/smb', { epname: $browse.epname, path: $browse.path, action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to create bookmark","An error occured whilst contacting the server.");
+			raiseFail("Unable to create bookmark", "Could not create bookmark", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Unable to create bookmark", data.msg);
+				raiseNonZero("Unable to create bookmark", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
 				$('#bmarks').append('<li><a href="' + data.url + '"><i class="fas fa-arrow-right fa-fw"></i>' + bmarkName + '</a></li>');
@@ -689,19 +708,19 @@ function doBookmark() {
 
 function doDelete() {
 	$('#e-delete-m').modal('hide');
-	$.post( '/smb', { share: $browse.share, path: $browse.entryDirPath, action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
+	$.post( '/smb', { epname: $browse.epname, path: $browse.entryDirPath, action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to delete","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Unable to delete", "Could not delete", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			if (data.code != 0) {
-				showErr("Unable to delete", data.msg);
+				raiseNonZero("Unable to delete", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
 				if ($browse.entryDirPath === $browse.path) {
 					reloadDir();
 				} else {
-					loadDir($browse.share, $browse.entryDirPath);
+					loadDir($browse.epname, $browse.entryDirPath);
 				}
 			}
 	});
@@ -713,7 +732,7 @@ function setLayoutMode(newLayout) {
 
 	$.post( "/settings", { key: 'layout', value: newLayout, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Error switching layout", "An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Error switching layout", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
 		.done(function() {
 			// Now change view class
@@ -735,7 +754,7 @@ function setLayoutMode(newLayout) {
 
 			$user.layout = newLayout;
 			renderDirectory();
-		});
+	});
 }
 
 function setHidden(show_hidden) {
@@ -743,7 +762,7 @@ function setHidden(show_hidden) {
 
 	$.post( "/settings", { key: 'hidden', value: show_hidden, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to set hidden files mode","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Error setting hidden mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
 		.done(function() {
 			if ($browse.btnsEnabled) {
@@ -759,7 +778,7 @@ function setClickMode(newMode) {
 
 	$.post( "/settings", { key: 'click', value: newMode, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to set on click mode","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Error setting on click mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
 		.done(function() {
 			if ($browse.btnsEnabled) {
@@ -773,7 +792,7 @@ function setOverwrite(overwrite) {
 	if (overwrite == $user.overwrite) { return; }
 	$.post( "/settings", { key: 'overwrite', value: overwrite, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Unable to set upload overwrite mode","An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Error setting upload mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
 		.done(function() {
 			$user.overwrite = overwrite;
@@ -784,7 +803,7 @@ function setTheme(themeName) {
 	if (themeName == $user.theme) { return; }
 	$.post( "/settings", { key: 'theme', value: themeName, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			showErr("Error changing theme", "An error occured whilst contacting the server. " + errorThrown);
+			raiseFail("Error setting theme", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
 			$("body").fadeOut(200, function() {
@@ -935,7 +954,7 @@ function onPageLoad() {
 	window.addEventListener('popstate', function(e) {
 		var previousState = e.state;
 		if (previousState != null) {
-			loadDir(previousState.share, previousState.path, false);
+			loadDir(previousState.epname, previousState.path, false);
 		}
 	});
 
@@ -966,9 +985,11 @@ function onPageLoad() {
 	});
 
 	/* Load initial directory */
-	init_url = '/' + $init.share + '/browse/' + $init.path
-	history.replaceState({share: $init.share, path: $init.path}, '', init_url);
-	loadDir($init.share, $init.path, false);
+	if (!(typeof $init === 'undefined')) {
+		init_url = $init.epurl + '/browse/' + $init.path
+		history.replaceState({epurl: $init.epurl, epname: $init.epname, path: $init.path}, '', init_url);
+		loadDir($init.epname, $init.path, false);
+	}
 }
 
 $(document).ready(function($) {
@@ -976,7 +997,7 @@ $(document).ready(function($) {
 	$.getJSON('/settings')
 	.done(function(response) {
 		if (response.code != 0) {
-			showErr("Unable to load settings","The server did not respond correctly to the request for your settings");
+			raiseNonZero("Unable to load settings", response.msg, response.code);
 		} else {
 			$user.layout = response.layout;
 			$user.token = response.token;
@@ -989,8 +1010,8 @@ $(document).ready(function($) {
 			onPageLoad();
 		}
 	})
-	.fail(function() {
-		showErr("Server error", "The server returned an error");
+	.fail(function(jqXHR, textStatus, errorThrown) {
+		raiseFail("Unable to load settings", "Unable to contact the server", jqXHR, textStatus, errorThrown);
 	});
 });
 

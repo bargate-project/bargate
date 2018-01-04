@@ -58,54 +58,66 @@ if not app.error:
 
 	# add url rules for the shares/functions defined in shares.conf
 	for section in app.sharesList:
-		try:
+		if section == 'custom':
+			app.logger.error("Could not create endpoint 'custom': name is reserved")
+			continue
+
+		if not app.sharesConfig.has_option(section, 'url'):
+			url = '/' + section
+		else:
 			url = app.sharesConfig.get(section, 'url')
+
 			if not url.startswith('/'):
 				url = "/" + url
 
+		if not app.sharesConfig.has_option(section, 'path'):
+			app.logger.error("Could not create endpoint '" + section + "': parameter 'path' is not set")
+			continue
+
+		try:
 			# If the user goes to /endpoint/browse/ or /endpoint/browse
 			app.add_url_rule(url + '/browse/',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler,
+								view_func=bargate.views.smb.endpoint_handler,
 								defaults={'action': 'browse', 'path': ''})
 
 			app.add_url_rule(url + '/browse',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler,
+								view_func=bargate.views.smb.endpoint_handler,
 								defaults={'action': 'browse', 'path': ''})
 
 			# If the user goes to /endpoint or /endpoint/
 			app.add_url_rule(url,
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler,
+								view_func=bargate.views.smb.endpoint_handler,
 								defaults={'path': '', 'action': 'browse'})
 
 			app.add_url_rule(url + '/',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler,
+								view_func=bargate.views.smb.endpoint_handler,
 								defaults={'path': '', 'action': 'browse'})
 
 			# If the user goes to /endpoint/browse/path/
 			app.add_url_rule(url + '/browse/<path:path>',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler,
+								view_func=bargate.views.smb.endpoint_handler,
 								defaults={'action': 'browse'})
 
 			app.add_url_rule(url + '/browse/<path:path>/',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler,
+								view_func=bargate.views.smb.endpoint_handler,
 								defaults={'action': 'browse'})
 
 			# If the user goes to /endpoint/<action>/path/
 			app.add_url_rule(url + '/<string:action>/<path:path>',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler)
+								view_func=bargate.views.smb.endpoint_handler)
 
 			app.add_url_rule(url + '/<string:action>/<path:path>/',
 								endpoint=section,
-								view_func=bargate.views.smb.share_handler)
+								view_func=bargate.views.smb.endpoint_handler)
 
-			app.logger.debug("Created share entry '" + section + "' available at " + url)
+			app.logger.debug("Created endpoint named '" + section + "' available at " + url)
 
 		except Exception as ex:
-			app.logger.error("Could not create file share '" + section + "':" + str(type(ex)) + ":" + str(ex))
+			app.logger.error("Could not create file share '" + section + "': " + str(ex))
