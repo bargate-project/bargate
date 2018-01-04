@@ -9,7 +9,7 @@ function showErr(title,desc) {
 
 function raiseFail(title, message, jqXHR, textStatus, errorThrown) {
 	if (jqXHR.status === 0) {
-		reason = "a network error occured."
+		reason = "a network error occured.";
 	} else {
 		reason = textStatus;
 	}
@@ -38,7 +38,7 @@ var $browse = {epname: null, epurl: null, path: null, entry: null, entryDirPath:
 };
 
 function enableBrowseButts() {
-	if (!$browse.btnsEnabled === true) {
+	if ($browse.btnsEnabled === false) {
 		$browse.btnsEnabled = true;
 		$('.browse-b').attr("disabled", false);
 		$('.browse-b').removeClass("disabled");
@@ -115,11 +115,11 @@ function loadDir(epname, path, alterHistory) {
 			}
 
 			$browse.data = response;
-			renderDirectory()
+			renderDirectory();
 			prepFileUpload();
 
 			if (alterHistory) {
-				new_url = response.epurl + '/browse/' + path
+				new_url = response.epurl + '/browse/' + path;
 				history.pushState({epname: epname, epurl: response.epurl, path: path}, '', new_url);
 			}
 			$browse.epurl = response.epurl;
@@ -401,8 +401,8 @@ function doGridView() {
 }
 
 function filesizeformat(bytes) {
-	var bytes = parseFloat(bytes);
-	var units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+	bytes = parseFloat(bytes);
+	units = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 	if (bytes === 1) {
 		return '1 Byte';
@@ -420,7 +420,7 @@ function filesizeformat(bytes) {
 }
 
 function bitrateformat(bits) {
-	var bytes = bits / 8
+	var bytes = bits / 8;
 	bytes = parseFloat(bytes);
 	var units = ['Bytes/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'];
 
@@ -475,7 +475,7 @@ function prepFileUpload() {
 		progressall: function (e, data) {
 			progress = parseInt(data.loaded / data.total * 100, 10);
 			window.uploadNotify.update('progress', progress);
-			window.uploadNotify.update('message', progress + "% " + filesizeformat(data.loaded) + ' out of ' + filesizeformat(data.total) + ", " + bitrateformat(data.bitrate))
+			window.uploadNotify.update('message', progress + "% " + filesizeformat(data.loaded) + ' out of ' + filesizeformat(data.total) + ", " + bitrateformat(data.bitrate));
 		},
 		add: function (e, data) {
 			$('#upload-drag-m').modal('hide');
@@ -489,12 +489,12 @@ function prepFileUpload() {
 				window.numUploadsDone = 0;
 				window.uploads = [];
 			} else {
-				if (!window.numUploads > 0) {
+				if (window.numUploads === 0) {
 					window.numUploads = 1;
-					window.uploadNotify.update('title','Uploading one file <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>')
+					window.uploadNotify.update('title','Uploading one file <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>');
 				} else {
 					window.numUploads = window.numUploads + 1;
-					window.uploadNotify.update('title','Uploading ' + window.numUploads + ' files <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>')
+					window.uploadNotify.update('title','Uploading ' + window.numUploads + ' files <button class="pull-right btn btn-xs btn-warning upload-cancel-b">Cancel</button><br>');
 				}
 			}
 
@@ -526,7 +526,7 @@ function selectEntry(name, path) {
 }
 
 function buildurl(epurl, path, action) {
-	return epurl + "/" + action + "/" + path
+	return epurl + "/" + action + "/" + path;
 }
 
 function showFileDetails(file) {
@@ -976,7 +976,7 @@ function onPageLoad() {
 	$('body').dragster({
 		enter: function ()
 		{
-			$('#upload-drag-m').modal()
+			$('#upload-drag-m').modal();
 		},
 		leave: function ()
 		{
@@ -985,8 +985,8 @@ function onPageLoad() {
 	});
 
 	/* Load initial directory */
-	if (!(typeof $init === 'undefined')) {
-		init_url = $init.epurl + '/browse/' + $init.path
+	if (typeof $init !== 'undefined') {
+		init_url = $init.epurl + '/browse/' + $init.path;
 		history.replaceState({epurl: $init.epurl, epname: $init.epname, path: $init.path}, '', init_url);
 		loadDir($init.epname, $init.path, false);
 	}

@@ -113,7 +113,6 @@ class Manager():
 
 		if result == 0:
 			self.info("flake8: OK")
-			return True
 		else:
 			print(output)
 			self.fatal("flake8 returned errors")
@@ -133,7 +132,6 @@ class Manager():
 
 			if result == 0:
 				self.info("jshint: OK")
-				return True
 			else:
 				print(output)
 				self.fatal("jshint returned errors")
