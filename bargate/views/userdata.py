@@ -25,7 +25,6 @@ from bargate import app
 
 
 @app.route('/settings', methods=['GET', 'POST'])
-@app.allow_disable
 def settings():
 	if request.method == 'GET':
 
@@ -93,7 +92,6 @@ def settings():
 
 @app.route('/bookmarks', methods=['GET', 'POST'])
 @app.login_required
-@app.allow_disable
 def bookmarks():
 	# Bookmarks needs redis storage, if redis is disabled we can't do bookmarks
 	if not app.config['REDIS_ENABLED']:
@@ -145,7 +143,6 @@ def bookmarks():
 
 @app.route('/bookmark/<string:bookmark_id>')
 @app.login_required
-@app.allow_disable
 def bookmark(bookmark_id):
 	"""This function takes a bookmark ID and redirects the user to the location
 	specified by the bookmark in the REDIS database. This only works with
@@ -205,7 +202,6 @@ def bookmark(bookmark_id):
 
 @app.route('/online/<last>')
 @app.login_required
-@app.allow_disable
 def online(last=5):
 	last = int(last)
 

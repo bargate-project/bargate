@@ -18,7 +18,7 @@
 
 import traceback
 
-from flask import request, session, g, render_template
+from flask import request, session, g, render_template, jsonify
 
 from bargate import app
 import bargate.lib.errors
@@ -32,13 +32,6 @@ def error500(error):
 	err_title  = "Internal Error"
 	err_msg    = "An internal error has occured and has been forwarded to our support team."
 
-	# Take title/msg from global object if set
-	if hasattr(g, 'fault_title'):
-		err_title = g.fault_title
-	if hasattr(g, 'fault_message'):
-		err_msg = g.fault_message
-
-	# Handle errors when nobody is logged in
 	if 'username' in session:
 		usr = session['username']
 	else:
@@ -153,15 +146,18 @@ def error405(error):
 def csrfp_error(error):
 	"""Handles CSRF protection exceptions"""
 
-	if app.debug:
-		debug = traceback.format_exc()
+	if g.get('response_type', 'html') == 'json':
+		return jsonify({'code': 400, 'msg': 'Your request failed to present a valid security token (CSRF protection)'})
 	else:
-		debug = None
+		if app.debug:
+			debug = traceback.format_exc()
+		else:
+			debug = None
 
-	return render_template('error.html',
-		title="Security Error",
-		message="Your browser failed to present a valid security token (CSRF protection token).",
-		debug=debug), 400
+		return render_template('error.html',
+			title="Security Error",
+			message="Your browser failed to present a valid security token (CSRF protection token).",
+			debug=debug), 400
 
 
 @app.errorhandler(Exception)

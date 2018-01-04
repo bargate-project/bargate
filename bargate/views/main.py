@@ -29,7 +29,6 @@ if app.config['TOTP_ENABLED']:
 
 @app.csrfp_exempt
 @app.route('/', methods=['GET', 'POST'])
-@app.allow_disable
 def login():
 	if app.is_user_logged_in():
 		return redirect(url_for(app.config['SHARES_DEFAULT']))

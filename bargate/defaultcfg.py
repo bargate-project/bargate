@@ -76,10 +76,6 @@ REDIS_ENABLED = True
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 
-# Disable the application or not
-# Default to true if no config file to make sure a config file has been found.
-DISABLE_APP = False
-
 # Default bootstrap/bootswatch theme
 THEME_DEFAULT = 'cerulean'
 

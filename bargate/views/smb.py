@@ -21,7 +21,6 @@ from bargate import app
 
 
 @app.login_required
-@app.allow_disable
 def endpoint_handler(path, action):
 	return app.smblib.smb_action(request.endpoint, action, path)
 
@@ -29,7 +28,6 @@ def endpoint_handler(path, action):
 @app.route('/xhr', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
-@app.allow_disable
 def smb_post():
 	if 'action' not in request.form:
 		return jsonify({'code': 1, 'msg': 'No action specified'})
@@ -50,7 +48,6 @@ def smb_post():
 @app.route('/xhr/connect', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
-@app.allow_disable
 def connect():
 	if 'path' not in request.form:
 		return jsonify({'code': 1, 'msg': 'You must enter an address to connect to.'})
@@ -65,7 +62,6 @@ def connect():
 @app.route('/xhr/<action>/<epname>/<path:path>')
 @app.set_response_type('json')
 @app.login_required
-@app.allow_disable
 def smb_get_json(epname, action, path):
 	return app.smblib.smb_action(epname, action, path)
 
@@ -78,7 +74,6 @@ def smb_get_json(epname, action, path):
 @app.route('/custom/<action>/<path:path>/')
 @app.route('/custom/<action>/<path:path>')
 @app.login_required
-@app.allow_disable
 def custom(path, action):
 	if 'custom_uri' in session:
 		if len(session['custom_uri']) == 0:
@@ -91,6 +86,5 @@ def custom(path, action):
 
 @app.route('/other')
 @app.login_required
-@app.allow_disable
 def other():
 	return render_template('other.html', active='other', pwd='')
