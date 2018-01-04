@@ -10,6 +10,8 @@ function showErr(title,desc) {
 function raiseFail(title, message, jqXHR, textStatus, errorThrown) {
 	if (jqXHR.status === 0) {
 		reason = "a network error occured.";
+	} else if (jqXHR.status === 400) {
+		reason = "the server said 'Bad Request'";
 	} else {
 		reason = textStatus;
 	}
@@ -97,7 +99,7 @@ function reloadDir() {
 function loadDir(epname, path, alterHistory) {
 	if (alterHistory === undefined) { alterHistory = true; }
 
-	$.getJSON('/smb/ls/' + epname + '/' + path)
+	$.getJSON('/xhr/ls/' + epname + '/' + path)
 	.done(function(response) {
 		if (response.code > 0) {
 			raiseNonZero("Unable to open directory", response.msg, response.code);
@@ -142,7 +144,7 @@ function browseParent() {
 function doSearch() {
 	$('#search-m').modal('hide');
 
-	$.getJSON('/smb/search/' + $browse.epname + '/' + $browse.path, {q: $('#search-i').val()})
+	$.getJSON('/xhr/search/' + $browse.epname + '/' + $browse.path, {q: $('#search-i').val()})
 	.done(function(response) {
 		if (response.code > 0) {
 			raiseNonZero("Search failed", response.msg, response.code);
@@ -441,7 +443,7 @@ function bitrateformat(bits) {
 
 function prepFileUpload() {
 	$('#upload-i').fileupload({
-		url: '/smb',
+		url: '/xhr',
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
 		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}, {name: 'epname', value: $browse.epname}, {name: 'path', value: $browse.path}],
@@ -535,7 +537,7 @@ function showFileDetails(file) {
 	$('#e-details-fname').html('Please wait...');
 	$('#e-details-m').modal('show');
 
-	$.getJSON('/smb/stat/' + $browse.epname + '/' + file.data('path'))
+	$.getJSON('/xhr/stat/' + $browse.epname + '/' + file.data('path'))
 	.done(function(response) {
 		if (response.code != 0) {
 			raiseNonZero("Error loading file details", response.msg, response.code);
@@ -635,7 +637,7 @@ function notifyError(msg) {
 
 function doRename() {
 	$('#e-rename-m').modal('hide');
-	$.post( '/smb', { epname: $browse.epname, path: $browse.entryDirPath, action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
+	$.post( '/xhr', { epname: $browse.epname, path: $browse.entryDirPath, action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Unable to rename", "Could not rename", jqXHR, textStatus, errorThrown);
 		})
@@ -655,7 +657,7 @@ function doRename() {
 
 function doCopy() {
 	$('#e-copy-m').modal('hide');
-	$.post( '/smb', { epname: $browse.epname, path: $browse.entryDirPath, action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
+	$.post( '/xhr', { epname: $browse.epname, path: $browse.entryDirPath, action: 'copy', _csrfp_token: $user.token, src: $browse.entry, dest: $('#e-copy-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Unable to copy", "Could not copy file", jqXHR, textStatus, errorThrown);
 		})
@@ -675,7 +677,7 @@ function doCopy() {
 
 function doMkdir() {
 	$('#mkdir-m').modal('hide');
-	$.post( '/smb', { epname: $browse.epname, path: $browse.path, action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
+	$.post( '/xhr', { epname: $browse.epname, path: $browse.path, action: 'mkdir', _csrfp_token: $user.token, name: $('#mkdir-i').val()})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Unable to create directory", "Could not create directory", jqXHR, textStatus, errorThrown);
 		})
@@ -692,7 +694,7 @@ function doMkdir() {
 function doBookmark() {
 	$('#bmark-m').modal('hide');
 	bmarkName = $('#bmark-i').val();
-	$.post( '/smb', { epname: $browse.epname, path: $browse.path, action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
+	$.post( '/xhr', { epname: $browse.epname, path: $browse.path, action: 'bookmark', _csrfp_token: $user.token, name: bmarkName})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Unable to create bookmark", "Could not create bookmark", jqXHR, textStatus, errorThrown);
 		})
@@ -708,7 +710,7 @@ function doBookmark() {
 
 function doDelete() {
 	$('#e-delete-m').modal('hide');
-	$.post( '/smb', { epname: $browse.epname, path: $browse.entryDirPath, action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
+	$.post( '/xhr', { epname: $browse.epname, path: $browse.entryDirPath, action: 'delete', _csrfp_token: $user.token, name: $browse.entry})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Unable to delete", "Could not delete", jqXHR, textStatus, errorThrown);
 		})
@@ -722,6 +724,22 @@ function doDelete() {
 				} else {
 					loadDir($browse.epname, $browse.entryDirPath);
 				}
+			}
+	});
+}
+
+function doConnectServer() {
+	$('#connect-m').modal('hide');
+	$.post( '/xhr/connect', { _csrfp_token: $user.token, path: $('#connect-i').val()})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			raiseFail("Unable to connect to server", "Could not connect to server", jqXHR, textStatus, errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code != 0) {
+				raiseNonZero("Unable to connect to server", data.msg, data.code);
+			} else {
+				
+				loadDir('custom', '');
 			}
 	});
 }
@@ -877,6 +895,11 @@ function onPageLoad() {
 		}
 	});
 
+	Mousetrap.bind('alt+c', function() {
+		closeModals();
+		$('#connect-m').modal('show'); 
+	});
+
 
 	/* Activate tooltips and enable hiding on clicking */
 	$('[data-tooltip="yes"]').tooltip({"delay": { "show": 600, "hide": 100 }, "placement": "bottom", "trigger": "hover"});
@@ -950,6 +973,11 @@ function onPageLoad() {
 		doBookmark();
 	});
 
+	$("#connect-f").submit(function (e) {
+		e.preventDefault();
+		doConnectServer();
+	});
+
 	/* handle back/forward buttons */
 	window.addEventListener('popstate', function(e) {
 		var previousState = e.state;
@@ -961,6 +989,11 @@ function onPageLoad() {
 	/* focus on inputs when modals open */
 	$('#mkdir-m').on('shown.bs.modal', function() {
 		$('#mkdir-m input[type="text"]').focus();
+	});
+
+	$('#connect-m').on('shown.bs.modal', function() {
+		contents = $('#connect-m input[type="text"]').val();
+		$('#connect-m input[type="text"]').focus().val("").val(contents);
 	});
 	
 	$('#bmark-m').on('shown.bs.modal', function() {

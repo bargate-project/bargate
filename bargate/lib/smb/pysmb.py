@@ -285,7 +285,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			sfile = self.conn.getAttributes(self.share_name, self.path_without_share)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		# ensure item is a file
 		if sfile.isDirectory:
@@ -373,7 +373,7 @@ class BargateSMBLibrary(LibraryBase):
 			try:
 				smb_shares = self.conn.listShares()
 			except Exception as ex:
-				return self.smb_error_json(ex)
+				return self.return_exception(ex)
 
 			shares = []
 			for share in smb_shares:
@@ -405,7 +405,7 @@ class BargateSMBLibrary(LibraryBase):
 				try:
 					directory_entries = self.conn.listPath(self.share_name, self.path_without_share)
 				except Exception as ex:
-					return self.smb_error_json(ex)
+					return self.return_exception(ex)
 
 				# Seperate out dirs and files into two lists
 				dirs  = []
@@ -580,7 +580,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			sfile = self.conn.getAttributes(self.share_name, old_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		if sfile.isDirectory:
 			typestr = "directory"
@@ -590,7 +590,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			self.conn.rename(self.share_name, old_path, new_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 		else:
 			return jsonify({'code': 0, 'msg':
 				"The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
@@ -620,7 +620,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			sfile = self.conn.getAttributes(self.share_name, src_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		if sfile.isDirectory:
 			return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
@@ -641,12 +641,12 @@ class BargateSMBLibrary(LibraryBase):
 			self.conn.retrieveFile(self.share_name, src_path, tfile)
 			tfile.seek(0)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		try:
 			self.conn.storeFile(self.share_name, dest_path, tfile, timeout=120)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		return jsonify({'code': 0, 'msg': 'A copy of "' + src + '" was created as "' + dest + '"'})
 
@@ -667,7 +667,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			self.conn.createDirectory(self.share_name, self.path_without_share + "/" + dirname)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
@@ -684,13 +684,13 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			sfile = self.conn.getAttributes(self.share_name, delete_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		if sfile.isDirectory:
 			try:
 				self.conn.deleteDirectory(self.share_name, delete_path)
 			except Exception as ex:
-				return self.smb_error_json(ex)
+				return self.return_exception(ex)
 
 			return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
 
@@ -698,7 +698,7 @@ class BargateSMBLibrary(LibraryBase):
 			try:
 				self.conn.deleteFiles(self.share_name, delete_path)
 			except Exception as ex:
-				return self.smb_error_json(ex)
+				return self.return_exception(ex)
 
 			return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 

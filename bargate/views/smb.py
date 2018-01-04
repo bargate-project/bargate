@@ -26,16 +26,7 @@ def endpoint_handler(path, action):
 	return app.smblib.smb_action(request.endpoint, action, path)
 
 
-@app.route('/smb/<action>/<epname>/', defaults={'path': ''})
-@app.route('/smb/<action>/<epname>/<path:path>')
-@app.set_response_type('json')
-@app.login_required
-@app.allow_disable
-def smb_get_json(epname, action, path):
-	return app.smblib.smb_action(epname, action, path)
-
-
-@app.route('/smb', methods=['POST'])
+@app.route('/xhr', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
 @app.allow_disable
@@ -56,24 +47,27 @@ def smb_post():
 	return app.smblib.smb_action(request.form['epname'], request.form['action'], path)
 
 
-@app.route('/other')
-@app.login_required
-@app.allow_disable
-def other():
-	return render_template('other.html', active='other', pwd='')
-
-
-@app.route('/connect', methods=['GET', 'POST'])
+@app.route('/xhr/connect', methods=['POST'])
+@app.set_response_type('json')
 @app.login_required
 @app.allow_disable
 def connect():
-	if request.method == 'POST':
-		server_uri = request.form['open_server_uri']
-		session['custom_uri'] = server_uri
-		session.modified = True
-		return redirect(url_for('custom'))
-	else:
-		return render_template('custom.html', active='custom', pwd='')
+	if 'path' not in request.form:
+		return jsonify({'code': 1, 'msg': 'You must enter an address to connect to.'})
+
+	path = request.form['path']
+	session['custom_uri'] = path
+	session.modified = True
+	return jsonify({'code': 0})
+
+
+@app.route('/xhr/<action>/<epname>/', defaults={'path': ''})
+@app.route('/xhr/<action>/<epname>/<path:path>')
+@app.set_response_type('json')
+@app.login_required
+@app.allow_disable
+def smb_get_json(epname, action, path):
+	return app.smblib.smb_action(epname, action, path)
 
 
 @app.route('/custom/browse/', defaults={'action': 'browse', 'path': ''})
@@ -93,3 +87,10 @@ def custom(path, action):
 		return redirect(url_for('custom_server'))
 
 	return app.smblib.smb_action('custom', action, path)
+
+
+@app.route('/other')
+@app.login_required
+@app.allow_disable
+def other():
+	return render_template('other.html', active='other', pwd='')

@@ -273,7 +273,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			fstat = self.libsmbclient.stat(self.full_addr)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		# ensure item is a file
 		if not fstat.type == EntryType.file:
@@ -355,7 +355,7 @@ class BargateSMBLibrary(LibraryBase):
 		except smbc.NotDirectoryError as ex:
 			return jsonify({'code': 1, 'msg': 'The given path is not a directory'})
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		try:
 			dirs   = []
@@ -429,7 +429,7 @@ class BargateSMBLibrary(LibraryBase):
 				'parent_path': parent_path})
 
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 	def _action_upload(self):
 		app.logger.debug("_action_upload()")
@@ -546,7 +546,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			self.libsmbclient.rename(old_path, new_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		return jsonify({'code': 0, 'msg':
 			"The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully"})
@@ -573,7 +573,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			source_stat = self.libsmbclient.stat(src_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		if not source_stat.type == EntryType.file:
 			return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
@@ -585,19 +585,19 @@ class BargateSMBLibrary(LibraryBase):
 		except smbc.NoEntryError as ex:
 			pass
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		# Open the source so we can read from it
 		try:
 			source_fh = self.libsmbclient.open(src_path)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		# Open the destination file to write to
 		try:
 			dest_fh = self.libsmbclient.open(dest_path, os.O_CREAT | os.O_WRONLY | os.O_TRUNC)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		# copy the data in 1024 byte chunks
 		try:
@@ -608,7 +608,7 @@ class BargateSMBLibrary(LibraryBase):
 				location = source_fh.seek(1024, location)
 
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		return jsonify({'code': 0, 'msg': 'A copy of "' + src + '" was created as "' + dest + '"'})
 
@@ -629,7 +629,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			self.libsmbclient.mkdir(self.full_addr + '/' + dirname)
 		except Exception as ex:
-			return self.smb_error_json(ex)
+			return self.return_exception(ex)
 
 		return jsonify({'code': 0, 'msg': "The folder '" + dirname + "' was created successfully."})
 
@@ -649,7 +649,7 @@ class BargateSMBLibrary(LibraryBase):
 			try:
 				self.libsmbclient.delete(delete_path)
 			except Exception as ex:
-				return self.smb_error_json(ex)
+				return self.return_exception(ex)
 			else:
 				return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 
@@ -661,7 +661,7 @@ class BargateSMBLibrary(LibraryBase):
 			try:
 				contents = self.libsmbclient.ls(delete_path)
 			except Exception as ex:
-				return self.smb_error_json(ex)
+				return self.return_exception(ex)
 
 			# the directory contents always returns '.' and '..'
 			contents = filter(lambda s: not (s.name == '.' or s.name == '..'), contents)
@@ -671,7 +671,7 @@ class BargateSMBLibrary(LibraryBase):
 			try:
 				self.libsmbclient.rmdir(delete_path)
 			except Exception as ex:
-				return self.smb_error_json(ex)
+				return self.return_exception(ex)
 			else:
 				return jsonify({'code': 0, 'msg': "The directory '" + delete_name + "' was deleted"})
 		else:

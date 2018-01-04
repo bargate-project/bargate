@@ -43,7 +43,7 @@ class LibraryBase:
 
 		if self.endpoint_name == 'custom':
 			self.endpoint_path = unicode(session['custom_uri'])
-			self.endpoint_url  = '/c'
+			self.endpoint_url  = '/custom'
 			self.endpoint_title = unicode(session['custom_uri'])
 			self.active = 'custom'
 
