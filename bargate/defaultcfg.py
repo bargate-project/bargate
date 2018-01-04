@@ -108,6 +108,9 @@ LOCAL_STATIC_DIR = False
 # Use a local favicon (you don't need to set this, it is determined automatically)
 LOCAL_FAVICON = False
 
+# Default login background
+LOGIN_BACKGROUND = "/static/images/login.jpg"
+
 # Name of the app to display everywhere
 APP_DISPLAY_NAME       = 'Bargate'
 APP_DISPLAY_NAME_SHORT = 'Bargate'

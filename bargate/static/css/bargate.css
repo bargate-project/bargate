@@ -3,7 +3,6 @@ html, body
 	height: 100%;
 }
 
-/* The changelog list type */
 ul.changelog
 {
 	list-style: none;
@@ -46,22 +45,6 @@ ul.changelog
 	font-size: 200px;
 	direction: ltr;
 	cursor: pointer;
-}
-
-/* flexbox based same-size panel in columns */
-@media (min-width: 992px)
-{
-	.equal, .equal > div[class*='col-']
-	{
-		display: -webkit-flex;
-		display: flex;
-		flex: 1 1 auto;
-	}
-
-	.panel-equal
-	{
-		width: 100%;
-	}
 }
 
 /* Prevent themes from putting borders on tables */ 

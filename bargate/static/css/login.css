@@ -2,19 +2,39 @@
 
 html, body {
 	height: 100%;
-	width: 100%;
 	font-family: 'Open Sans', sans-serif;
 }
 
+.container-fluid, .row {
+	height: 100%;
+}
+
+#col-login {
+	background-color: #fff;
+	height: 100%;
+	box-shadow: 5px 0px 10px 0px rgba(0,0,0,0.50);
+}
+
+@media (min-width: 768px) {
+	#col-login {
+		max-width: 500px;
+	}
+}
+
+#login-box {
+	height: 100%;
+	padding: 20px;
+}
+
 body {
-	background: rgba(245, 245, 245, 0.85);
 	height: 100%;
 	color: #777777;
 }
 
-h1.title {
+#login-title {
 	margin-top: 15vh;
 	margin-bottom: 8vh;
+	font-size: 4vh;
 }
 
 .form-group {
@@ -22,13 +42,34 @@ h1.title {
 }
 
 .login-input {
-	height: 2.0em;
-	line-height: 1em;
-	font-size: 1.8em;
+	height: 50px;
+	font-size: 25px;
 	margin-bottom: 0;
 	color: #666666;
 }
 
+.input-group-addon {
+	font-size: 25px;
+	height: 50px;
+}
+
+/*.checkbox input[type="checkbox"] {
+	width: 25px;
+	height: 25px;
+	margin-left: -30px;
+}
+
+.checkbox > label {
+	padding-left: 30px;
+	font-size: 25px;
+}*/
+
 .btn-lg {
+	font-size: 25px;
 	font-weight: 200;
+}
+
+#footer {
+	position: absolute;
+	bottom: 30px;
 }
