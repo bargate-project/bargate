@@ -41,6 +41,10 @@ class LibraryBase:
 		self.path = path
 
 		if self.endpoint_name == 'custom':
+			if not app.config['CONNECT_TO_ENABLED']:
+				return jsonify({'code': 1, 'msg':
+					'The system administrator has disabled connecting to a custom server'})
+
 			self.endpoint_path = unicode(session['custom_uri'])
 			self.endpoint_url  = '/custom'
 			self.endpoint_title = unicode(session['custom_uri'])
@@ -139,7 +143,7 @@ class LibraryBase:
 		try:
 			bookmark_id = userdata.save_bookmark(bookmark_name, self.endpoint_name, self.path)
 		except Exception as ex:
-			return jsonify({'code': 1, 'msg': 'Could not set bookmark: ' + str(type(ex)) + " " + str(ex)})
+			return jsonify({'code': 1, 'msg': 'Could not set bookmark, ' + type(ex).__name__ + ": " + str(ex)})
 
 		return jsonify({'code': 0, 'msg': 'Added bookmark ' + bookmark_name,
 						'url': url_for('bookmark', bookmark_id=bookmark_id)})

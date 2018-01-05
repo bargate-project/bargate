@@ -361,7 +361,7 @@ class BargateSMBLibrary(LibraryBase):
 				'parent_path': parent_path})
 
 		except Exception as ex:
-			return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
+			return jsonify({'code': 1, 'msg': type(ex).__name__ + ": " + str(ex)})
 
 	def _action_ls(self):
 		app.logger.debug("_action_ls()")
@@ -470,7 +470,7 @@ class BargateSMBLibrary(LibraryBase):
 					'parent_path': parent_path})
 
 			except Exception as ex:
-				return jsonify({'code': 1, 'msg': str(type(ex)) + ": " + str(ex)})
+				return jsonify({'code': 1, 'msg': type(ex).__name__ + ": " + str(ex)})
 
 	def _action_upload(self):
 		app.logger.debug("_action_upload()")
@@ -717,7 +717,7 @@ class BargateSMBLibrary(LibraryBase):
 		try:
 			directory_entries = self.conn.listPath(self.share_name, path_without_share)
 		except Exception as ex:
-			app.logger.debug("Search encountered an exception " + str(ex) + " " + str(type(ex)))
+			app.logger.debug("Search encountered an exception, " + type(ex).__name__ + ": " + str(ex))
 			return
 
 		for sfile in directory_entries:

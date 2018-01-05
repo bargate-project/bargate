@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import request, session, redirect, url_for, render_template, jsonify
+from flask import request, session, redirect, url_for, render_template, jsonify, abort
 
 from bargate import app
 
@@ -49,6 +49,9 @@ def smb_post():
 @app.set_response_type('json')
 @app.login_required
 def connect():
+	if not app.config['CONNECT_TO_ENABLED']:
+		return jsonify({'code': 1, 'msg': 'The system administrator has disabled connecting to a custom server'})
+
 	if 'path' not in request.form:
 		return jsonify({'code': 1, 'msg': 'You must enter an address to connect to.'})
 
@@ -75,6 +78,9 @@ def smb_get_json(epname, action, path):
 @app.route('/custom/<action>/<path:path>')
 @app.login_required
 def custom(path, action):
+	if not app.config['CONNECT_TO_ENABLED']:
+		abort(404)
+
 	if 'custom_uri' in session:
 		if len(session['custom_uri']) == 0:
 			return redirect(url_for('custom_server'))

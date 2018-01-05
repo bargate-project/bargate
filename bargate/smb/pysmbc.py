@@ -695,7 +695,7 @@ class BargateSMBLibrary(LibraryBase):
 		except smbc.NotDirectoryError as ex:
 			return
 		except Exception as ex:
-			app.logger.info("Search encountered an exception " + str(ex) + " " + str(type(ex)))
+			app.logger.info("Search encountered an exception " + type(ex).__name__ + ": " + str(ex))
 			return
 
 		# now loop over each entry
@@ -842,4 +842,4 @@ class BargateSMBLibrary(LibraryBase):
 
 		# ALL OTHER EXCEPTIONS
 		else:
-			return ("Error", str(type(ex)) + " - " + str(ex))
+			return ("Error", type(ex).__name__ + ": " + str(ex))

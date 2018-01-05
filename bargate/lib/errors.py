@@ -53,7 +53,7 @@ def exception_handler(ex, message=None):
 		username = 'Not logged in'
 
 	if message is None:
-		message = str(ex)
+		message = type(ex).__name__ + ": " + str(ex)
 
 	# Log the critical error (so that it goes to e-mail)
 	app.logger.error("""Fatal Error
@@ -67,9 +67,9 @@ User Platform:        {}
 User Browser:         {}
 User Browser Version: {}
 Username:             {}
-Traceback:
+
 {}
-""".format(str(type(ex)), str(ex), request.path, request.method, request.remote_addr, request.user_agent.string,
+""".format(type(ex).__name__, str(ex), request.path, request.method, request.remote_addr, request.user_agent.string,
 			request.user_agent.platform, request.user_agent.browser, request.user_agent.version, username, trace))
 
 	if g.get('response_type', 'html') == 'json':

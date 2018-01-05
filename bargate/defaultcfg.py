@@ -178,3 +178,6 @@ BOOKMARKS_ENABLED = False
 # User stats (requires REDIS)
 USER_STATS_ENABLED = False
 USER_STATS_EXPIRE = 1440
+
+# Custom server addresses ("connect to server")
+CONNECT_TO_ENABLED = True

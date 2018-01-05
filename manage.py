@@ -69,7 +69,7 @@ class Manager():
 
 			return (proc.returncode, str(stdoutdata))
 		except Exception as ex:
-			return (1, str(type(ex)) + " " + str(ex))
+			return (1, type(ex).__name__ + ": " + str(ex))
 
 	def info(self, msg):
 		print("INFO:  " + msg)

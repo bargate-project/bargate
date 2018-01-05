@@ -43,10 +43,8 @@
 		</div>
 	</div>
 	{%- include 'shortcuts.html' %}
-	{%- include 'connect.html' %}
-	{% if config.REDIS_ENABLED %}
-	{%- include 'settings.html' %}
-	{% endif %}
+	{% if config.CONNECT_TO_ENABLED %}{%- include 'connect.html' %} {%endif%}
+	{% if config.REDIS_ENABLED %} {%- include 'settings.html' %} {% endif %}
 	{%- include 'about.html' %}
 	{% block modals %}{% endblock -%}
 		<div class="navbar navbar-{{theme_navbar}} navbar-fixed-top" role="navigation">
