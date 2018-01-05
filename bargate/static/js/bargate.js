@@ -801,7 +801,7 @@ function setClickMode(newMode) {
 	if (newMode == $user.onclick) { return; }
 	if (newMode != 'ask' && newMode != 'default' && newMode != 'download') { return; }
 
-	$.post( "/settings", { key: 'click', value: newMode, _csrfp_token: $user.token })
+	$.post( "/xhr/settings", { key: 'click', value: newMode, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Error setting on click mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
