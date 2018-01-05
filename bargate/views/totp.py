@@ -18,15 +18,14 @@
 from flask import g, session, render_template, redirect, url_for, request, flash, abort
 
 from bargate import app
-import bargate.lib.totp
-import bargate.lib.user
+from bargate.lib import totp, user
 
 
 @app.route('/totp_qrcode_img')
 @app.login_required
 def totp_qrcode_view():
-	if not bargate.lib.totp.user_enabled(session['username']):
-		return bargate.lib.totp.return_qrcode(session['username'])
+	if not totp.user_enabled(session['username']):
+		return totp.return_qrcode(session['username'])
 	else:
 		abort(403)
 
@@ -34,13 +33,13 @@ def totp_qrcode_view():
 @app.route('/2step', methods=['GET', 'POST'])
 @app.login_required
 def totp_user_view():
-	if not bargate.lib.totp.user_enabled(session['username']):
+	if not totp.user_enabled(session['username']):
 		if request.method == 'GET':
 			return render_template('totp_enable.html', active="user")
 		elif request.method == 'POST':
 			token = request.form['totp_token']
 
-			if bargate.lib.totp.verify_token(session['username'], token):
+			if totp.verify_token(session['username'], token):
 				flash("Two step logon has been enabled for your account", "alert-success")
 				g.redis.set('totp.%s.enabled' % session['username'], "True")
 			else:
@@ -55,7 +54,7 @@ def totp_user_view():
 
 			token = request.form['totp_token']
 
-			if bargate.lib.totp.verify_token(session['username'], token):
+			if totp.verify_token(session['username'], token):
 				g.redis.delete('totp.%s.enabled' % session['username'])
 				g.redis.delete('totp.%s.key' % session['username'])
 				flash("Two step logons have been disabled for your account", "alert-warning")
@@ -73,8 +72,8 @@ def totp_logon_view():
 		# verify the token entered
 		token = request.form['totp_token']
 
-		if bargate.lib.totp.verify_token(session['username'], token):
-			return bargate.lib.user.logon_ok()
+		if totp.verify_token(session['username'], token):
+			return user.logon_ok()
 		else:
 			flash("Invalid two step code!", "alert-danger")
 			return redirect(url_for('totp_logon_view'))

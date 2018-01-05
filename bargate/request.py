@@ -21,17 +21,10 @@
 # functions in here register per-request functionality
 # with decorators
 
-import time
-
 from flask import request, session, g, render_template, url_for
 
 from bargate import app
-from bargate.lib.core import EntryType
-import bargate.lib.userdata
-import bargate.lib.errors
-
-if app.config['REDIS_ENABLED']:
-	import redis
+from bargate.lib import fs, userdata, errors
 
 
 @app.before_request
@@ -43,7 +36,7 @@ def before_request():
 
 	# Check bargate started correctly
 	if app.error:
-		return bargate.lib.errors.fatalerr(message=app.error)
+		return errors.fatalerr(message=app.error)
 
 	# Check for MSIE version <= 10
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 10):
@@ -51,16 +44,19 @@ def before_request():
 
 	# Connect to redis
 	if app.config['REDIS_ENABLED']:
+		import redis
+
 		try:
-			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'], port=app.config['REDIS_PORT'], db=0)
+			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'],
+				port=app.config['REDIS_PORT'],
+				db=app.config['REDIS_DB'])
 			g.redis.get('foo')
 		except Exception as ex:
-			return bargate.lib.errors.fatalerr(message='Bargate could not connect to the REDIS server', debug=str(ex))
+			return errors.exception_handler(ex, 'Could not connect to the REDIS server')
 
-	# Log user last access time
-	if 'username' in session:
-		bargate.lib.userdata.save('last', str(time.time()))
-		bargate.lib.userdata.record_user_activity(session['username'])
+		# Log user last access time
+		if 'username' in session:
+			userdata.record_user_activity(session['username'])
 
 	# Default to sending HTML responses
 	g.response_type = 'html'
@@ -77,16 +73,16 @@ def context_processor():
 
 	if app.is_user_logged_in():
 		if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
-			data['user_bookmarks'] = bargate.lib.userdata.get_bookmarks()
-			data['user_theme']     = bargate.lib.userdata.get_theme()
-			data['user_layout']    = bargate.lib.userdata.get_layout()
-			data['theme_navbar']   = bargate.lib.userdata.get_theme_navbar()
+			data['user_bookmarks'] = userdata.get_bookmarks()
+			data['user_theme']     = userdata.get_theme()
+			data['user_layout']    = userdata.get_layout()
+			data['theme_navbar']   = userdata.get_theme_navbar()
 
 	if app.config['LOCAL_FAVICON']:
 		data['favicon'] = url_for('local_static', filename='favicon.ico')
 	else:
 		data['favicon'] = url_for('static', filename='favicon.ico')
 
-	data['type'] = EntryType
+	data['type'] = fs.EntryType
 
 	return data

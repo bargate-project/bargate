@@ -16,11 +16,10 @@
 
 import traceback
 
-from flask import session, render_template
+from flask import request, session, render_template, jsonify, url_for
 
 from bargate import app
-from bargate.lib.errors import stderr
-from bargate.lib.core import check_path
+from bargate.lib import core, errors, userdata
 
 
 class LibraryBase:
@@ -32,7 +31,7 @@ class LibraryBase:
 		app.logger.debug(traceback.format_exc())
 		(title, desc) = self.decode_exception(ex)
 		app.logger.debug("smblib.return_exception: decoded to: '" + title + "', '" + desc + "'")
-		return stderr(title, desc)
+		return errors.stderr(title, desc)
 
 	def smb_connection_init(self, endpoint_name, action, path):
 		app.logger.debug("smb_connection_init('" + endpoint_name + "','" + action + "','" + path + "')")
@@ -49,12 +48,12 @@ class LibraryBase:
 
 		else:
 			if not app.sharesConfig.has_section(self.endpoint_name):
-				return stderr('Not found', 'The endpoint specified was not found')
+				return errors.stderr('Not found', 'The endpoint specified was not found')
 
 			if app.sharesConfig.has_option(self.endpoint_name, 'path'):
 				self.endpoint_path = app.sharesConfig.get(self.endpoint_name, 'path')
 			else:
-				return stderr('Invalid configuration', "'path' is not set on endpoint '" + self.endpoint_name + "'")
+				return errors.stderr('Invalid configuration', "'path' is not set on endpoint '" + self.endpoint_name + "'")
 
 			if app.sharesConfig.has_option(self.endpoint_name, 'url'):
 				self.endpoint_url = app.sharesConfig.get(self.endpoint_name, 'url')
@@ -81,9 +80,9 @@ class LibraryBase:
 
 		# Check the path is valid
 		try:
-			check_path(self.path)
+			core.check_path(self.path)
 		except ValueError:
-			return stderr('Invalid path', 'You tried to navigate to a name of a file or diretory which is invalid')
+			return errors.stderr('Invalid path', 'You tried to navigate to a name of a file or diretory which is invalid')
 
 		# Work out the 'entry name'
 		if len(self.path) > 0:
@@ -93,7 +92,7 @@ class LibraryBase:
 
 		# the address should always start with smb://, we don't support anything else.
 		if not self.endpoint_path.startswith("smb://"):
-			return stderr('Configuration error', 'The server URL must start with smb://')
+			return errors.stderr('Configuration error', 'The server URL must start with smb://')
 
 		app.logger.debug("Connection preperation complete")
 
@@ -103,7 +102,7 @@ class LibraryBase:
 		try:
 			method = getattr(self, '_action_' + self.action)
 		except AttributeError:
-			return stderr('Not found', 'The action specified was not found')
+			return errors.stderr('Not found', 'The action specified was not found')
 
 		return method()
 
@@ -121,3 +120,26 @@ class LibraryBase:
 		app.logger.debug("_action_view()")
 
 		return self._action_download(view=True)
+
+	def set_bookmark(self):
+		if not app.config['REDIS_ENABLED']:
+			return jsonify({'code': 1, 'msg': 'Persistent storage (redis) is disabled'})
+		if not app.config['BOOKMARKS_ENABLED']:
+			return jsonify({'code': 1, 'msg': 'Bookmarks are disabled'})
+
+		try:
+			bookmark_name = request.form['name']
+		except Exception:
+			return jsonify({'code': 1, 'msg': 'You must set a bookmark name!'})
+
+		if self.endpoint_name == 'custom':
+			if 'custom_uri' not in session:
+				return jsonify({'code': 1, 'msg': 'Missing parameter'})
+
+		try:
+			bookmark_id = userdata.save_bookmark(bookmark_name, self.endpoint_name, self.path)
+		except Exception as ex:
+			return jsonify({'code': 1, 'msg': 'Could not set bookmark: ' + str(type(ex)) + " " + str(ex)})
+
+		return jsonify({'code': 0, 'msg': 'Added bookmark ' + bookmark_name,
+						'url': url_for('bookmark', bookmark_id=bookmark_id)})

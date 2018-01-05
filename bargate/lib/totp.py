@@ -15,13 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from bargate import app
 import os
 import base64
+import StringIO
+
 from flask import g, session
 import onetimepass
 import pyqrcode
-import StringIO
+
+from bargate import app
 
 
 def generate_secret_key():

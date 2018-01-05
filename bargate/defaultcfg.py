@@ -26,10 +26,6 @@ DEBUG = False
 # Enable the debug toolbar. DO NOT DO THIS ON A PRODUCTION SYSTEM. EVER. It exposes SECRET_KEY and ENCRYPT_KEY.
 DEBUG_TOOLBAR = False
 
-# Many errors don't show a full stack trace as they show a redirected 'error popup'
-# Set this to True to disable that behaviour and show full errors.
-DEBUG_FULL_ERRORS = False
-
 # Session signing key
 # Key used to sign/encrypt session data stored in cookies.
 # If you've set up bargate behind a load balancer then this must match on all
@@ -75,6 +71,7 @@ EMAIL_SUBJECT = 'Bargate Runtime Error'
 REDIS_ENABLED = True
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
+REDIS_DB = 0
 
 # Default bootstrap/bootswatch theme
 THEME_DEFAULT = 'cerulean'
@@ -166,6 +163,7 @@ SEARCH_ENABLED = False
 SEARCH_TIMEOUT = 50
 
 # Backend library to use to talk SMB over the network
+# Either 'pysmb' or 'pysmbc'
 SMB_LIBRARY = "pysmbc"
 
 # Minify the HTML output (only works if htmlmin is installed)
@@ -176,3 +174,7 @@ JSONIFY_PRETTYPRINT_REGULAR = False
 
 # Enable/disable bookmarking
 BOOKMARKS_ENABLED = False
+
+# User stats (requires REDIS)
+USER_STATS_ENABLED = False
+USER_STATS_EXPIRE = 1440

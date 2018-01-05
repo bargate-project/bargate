@@ -29,12 +29,8 @@ from flask import send_file, request, session, abort, make_response, jsonify
 from PIL import Image
 
 from bargate import app
-from bargate.lib.core import banned_file, secure_filename, check_name, ut_to_string, wb_sid_to_name, EntryType
-from bargate.lib.user import get_password
-from bargate.lib.userdata import get_show_hidden_files, get_overwrite_on_upload, set_bookmark
-from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon, view_in_browser, pillow_supported
-from bargate.lib.smb.base import LibraryBase
-from bargate.lib.errors import stderr
+from bargate.smb.base import LibraryBase
+from bargate.lib import fs, misc, user, userdata, mime, errors, winbind
 
 
 class OperationFailureDecode:
@@ -187,11 +183,12 @@ class BargateSMBLibrary(LibraryBase):
 		self.smb_connection_init(endpoint_name, action, path)
 		self._init_paths(self.endpoint_path, self.path)
 
-		self.conn = SMBConnection(session['username'], get_password(), socket.gethostname(), self.server_name,
+		self.conn = SMBConnection(session['username'], user.get_password(), socket.gethostname(), self.server_name,
 			domain=app.config['SMB_WORKGROUP'], use_ntlm_v2=True, is_direct_tcp=True)
 
 		if not self.conn.connect(self.server_name, port=445, timeout=5):
-			return stderr("Could not connect", "Could not connect to the file server, authentication was unsuccessful")
+			return errors.stderr("Could not connect",
+									"Could not connect to the file server, authentication was unsuccessful")
 
 		return self.action_dispatch()
 
@@ -211,12 +208,12 @@ class BargateSMBLibrary(LibraryBase):
 				abort(400)
 
 			# guess a mimetype
-			(ftype, mtype) = filename_to_mimetype(self.entry_name)
+			(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
 			# If the user requested to 'view' (don't download as an attachment)
 			# make sure we allow it for that filetype
 			if view:
-				if view_in_browser(mtype):
+				if mime.view_in_browser(mtype):
 					attach = False
 
 			# pysmb wants to write to a file, rather than provide a file-like object to read from. EUGH.
@@ -253,14 +250,14 @@ class BargateSMBLibrary(LibraryBase):
 			abort(400)
 
 		# guess a mimetype
-		(ftype, mtype) = filename_to_mimetype(self.entry_name)
+		(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
 		# Check size is not too large for a preview
 		if sfile.file_size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
 			abort(403)
 
 		# Only preview files that Pillow supports
-		if mtype not in pillow_supported:
+		if mtype not in mime.pillow_supported:
 			abort(400)
 
 		try:
@@ -292,14 +289,14 @@ class BargateSMBLibrary(LibraryBase):
 			return jsonify({'code': 1, 'msg': 'You cannot stat a directory!'})
 
 		# guess mimetype
-		(ftype, mtype) = filename_to_mimetype(sfile.filename)
+		(ftype, mtype) = mime.filename_to_mimetype(sfile.filename)
 
 		data = {
 			'code': 0,
 			'filename': sfile.filename,
 			'size': sfile.file_size,
-			'atime': ut_to_string(sfile.last_access_time),
-			'mtime': ut_to_string(sfile.last_write_time),
+			'atime': misc.ut_to_string(sfile.last_access_time),
+			'mtime': misc.ut_to_string(sfile.last_write_time),
 			'ftype': ftype,
 			'mtype': mtype,
 			'owner': "N/A",
@@ -310,8 +307,8 @@ class BargateSMBLibrary(LibraryBase):
 			secDesc = self.conn.getSecurity(self.share_name, self.path_without_share)
 
 			if app.config['WBINFO_LOOKUP']:
-				data['owner'] = wb_sid_to_name(str(secDesc.owner))
-				data['group'] = wb_sid_to_name(str(secDesc.group))
+				data['owner'] = winbind.sid_to_name(str(secDesc.owner))
+				data['group'] = winbind.sid_to_name(str(secDesc.group))
 			else:
 				data['owner'] = str(secDesc.owner)
 				data['group'] = str(secDesc.group)
@@ -421,9 +418,9 @@ class BargateSMBLibrary(LibraryBase):
 						entry.pop('skip', None)
 						entry.pop('type', None)
 
-						if etype == EntryType.file:
+						if etype == fs.EntryType.file:
 							files.append(entry)
-						elif etype == EntryType.dir:
+						elif etype == fs.EntryType.dir:
 							dirs.append(entry)
 
 				# Build a breadcrumbs trail #
@@ -484,17 +481,17 @@ class BargateSMBLibrary(LibraryBase):
 
 		for ufile in uploaded_files:
 
-			if banned_file(ufile.filename):
+			if fs.banned_file(ufile.filename):
 				ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
 				continue
 
 			# Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
-			filename = secure_filename(ufile.filename)
+			filename = fs.secure_filename(ufile.filename)
 			upload_path = self.path_without_share + '/' + filename
 
 			# Check the new file name is valid
 			try:
-				check_name(filename)
+				fs.check_name(filename)
 			except ValueError:
 				ret.append({'name': ufile.filename, 'error': 'Filename not allowed'})
 				continue
@@ -531,7 +528,7 @@ class BargateSMBLibrary(LibraryBase):
 				# We're truncating an existing file, or creating a new file
 				# If the file already exists, check to see if we should overwrite
 				if file_already_exists:
-					if not get_overwrite_on_upload():
+					if not userdata.get_overwrite_on_upload():
 						ret.append({'name': ufile.filename,
 							'error': 'File already exists. You can enable overwriting files in Settings.'})
 						continue
@@ -568,7 +565,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# Check the new file name is valid
 		try:
-			check_name(new_name)
+			fs.check_name(new_name)
 		except ValueError:
 			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
@@ -606,7 +603,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# check the proposed new name is valid
 		try:
-			check_name(dest)
+			fs.check_name(dest)
 		except ValueError:
 			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
@@ -660,7 +657,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# check the proposed new name is valid
 		try:
-			check_name(dirname)
+			fs.check_name(dirname)
 		except ValueError:
 			return jsonify({'code': 1, 'msg': 'The specified directory name is invalid'})
 
@@ -704,13 +701,7 @@ class BargateSMBLibrary(LibraryBase):
 
 	def _action_bookmark(self):
 		app.logger.debug("_action_bookmark()")
-
-		try:
-			bookmark_name = request.form['name']
-		except Exception:
-			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
-
-		set_bookmark(bookmark_name, self.endpoint_name, self.path)
+		self.set_bookmark()
 
 	def _search(self, query):
 		self.query           = query
@@ -748,7 +739,7 @@ class BargateSMBLibrary(LibraryBase):
 				self.results.append(entry)
 
 			# Search subdirectories if we found one
-			if entry['type'] == EntryType.dir:
+			if entry['type'] == fs.EntryType.dir:
 				if len(path) > 0:
 					sub_path = path + "/" + entry['name']
 				else:
@@ -778,7 +769,7 @@ class BargateSMBLibrary(LibraryBase):
 			return entry
 
 		# hidden files
-		if not get_show_hidden_files():
+		if not userdata.get_show_hidden_files():
 			if entry['name'].startswith('.'):
 				entry['skip'] = True
 			if entry['name'].startswith('~$'):
@@ -791,29 +782,29 @@ class BargateSMBLibrary(LibraryBase):
 
 		# Directories
 		if sfile.isDirectory:
-			entry['type'] = EntryType.dir
+			entry['type'] = fs.EntryType.dir
 
 		# Files
 		else:
-			entry['type'] = EntryType.file
+			entry['type'] = fs.EntryType.file
 			entry['size'] = sfile.file_size
 
 			# Generate 'mtype', 'mtyper' and 'icon'
 			entry['icon'] = 'file-text-o'
-			(entry['mtype'], entry['mtyper']) = filename_to_mimetype(entry['name'])
-			entry['icon'] = mimetype_to_icon(entry['mtyper'])
+			(entry['mtype'], entry['mtyper']) = mime.filename_to_mimetype(entry['name'])
+			entry['icon'] = mime.mimetype_to_icon(entry['mtyper'])
 
 			# modification time (last write)
 			entry['mtimer'] = sfile.last_write_time
-			entry['mtime']     = ut_to_string(sfile.last_write_time)
+			entry['mtime']     = misc.ut_to_string(sfile.last_write_time)
 
 			# Image previews
-			if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in pillow_supported:
+			if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in mime.pillow_supported:
 				if int(entry['size']) <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 					entry['img'] = True
 
 			# View-in-browser download type
-			if view_in_browser(entry['mtyper']):
+			if mime.view_in_browser(entry['mtyper']):
 				entry['view'] = True
 
 		return entry

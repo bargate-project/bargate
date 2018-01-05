@@ -16,130 +16,30 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import traceback
-
-from flask import request, session, g, render_template, jsonify
+from flask import g, jsonify
 
 from bargate import app
-import bargate.lib.errors
-
-
-@app.errorhandler(500)
-def error500(error):
-	"""Handles abort(500) calls in code"""
-
-	# Default error title/msg
-	err_title  = "Internal Error"
-	err_msg    = "An internal error has occured and has been forwarded to our support team."
-
-	if 'username' in session:
-		usr = session['username']
-	else:
-		usr = 'Not logged in'
-
-	# Get exception traceback
-	if app.debug:
-		debug = traceback.format_exc()
-	else:
-		debug = None
-
-	# send a log about this
-	app.logger.error("""
-Title:                %s
-Message:              %s
-Exception Type:       %s
-Exception Message:    %s
-HTTP Path:            %s
-HTTP Method:          %s
-Client IP Address:    %s
-User Agent:           %s
-User Platform:        %s
-User Browser:         %s
-User Browser Version: %s
-Username:             %s
-
-Traceback:
-
-%s
-
-""" % (
-			err_title,
-			err_msg,
-			str(type(error)),
-			error.__str__(),
-			request.path,
-			request.method,
-			request.remote_addr,
-			request.user_agent.string,
-			request.user_agent.platform,
-			request.user_agent.browser,
-			request.user_agent.version,
-			usr,
-			debug,
-		))
-
-	return render_template('error.html', title=err_title, message=err_msg, debug=debug), 500
+from bargate.lib import errors
 
 
 @app.errorhandler(400)
 def error400(error):
-	"""Handles abort(400) calls in code."""
-	if app.debug:
-		debug = traceback.format_exc()
-	else:
-		debug = None
-
-	app.logger.info('abort400 was called! ' + str(debug))
-
-	return render_template('error.html',
-		title="Bad Request",
-		message='Your request was invalid or malformed, please try again.',
-		debug=debug), 400
+	return errors.stderr("Bad request", "Your request was invalid or malformed, please try again.", 404)
 
 
 @app.errorhandler(403)
 def error403(error):
-	"""Handles abort(403) calls in code."""
-
-	if app.debug:
-		debug = traceback.format_exc()
-	else:
-		debug = None
-
-	app.logger.info('abort403 was called!')
-
-	return render_template('error.html',
-		title="Permission Denied",
-		message='You do not have permission to access that resource.',
-		debug=debug), 403
+	return errors.stderr("Permission denied", "You do not have permission to perform that action.", 403)
 
 
 @app.errorhandler(404)
 def error404(error):
-	"""Handles abort(404) calls in code."""
-
-	if app.debug:
-		debug = traceback.format_exc()
-	else:
-		debug = None
-
-	return render_template('error.html',
-		title="Not found",
-		message="Sorry, I couldn't find what you requested.",
-		debug=debug), 404
+	return errors.stderr("Not found", "Sorry, I couldn't find what you requested.", 404)
 
 
 @app.errorhandler(405)
 def error405(error):
-	"""Handles abort(405) calls in code.
-	"""
-
-	if app.debug:
-		debug = traceback.format_exc()
-	else:
-		debug = None
-
-	return render_template('error.html', title="Not allowed", message="HTTP Method not allowed", debug=debug), 405
+	return errors.stderr("Not allowed", "HTTP Method not allowed", 405)
 
 
 @app.errorhandler(app.CsrfpException)
@@ -149,57 +49,14 @@ def csrfp_error(error):
 	if g.get('response_type', 'html') == 'json':
 		return jsonify({'code': 400, 'msg': 'Your request failed to present a valid security token (CSRF protection)'})
 	else:
-		if app.debug:
-			debug = traceback.format_exc()
-		else:
-			debug = None
-
-		return render_template('error.html',
-			title="Security Error",
-			message="Your browser failed to present a valid security token (CSRF protection token).",
-			debug=debug), 400
+		return errors.stderr("Security error",
+			"Your browser failed to present a valid security token (CSRF protection token", 403)
 
 
 @app.errorhandler(Exception)
-def error_handler(error):
+def catchall_error_handler(error):
+	app.logger.debug("fatal_error_handler()")
 	"""Handles generic exceptions within the application, displaying the
 	traceback if the application is running in debug mode."""
 
-	# Get the traceback
-	trace = str(traceback.format_exc())
-	if app.debug:
-		debug = trace
-	else:
-		debug = "Ask your system administrator to consult the error log for this application."
-
-	if 'username' in session:
-		username = session['username']
-	else:
-		username = 'Not logged in'
-
-	# Log the critical error (so that it goes to e-mail)
-	app.logger.error("""Fatal Error
-HTTP Path:            %s
-HTTP Method:          %s
-Client IP Address:    %s
-User Agent:           %s
-User Platform:        %s
-User Browser:         %s
-User Browser Version: %s
-Username:             %s
-Traceback:
-%s
-""" % (
-
-			request.path,
-			request.method,
-			request.remote_addr,
-			request.user_agent.string,
-			request.user_agent.platform,
-			request.user_agent.browser,
-			request.user_agent.version,
-			username,
-			trace,
-		))
-
-	return bargate.lib.errors.fatalerr(debug=debug)
+	return errors.exception_handler(error)

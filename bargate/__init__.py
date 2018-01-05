@@ -25,10 +25,10 @@ app = Bargate(__name__)
 try:
 	if app.config['SMB_LIBRARY'] == "pysmbc":
 		# libsmbclient backend
-		from bargate.lib.smb.pysmbc import BargateSMBLibrary
+		from bargate.smb.pysmbc import BargateSMBLibrary
 	elif app.config['SMB_LIBRARY'] == "pysmb":
 		# pure python pysmb backend
-		from bargate.lib.smb.pysmb import BargateSMBLibrary
+		from bargate.smb.pysmb import BargateSMBLibrary
 	else:
 		raise Exception("SMB_LIBRARY is set to an unknown library")
 

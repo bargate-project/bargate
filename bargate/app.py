@@ -17,7 +17,6 @@
 
 import io
 import os
-import os.path
 import logging
 import binascii
 from logging.handlers import SMTPHandler

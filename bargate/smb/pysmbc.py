@@ -27,11 +27,8 @@ from flask import abort, flash, make_response, jsonify
 from PIL import Image
 
 from bargate import app
-from bargate.lib.core import banned_file, secure_filename, ut_to_string, wb_sid_to_name, check_name, EntryType
-from bargate.lib.user import get_password
-from bargate.lib.userdata import get_show_hidden_files, get_overwrite_on_upload, set_bookmark
-from bargate.lib.mime import filename_to_mimetype, mimetype_to_icon, view_in_browser, pillow_supported
-from bargate.lib.smb.base import LibraryBase
+from bargate.smb.base import LibraryBase
+from bargate.lib import fs, misc, user, userdata, mime, winbind
 
 
 class FileStat:
@@ -52,11 +49,11 @@ class FileStat:
 		self.ctime = fstat[9]  # change time
 
 		if stat.S_ISDIR(self.mode):
-			self.type = EntryType.dir
+			self.type = fs.EntryType.dir
 		elif stat.S_ISREG(self.mode):
-			self.type = EntryType.file
+			self.type = fs.EntryType.file
 		else:
-			self.type = EntryType.other
+			self.type = fs.EntryType.other
 
 
 class SMBClientWrapper:
@@ -69,7 +66,7 @@ class SMBClientWrapper:
 		self.smbclient = smbc.Context(auth_fn=self._get_auth)
 
 	def _get_auth(self, server, share, workgroup, username, password):
-		return (app.config['SMB_WORKGROUP'], session['username'], get_password())
+		return (app.config['SMB_WORKGROUP'], session['username'], user.get_password())
 
 	def _convert(self, url):
 		# input will be of the form smb://location.location/path/path/path
@@ -189,7 +186,7 @@ class BargateSMBLibrary(LibraryBase):
 		except Exception as ex:
 			return self.smb_error(ex)
 
-		if not fstat.type == EntryType.file:
+		if not fstat.type == fs.EntryType.file:
 			abort(400)
 
 		try:
@@ -199,12 +196,12 @@ class BargateSMBLibrary(LibraryBase):
 			attach = True
 
 			# guess a mimetype
-			(ftype, mtype) = filename_to_mimetype(self.entry_name)
+			(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
 			# If the user requested to 'view' (don't download as an attachment)
 			# make sure we allow it for that filetype
 			if view:
-				if view_in_browser(mtype):
+				if mime.view_in_browser(mtype):
 					attach = False
 
 			# Send the file to the user
@@ -232,18 +229,18 @@ class BargateSMBLibrary(LibraryBase):
 			abort(400)
 
 		# ensure item is a file
-		if not fstat.type == EntryType.file:
+		if not fstat.type == fs.EntryType.file:
 			abort(400)
 
 		# guess a mimetype
-		(ftype, mtype) = filename_to_mimetype(self.entry_name)
+		(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
 		# Check size is not too large for a preview
 		if fstat.size > app.config['IMAGE_PREVIEW_MAX_SIZE']:
 			abort(403)
 
 		# Only preview files that Pillow supports
-		if mtype not in pillow_supported:
+		if mtype not in mime.pillow_supported:
 			abort(400)
 
 		# Open the file
@@ -276,18 +273,18 @@ class BargateSMBLibrary(LibraryBase):
 			return self.return_exception(ex)
 
 		# ensure item is a file
-		if not fstat.type == EntryType.file:
+		if not fstat.type == fs.EntryType.file:
 			return jsonify({'code': 1, 'msg': 'You cannot stat a directory!'})
 
 		# guess mimetype
-		(ftype, mtype) = filename_to_mimetype(self.entry_name)
+		(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
 		data = {
 			'code': 0,
 			'filename': self.entry_name,
 			'size': fstat.size,
-			'atime': ut_to_string(fstat.atime),
-			'mtime': ut_to_string(fstat.mtime),
+			'atime': misc.ut_to_string(fstat.atime),
+			'mtime': misc.ut_to_string(fstat.mtime),
 			'ftype': ftype,
 			'mtype': mtype,
 			'owner': "N/A",
@@ -299,8 +296,8 @@ class BargateSMBLibrary(LibraryBase):
 			data['group'] = self.libsmbclient.getxattr(self.full_addr, smbc.XATTR_GROUP)
 
 			if app.config['WBINFO_LOOKUP']:
-				data['owner'] = wb_sid_to_name(data['owner'])
-				data['group'] = wb_sid_to_name(data['group'])
+				data['owner'] = winbind.sid_to_name(data['owner'])
+				data['group'] = winbind.sid_to_name(data['group'])
 		except Exception as ex:
 			pass
 
@@ -370,11 +367,11 @@ class BargateSMBLibrary(LibraryBase):
 					entry.pop('skip', None)
 					entry.pop('type', None)
 
-					if etype == EntryType.file:
+					if etype == fs.EntryType.file:
 						files.append(entry)
-					elif etype == EntryType.dir:
+					elif etype == fs.EntryType.dir:
 						dirs.append(entry)
-					elif etype == EntryType.share:
+					elif etype == fs.EntryType.share:
 						shares.append(entry)
 
 			bmark_enabled   = False
@@ -440,17 +437,17 @@ class BargateSMBLibrary(LibraryBase):
 
 		for ufile in uploaded_files:
 
-			if banned_file(ufile.filename):
+			if fs.banned_file(ufile.filename):
 				ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
 				continue
 
 			# Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
-			filename = secure_filename(ufile.filename)
+			filename = fs.secure_filename(ufile.filename)
 			upload_uri = self.full_addr + '/' + filename
 
 			# Check the new file name is valid
 			try:
-				check_name(filename)
+				fs.check_name(filename)
 			except ValueError:
 				ret.append({'name': ufile.filename, 'error': 'Filename not allowed'})
 				continue
@@ -478,14 +475,14 @@ class BargateSMBLibrary(LibraryBase):
 					# We're truncating an existing file, or creating a new file
 					# If the file already exists, check to see if we should overwrite
 					if fstat is not None:
-						if not get_overwrite_on_upload():
+						if not userdata.get_overwrite_on_upload():
 							ret.append({'name': ufile.filename,
 								'error': 'File already exists. You can enable overwriting files in Settings.'})
 							continue
 
 						# Now ensure we're not trying to upload a file on top of a directory (can't do that!)
 						fstat = self.libsmbclient.stat(upload_uri)
-						if fstat.type == EntryType.dir:
+						if fstat.type == fs.EntryType.dir:
 							ret.append({'name': ufile.filename, 'error':
 								"That name already exists and is a directory"})
 							continue
@@ -525,7 +522,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# Check the new file name is valid
 		try:
-			check_name(new_name)
+			fs.check_name(new_name)
 		except ValueError:
 			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
@@ -536,9 +533,9 @@ class BargateSMBLibrary(LibraryBase):
 		# get the item type of the existing 'filename'
 		fstat = self.libsmbclient.stat(old_path)
 
-		if fstat.type == EntryType.file:
+		if fstat.type == fs.EntryType.file:
 			typestr = "file"
-		elif fstat.type == EntryType.dir:
+		elif fstat.type == fs.EntryType.dir:
 			typestr = "directory"
 		else:
 			return jsonify({'code': 1, 'msg': 'You can only rename files or folders!'})
@@ -562,7 +559,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# check the proposed new name is valid
 		try:
-			check_name(dest)
+			fs.check_name(dest)
 		except ValueError:
 			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
@@ -575,7 +572,7 @@ class BargateSMBLibrary(LibraryBase):
 		except Exception as ex:
 			return self.return_exception(ex)
 
-		if not source_stat.type == EntryType.file:
+		if not source_stat.type == fs.EntryType.file:
 			return jsonify({'code': 1, 'msg': 'Unable to copy a directory!'})
 
 		# Make sure the dest file doesn't exist
@@ -622,7 +619,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# check the proposed new name is valid
 		try:
-			check_name(dirname)
+			fs.check_name(dirname)
 		except ValueError:
 			return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
@@ -645,7 +642,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		fstat = self.libsmbclient.stat(delete_path)
 
-		if fstat.type == EntryType.file:
+		if fstat.type == fs.EntryType.file:
 			try:
 				self.libsmbclient.delete(delete_path)
 			except Exception as ex:
@@ -653,7 +650,7 @@ class BargateSMBLibrary(LibraryBase):
 			else:
 				return jsonify({'code': 0, 'msg': "The file '" + delete_name + "' was deleted"})
 
-		elif fstat.type == EntryType.dir:
+		elif fstat.type == fs.EntryType.dir:
 
 			# Against some SMB servers (Samba!) no error is generated by pysmbc when trying to delete a
 			# directory which is not empty (!). Thus, sadly, we must check to see if the directory is empty
@@ -679,13 +676,7 @@ class BargateSMBLibrary(LibraryBase):
 
 	def _action_bookmark(self):
 		app.logger.debug("_action_bookmark()")
-
-		try:
-			bookmark_name = request.form['name']
-		except Exception:
-			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
-
-		set_bookmark(bookmark_name, self.endpoint_name, self.path)
+		self.set_bookmark()
 
 	def _search(self, query):
 		self.query           = query
@@ -730,7 +721,7 @@ class BargateSMBLibrary(LibraryBase):
 				self.results.append(entry)
 
 			# Search subdirectories if we found one
-			if entry['type'] == EntryType.dir:
+			if entry['type'] == fs.EntryType.dir:
 				if len(path) > 0:
 					sub_path = path + "/" + entry['name']
 				else:
@@ -759,7 +750,7 @@ class BargateSMBLibrary(LibraryBase):
 			return entry
 
 		# hide files which we consider 'hidden'
-		if not get_show_hidden_files():
+		if not userdata.get_show_hidden_files():
 			if entry['name'].startswith('.'):
 				entry['skip'] = True
 			if entry['name'].startswith('~$'):
@@ -767,23 +758,23 @@ class BargateSMBLibrary(LibraryBase):
 			if entry['name'] in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
 				entry['skip'] = True
 
-		if dentry.smbc_type in [EntryType.file, EntryType.dir, EntryType.share]:
+		if dentry.smbc_type in [fs.EntryType.file, fs.EntryType.dir, fs.EntryType.share]:
 			entry['type'] = dentry.smbc_type
 
-			if dentry.smbc_type == EntryType.share:
+			if dentry.smbc_type == fs.EntryType.share:
 				if entry['name'].endswith == "$":
 					entry['skip'] = True
 
 		else:
-			entry['type'] = EntryType.other
+			entry['type'] = fs.EntryType.other
 			entry['skip'] = True
 
 		if not entry['skip']:
-			if entry['type'] == EntryType.file:
+			if entry['type'] == fs.EntryType.file:
 				# Generate 'mtype', 'mtyper' and 'icon'
 				entry['icon'] = 'file-text-o'
-				(entry['mtype'], entry['mtyper']) = filename_to_mimetype(entry['name'])
-				entry['icon'] = mimetype_to_icon(entry['mtyper'])
+				(entry['mtype'], entry['mtyper']) = mime.filename_to_mimetype(entry['name'])
+				entry['icon'] = mime.mimetype_to_icon(entry['mtyper'])
 
 				try:
 					fstat = self.libsmbclient.stat(self.full_addr + '/' + entry['name'])
@@ -799,16 +790,16 @@ class BargateSMBLibrary(LibraryBase):
 					return entry
 
 				entry['mtimer'] = fstat.mtime
-				entry['mtime']  = ut_to_string(fstat.mtime)
+				entry['mtime']  = misc.ut_to_string(fstat.mtime)
 				entry['size']   = fstat.size
 
 				# Image previews
-				if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in pillow_supported:
+				if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in mime.pillow_supported:
 					if fstat.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
 						entry['img'] = True
 
 				# View-in-browser download type
-				if view_in_browser(entry['mtyper']):
+				if mime.view_in_browser(entry['mtyper']):
 					entry['view'] = True
 
 		return entry

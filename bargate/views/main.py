@@ -19,12 +19,8 @@ import time
 
 from flask import request, session, redirect, url_for, flash, abort, render_template, send_from_directory
 
-from bargate.lib.aes import aes_encrypt
 from bargate import app
-import bargate.lib.user
-import bargate.lib.userdata
-if app.config['TOTP_ENABLED']:
-	import bargate.lib.totp
+from bargate.lib import aes, user, userdata, misc
 
 
 @app.csrfp_exempt
@@ -39,7 +35,7 @@ def login():
 
 		elif request.method == 'POST':
 
-			result = bargate.lib.user.auth(request.form['username'], request.form['password'])
+			result = user.auth(request.form['username'], request.form['password'])
 
 			if not result:
 				flash('Incorrect username and/or password', 'alert-danger')
@@ -61,25 +57,28 @@ def login():
 				session.permanent = False
 
 			# Encrypt the password and store in the session
-			session['id'] = aes_encrypt(request.form['password'], app.config['ENCRYPT_KEY'])
+			session['id'] = aes.encrypt(request.form['password'], app.config['ENCRYPT_KEY'])
 
 			# Check if two-factor is enabled for this account
 			if app.config['TOTP_ENABLED']:
-				if bargate.lib.totp.user_enabled(session['username']):
+				from bargate.lib import totp
+
+				if totp.user_enabled(session['username']):
 					app.logger.debug('User "' + session['username'] +
 						'" has two step enabled. Redirecting to two-step handler')
 					return redirect(url_for('totp_logon_view'))
 
 			# Successful logon without 2-step needed
-			return bargate.lib.user.logon_ok()
+			return user.logon_ok()
 
 
 @app.route('/logout')
 def logout():
 
 	if app.is_user_logged_in():
-		bargate.lib.userdata.save('logout', str(time.time()))
-		bargate.lib.user.logout()
+		if app.config['USER_STATS_ENABLED']:
+			userdata.save('logout', str(time.time()))
+		user.logout()
 		flash('You have logged out successfully', 'alert-success')
 
 	return redirect(url_for('login'))
@@ -101,8 +100,8 @@ def portallogin():
 	# cookie_name    = request.args.get('cookie0')
 	cookie_content = request.args.get('cookie1').split(';')[0]
 
-	decoded_cookie_content = bargate.lib.core.decode_session_cookie(cookie_content)
-	json_cookie_content    = bargate.lib.core.flask_load_session_json(decoded_cookie_content)
+	decoded_cookie_content = misc.decode_session_cookie(cookie_content)
+	json_cookie_content    = misc.flask_load_session_json(decoded_cookie_content)
 
 	app.logger.debug('Decoded cookie username ' + json_cookie_content['username'])
 
@@ -110,11 +109,11 @@ def portallogin():
 	session['id']           = json_cookie_content['id']
 
 	# verify this username and password we've been told to accept via cookie
-	result = bargate.lib.user.auth(session['username'], bargate.lib.user.get_password())
+	result = user.auth(session['username'], user.get_password())
 
 	if not result:
 		flash('Incorrect username and/or password', 'alert-danger')
-		bargate.lib.user.logout()
+		user.logout()
 		return redirect(url_for('login'))
 	else:
 		session['logged_in']    = True

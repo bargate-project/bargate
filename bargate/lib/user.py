@@ -20,19 +20,19 @@ import time
 from flask import request, redirect, session, url_for, abort, flash
 
 from bargate import app
-from bargate.lib.aes import aes_decrypt
-import bargate.lib.userdata
+from bargate.lib import aes, userdata
 
 # load kerberos or ldap auth if needed
 if app.config['AUTH_TYPE'] == 'kerberos' or app.config['AUTH_TYPE'] == 'krb5':
 	import kerberos
+
 elif app.config['AUTH_TYPE'] == 'ldap':
 	import ldap
 
 
 def get_password():
 	"""This function returns the user's decrypted password"""
-	return aes_decrypt(session['id'], app.config['ENCRYPT_KEY'])
+	return aes.decrypt(session['id'], app.config['ENCRYPT_KEY'])
 
 
 def logon_ok():
@@ -46,7 +46,8 @@ def logon_ok():
 		'" using ' + request.user_agent.string)
 
 	# Record the last login time
-	bargate.lib.userdata.save('login', str(time.time()))
+	if app.config['USER_STATS_ENABLED']:
+		userdata.save('login', time.time())
 
 	# determine if "next" variable is set (the URL to be sent to)
 	next = request.form.get('next', default=None)

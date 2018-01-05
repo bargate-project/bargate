@@ -18,9 +18,7 @@
 from flask import request, session, redirect, url_for, flash, g, abort, render_template, jsonify
 import werkzeug
 
-import bargate.lib.userdata
-import bargate.lib.errors
-from bargate.lib.userdata import themes
+from bargate.lib import userdata
 from bargate import app
 
 
@@ -29,24 +27,24 @@ from bargate import app
 def settings():
 	if request.method == 'GET':
 
-		if bargate.lib.userdata.get_show_hidden_files():
+		if userdata.get_show_hidden_files():
 			show_hidden = 'true'
 		else:
 			show_hidden = 'false'
 
-		if bargate.lib.userdata.get_overwrite_on_upload():
+		if userdata.get_overwrite_on_upload():
 			overwrite = 'true'
 		else:
 			overwrite = 'false'
 
 		return(jsonify({'code': 0,
-			'layout': bargate.lib.userdata.get_layout(),
+			'layout': userdata.get_layout(),
 			'token': app.csrfp_token(),
-			'theme': bargate.lib.userdata.get_theme(),
-			'navbar': bargate.lib.userdata.get_theme_navbar(),
+			'theme': userdata.get_theme(),
+			'navbar': userdata.get_theme_navbar(),
 			'hidden': show_hidden,
 			'overwrite': overwrite,
-			'onclick': bargate.lib.userdata.get_on_file_click()}))
+			'onclick': userdata.get_on_file_click()}))
 
 	else:
 
@@ -62,31 +60,31 @@ def settings():
 		if key == 'layout':
 			if value not in ['grid', 'list']:
 				value = app.config['LAYOUT_DEFAULT']
-			bargate.lib.userdata.save('layout', value)
+			userdata.save('layout', value)
 
 		elif key == 'click':
 			if value not in ['ask', 'default', 'download']:
 				value = 'ask'
-			bargate.lib.userdata.save('on_file_click', value)
+			userdata.save('on_file_click', value)
 
 		elif key == 'hidden':
 			if value == 'true':
-				bargate.lib.userdata.save('hidden_files', 'show')
+				userdata.save('hidden_files', 'show')
 			else:
-				bargate.lib.userdata.save('hidden_files', 'hide')
+				userdata.save('hidden_files', 'hide')
 
 		elif key == 'overwrite':
 			if value == 'true':
-				bargate.lib.userdata.save('upload_overwrite', 'yes')
+				userdata.save('upload_overwrite', 'yes')
 			else:
-				bargate.lib.userdata.save('upload_overwrite', 'no')
+				userdata.save('upload_overwrite', 'no')
 
 		elif key == 'theme':
-			if value not in themes.keys():
+			if value not in userdata.themes.keys():
 				value = app.config['THEME_DEFAULT']
 
-			bargate.lib.userdata.save('theme', value)
-			return jsonify({'code': 0, 'navbar': themes[value]})
+			userdata.save('theme', value)
+			return jsonify({'code': 0, 'navbar': userdata.themes[value]})
 
 		return jsonify({'code': 0})
 
@@ -104,7 +102,7 @@ def bookmarks():
 	user_bookmark_prefix = 'user:' + session['username'] + ':bookmark:'
 
 	if request.method == 'GET':
-		bookmarks = bargate.lib.userdata.get_bookmarks()
+		bookmarks = userdata.get_bookmarks()
 		return render_template('bookmarks.html', active='user', pwd='', bookmarks=bookmarks)
 
 	elif request.method == 'POST':
@@ -204,6 +202,12 @@ def bookmark(bookmark_id):
 @app.route('/online/<last>')
 @app.login_required
 def online(last=5):
+	if not app.config['REDIS_ENABLED']:
+		abort(404)
+
+	if not app.config['USER_STATS_ENABLED']:
+		abort(404)
+
 	last = int(last)
 
 	if last == 1440:
@@ -217,5 +221,5 @@ def online(last=5):
 	else:
 		last_str = str(last) + " minutes"
 
-	usernames = bargate.lib.userdata.get_online_users(last)
+	usernames = userdata.get_online_users(last)
 	return render_template('online.html', online=usernames, active="help", last=last_str)

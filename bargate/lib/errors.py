@@ -18,10 +18,12 @@
 
 import traceback
 
-from flask import render_template, make_response, g, jsonify
+from flask import request, render_template, session, make_response, g, jsonify
+
+from bargate import app
 
 
-def stderr(title, message):
+def stderr(title, message, http_return_code=200):
 	"""This function is called by other error functions to show the error to the
 	end user. It takes a title, message and a further error type. If redirect
 	is set then rather than show an error it will return the 'redirect' after
@@ -33,14 +35,45 @@ def stderr(title, message):
 		return jsonify({'code': 1, 'msg': title + ": " + message})
 	else:
 		debug = traceback.format_exc()
-		return render_template('error.html', title=title, message=message, debug=debug), 200
+		return render_template('error.html', title=title, message=message, debug=debug), http_return_code
 
 
-def fatalerr(title=u"fatal error ☹", message="Whilst processing your request an error occured", debug=""):
-	# Build the response. Not using a template here to prevent any Jinja issues from causing this to fail.
+def exception_handler(ex, message=None):
+
+	# Get the traceback
+	trace = str(traceback.format_exc())
+	if app.debug:
+		debug = trace
+	else:
+		debug = "Ask your system administrator to consult the error log for further information."
+
+	if 'username' in session:
+		username = session['username']
+	else:
+		username = 'Not logged in'
+
+	if message is None:
+		message = str(ex)
+
+	# Log the critical error (so that it goes to e-mail)
+	app.logger.error("""Fatal Error
+Exception Type:       {}
+Exception Message:    {}
+HTTP Path:            {}
+HTTP Method:          {}
+Client IP Address:    {}
+User Agent:           {}
+User Platform:        {}
+User Browser:         {}
+User Browser Version: {}
+Username:             {}
+Traceback:
+{}
+""".format(str(type(ex)), str(ex), request.path, request.method, request.remote_addr, request.user_agent.string,
+			request.user_agent.platform, request.user_agent.browser, request.user_agent.version, username, trace))
 
 	if g.get('response_type', 'html') == 'json':
-		return jsonify({'code': 1, 'msg': title + ": " + message})
+		return jsonify({'code': 1, 'msg': "A fatal error occured: " + message})
 	else:
 
 		html = u"""
@@ -82,12 +115,12 @@ def fatalerr(title=u"fatal error ☹", message="Whilst processing your request a
 	</head>
 	<body>
 	<div>
-		<h1>%s</h1>
+		<h1>fatal error ☹</h1>
 		<p>%s</p>
 		<pre>%s</pre>
 	</div>
 	</body>
 	</html>
-	""" % (title, message, debug)
+	""" % (message, debug)
 
 		return make_response(html, 500)

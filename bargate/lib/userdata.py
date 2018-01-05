@@ -20,7 +20,7 @@ import time
 import werkzeug
 import uuid
 
-from flask import session, url_for, g, abort, jsonify
+from flask import session, url_for, g
 
 from bargate import app
 
@@ -42,19 +42,19 @@ themes = {'lumen': 'default',
 	'solar': 'default'}
 
 
-def record_user_activity(user_id, expire_minutes=1440):
+def record_user_activity(user_id):
 	if app.config['REDIS_ENABLED']:
-		now = int(time.time())
-		expires = now + (expire_minutes * 60) + 10
+		if app.config['USER_STATS_ENABLED']:
+			now = int(time.time())
+			expires = now + (app.config['USER_STATS_EXPIRE'] * 60) + 10
 
-		all_users_key = 'online-users/%d' % (now // 60)
-		user_key = 'user-activity/%s' % user_id
-		p = g.redis.pipeline()
-		p.sadd(all_users_key, user_id)
-		p.set(user_key, now)
-		p.expireat(all_users_key, expires)
-		p.expireat(user_key, expires)
-		p.execute()
+			all_users_key = 'online-users/%d' % (now // 60)
+			user_key = 'user:%s:last' % user_id
+			p = g.redis.pipeline()
+			p.sadd(all_users_key, user_id)
+			p.set(user_key, now)
+			p.expireat(all_users_key, expires)
+			p.execute()
 
 
 def save(key, value):
@@ -244,38 +244,25 @@ def get_online_users(minutes=15):
 		return []
 
 
-def set_bookmark(bookmark_name, endpoint, path):
-	if not app.config['REDIS_ENABLED']:
-		abort(404)
-	if not app.config['BOOKMARKS_ENABLED']:
-		abort(404)
+def save_bookmark(bookmark_name, endpoint, path):
+	# Generate a unique identifier for this bookmark
+	bookmark_id = uuid.uuid4().hex
 
-	try:
-		# Generate a unique identifier for this bookmark
-		bookmark_id = uuid.uuid4().hex
+	# Turn this into a redis key for the new bookmark
+	redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
 
-		# Turn this into a redis key for the new bookmark
-		redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
+	# Store all the details of this bookmark in REDIS
+	g.redis.hset(redis_key, 'version', '2')
+	g.redis.hset(redis_key, 'function', endpoint)
+	g.redis.hset(redis_key, 'path', path)
+	g.redis.hset(redis_key, 'name', bookmark_name)
 
-		# Store all the details of this bookmark in REDIS
-		g.redis.hset(redis_key, 'version', '2')
-		g.redis.hset(redis_key, 'function', endpoint)
-		g.redis.hset(redis_key, 'path', path)
-		g.redis.hset(redis_key, 'name', bookmark_name)
+	# if we're on a custom server then we need to store the URL
+	# to that server otherwise the bookmark is useless.
+	if endpoint == 'custom':
+		g.redis.hset(redis_key, 'custom_uri', session['custom_uri'])
 
-		# if we're on a custom server then we need to store the URL
-		# to that server otherwise the bookmark is useless.
-		if endpoint == 'custom':
-			if 'custom_uri' in session:
-				g.redis.hset(redis_key, 'custom_uri', session['custom_uri'])
-			else:
-				return jsonify({'code': 1, 'msg': 'Invalid request'})
+	# add the new bookmark name to the list of bookmarks for the user
+	g.redis.sadd('user:' + session['username'] + ':bookmarks', bookmark_id)
 
-		# add the new bookmark name to the list of bookmarks for the user
-		g.redis.sadd('user:' + session['username'] + ':bookmarks', bookmark_id)
-
-		return jsonify({'code': 0, 'msg': 'Added bookmark ' + bookmark_name,
-			'url': url_for('bookmark', bookmark_id=bookmark_id)})
-
-	except Exception as ex:
-		return jsonify({'code': 1, 'msg': 'Could not set bookmark: ' + str(type(ex)) + " " + str(ex)})
+	return bookmark_id

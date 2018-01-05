@@ -21,7 +21,7 @@ from base64 import b64encode, b64decode
 from Crypto.Cipher import AES
 
 
-def aes_encrypt(s, key):
+def encrypt(s, key):
 	"""This function is used to encrypt a string via AES.
 	Pass it the string to encrypt and the key to use to do so.
 	Returns a base64 encoded string using AES CFB.
@@ -41,7 +41,7 @@ def aes_encrypt(s, key):
 	return b64encode(iv + c.encrypt(s))
 
 
-def aes_decrypt(s, key):
+def decrypt(s, key):
 	"""This function is used to decrypt a base64-encoded
 	AES CFB encrypted string.
 	Pass it the string to decrypt and the correct key.
