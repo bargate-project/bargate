@@ -24,7 +24,8 @@ from bargate.lib.userdata import themes
 from bargate import app
 
 
-@app.route('/settings', methods=['GET', 'POST'])
+@app.route('/xhr/settings', methods=['GET', 'POST'])
+@app.set_response_type('json')
 def settings():
 	if request.method == 'GET':
 
@@ -48,12 +49,12 @@ def settings():
 			'onclick': bargate.lib.userdata.get_on_file_click()}))
 
 	else:
-		if not app.is_user_logged_in():
-			abort(403)
 
-		# Settings need redis storage, if redis is disabled we can't do settings
+		if not app.is_user_logged_in():
+			return jsonify({'code': 401, 'msg': 'You must be logged in to do that'})
+
 		if not app.config['REDIS_ENABLED']:
-			abort(404)
+			return jsonify({'code': 1, 'msg': 'The system administrator has disabled per-user settings'})
 
 		key   = request.form['key']
 		value = request.form['value']
@@ -85,9 +86,9 @@ def settings():
 				value = app.config['THEME_DEFAULT']
 
 			bargate.lib.userdata.save('theme', value)
-			return jsonify({'navbar': themes[value]})
+			return jsonify({'code': 0, 'navbar': themes[value]})
 
-		return "", 200
+		return jsonify({'code': 0})
 
 
 @app.route('/bookmarks', methods=['GET', 'POST'])

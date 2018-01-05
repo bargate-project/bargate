@@ -104,7 +104,7 @@ def portallogin():
 	decoded_cookie_content = bargate.lib.core.decode_session_cookie(cookie_content)
 	json_cookie_content    = bargate.lib.core.flask_load_session_json(decoded_cookie_content)
 
-	app.logger.info('Decoded cookie username ' + json_cookie_content['username'])
+	app.logger.debug('Decoded cookie username ' + json_cookie_content['username'])
 
 	session['username']     = json_cookie_content['username']
 	session['id']           = json_cookie_content['id']

@@ -642,7 +642,7 @@ function doRename() {
 			raiseFail("Unable to rename", "Could not rename", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			if (data.code != 0) {
+			if (data.code !== 0) {
 				raiseNonZero("Unable to rename", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
@@ -662,7 +662,7 @@ function doCopy() {
 			raiseFail("Unable to copy", "Could not copy file", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			if (data.code != 0) {
+			if (data.code !== 0) {
 				raiseNonZero("Unable to copy", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
@@ -682,7 +682,7 @@ function doMkdir() {
 			raiseFail("Unable to create directory", "Could not create directory", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			if (data.code != 0) {
+			if (data.code !== 0) {
 				raiseNonZero("Unable to create directory", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
@@ -699,7 +699,7 @@ function doBookmark() {
 			raiseFail("Unable to create bookmark", "Could not create bookmark", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			if (data.code != 0) {
+			if (data.code !== 0) {
 				raiseNonZero("Unable to create bookmark", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
@@ -715,7 +715,7 @@ function doDelete() {
 			raiseFail("Unable to delete", "Could not delete", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			if (data.code != 0) {
+			if (data.code !== 0) {
 				raiseNonZero("Unable to delete", data.msg, data.code);
 			} else {
 				notifySuccess(data.msg);
@@ -735,7 +735,7 @@ function doConnectServer() {
 			raiseFail("Unable to connect to server", "Could not connect to server", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			if (data.code != 0) {
+			if (data.code !== 0) {
 				raiseNonZero("Unable to connect to server", data.msg, data.code);
 			} else {
 				
@@ -748,45 +748,52 @@ function setLayoutMode(newLayout) {
 	if (newLayout == $user.layout) { return; }
 	if (newLayout != 'grid' && newLayout != 'list') { return; }
 
-	$.post( "/settings", { key: 'layout', value: newLayout, _csrfp_token: $user.token })
+	$.post( "/xhr/settings", { key: 'layout', value: newLayout, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Error switching layout", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
-		.done(function() {
-			// Now change view class
-			if ($user.layout == "list") {
-				$("#pdiv").removeClass("listview");
-				$("#pdiv").addClass("gridview");
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code !== 0) {
+				raiseNonZero("Error switching layout", data.msg, data.code);
 			} else {
-				$("#pdiv").removeClass("gridview");
-				$("#pdiv").addClass("listview");
-			}
+				if ($user.layout == "list") {
+					$("#pdiv").removeClass("listview");
+					$("#pdiv").addClass("gridview");
+				} else {
+					$("#pdiv").removeClass("gridview");
+					$("#pdiv").addClass("listview");
+				}
 
-			if ($user.layout == "list") {
-				$("#layout-button-icon").removeClass("fa-th-large");
-				$("#layout-button-icon").addClass("fa-list");
-			} else {
-				$("#layout-button-icon").removeClass("fa-list");
-				$("#layout-button-icon").addClass("fa-th-large");
-			}
+				if ($user.layout == "list") {
+					$("#layout-button-icon").removeClass("fa-th-large");
+					$("#layout-button-icon").addClass("fa-list");
+				} else {
+					$("#layout-button-icon").removeClass("fa-list");
+					$("#layout-button-icon").addClass("fa-th-large");
+				}
 
-			$user.layout = newLayout;
-			renderDirectory();
-	});
+				$user.layout = newLayout;
+				renderDirectory();
+			}
+		});
 }
 
 function setHidden(show_hidden) {
 	if (show_hidden == $user.hidden) { return; }
 
-	$.post( "/settings", { key: 'hidden', value: show_hidden, _csrfp_token: $user.token })
+	$.post( "/xhr/settings", { key: 'hidden', value: show_hidden, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Error setting hidden mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
-		.done(function() {
-			if ($browse.btnsEnabled) {
-				reloadDir();
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code !== 0) {
+				raiseNonZero("Error setting hidden mode", data.msg, data.code);
+			} else {
+				if ($browse.btnsEnabled) {
+					reloadDir();
+				}
+				$user.hidden = show_hidden;
 			}
-			$user.hidden = show_hidden;
 		});
 }
 
@@ -798,49 +805,61 @@ function setClickMode(newMode) {
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Error setting on click mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
-		.done(function() {
-			if ($browse.btnsEnabled) {
-				reloadDir();
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code !== 0) {
+				raiseNonZero("Error setting upload mode", data.msg, data.code);
+			} else {
+				if ($browse.btnsEnabled) {
+					reloadDir();
+				}
+				$user.onclick = newMode;
 			}
-			$user.onclick = newMode;
 		});
 }
 
 function setOverwrite(overwrite) {
 	if (overwrite == $user.overwrite) { return; }
-	$.post( "/settings", { key: 'overwrite', value: overwrite, _csrfp_token: $user.token })
+	$.post( "/xhr/settings", { key: 'overwrite', value: overwrite, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Error setting upload mode", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
-		.done(function() {
-			$user.overwrite = overwrite;
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code !== 0) {
+				raiseNonZero("Error setting upload mode", data.msg, data.code);
+			} else {
+				$user.overwrite = overwrite;
+			}
 		});
 }
 
 function setTheme(themeName) {
 	if (themeName == $user.theme) { return; }
-	$.post( "/settings", { key: 'theme', value: themeName, _csrfp_token: $user.token })
+	$.post( "/xhr/settings", { key: 'theme', value: themeName, _csrfp_token: $user.token })
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			raiseFail("Error setting theme", "Unable to save settings", jqXHR, textStatus, errorThrown);
 		})
 		.done(function(data, textStatus, jqXHR) {
-			$("body").fadeOut(200, function() {
-				$("#theme-l").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
-				$("body").fadeIn(200);
-			});
+			if (data.code !== 0) {
+				raiseNonZero("Error setting theme", data.msg, data.code);
+			} else {
+				$("body").fadeOut(200, function() {
+					$("#theme-l").attr("href", "/static/themes/" + themeName + "/" + themeName + ".css");
+					$("body").fadeIn(200);
+				});
 
-			if (data.navbar != $user.navbar) {
-				if (data.navbar == 'default') {
-					$(".navbar").removeClass("navbar-inverse");
-					$(".navbar").addClass("navbar-default");
-				} else if (data.navbar == 'inverse') {
-					$(".navbar").removeClass("navbar-default");
-					$(".navbar").addClass("navbar-inverse");
+				if (data.navbar != $user.navbar) {
+					if (data.navbar == 'default') {
+						$(".navbar").removeClass("navbar-inverse");
+						$(".navbar").addClass("navbar-default");
+					} else if (data.navbar == 'inverse') {
+						$(".navbar").removeClass("navbar-default");
+						$(".navbar").addClass("navbar-inverse");
+					}
 				}
-			}
 
-			$user.theme  = themeName;
-			$user.navbar = data.navbar;
+				$user.theme  = themeName;
+				$user.navbar = data.navbar;
+			}
 
 		});
 }
@@ -1027,9 +1046,9 @@ function onPageLoad() {
 
 $(document).ready(function($) {
 	/* grab the user's settings from the server */
-	$.getJSON('/settings')
+	$.getJSON('/xhr/settings')
 	.done(function(response) {
-		if (response.code != 0) {
+		if (response.code !== 0) {
 			raiseNonZero("Unable to load settings", response.msg, response.code);
 		} else {
 			$user.layout = response.layout;
