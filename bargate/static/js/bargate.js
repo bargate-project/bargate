@@ -265,9 +265,9 @@ function doBrowse() {
 	});
 
 	// Bind actions to buttons in the 'file show' modal
-	$("#e-rename-b").click(function () { showRename(); });
-	$("#e-copy-b").click(function () { showCopy(); });
-	$("#e-delete-b").click(function () { showDeleteFile(); });
+	$(".e-rename-b").click(function () { showRename(); });
+	$(".e-copy-b").click(function () { showCopy(); });
+	$(".e-delete-b").click(function () { showDeleteFile(); });
 
 	/* What to do when a user clicks a file entry in a listing */
 	$(".efile").click(function() {
@@ -282,10 +282,6 @@ function doBrowse() {
 		} else {
 			window.open(buildurl($(this).data('epurl'), $(this).data('path'), 'download'),'_blank');
 		}
-	});
-
-	$("#file-m-details").click(function() {
-		showFileDetails($(this));
 	});
 
 	/* right click menu for files */
@@ -315,7 +311,7 @@ function doBrowse() {
 				showDeleteFile();
 			}
 			else if ($action == 'properties') {
-				showFileDetails(file);
+				showFileOverview(file);
 			}
 
 			event.preventDefault();
@@ -416,7 +412,7 @@ function filesizeformat(bytes) {
 			if (bytes >= size) {
 				return (bytes/size).toFixed(1) + ' ' + unit;
 			}
-			return match;
+			return match.replace(".0 "," ");
 		});
 	}
 }
@@ -531,62 +527,34 @@ function buildurl(epurl, path, action) {
 	return epurl + "/" + action + "/" + path;
 }
 
-function showFileDetails(file) {
-	$('#e-details-status').removeClass('hidden');
-	$('#e-details-data').addClass('hidden');
-	$('#e-details-fname').html('Please wait...');
-	$('#e-details-m').modal('show');
-
-	$.getJSON('/xhr/stat/' + $browse.epname + '/' + file.data('path'))
-	.done(function(response) {
-		if (response.code != 0) {
-			raiseNonZero("Error loading file details", response.msg, response.code);
-		} else {
-			$('#e-details-fname').html(response.filename);
-			$('#e-details-size').html(bytesToString(response.size));
-			$('#e-details-atime').html(response.atime);
-			$('#e-details-mtime').html(response.mtime);
-			$('#e-details-ftype').html(response.ftype);
-			$('#e-details-owner').html(response.owner);
-			$('#e-details-group').html(response.group);
-
-			$('#e-details-status').addClass('hidden');
-			$('#e-details-data').removeClass('hidden');
-		}
-	})
-	.fail(function(jqXHR, textStatus, errorThrown) {
-		raiseFail("Unable to view file details", "Could not obtain file details", jqXHR, textStatus, errorThrown);
-	});
-}
-
 function showFileOverview(file) {
-	$('#file-m-name').text(file.data('filename'));
-	$('#file-m-size').text(file.data('size'));
-	$('#file-m-mtime').text(file.data('mtime'));
-	$('#file-m-mtype').text(file.data('mtype'));
-	$('#file-m-icon').addClass(file.data('icon'));
-	$('#file-m-download').attr('href',buildurl(file.data('epurl'), file.data('path'), 'download'));
-	$('#file-m-details').data('epurl',file.data('epurl'));
-	$('#file-m-details').data('path',file.data('path'));
+	$('.file-m-owner').html('<span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span>');
+	$('.file-m-group').html('<span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span>');
 
-	
+	$('.file-m-name').text(file.data('filename'));
+	$('.file-m-size').text(file.data('size'));
+	$('.file-m-mtime').text(file.data('mtime'));
+	$('.file-m-atime').text(file.data('atime'));
+	$('.file-m-mtype').text(file.data('mtype'));
+	$('.file-m-icon').addClass(file.data('icon'));
+	$('.file-m-download').attr('href',buildurl(file.data('epurl'), file.data('path'), 'download'));
+
+
 	if (file.attr('data-img')) {
 		$('#file-m-preview').attr('src',buildurl(file.data('epurl'), file.data('path'), 'preview'));
 		$('#file-m-preview').removeClass('hidden');
-		$('#file-m-icon').addClass('hidden');
 	}
 	else {
 		$('#file-m-preview').attr('src','');
 		$('#file-m-preview').addClass('hidden');
-		$('#file-m-icon').removeClass('hidden');
 	}
 	
 	if (file.attr('data-view')) {
-		$('#file-m-view').attr('href',buildurl(file.data('epurl'), file.data('path'), 'view'));
-		$('#file-m-view').removeClass('hidden');
+		$('.file-m-view').attr('href',buildurl(file.data('epurl'), file.data('path'), 'view'));
+		$('.file-m-view').removeClass('hidden');
 	}
 	else {
-		$('#file-m-view').addClass('hidden');
+		$('.file-m-view').addClass('hidden');
 	}
 
 	if (file.attr('data-parent')) {
@@ -596,6 +564,21 @@ function showFileOverview(file) {
 	}
 
 	$('#file-m').modal('show');
+
+	$.getJSON('/xhr/stat/' + $browse.epname + '/' + file.data('path'))
+	.done(function(response) {
+		if (response.code != 0) {
+			$('.file-m-owner').html('Unknown');
+			$('.file-m-group').html('Unknown');
+		} else {
+			$('.file-m-owner').html(response.owner);
+			$('.file-m-group').html(response.group);
+		}
+	})
+	.fail(function(jqXHR, textStatus, errorThrown) {
+		$('.file-m-owner').html('Unknown');
+		$('.file-m-group').html('Unknown');
+	});
 }
 
 function showRename() {

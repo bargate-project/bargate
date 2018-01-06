@@ -34,7 +34,7 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in files -%}
-			<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-epurl="{{entry.epurl}}">
+			<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-epurl="{{entry.epurl}}">
 			<td class="text-center"><span class="{{ entry.icon }} fa-fw"></span></td>
 			<td class="dentry">{{ entry.name}}</td>
 			<td class="hidden-xs hidden-sm dentry-mtime">{{ entry.mtime }}</td>

@@ -4,32 +4,77 @@
 		<div class="modal-content">
 			<div class="modal-header mhc">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fas fa-fw fa-times"></i></button>
-				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="file-m-name">Unknown</h4>
+				<h4 class="modal-title">File information</h4>
 			</div>
-			<div class="modal-body text-center">
-				<img src="about:blank" id="file-m-preview" class="hidden" alt="preview">
-				<span id="file-m-icon" class="fas fa-fw fa-question-circle" style="font-size: 5vw"></span>
-				<table class="table table-condensed text-left table-nl table-file-m">
-					<tr>
-						<th class="text-right">Size:</th>
-						<td id="file-m-size"></td>
-					</tr>
-					<tr>
-						<th class="text-right">Modified:</th>
-						<td id="file-m-mtime"></td>
-					</tr>
-					<tr>
-						<th class="text-right">Type:</th>
-						<td id="file-m-mtype"></td>
-					</tr>
-				</table>
-				<div class="btn-group btn-group-justified">
-					<a href="#" target="_blank" rel="noopener" id="file-m-download" class="btn btn-default"><i class="fas fa-fw fa-3x fa-download"></i><br/><span class="hidden-xs">Download</span></a>
-					<a href="#" target="_blank" rel="noopener" id="file-m-view" class="btn btn-default hidden hidden-xs"><i class="fas fa-fw fa-3x fa-eye"></i><br/><span class="hidden-xs">View</span></a>
-					<a href="#" id="file-m-details" data-dismiss="modal" class="btn btn-default"><i class="fas fa-fw fa-3x fa-info-circle"></i><br/><span class="hidden-xs">Details</span></a>
-					<a id="e-copy-b" data-dismiss="modal"  class="btn btn-default"><i class="fas fa-fw fa-3x fa-copy"></i><br/><span class="hidden-xs">Copy</span></a>
-					<a id="e-rename-b" data-dismiss="modal" class="btn btn-default"><i class="fas fa-fw fa-3x fa-edit"></i><br/><span class="hidden-xs">Rename</span></a>
-					<a id="e-delete-b" data-dismiss="modal" class="btn btn-default"><i class="fas fa-fw fa-3x fa-trash-alt"></i><br/><span class="hidden-xs">Delete</span></a>
+			<div class="modal-body">
+				<div class="text-center hidden-xs"><img src="about:blank" id="file-m-preview" class="hidden img-thumbnail img-responsive" alt="preview"></div>
+
+				<form class="hidden-xs form-horizontal details-large">
+					<div class="form-group">
+						<label class="col-sm-3 file-key">File name:</label>
+						<div class="col-sm-9"><p class="file-value"><span class="fas fa-fw fa-question-circle file-m-icon"></span> <span class="file-m-name"</p></div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 file-key">Size:</label>
+						<div class="col-sm-9"><p class="file-value file-m-size"></p></div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 file-key">Type:</label>
+						<div class="col-sm-9"><p class="file-value file-m-mtype"></p></div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 file-key">Modified:</label>
+						<div class="col-sm-9"><p class="file-value file-m-mtime"></p></div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 file-key">Accessed:</label>
+						<div class="col-sm-9"><p class="file-value file-m-atime"></p></div>
+					</div>
+					{% if config['WBINFO_LOOKUP'] %}
+					<div class="form-group">
+						<label class="col-sm-3 file-key">Owner:</label>
+						<div class="col-sm-9"><p class="file-value file-m-owner"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 file-key">Group:</label>
+						<div class="col-sm-9"><p class="file-value file-m-group"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>
+					</div>
+					{% endif %}
+				</form>
+
+				<form class="visible-xs details-small">
+					<div class="form-group">
+						<label>File name</label>
+						<p><span class="fas fa-fw fa-question-circle file-m-icon"></span> <span class="file-m-name"</p>
+					</div>
+					<div class="form-group">
+						<label>Size</label>
+						<p class="file-m-size"></p>
+					</div>
+					<div class="form-group">
+						<label>Type</label>
+						<p class="file-m-mtype"></p>
+					</div>
+					<div class="form-group">
+						<label>Last modified</label>
+						<p class="file-m-mtime"></p>
+					</div>
+				</form>
+
+				<div class="hidden-xs btn-group btn-group-justified">
+					<a href="" target="_blank" rel="noopener" class="btn btn-default file-m-download"><span class="fas fa-2x fa-fw fa-download"></span><div class="btn-label">Download</div></a>
+					<a href="" target="_blank" rel="noopener" class="btn btn-default hidden hidden-xs file-m-view"><span class="fas fa-2x fa-fw fa-eye"></span><div class="btn-label">View</div></a>
+					<a href="" class="btn btn-default e-copy-b" data-dismiss="modal"><span class="fas fa-2x fa-fw  fa-copy"></span><div class="btn-label">Copy</div></a>
+					<a href="" class="btn btn-default e-rename-b" data-dismiss="modal"><span class="fas fa-2x fa-fw fa-edit"></span><div class="btn-label">Rename</div></a>
+					<a href="" class="btn btn-default e-delete-b" data-dismiss="modal"><span class="fas fa-2x fa-fw fa-trash-alt"></span><div class="btn-label">Delete</div></a>
+				</div>
+				<div class="list-group visible-xs">
+					<a href="" target="_blank" rel="noopener" class="list-group-item file-m-download"><span class="fas fa-fw fa-download"></span> Download</a>
+					<a href="" target="_blank" rel="noopener" class="list-group-item hidden hidden-xs file-m-view"><span class="fas fa-fw fa-eye"></span> View</a>
+					<a href="" class="list-group-item hidden hidden-xs file-m-details"><span class="fas fa-fw fa-eye"></span> Details</a>
+					<a href="" class="list-group-item e-copy-b" data-dismiss="modal"><span class="fas fa-fw  fa-copy"></span> Copy</a>
+					<a href="" class="list-group-item e-rename-b" data-dismiss="modal"><span class="fas fa-fw fa-edit"></span> Rename</a>
+					<a href="" class="list-group-item e-delete-b" data-dismiss="modal"><span class="fas fa-fw fa-trash-alt"></span> Delete</a>
 				</div>
 			</div>
 		</div>
@@ -71,69 +116,6 @@
 	</div>
 </div>
 
-
-{#- modal for file details (properties?) #}
-<div id="e-details-m" class="modal" tabindex="-1">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header mhc">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fas fa-fw fa-times"></i></button>
-				<h4 style="overflow: hidden; text-overflow: ellipsis;" class="modal-title" id="e-details-fname">Unknown</h4>
-			</div>
-
-			<div class="modal-body">
-				<form class="form-horizontal">
-					<div id="e-details-status" class="text-center">
-						<i class="fas fa-spinner fa-spin fa-5x text-muted"></i>
-					</div>
-					<div id="e-details-data">
-						<div class="form-group">
-							<label class="col-sm-3 control-label">Size:</label>
-							<div class="col-sm-9">
-								<p class="form-control-static" id="e-details-size"></p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-3 control-label">Type:</label>
-							<div class="col-sm-9">
-								<p class="form-control-static" id="e-details-ftype"></p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-3 control-label">Last accessed:</label>
-							<div class="col-sm-9">
-								<p class="form-control-static" id="e-details-atime"></p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-3 control-label">Last modified:</label>
-							<div class="col-sm-9">
-								<p class="form-control-static" id="e-details-mtime"></p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-3 control-label">Owner:</label>
-							<div class="col-sm-9">
-								<p class="form-control-static" id="e-details-owner"></p>
-							</div>
-						</div>
-						<div class="form-group">
-							<label class="col-sm-3 control-label">Group:</label>
-							<div class="col-sm-9">
-								<p class="form-control-static" id="e-details-group"></p>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-			</div>
-		</div>
-	</div>
-</div>
-
-
 {#- RENAME #}
 <div id="e-rename-m" class="modal" tabindex='-1'>
 	<div class="modal-dialog">
@@ -170,8 +152,8 @@
 					<div id="e-delete-w" class="hidden"><label><span class="label label-danger">Note!</span> Only empty directories can be deleted! </label></div>
 				</div>
 				<div class="modal-footer">
-					<input type="submit" class="btn btn-primary" value="Yes"/>
- 					<button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+ 					<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+					<input type="submit" class="btn btn-danger" value="Yes"/>
 				</div>
 			</div>
 		</form>

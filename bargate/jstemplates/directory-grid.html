@@ -20,7 +20,7 @@
 
 <div id="files">
 	{%- for entry in files -%}
-	<div class="grid-entry efile" data-mtyper="{{entry.mtyper}}" data-mtimer="{{ entry.mtimer }}" data-sizer="{{ entry.size }}" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-sortname="{{entry.name|lower}}" data-epurl="{{entry.epurl}}" {% if entry.view %}data-view="true"{%endif%}>
+	<div class="grid-entry efile" data-mtyper="{{entry.mtyper}}" data-mtimer="{{ entry.mtimer }}" data-sizer="{{ entry.size }}" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-sortname="{{entry.name|lower}}" data-epurl="{{entry.epurl}}" {% if entry.view %}data-view="true"{%endif%}>
 
 		{%- if entry.img -%}
 		<div class="panel panel-default">

@@ -794,9 +794,10 @@ class BargateSMBLibrary(LibraryBase):
 			(entry['mtype'], entry['mtyper']) = mime.filename_to_mimetype(entry['name'])
 			entry['icon'] = mime.mimetype_to_icon(entry['mtyper'])
 
-			# modification time (last write)
+			# times
 			entry['mtimer'] = sfile.last_write_time
-			entry['mtime']     = misc.ut_to_string(sfile.last_write_time)
+			entry['mtime'] = misc.ut_to_string(sfile.last_write_time)
+			entry['atime'] = misc.ut_to_string(sfile.last_access_time)
 
 			# Image previews
 			if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in mime.pillow_supported:

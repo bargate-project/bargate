@@ -52,11 +52,6 @@ html, body {
 	border-top: none;
 }
 
-/* On the popup dialog for file clicking the table needs padding above it */
-.table-file-click {
-	margin-top: 20px;
-}
-
 .prefsh:first-of-type {
 	margin-top: 0;
 }
@@ -241,3 +236,32 @@ td.dentry {
 	position: absolute;
 	width: 100%;
 }
+
+/* rules for file details/click/properties modal */
+.btn-label {
+	margin-top: 5px;
+}
+@media (max-width: 768px) {
+	.modal-body {
+		padding: 10px;
+	}
+}
+.details-small label {
+	margin-bottom: 0;
+}
+
+#file-m-preview {
+	margin-bottom: 20px;
+}
+
+.file-value {
+	margin-bottom: 0;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+.file-key {
+	margin-bottom: 0;
+	padding-top: 3px;
+	text-align: right;
+}
+/* end of file details rules */

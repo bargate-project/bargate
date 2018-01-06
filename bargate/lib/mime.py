@@ -29,48 +29,49 @@ mimemap = {
 	'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Microsoft Excel XML',
 	'application/vnd.ms-powerpoint': 'Microsoft Powerpoint',
 	'application/octet-stream': 'Binary file (executable or image)',
-	'application/mathematica': 'Mathematica File',
+	'application/mathematica': 'Mathematica file',
 	'application/x-shockwave-flash': 'Shockwave Flash',
 	'application/vnd.visio': 'Microsoft Visio',
 	'application/vnd.ms-excel': 'Microsoft Excel',
-	'message/rfc822': 'E-Mail Message',
-	'text/calendar': 'Calendar File',
-	'application/x-java-archive': 'Java Archive',
-	'application/vnd.oasis.opendocument.presentation': 'Open Document Presentation',
-	'application/vnd.oasis.opendocument.spreadsheet': 'Open Document Spreadsheet',
-	'application/vnd.oasis.opendocument.text': 'Open Document Text',
-	'text/csv': 'CSV - Comma Seperated Values',
-	'text/css': 'CSS - Cascading Style Sheet',
-	'application/pdf': 'PDF - Portable Document Format',
+	'message/rfc822': 'E-Mail message',
+	'text/calendar': 'Calendar file',
+	'application/x-java-archive': 'Java archive',
+	'application/vnd.oasis.opendocument.presentation': 'Open document presentation',
+	'application/vnd.oasis.opendocument.spreadsheet': 'Open document spreadsheet',
+	'application/vnd.oasis.opendocument.text': 'Open document text',
+	'text/csv': 'Comma seperated values (CSV)',
+	'text/css': 'Cascading style sheet (CSV)',
+	'application/pdf': 'Portable document format (PDF)',
 	'text/plain': 'Plain text',
-	'application/x-perl': 'Perl File',
-	'text/x-python': 'Python File',
-	'text/xml': 'XML - eXtensible Markup Language',
-	'application/xml': 'XML - eXtensible Markup Language',
+	'application/x-perl': 'Perl file',
+	'text/x-python': 'Python file',
+	'text/xml': 'XML - eXtensible markup language',
+	'application/xml': 'XML - eXtensible markup language',
 	'application/postscript': 'Postscript',
-	'text/html': 'HTML - Hypertext Markup Language',
-	'application/xhtml+xml': 'XHTML - XML and HTML',
-	'image/vnd.microsoft.icon': 'Microsoft Icon',
-	'image/bmp': 'Bitmap Image',
-	'image/x-xpixmap': 'Pixmap Image',
-	'image/png': 'PNG Image (Portable Network Graphics)',
-	'image/jpeg': 'JPEG Image',
-	'image/gif': 'GIF Image',
-	'image/tiff': 'TIFF Image',
-	'image/svg': 'SVG Image (Scalable Vector Graphic)',
-	'video/mp4': 'Video - MPEG4',
-	'video/mpeg': 'Video - MPEG2',
-	'video/ogg': 'Video - OGG',
-	'video/x-msvideo': 'Video - AVI',
-	'video/quicktime': 'Video - Quicktime',
-	'audio/x-wav': 'Audio - WAV',
-	'audio/x-ms-wma': 'Audio - WMA - Windows Media Audio',
-	'audio/mpeg': 'Audio - MPEG',
-	'audio/basic': 'Audio - Basic',
-	'application/x-gzip': 'Compressed File - GZIP',
-	'application/x-tar': 'File Archive - TAR',
-	'application/zip': 'Compressed File - ZIP',
-	'application/vnd.ms-cab-compressed': 'Compressed File - Microsoft CABinet',
+	'text/html': 'HTML - Hypertext markup language',
+	'application/xhtml+xml': 'XHTML',
+	'image/vnd.microsoft.icon': 'Microsoft icon',
+	'image/bmp': 'Bitmap image',
+	'image/x-xpixmap': 'Pixmap image',
+	'image/png': 'PNG image (Portable Network Graphics)',
+	'image/jpeg': 'JPEG image',
+	'image/gif': 'GIF image',
+	'image/tiff': 'TIFF image',
+	'image/svg': 'SVG image (Scalable Vector Graphic)',
+	'video/mp4': 'MPEG4 video',
+	'video/mpeg': 'MPEG2 video',
+	'video/ogg': 'OGG video',
+	'video/x-msvideo': 'AVI video',
+	'video/quicktime': 'Quicktime video',
+	'audio/x-wav': 'WAV audio',
+	'audio/x-ms-wma': 'Windows media audio',
+	'audio/mpeg': 'MPEG audio',
+	'audio/basic': 'Basic audio',
+	'application/x-gzip': 'GZIP compressed file',
+	'application/x-tar': 'File (tape) archive',
+	'application/zip': 'ZIP compressed file',
+	'application/vnd.ms-cab-compressed': 'Microsoft cabinet archive',
+	'application/x-iso9660-image': 'ISO disk image',
 }
 
 
@@ -160,6 +161,8 @@ def mimetype_to_icon(mtype):
 		ficon = 'far fa-file-code'
 	elif mtype.startswith('text/plain'):
 		ficon = 'far fa-file-alt'
+	elif mtype.startswith('application/x-iso9660-image'):
+		ficon = 'fas fa-file-archive'
 	elif mtype.startswith('application'):
 		ficon = 'fas fa-cog'
 	return ficon
@@ -175,7 +178,7 @@ def filename_to_mimetype(filename):
 
 	# If mimetypes module didn't detect anything
 	if mtype is None:
-		return ("Unknown file type", "unknown")
+		return ("Unknown", "unknown")
 
 	try:
 		friendly = mimemap[mtype]

@@ -790,6 +790,7 @@ class BargateSMBLibrary(LibraryBase):
 					return entry
 
 				entry['mtimer'] = fstat.mtime
+				entry['atime']  = misc.ut_to_string(fstat.atime)
 				entry['mtime']  = misc.ut_to_string(fstat.mtime)
 				entry['size']   = fstat.size
 
