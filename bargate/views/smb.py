@@ -42,6 +42,9 @@ def smb_post():
 		app.logger.debug("path not set in call to smb_post")
 		path = ''
 
+	app.logger.debug("smb_post(): epname is: '" + request.form['epname'] + "', action is: '" +
+		request.form['action'] + "', path is: '" + path + "'")
+
 	return app.smblib.smb_action(request.form['epname'], request.form['action'], path)
 
 

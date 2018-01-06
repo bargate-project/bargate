@@ -145,6 +145,7 @@ class BargateSMBLibrary(LibraryBase):
 			return ("Unknown error", "An unknown error occured")
 
 	def _init_paths(self, endpoint_path, path=""):
+		endpoint_path = endpoint_path
 		if endpoint_path.endswith('/'):
 			endpoint_path = endpoint_path[:-1]
 
@@ -481,7 +482,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		for ufile in uploaded_files:
 
-			if fs.banned_file(ufile.filename):
+			if fs.banned_filename(ufile.filename):
 				ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
 				continue
 
@@ -508,13 +509,13 @@ class BargateSMBLibrary(LibraryBase):
 						doesnotexist = True
 
 				if not doesnotexist:
-					(title, msg) = self.smb_error_info(ex)
+					(title, msg) = self.decode_exception(ex)
 					ret.append({'name': ufile.filename,
 						'error': 'Could not check if file already exists: ' + title + " - " + msg})
 					continue
 
 			except Exception as ex:
-				(title, msg) = self.smb_error_info(ex)
+				(title, msg) = self.decode_exception(ex)
 				ret.append({'name': ufile.filename,
 					'error': 'Could not check if file already exists: ' + title + " - " + msg})
 				continue
@@ -548,7 +549,7 @@ class BargateSMBLibrary(LibraryBase):
 
 				ret.append({'name': ufile.filename})
 			except Exception as ex:
-				(title, msg) = self.smb_error_info(ex)
+				(title, msg) = self.decode_exception(ex)
 				ret.append({'name': ufile.filename, 'error': title + ": " + msg})
 				continue
 

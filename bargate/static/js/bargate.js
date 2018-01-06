@@ -1,3 +1,8 @@
+var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
+var $browse = {epname: null, epurl: null, path: null, entry: null, entryDirPath: null, btnsEnabled: false, bmarkEnabled: false, sortBy: 'name', data: null };
+var dragTimerShow;
+var dragCounter = 0;
+
 function showErr(title,desc) {
 	closeModals();
 	$("#modal-error-title").text(title);
@@ -33,11 +38,6 @@ function closeModals() {
 		$('#' + openModal).modal('hide');
 	}
 }
-
-var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
-var $browse = {epname: null, epurl: null, path: null, entry: null, entryDirPath: null, btnsEnabled: false, bmarkEnabled: false,
-	sortBy: 'name', data: null,
-};
 
 function enableBrowseButts() {
 	if ($browse.btnsEnabled === false) {
@@ -117,6 +117,10 @@ function loadDir(epname, path, alterHistory) {
 			}
 
 			$browse.data = response;
+			$browse.epurl = response.epurl;
+			$browse.epname = epname;
+			$browse.path  = path;
+
 			renderDirectory();
 			prepFileUpload();
 
@@ -124,10 +128,6 @@ function loadDir(epname, path, alterHistory) {
 				new_url = response.epurl + '/browse/' + path;
 				history.pushState({epname: epname, epurl: response.epurl, path: path}, '', new_url);
 			}
-			$browse.epurl = response.epurl;
-			$browse.epname = epname;
-			$browse.path  = path;
-
 		}
 	})
 	.fail(function(jqXHR, textStatus, errorThrown) {
@@ -476,6 +476,9 @@ function prepFileUpload() {
 			window.uploadNotify.update('message', progress + "% " + filesizeformat(data.loaded) + ' out of ' + filesizeformat(data.total) + ", " + bitrateformat(data.bitrate));
 		},
 		add: function (e, data) {
+			window.clearTimeout(dragTimerShow);
+			dragTimerShow = null;
+			dragCounter = 0;
 			$('#upload-drag-m').modal('hide');
 			$('#upload-m').modal('hide');
 
@@ -1008,15 +1011,35 @@ function onPageLoad() {
 	});
 
 	/* File uploads - drag files over shows a modal */
-	$('body').dragster({
-		enter: function ()
-		{
-			$('#upload-drag-m').modal();
-		},
-		leave: function ()
-		{
+	$('body').on('dragenter', function(e) {
+		dt = e.originalEvent.dataTransfer;
+		if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
+			dragCounter++;
+
+			if (!dragTimerShow) {
+				dragTimerShow = window.setTimeout(function() {
+					var openModal = $('.modal.in').attr('id');
+					if (openModal) {
+						if (openModal != 'upload-drag-m') {
+							$('#' + openModal).modal('hide');
+						}
+					}
+					$('#upload-drag-m').modal('show'); dragTimerShow = null;
+				}, 300);
+			}
+		}
+	});
+
+	$('body').on('dragleave', function(e) {
+		if (dragCounter > 0) {
+			dragCounter--;
+		}
+		if (dragCounter === 0) {
+			window.clearTimeout(dragTimerShow);
+			dragTimerShow = null;
 			$('#upload-drag-m').modal('hide');
 		}
+
 	});
 
 	/* Load initial directory */

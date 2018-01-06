@@ -19,7 +19,6 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.0.1/nunjucks-slim.min.js" integrity="sha256-tdB3uMy+X5YRM5JMGgy1oMtdSm1GwTEMmWb7q80e2+g=" crossorigin="anonymous" defer></script>
 		<script src="{{ url_for('static', filename='js/jquery.ui.widget.min.js') }}" async></script>
 		<script src="{{ url_for('static', filename='js/jquery.fileupload.min.js') }}" async></script>
-		<script src="{{ url_for('static', filename='js/jquery.dragster.min.js') }}" async></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.15/js/jquery.dataTables.min.js" integrity="sha256-j007R7R6ijEWPa1df7FeJ6AFbQeww0xgif2SJWZOhHw=" crossorigin="anonymous" {% if user_layout == 'grid' %}async{%else%}defer{%endif%}></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.15/js/dataTables.bootstrap.min.js" integrity="sha256-X/58s5WblGMAw9SpDtqnV8dLRNCawsyGwNqnZD0Je/s=" crossorigin="anonymous" {% if user_layout == 'grid' %}async{%else%}defer{%endif%}></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.4/isotope.pkgd.min.js" integrity="sha256-+WFRRTv1uGEhn6sykgWJyTBYDE8cQn8uAj50Kefp9II=" crossorigin="anonymous" {% if user_layout == 'grid' %}defer{%else%}async{%endif%}></script>

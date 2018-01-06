@@ -52,6 +52,7 @@ html, body {
 	border-top: none;
 }
 
+/* prefs modal headers */
 .prefsh:first-of-type {
 	margin-top: 0;
 }
@@ -62,7 +63,7 @@ html, body {
 }
 
 
-/* overflow text properly on panel labels */
+/* overflow text properly on panel labels for grid view */
 .grid-entry .panel-footer {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -81,7 +82,7 @@ html, body {
 	text-align: center;
 }
 
-/* wrap tooltips properly */
+/* wrap tooltips properly on grid view */
 .grid-entry .tooltip-inner {
 	hyphens: auto;
 	overflow-wrap: break-word;
@@ -228,6 +229,7 @@ td.dentry {
 	text-align: center;
 }
 
+/* bootstrap notify css */
 [data-notify="progressbar"] {
 	bottom: 0;
 	height: 5px;

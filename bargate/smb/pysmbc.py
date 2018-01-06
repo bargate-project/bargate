@@ -437,7 +437,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		for ufile in uploaded_files:
 
-			if fs.banned_file(ufile.filename):
+			if fs.banned_filename(ufile.filename):
 				ret.append({'name': ufile.filename, 'error': 'File type not allowed'})
 				continue
 
