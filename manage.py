@@ -20,14 +20,15 @@ from __future__ import print_function
 import subprocess
 import argparse
 import os
+import sys
 
 from distutils.spawn import find_executable
 
-JS_TEMPLATES_DIR = './bargate/jstemplates'
-JS_TEMPLATE_FILE = './bargate/static/templates.js'
-JAVASCRIPT_DIR   = './bargate/static/js'
-CSS_DIR          = './bargate/static/css'
-JSHINT_FILES     = ['./bargate/static/js/bargate.js', './bargate/static/js/login.js']
+JS_TEMPLATES_DIR = 'bargate/jstemplates'
+JS_TEMPLATE_FILE = 'bargate/static/templates.js'
+JAVASCRIPT_DIR   = 'bargate/static/js'
+CSS_DIR          = 'bargate/static/css'
+JSHINT_FILES     = ['bargate/static/js/bargate.js', 'bargate/static/js/login.js']
 
 
 class Manager():
@@ -90,8 +91,30 @@ class Manager():
 		exit(1)
 
 	def cmd_run(self):
-		from bargate import app
-		app.run()
+		# I'd rather do bargate import app, app.run
+		# but reloading is rather broken, as documented in the Flask docs.
+		# so we'll use the 'flask' command.
+		# from bargate import app
+		# app.run()
+
+		script_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+		self.debug("Detected script directory as: " + script_dir)
+		os.environ['PYTHON_PATH'] = script_dir
+		os.environ['FLASK_APP'] = 'bargate'
+
+		flask = find_executable("flask2")
+		if not flask:
+			flask = find_executable("flask")
+			if not flask:
+				self.fatal("Could not find the flask command. Please install it with: \nsudo pip install flask")
+
+		self.debug('found flask at path: ' + flask)
+
+		proc = subprocess.Popen([flask, 'run'], env=os.environ, close_fds=True)
+		proc.communicate()
+
+		if proc.returncode != 0:
+			self.fatal("flask run returned an error")
 
 	def cmd_dev(self):
 		self.cmd_lint()
@@ -99,8 +122,6 @@ class Manager():
 		self.cmd_run()
 
 	def cmd_flake8(self):
-		self.header("running flake8")
-
 		flake8 = find_executable("flake8-python2")
 		if not flake8:
 			flake8 = find_executable("flake8")
@@ -112,14 +133,12 @@ class Manager():
 		(result, output) = self.sysexec([flake8, '--ignore=E126,E128,E221,W191', '--max-line-length=120', '.'])
 
 		if result == 0:
-			self.info("flake8: OK")
+			self.info("flake8: PASS")
 		else:
 			print(output)
 			self.fatal("flake8 returned errors")
 
 	def cmd_jshint(self):
-		self.header("running jshint")
-
 		jshint = find_executable("jshint")
 		if not jshint:
 			self.fatal("Could not find the jshint command. Please install it with: \nsudo npm install jshint -g")
@@ -127,18 +146,16 @@ class Manager():
 		self.debug('found jshint at path: ' + jshint)
 
 		for filename in JSHINT_FILES:
-			self.info("checking " + filename)
+			self.debug("running jshint on " + filename)
 			(result, output) = self.sysexec([jshint, filename])
 
 			if result != 0:
 				print(output)
 				self.fatal("jshint returned errors")
 
-		self.info("jshint: OK")
+		self.info("jshint: PASS")
 
 	def cmd_csslint(self):
-
-		self.header("running csslint")
 		csslint = find_executable("csslint")
 		if not csslint:
 			self.fatal("Could not find the csslint command. Please install it with: \nsudo npm install csslint -g")
@@ -152,7 +169,7 @@ class Manager():
 		for name in files:
 			if name.endswith('.css'):
 				if not name.endswith(".min.css"):
-					self.info("checking " + CSS_DIR + "/" + name)
+					self.debug("running csslint on " + CSS_DIR + "/" + name)
 
 					(result, output) = self.sysexec([csslint, CSS_DIR + "/" + name, '--quiet',
 						'--ignore=ids,order-alphabetical,unqualified-attributes'])
@@ -161,10 +178,9 @@ class Manager():
 						self.error(output)
 						self.fatal("csslint returned errors")
 
-		self.info("csslint: OK")
+		self.info("csslint: PASS")
 
 	def cmd_nunjucks_precompile(self):
-		self.header("precompiling nunjucks templates")
 		nunjucks_precompile = find_executable("nunjucks-precompile")
 		if not nunjucks_precompile:
 			self.fatal("Could not find the nunjuncks-precompile command. Please install it with: \nsudo npm install nunjucks -g") # noqa
@@ -188,8 +204,6 @@ class Manager():
 		self.info("nunjucks templates precompiled")
 
 	def cmd_uglifyjs(self):
-
-		self.header("minifying javascript")
 		uglifyjs = find_executable("uglifyjs")
 		if not uglifyjs:
 			self.fatal("Could not find the uglifyfs command. Please install it with: \nsudo npm install uglify-js -g")
@@ -213,11 +227,7 @@ class Manager():
 						self.error(output)
 						self.fatal("non-zero exit from uglifyjs")
 
-		self.info("javascript minified")
-
 	def cmd_crass(self):
-
-		self.header("minifying css")
 		crass = find_executable("crass")
 		if not crass:
 			self.fatal("Could not find the crass command. Please install it with: \nsudo npm install crass -g")
@@ -246,8 +256,6 @@ class Manager():
 							f.write(output)
 					except Exception as ex:
 						self.fatal("Could not write to " + CSS_DIR + "/" + name + ": " + str(ex))
-
-		self.info("css minified")
 
 	def cmd_minify(self):
 		self.cmd_uglifyjs()
