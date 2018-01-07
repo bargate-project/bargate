@@ -110,7 +110,7 @@ class Manager():
 
 		self.debug('found flask at path: ' + flask)
 
-		proc = subprocess.Popen([flask, 'run'], env=os.environ, close_fds=True)
+		proc = subprocess.Popen([flask, 'run', '--host=0.0.0.0'], env=os.environ, close_fds=True)
 		proc.communicate()
 
 		if proc.returncode != 0:

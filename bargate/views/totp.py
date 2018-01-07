@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import g, session, render_template, redirect, url_for, request, flash, abort
+from flask import session, render_template, redirect, url_for, request, flash, abort, jsonify
 
 from bargate import app
 from bargate.lib import totp, user
 
 
-@app.route('/totp_qrcode_img')
+@app.route('/2step/qrcode')
 @app.login_required
 def totp_qrcode_view():
 	if not totp.user_enabled(session['username']):
@@ -30,50 +30,61 @@ def totp_qrcode_view():
 		abort(403)
 
 
-@app.route('/2step', methods=['GET', 'POST'])
+@app.route('/2step/enable', methods=['POST'])
+@app.set_response_type('json')
 @app.login_required
-def totp_user_view():
-	if not totp.user_enabled(session['username']):
-		if request.method == 'GET':
-			return render_template('totp_enable.html', active="user")
-		elif request.method == 'POST':
-			token = request.form['totp_token']
-
-			if totp.verify_token(session['username'], token):
-				flash("Two step logon has been enabled for your account", "alert-success")
-				g.redis.set('totp.%s.enabled' % session['username'], "True")
-			else:
-				flash("Invalid code! Two step logons could not be enabled", "alert-danger")
-
-			return redirect(url_for('totp_user_view'))
-
+def totp_enable():
+	if totp.user_enabled(session['username']):
+		return jsonify({'code': 1, 'msg': 'Two step verification is already enabled on your account'})
 	else:
-		if request.method == 'GET':
-			return render_template('totp_disable.html', active="user")
-		elif request.method == 'POST':
+		if 'token' not in request.form:
+			return jsonify({'code': 1, 'msg': 'Please enter a verification code from the app on your mobile device'})
 
-			token = request.form['totp_token']
-
-			if totp.verify_token(session['username'], token):
-				g.redis.delete('totp.%s.enabled' % session['username'])
-				g.redis.delete('totp.%s.key' % session['username'])
-				flash("Two step logons have been disabled for your account", "alert-warning")
-			else:
-				flash("Invalid code! Two step logons were not disabled", "alert-danger")
-
-			return redirect(url_for('totp_user_view'))
+		if totp.verify_token(session['username'], request.form['token']):
+			totp.enable_for_user(session['username'])
+			return jsonify({'code': 0})
+		else:
+			return jsonify({'code': 1, 'msg': 'Invalid verification code'})
 
 
-@app.route('/verify2step', methods=['GET', 'POST'])
+@app.route('/2step/disable', methods=['POST'])
+@app.set_response_type('json')
+@app.login_required
+def totp_disable():
+	if not totp.user_enabled(session['username']):
+		return jsonify({'code': 0})
+	else:
+		if 'token' not in request.form:
+			return jsonify({'code': 1, 'msg': 'Please enter a verification code from the app on your mobile device'})
+
+		if totp.verify_token(session['username'], request.form['token']):
+			totp.disable_for_user(session['username'])
+			return jsonify({'code': 0})
+		else:
+			return jsonify({'code': 1, 'msg': 'Invalid verification code'})
+
+
+@app.route('/verify', methods=['GET', 'POST'])
 def totp_logon_view():
 	if request.method == 'GET':
+		if app.is_user_logged_in():
+			return redirect(url_for(app.config['SHARES_DEFAULT']))
+		elif 'username' in session:
+			if totp.device_trusted(session['username']):
+				return user.logon_ok()
+
 		return render_template('totp_verify.html', active="user")
 	elif request.method == 'POST':
 		# verify the token entered
-		token = request.form['totp_token']
+		token = request.form['token']
 
 		if totp.verify_token(session['username'], token):
-			return user.logon_ok()
+			response = user.logon_ok()
+
+			if request.form.get('trust', default="") == 'confirm':
+				return totp.set_trust_cookie(response, session['username'])
+			else:
+				return response
 		else:
 			flash("Invalid two step code!", "alert-danger")
 			return redirect(url_for('totp_logon_view'))

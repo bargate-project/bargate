@@ -1,15 +1,15 @@
-<ol class="breadcrumb">
-		<li>
-			<i class="fas fa-fw fa-home"></i>
-			<a class="edir" data-path="">
-			{{ root_name }}
-			</a>
-		</li>
-		{%- for dir in crumbs %}
-		<li{% if loop.last %} class="active"{%endif%}>
-			{%- if not loop.last %}<a class="edir" data-path="{{ dir.path }}">{{ dir.name }}</a>
-			{%- else %}{{ dir.name }}
-			{%- endif %}
-		</li>
-		{%- endfor %}
+<ol class="breadcrumb hidden-xs">
+	<li>
+		<i class="fas fa-fw fa-home"></i>
+		<a class="edir" data-path="">
+		{{ root_name }}
+		</a>
+	</li>
+	{%- for dir in crumbs %}
+	<li{% if loop.last %} class="active"{%endif%}>
+		{%- if not loop.last %}<a class="edir" data-path="{{ dir.path }}">{{ dir.name }}</a>
+		{%- else %}{{ dir.name }}
+		{%- endif %}
+	</li>
+	{%- endfor %}
 </ol>

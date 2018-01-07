@@ -18,9 +18,7 @@
 
 import traceback
 
-from flask import request, render_template, session, make_response, g, jsonify
-
-from bargate import app
+from flask import render_template, make_response, g, jsonify
 
 
 def stderr(title, message, http_return_code=200):
@@ -38,49 +36,16 @@ def stderr(title, message, http_return_code=200):
 		return render_template('error.html', title=title, message=message, debug=debug), http_return_code
 
 
-def exception_handler(ex, message=None):
-
-	# Get the traceback
-	trace = str(traceback.format_exc())
-	if app.debug:
-		debug = trace
-	else:
-		debug = "Ask your system administrator to consult the error log for further information."
-
-	if 'username' in session:
-		username = session['username']
-	else:
-		username = 'Not logged in'
-
-	if message is None:
-		message = type(ex).__name__ + ": " + str(ex)
-
-	# Log the critical error (so that it goes to e-mail)
-	app.logger.error("""Fatal Error
-Exception Type:       {}
-Exception Message:    {}
-HTTP Path:            {}
-HTTP Method:          {}
-Client IP Address:    {}
-User Agent:           {}
-User Platform:        {}
-User Browser:         {}
-User Browser Version: {}
-Username:             {}
-
-{}
-""".format(type(ex).__name__, str(ex), request.path, request.method, request.remote_addr, request.user_agent.string,
-			request.user_agent.platform, request.user_agent.browser, request.user_agent.version, username, trace))
+def fatalerr(title, message, debug='', http_return_code=500):
 
 	if g.get('response_type', 'html') == 'json':
-		return jsonify({'code': 1, 'msg': "A fatal error occured: " + message})
+		return jsonify({'code': 1, 'msg': title + ": " + message})
 	else:
-
 		html = u"""
 	<!doctype html>
 	<html>
 	<head>
-		<title>Fatal Error</title>
+		<title>%s</title>
 		<meta charset="utf-8" />
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -115,12 +80,12 @@ Username:             {}
 	</head>
 	<body>
 	<div>
-		<h1>fatal error ☹</h1>
-		<p>%s</p>
+		<h1>%s</h1>
+		<pre>%s</pre>
 		<pre>%s</pre>
 	</div>
 	</body>
 	</html>
-	""" % (message, debug)
+	""" % (title, title, message, debug)
 
-		return make_response(html, 500)
+		return make_response(html, http_return_code)

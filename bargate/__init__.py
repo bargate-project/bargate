@@ -38,25 +38,21 @@ except Exception as ex:
 	app.logger.error(traceback.format_exc())
 	app.error = "Could not load the SMB library: " + str(type(ex)) + " " + str(ex)
 
-# only continue if bargate started successfully
+# process per-request decorators
+from bargate import request # noqa
+
+# process view functions decorators
+from bargate.views import main, userdata, errors, smb # noqa
+
+# optionally load TOTP support
+if app.config['TOTP_ENABLED']:
+	if app.config['REDIS_ENABLED']:
+		from bargate.views import totp # noqa
+	else:
+		app.error = "Cannot enable TOTP 2-factor auth because REDIS is not enabled"
+
 if not app.error:
-	# process per-request decorators
-	import bargate.request
-
-	# process view functions decorators
-	import bargate.views.main
-	import bargate.views.userdata
-	import bargate.views.errors
-	import bargate.views.smb
-
-	# optionally load TOTP support
-	if app.config['TOTP_ENABLED']:
-		if app.config['REDIS_ENABLED']:
-			import bargate.views.totp
-		else:
-			app.logger.warn("Cannot enable TOTP 2-factor auth because REDIS is not enabled")
-
-	# add url rules for the shares/functions defined in shares.conf
+	# add url rules for the shares/endpoints
 	for section in app.sharesList:
 		if section == 'custom':
 			app.logger.error("Could not create endpoint 'custom': name is reserved")
@@ -76,46 +72,43 @@ if not app.error:
 
 		try:
 			# If the user goes to /endpoint/browse/ or /endpoint/browse
-			app.add_url_rule(url + '/browse/',
-								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler,
+			app.add_url_rule(url + '/browse/', endpoint=section,
+								view_func=smb.endpoint_handler,
 								defaults={'action': 'browse', 'path': ''})
 
 			app.add_url_rule(url + '/browse',
 								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler,
+								view_func=smb.endpoint_handler,
 								defaults={'action': 'browse', 'path': ''})
 
 			# If the user goes to /endpoint or /endpoint/
 			app.add_url_rule(url,
 								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler,
+								view_func=smb.endpoint_handler,
 								defaults={'path': '', 'action': 'browse'})
 
 			app.add_url_rule(url + '/',
 								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler,
+								view_func=smb.endpoint_handler,
 								defaults={'path': '', 'action': 'browse'})
 
 			# If the user goes to /endpoint/browse/path/
 			app.add_url_rule(url + '/browse/<path:path>',
 								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler,
+								view_func=smb.endpoint_handler,
 								defaults={'action': 'browse'})
 
 			app.add_url_rule(url + '/browse/<path:path>/',
 								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler,
+								view_func=smb.endpoint_handler,
 								defaults={'action': 'browse'})
 
 			# If the user goes to /endpoint/<action>/path/
 			app.add_url_rule(url + '/<string:action>/<path:path>',
 								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler)
+								view_func=smb.endpoint_handler)
 
-			app.add_url_rule(url + '/<string:action>/<path:path>/',
-								endpoint=section,
-								view_func=bargate.views.smb.endpoint_handler)
+			app.add_url_rule(url + '/<string:action>/<path:path>/', endpoint=section, view_func=smb.endpoint_handler)
 
 			app.logger.debug("Created endpoint named '" + section + "' available at " + url)
 

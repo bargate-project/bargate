@@ -1,11 +1,8 @@
 {% if config['REDIS_ENABLED'] %}
 <li><a href="#prefs-m" data-toggle="modal"><i class="fas fa-cog fa-fw"></i> Settings</a></li>
-{% if config['TOTP_ENABLED'] %}
-<li><a href="{{ url_for('totp_user_view') }}"><i class="fas fa-lock fa-fw"></i> Two Step Protection</a></li>
-{% endif %}
 <li class="divider"></li>
 {% endif %}
 {%- include 'user-menu.html' %}
-<li><a href="#shortcuts-m" data-toggle="modal"><i class="fas fa-keyboard fa-fw"></i> Shortcuts</a></li>
+<li class="hidden-xs"><a href="#shortcuts-m" data-toggle="modal"><i class="fas fa-keyboard fa-fw"></i> Shortcuts</a></li>
 {%- include 'help-menu.html' %}
 <li><a href="#about-m" data-toggle="modal"><i class="fas fa-fw fa-info-circle"></i> About</a></li>

@@ -1,4 +1,4 @@
-var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null};
+var $user = {layout: null, token: null, theme: null, navbar: null, hidden: false, overwrite: false, onclick: null, twostep: false};
 var $browse = {epname: null, epurl: null, path: null, entry: null, entryDirPath: null, btnsEnabled: false, bmarkEnabled: false, sortBy: 'name', data: null };
 var dragTimerShow;
 var dragCounter = 0;
@@ -621,6 +621,47 @@ function notifyError(msg) {
 	$.notify({ icon: 'fas fa-fw fa-exclamation-triangle', message: msg },{ type: 'danger', delay: 10000, template: nunjucks.render('notify.html'), placement: {align: 'center', from: 'bottom'}});
 }
 
+function doTwoStepEnable() {
+	$.post( '/2step/enable', { _csrfp_token: $user.token, token: $('#twostep-enable-i').val()})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			raiseFail("Network error", "Could not enable two-step verification", jqXHR, textStatus, errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code !== 0) {
+				raiseNonZero("Unable to enable two-step verification", data.msg, data.code);
+			} else {
+				$('.twoStepDisabled').addClass('hidden');
+				$('.twoStepEnabled').removeClass('hidden');
+				if ($user.twostep.trusted) {
+					$('.twoStepTrusted').removeClass('hidden');
+					$('.twoStepUntrusted').addClass('hidden');
+				} else {
+					$('.twoStepTrusted').addClass('hidden');
+					$('.twoStepUntrusted').removeClass('hidden');
+				}
+				$('#twostep-enable-i').val('');
+				$('#twostep-disable-i').val('');
+			}
+	});
+}
+
+function doTwoStepDisable() {
+	$.post( '/2step/disable', { _csrfp_token: $user.token, token: $('#twostep-disable-i').val()})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			raiseFail("Network error", "Could not disable two-step verification", jqXHR, textStatus, errorThrown);
+		})
+		.done(function(data, textStatus, jqXHR) {
+			if (data.code !== 0) {
+				raiseNonZero("Unable to disable two-step verification", data.msg, data.code);
+			} else {
+				$('.twoStepEnabled').addClass('hidden');
+				$('.twoStepDisabled').removeClass('hidden');
+				$('#twostep-enable-i').val('');
+				$('#twostep-disable-i').val('');
+			}
+	});
+}
+
 function doRename() {
 	$('#e-rename-m').modal('hide');
 	$.post( '/xhr', { epname: $browse.epname, path: $browse.entryDirPath, action: 'rename', _csrfp_token: $user.token, old_name: $browse.entry, new_name: $('#e-rename-i').val()})
@@ -921,6 +962,26 @@ function onPageLoad() {
 			$('#prefs-overwrite').attr("checked",true);
 		}
 		$('#prefs-theme-' + $user.theme).attr("checked",true);
+
+		if ($user.totp.enabled) {
+			$('.twoStepEnabled').removeClass('hidden');
+			$('.twoStepDisabled').addClass('hidden');
+
+			if ($user.totp.trusted) {
+				$('.twoStepTrusted').removeClass('hidden');
+				$('.twoStepUntrusted').addClass('hidden');
+			}
+		}
+	});
+
+	$("#twostep-disable-f").submit(function (e) {
+		e.preventDefault();
+		doTwoStepDisable();
+	});
+
+	$("#twostep-enable-f").submit(function (e) {
+		e.preventDefault();
+		doTwoStepEnable();
 	});
 
 	/* Set up actions when preferences are changed */
@@ -1057,13 +1118,7 @@ $(document).ready(function($) {
 		if (response.code !== 0) {
 			raiseNonZero("Unable to load settings", response.msg, response.code);
 		} else {
-			$user.layout = response.layout;
-			$user.token = response.token;
-			$user.theme = response.theme;
-			$user.navbar = response.navbar;
-			$user.hidden = response.hidden;
-			$user.overwrite = response.overwrite;
-			$user.onclick = response.onclick;
+			$user = response;
 
 			onPageLoad();
 		}

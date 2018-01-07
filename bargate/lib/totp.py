@@ -18,12 +18,23 @@
 import os
 import base64
 import StringIO
+import hashlib
+from datetime import datetime, timedelta
 
-from flask import g, session
-import onetimepass
-import pyqrcode
+from flask import g, session, request
+from itsdangerous import TimestampSigner, BadData
 
 from bargate import app
+
+try:
+	import onetimepass
+except ImportError as ex:
+	app.error = "TOTP is enabled but the required module 'onetimepass' is not installed."
+
+try:
+	import pyqrcode
+except ImportError as ex:
+	app.error = "TOTP is enabled but the required module 'pyqrcode' is not installed."
 
 
 def generate_secret_key():
@@ -72,3 +83,43 @@ def user_enabled(userid):
 		return False
 	else:
 		return True
+
+
+def enable_for_user(userid):
+	g.redis.set('totp.%s.enabled' % userid, "True")
+
+
+def disable_for_user(userid):
+	g.redis.delete('totp.%s.enabled' % userid)
+	g.redis.delete('totp.%s.key' % userid)
+
+
+def set_trust_cookie(response, userid):
+	# Save a cookie for 30 days to skip two-step protection on this device
+	# We save the username (so as to prevent stealing 2-step bypass cookies from other users)
+	# and we use itsdangerous, using the app SECRET_KEY, to sign the cookie so we can verify
+	# this instance of bargate actually set this two-step bypass cookie. We use timestamps
+	# so the max time can be set at 30 days (during decode/design). That way we're not relying
+	# on the browser deleting the cookie after 30 days - we enforce a max age server side.
+	trust_signer = TimestampSigner(app.config['SECRET_KEY'], digest_method=hashlib.sha512)
+	trust_token = trust_signer.sign(userid)
+	response.set_cookie('2step', trust_token, expires=datetime.now() + timedelta(30))
+	return response
+
+
+def device_trusted(userid):
+	trusted_cookie = request.cookies.get('2step', None)
+
+	if trusted_cookie is not None:
+		cookie_unsigner = TimestampSigner(app.config['SECRET_KEY'], digest_method=hashlib.sha512)
+		try:
+			# max age of the trusted device cookie is 30 days
+			# 30 multplied by the number of seconds in a day (86400) = 2592000
+			decoded = cookie_unsigner.unsign(trusted_cookie, max_age=2592000)
+			if userid == decoded:
+				return True
+		except BadData as ex:
+			app.logger.debug("trusted_device check for " + userid + " failed - unsign raised exception: " + str(ex))
+			pass
+
+	return False

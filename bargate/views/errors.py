@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import g, jsonify
+import traceback
+
+from flask import g, jsonify, session, request
 
 from bargate import app
 from bargate.lib import errors
@@ -59,4 +61,36 @@ def catchall_error_handler(error):
 	"""Handles generic exceptions within the application, displaying the
 	traceback if the application is running in debug mode."""
 
-	return errors.exception_handler(error)
+	# Get the traceback
+	trace = str(traceback.format_exc())
+	if app.debug:
+		debug = trace
+	else:
+		debug = "Ask your system administrator to consult the error log for further information."
+
+	if app.is_user_logged_in():
+		username = session['username']
+	else:
+		username = 'Not logged in'
+
+	message = type(error).__name__ + ": " + str(error)
+
+	# Log the critical error (so that it goes to e-mail)
+	app.logger.error("""Fatal Error
+Exception Type:       {}
+Exception Message:    {}
+HTTP Path:            {}
+HTTP Method:          {}
+Client IP Address:    {}
+User Agent:           {}
+User Platform:        {}
+User Browser:         {}
+User Browser Version: {}
+Username:             {}
+
+{}
+""".format(type(error).__name__, str(error), request.path, request.method, request.remote_addr,
+			request.user_agent.string, request.user_agent.platform, request.user_agent.browser,
+			request.user_agent.version, username, trace))
+
+	return errors.fatalerr(u"fatal error ☹", message, debug)

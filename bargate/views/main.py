@@ -63,10 +63,11 @@ def login():
 			if app.config['TOTP_ENABLED']:
 				from bargate.lib import totp
 
-				if totp.user_enabled(session['username']):
-					app.logger.debug('User "' + session['username'] +
-						'" has two step enabled. Redirecting to two-step handler')
-					return redirect(url_for('totp_logon_view'))
+				if not totp.device_trusted(session['username']):
+					if totp.user_enabled(session['username']):
+						app.logger.debug('User "' + session['username'] +
+							'" has two step enabled. Redirecting to two-step handler')
+						return redirect(url_for('totp_logon_view'))
 
 			# Successful logon without 2-step needed
 			return user.logon_ok()

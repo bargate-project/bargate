@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import time
 import werkzeug
 import uuid
@@ -168,7 +167,7 @@ def get_theme_navbar():
 
 
 def get_show_hidden_files():
-	if 'username' in session:
+	if app.is_user_logged_in():
 
 		# Get a cached response rather than asking REDIS every time
 		hidden_files = g.get('hidden_files', None)
@@ -192,7 +191,7 @@ def get_show_hidden_files():
 
 
 def get_overwrite_on_upload():
-	if 'username' in session:
+	if app.is_user_logged_in():
 		if app.config['REDIS_ENABLED']:
 			try:
 				overwrite_on_upload = g.redis.get('user:' + session['username'] + ':upload_overwrite')
@@ -208,7 +207,7 @@ def get_overwrite_on_upload():
 
 
 def get_on_file_click():
-	if 'username' in session:
+	if app.is_user_logged_in():
 
 		# Get a cached response rather than asking REDIS every time
 		on_file_click = g.get('on_file_click', None)

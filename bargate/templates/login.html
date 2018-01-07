@@ -1,44 +1,6 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
-		<title>{{ config['APP_DISPLAY_NAME'] }}</title>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<link rel="icon" type="image/png" href="{{ favicon }}">
-		<link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-		<link href="{{ url_for('static', filename='css/login.min.css') }}" type="text/css" rel="stylesheet">
-		{% include 'login-head.html' ignore missing %}
-		<noscript>
-			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
-		</noscript>
-		{% include 'javascript.html' %}
-		<script type="text/javascript" src="{{ url_for('static', filename='js/login.min.js') }}" async></script>
-	</head>
-	<body>
-		{% include 'about.html' %}
-		{% include 'login-body.html' ignore missing %}
-		<div class="container-fluid">
-			{% include 'login-container.html' ignore missing %}
-			<div class="row">
-				<div id="col-login" class="col-sm-8 col-md-6">
-					<div id="login-box">
-						<h1 id="login-title">
-							{{ config['APP_DISPLAY_NAME'] }}
-						</h1>
-						{% for category, message in get_flashed_messages(with_categories=true) %}
-						<div class="alert {{ category }} fade in">
-							<a data-dismiss="alert" class="close" href="#">×</a>
-							{{ message|safe }}
-						</div>
-						{% endfor %}
+{% extends "login-base.html" %}
+{% block body %}
 						<form action="{{ url_for('login') }}" method="POST">
-							{% if next %}
-							<input name="next" type="hidden" value="{{next}}"/>
-							{% endif %}
 							<div class="form-group">
 								<div class="input-group">
 									<div class="input-group-addon"><span class="fas fa-user"></span></div>
@@ -62,12 +24,4 @@
 								<button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
 							</div>
 						</form>
-						<footer id="footer">
-							{% include 'login-footer.html' ignore missing %}
-						</footer>
-					</div>
-				</div>
-			</div>
-		</div>
-	</body>
-</html>
+{% endblock %}

@@ -15,12 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-# request.py
-# all Flask per-request decorators live here
-# to avoid making app.py a very long file
-# functions in here register per-request functionality
-# with decorators
-
 from flask import request, session, g, render_template, url_for
 
 from bargate import app
@@ -36,7 +30,8 @@ def before_request():
 
 	# Check bargate started correctly
 	if app.error:
-		return errors.fatalerr(message=app.error)
+		app.logger.error("bargate didn't start correctly: " + app.error)
+		return errors.fatalerr("Initialisation error", app.error)
 
 	# Check for MSIE version <= 10
 	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 10):
@@ -44,7 +39,12 @@ def before_request():
 
 	# Connect to redis
 	if app.config['REDIS_ENABLED']:
-		import redis
+		try:
+			import redis
+		except ImportError as ex:
+			app.logger.error("bargate didn't start correctly: module 'redis' not installed, but REDIS enabled")
+			return errors.fatalerr("Initialisation error",
+				"REDIS_ENABLED is set to True, but required module 'redis' is not installed")
 
 		try:
 			g.redis = redis.StrictRedis(host=app.config['REDIS_HOST'],
@@ -52,10 +52,11 @@ def before_request():
 				db=app.config['REDIS_DB'])
 			g.redis.get('foo')
 		except Exception as ex:
-			return errors.exception_handler(ex, 'Could not connect to the REDIS server')
+			app.logger.error('Could not connect to REDIS. ' + type(ex).__name__ + ": " + str(ex))
+			return errors.fatalerr(ex, 'Could not connect to REDIS. ' + type(ex).__name__ + ": " + str(ex))
 
 		# Log user last access time
-		if 'username' in session:
+		if app.is_user_logged_in():
 			userdata.record_user_activity(session['username'])
 
 	# Default to sending HTML responses

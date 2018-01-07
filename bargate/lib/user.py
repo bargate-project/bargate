@@ -24,10 +24,16 @@ from bargate.lib import aes, userdata
 
 # load kerberos or ldap auth if needed
 if app.config['AUTH_TYPE'] == 'kerberos' or app.config['AUTH_TYPE'] == 'krb5':
-	import kerberos
+	try:
+		import kerberos
+	except ImportError as ex:
+		app.error = "AUTH_TYPE is set to kerberos but the required module 'kerberos' is not installed."
 
 elif app.config['AUTH_TYPE'] == 'ldap':
-	import ldap
+	try:
+		import ldap
+	except ImportError as ex:
+		app.error = "AUTH_TYPE is set to ldap but the required module 'ldap' is not installed."
 
 
 def get_password():

@@ -37,6 +37,17 @@ def settings():
 		else:
 			overwrite = 'false'
 
+		twoStepEnabled = False
+		twoStepTrusted = False
+		if app.config['TOTP_ENABLED']:
+			if app.is_user_logged_in():
+				from bargate.lib import totp
+				if totp.user_enabled(session['username']):
+					twoStepEnabled = True
+
+					if totp.device_trusted(session['username']):
+						twoStepTrusted = True
+
 		return(jsonify({'code': 0,
 			'layout': userdata.get_layout(),
 			'token': app.csrfp_token(),
@@ -44,7 +55,11 @@ def settings():
 			'navbar': userdata.get_theme_navbar(),
 			'hidden': show_hidden,
 			'overwrite': overwrite,
-			'onclick': userdata.get_on_file_click()}))
+			'onclick': userdata.get_on_file_click(),
+			'totp': {
+				'enabled': twoStepEnabled,
+				'trusted': twoStepTrusted
+			}}))
 
 	else:
 

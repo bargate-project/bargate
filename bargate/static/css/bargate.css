@@ -52,16 +52,22 @@ html, body {
 	border-top: none;
 }
 
-/* prefs modal headers */
-.prefsh:first-of-type {
-	margin-top: 0;
-}
-
-.prefsh {
+.prefsh, .prefshF, .prefshS {
 	margin-bottom: 10px;
 	margin-top: 40px;
+	font-weight: bold;
+	text-transform: uppercase;
 }
 
+@media (min-width: 768px) {
+	.prefshS {
+		margin-top: 0;
+	}
+}
+
+.prefshF {
+	margin-top: 0;
+}
 
 /* overflow text properly on panel labels for grid view */
 .grid-entry .panel-footer {
@@ -239,6 +245,32 @@ td.dentry {
 	width: 100%;
 }
 
+/* mobile modals should take up the entire screen size */
+@media (max-width: 768px) {
+	.modal-dialog {
+		margin: 0;
+		min-height: 100%;
+	}
+	.modal-content {
+		border-radius: 0;
+		border: none;
+		min-height: 100vh;
+	}
+	/* bootstrap 3 adds padding-left via javascript onto modals with more length than the viewport. bootstrap 3
+	is EOL and unsupported (Even though bootstrap 4 isnt stable/released...) so we have to fix it here. as its
+	done horribly via adding a style="" tag, we have to use !important to override :( */
+	.modal {
+		padding-left: 0 !important; /* csslint allow: important */
+	}
+}
+
+/* on mobile, we need tabs to /always/ be shown, for settings modal. this way all the options are always visible*/
+@media (max-width: 768px) {
+	.tab-content > .tab-pane {
+		display: block;
+	}
+}
+
 /* rules for file details/click/properties modal */
 .btn-label {
 	margin-top: 5px;
@@ -252,6 +284,14 @@ td.dentry {
 	margin-bottom: 0;
 }
 
+#file-m label {
+	font-weight: bold;
+}
+
+#file-m .form-group {
+	margin-bottom: 5px;
+}
+
 #file-m-preview {
 	margin-bottom: 20px;
 }
@@ -260,6 +300,7 @@ td.dentry {
 	margin-bottom: 0;
 	padding-top: 3px;
 	padding-bottom: 3px;
+	margin-left: -15px;
 }
 .file-key {
 	margin-bottom: 0;
