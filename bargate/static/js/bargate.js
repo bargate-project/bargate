@@ -172,11 +172,10 @@ var $dir = {
 		});
 
 		/* right click menu for files */
-		$('[data-click="file"]').contextMenu({
+		$('[data-ctx="file"]').contextMenu({
 			menu: "#ctx-menu-file",
 			hide: "#ctx-menu-dir",
-			func: function (item, selectedMenu)
-			{
+			func: function (item, selectedMenu) {
 				file = item.closest('[data-click="file"]');
 				action = selectedMenu.closest("a").data("action");
 
@@ -190,7 +189,7 @@ var $dir = {
 		});
 
 		/* context menu for directories */
-		$('[data-click="dir"]').contextMenu({
+		$('[data-ctx="dir"]').contextMenu({
 			menu: "#ctx-menu-dir",
 			hide: "#ctx-menu-file",
 			func: function (invokedOn, selectedMenu) {
@@ -416,8 +415,6 @@ var $form_submit = {
 				raiseNonZero("Search failed", data.msg, data.code);
 			} else {
 				$dir.data = data;
-				$dir.parent = false;
-				$dir.parent_path = null;
 
 				$dir.mode = "search";
 				$('.b-dir').attr("disabled", true).addClass("disabled");
@@ -426,9 +423,7 @@ var $form_submit = {
 
 				$('#pdiv').html(nunjucks.render('search.html', data));
 
-				$dir.draw_list();
-
-				$('#results').DataTable( {
+				$('#results').DataTable({
 					"paging": false,
 					"searching": false,
 					"info": false,
