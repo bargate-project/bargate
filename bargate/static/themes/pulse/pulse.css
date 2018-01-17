@@ -1,0 +1,16 @@
+body {
+	padding-top: 52px;
+	padding-bottom: 0px;
+}
+
+@media (min-width: 768px) {
+	body {
+		padding-top: 70px;
+	}
+}
+
+@media (max-width: 768px) {
+	.container-body {
+		padding-bottom: 75px;
+	}
+}

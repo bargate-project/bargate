@@ -27,16 +27,6 @@ from bargate import app
 def settings():
 	if request.method == 'GET':
 
-		if userdata.get_show_hidden_files():
-			show_hidden = 'true'
-		else:
-			show_hidden = 'false'
-
-		if userdata.get_overwrite_on_upload():
-			overwrite = 'true'
-		else:
-			overwrite = 'false'
-
 		twoStepEnabled = False
 		twoStepTrusted = False
 		if app.config['TOTP_ENABLED']:
@@ -48,13 +38,15 @@ def settings():
 					if totp.device_trusted(session['username']):
 						twoStepTrusted = True
 
+		theme = userdata.get_theme()
+
 		return(jsonify({'code': 0,
 			'layout': userdata.get_layout(),
 			'token': app.csrfp_token(),
-			'theme': userdata.get_theme(),
-			'navbar': userdata.get_theme_navbar(),
-			'hidden': show_hidden,
-			'overwrite': overwrite,
+			'theme': theme,
+			'theme_classes': userdata.themes[theme],
+			'hidden': userdata.get_show_hidden_files(),
+			'overwrite': userdata.get_overwrite_on_upload(),
 			'onclick': userdata.get_on_file_click(),
 			'totp': {
 				'enabled': twoStepEnabled,
@@ -99,7 +91,7 @@ def settings():
 				value = app.config['THEME_DEFAULT']
 
 			userdata.save('theme', value)
-			return jsonify({'code': 0, 'navbar': userdata.themes[value]})
+			return jsonify({'code': 0, 'theme_classes': userdata.themes[value]})
 
 		return jsonify({'code': 0})
 
@@ -118,7 +110,7 @@ def bookmarks():
 
 	if request.method == 'GET':
 		bookmarks = userdata.get_bookmarks()
-		return render_template('bookmarks.html', active='user', pwd='', bookmarks=bookmarks)
+		return render_template('views/bookmarks.html', active='user', pwd='', bookmarks=bookmarks)
 
 	elif request.method == 'POST':
 		action = request.form['action']
@@ -237,4 +229,4 @@ def online(last=5):
 		last_str = str(last) + " minutes"
 
 	usernames = userdata.get_online_users(last)
-	return render_template('online.html', online=usernames, active="help", last=last_str)
+	return render_template('views/online.html', online=usernames, active="help", last=last_str)

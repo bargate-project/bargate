@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import request, session, g, render_template, url_for
+from flask import session, g, url_for
 
 from bargate import app
 from bargate.lib import fs, userdata, errors
@@ -32,10 +32,6 @@ def before_request():
 	if app.error:
 		app.logger.error("bargate didn't start correctly: " + app.error)
 		return errors.fatalerr("Initialisation error", app.error)
-
-	# Check for MSIE version <= 10
-	if (request.user_agent.browser == "msie" and int(round(float(request.user_agent.version))) <= 10):
-		return render_template('foad.html')
 
 	# Connect to redis
 	if app.config['REDIS_ENABLED']:
@@ -68,16 +64,17 @@ def context_processor():
 	"""This function injects additional variables into Jinja's context"""
 
 	data = {}
-	data['bookmarks']    = []
-	data['user_theme']   = app.config['THEME_DEFAULT']
-	data['theme_navbar'] = 'default'
+	data['bookmarks'] = []
+	data['user_theme'] = app.config['THEME_DEFAULT']
+	data['theme_classes'] = 'navbar-dark bg-primary'
+	data['themes'] = userdata.themes
 
 	if app.is_user_logged_in():
 		if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
 			data['user_bookmarks'] = userdata.get_bookmarks()
-			data['user_theme']     = userdata.get_theme()
-			data['user_layout']    = userdata.get_layout()
-			data['theme_navbar']   = userdata.get_theme_navbar()
+			data['user_theme'] = userdata.get_theme()
+			data['user_layout'] = userdata.get_layout()
+			data['theme_classes'] = userdata.themes[data['user_theme']]
 
 	if app.config['LOCAL_FAVICON']:
 		data['favicon'] = url_for('local_static', filename='favicon.ico')

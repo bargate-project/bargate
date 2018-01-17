@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="jumbotron jumbotron-alert rounded">
+	<h1 class="display-4"><i class="fas fa-fw fa-2x fa-exclamation-triangle"></i></h1>
+	<h2 class="display-3">{{title}}</h2>
+	<p class="lead">{{message}}</p>
+	{% if debug %}
+	<pre class="text-left text-white bg-danger p-4 rounded">{{ debug }}</pre>
+	{% endif %}
+</div>
+{% endblock %}

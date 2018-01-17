@@ -113,7 +113,7 @@ class LibraryBase:
 	def _action_browse(self):
 		app.logger.debug("_action_browse()")
 
-		return render_template('browse.html',
+		return render_template('views/browse.html',
 			active=self.endpoint_name,
 			browse_mode=True,
 			epname=self.endpoint_name,

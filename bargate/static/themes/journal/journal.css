@@ -1,27 +1,20 @@
-@import url("https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/journal/bootstrap.min.css");
-
-body
-{
-	padding-top: 75px;
+body {
+	padding-top: 56px;
 	padding-bottom: 0px;
 }
 
-@media (min-width: 768px)
-{
-	body
-	{
-		padding-top: 80px;
+@media (min-width: 768px) {
+	body {
+		padding-top: 75px;
 	}
 }
 
-@media (max-width: 768px)
-{
-	.container-body
-	{
+@media (max-width: 768px) {
+	.container-body {
 		padding-bottom: 75px;
 	}
 }
 
-.mhc {
-	background-color: #f5f5f5;
+.btn {
+	padding: 0.375rem 0.75rem;
 }

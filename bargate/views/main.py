@@ -31,7 +31,7 @@ def login():
 	else:
 		if request.method == 'GET' or request.method == 'HEAD':
 			next = request.args.get('next', default=None)
-			return render_template('login.html', next=next)
+			return render_template('login/login.html', next=next)
 
 		elif request.method == 'POST':
 
@@ -44,17 +44,11 @@ def login():
 			# Set the username in the session
 			session['username']  = request.form['username'].lower()
 
-			# Check if the user selected "Log me out when I close the browser"
+			# Check if the user selected "remember me"
+			session.permanent = False
 			if app.config['REMEMBER_ME_ENABLED']:
-				permanent = request.form.get('sec', default="")
-
-				# Set session as permanent or not
-				if permanent == 'sec':
+				if request.form.get('rememberMe', default='') == 'confirm':
 					session.permanent = True
-				else:
-					session.permanent = False
-			else:
-				session.permanent = False
 
 			# Encrypt the password and store in the session
 			session['id'] = aes.encrypt(request.form['password'], app.config['ENCRYPT_KEY'])
@@ -87,12 +81,12 @@ def logout():
 
 @app.route('/about/changelog')
 def changelog():
-	return render_template('changelog.html', active='help')
+	return render_template('views/changelog.html', active='help')
 
 
 @app.route('/nojs')
 def nojs():
-	return render_template('nojs.html')
+	return render_template('views/nojs.html')
 
 
 @app.csrfp_exempt

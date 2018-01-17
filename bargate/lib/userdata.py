@@ -23,22 +23,20 @@ from flask import session, url_for, g
 
 from bargate import app
 
-themes = {'lumen': 'default',
-	'cerulean': 'default',
-	'cosmo': 'inverse',
-	'cyborg': 'inverse',
-	'journal': 'inverse',
-	'flatly': 'default',
-	'sandstone': 'default',
-	'paper': 'inverse',
-	'readable': 'default',
-	'simplex': 'inverse',
-	'spacelab': 'default',
-	'united': 'default',
-	'darkly': 'default',
-	'slate': 'inverse',
-	'yeti': 'inverse',
-	'solar': 'default'}
+themes = {'cerulean': ['navbar-dark', 'bg-primary'],
+	'cosmo': ['navbar-dark', 'bg-dark'],
+	'flatly': ['navbar-dark', 'bg-primary'],
+	'journal': ['navbar-dark', 'bg-primary'],
+	'litera': ['navbar-light', 'bg-light'],
+	'lumen': ['navbar-dark', 'bg-primary'],
+	'lux': ['navbar-dark', 'bg-dark'],
+	'materia': ['navbar-dark', 'bg-primary'],
+	'minty': ['navbar-dark', 'bg-primary'],
+	'pulse': ['navbar-dark', 'bg-primary'],
+	'simplex': ['navbar-dark', 'bg-dark'],
+	'spacelab': ['navbar-light', 'bg-light'],
+	'united': ['navbar-light', 'bg-light'],
+	'yeti': ['navbar-dark', 'bg-dark']}
 
 
 def record_user_activity(user_id):
@@ -156,14 +154,9 @@ def get_theme():
 			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
 
 	if app.config['THEME_DEFAULT'] not in themes.keys():
-		return 'paper'
+		return 'cosmo'
 	else:
 		return app.config['THEME_DEFAULT']
-
-
-def get_theme_navbar():
-	theme = get_theme()
-	return themes[theme]
 
 
 def get_show_hidden_files():

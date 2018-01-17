@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
 import zlib
 import json
 import uuid
@@ -24,13 +23,6 @@ from base64 import b64decode
 from itsdangerous import base64_decode
 from flask import Markup
 from werkzeug.http import parse_date
-
-
-def ut_to_string(ut):
-	"""Converts unix time to a formatted string for human consumption
-	Used by smblib for turning fstat results into human readable dates.
-	"""
-	return datetime.datetime.fromtimestamp(int(ut)).strftime('%Y-%m-%d %H:%M:%S')
 
 
 # Cookie decode for portal login

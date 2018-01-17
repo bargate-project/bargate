@@ -1,0 +1,8 @@
+<li class="nav-item dropdown">
+	<a class="nav-link dropdown-toggle" href="#" id="serversDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	Servers
+	</a>
+	<div class="dropdown-menu" aria-labelledby="serversDropdown">
+		{% if config['CONNECT_TO_ENABLED'] %}<a class="dropdown-item" href="#" data-click="connect"><i class="far fa-fw fa-hdd"></i> Connect to server</a>{% endif %}
+	</div>
+</li>

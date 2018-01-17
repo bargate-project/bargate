@@ -90,7 +90,7 @@ class Manager():
 			print("FATAL: " + msg)
 		exit(1)
 
-	def cmd_run(self):
+	def cmd_run(self, debug=False):
 		# I'd rather do bargate import app, app.run
 		# but reloading is rather broken, as documented in the Flask docs.
 		# so we'll use the 'flask' command.
@@ -99,8 +99,10 @@ class Manager():
 
 		script_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
 		self.debug("Detected script directory as: " + script_dir)
-		os.environ['PYTHON_PATH'] = script_dir
+		os.environ['PYTHONPATH'] = script_dir
 		os.environ['FLASK_APP'] = 'bargate'
+		if debug:
+			os.environ['FLASK_DEBUG'] = '1'
 
 		flask = find_executable("flask2")
 		if not flask:
@@ -119,7 +121,7 @@ class Manager():
 	def cmd_dev(self):
 		self.cmd_lint()
 		self.cmd_build()
-		self.cmd_run()
+		self.cmd_run(debug=True)
 
 	def cmd_flake8(self):
 		flake8 = find_executable("flake8-python2")

@@ -1,0 +1,44 @@
+body {
+	padding-top: 52px;
+	padding-bottom: 0px;
+}
+
+@media (min-width: 768px) {
+	body {
+		padding-top: 75px;
+	}
+}
+
+@media (max-width: 768px) {
+	.container-body {
+		padding-bottom: 50px;
+	}
+}
+
+.btn {
+	padding: 0.5rem 1rem;
+}
+
+.nav-link {
+	padding: 0.5rem 0.5rem;
+}
+
+.nav-item {
+	margin-right: 1rem;
+}
+
+.input-group-lg > .form-control {
+	padding: 0.5rem 1rem;
+}
+
+.input-group-lg > .input-group-prepend > .input-group-text {
+	padding: 0.5rem 1rem;
+}
+
+.form-control { 
+	padding: 0.5rem 1rem;
+}
+
+.navbar-brand {
+	margin-right: 1.5rem;
+}

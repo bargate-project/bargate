@@ -1,0 +1,26 @@
+<link href='https://fonts.googleapis.com/css?family=Oswald:700' rel='stylesheet' type='text/css'>
+<div class="modal" id="about-m" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content text-center">
+			<div class="modal-body">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fas fa-fw fa-times"></i></button>
+				<div>
+					<span class="fa-layers about-logo">
+						<i class="fas fa-university"></i>
+						<span class="fa-layers-text fa-inverse about-ver" data-fa-transform="shrink-15 down-6.2 left-0.6">{{config.VERSION}}</span>
+						<span class="fa-layers-text fa-inverse about-title" data-fa-transform="shrink-14 up-4 left-0.6">bargate</span>
+					</span>
+					<h3 class="about-subtitle">a lightweight SMB file browser</h3>
+					<p>
+						Written by <a href="http://www.evad.io">David Bell</a>, 
+						<a href="http://www.claytonpeters.co.uk">Clayton Peters</a> and
+						<a href="http://unixnation.net">Steve Kirk</a>.
+					</p>
+					<a href="http://bargate.io" class="btn btn-secondary"><i class="fas fa-fw fa-external-link-square-alt"></i> Website</a>
+					<a href="http://github.com/divad/bargate" class="btn btn-secondary"><i class="fab fa-fw fa-github-alt"></i> GitHub</a>
+					<a href="{{ url_for('changelog') }}" class="btn btn-secondary"><i class="fas fa-fw fa-list-alt"></i> Changelog</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

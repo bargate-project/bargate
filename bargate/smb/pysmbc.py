@@ -28,7 +28,7 @@ from PIL import Image
 
 from bargate import app
 from bargate.smb.base import LibraryBase
-from bargate.lib import fs, misc, user, userdata, mime, winbind
+from bargate.lib import fs, user, userdata, mime, winbind
 
 
 class FileStat:
@@ -283,8 +283,8 @@ class BargateSMBLibrary(LibraryBase):
 			'code': 0,
 			'filename': self.entry_name,
 			'size': fstat.size,
-			'atime': misc.ut_to_string(fstat.atime),
-			'mtime': misc.ut_to_string(fstat.mtime),
+			'atime': fstat.atime,
+			'mtime': fstat.mtime,
 			'ftype': ftype,
 			'mtype': mtype,
 			'owner': "N/A",
@@ -730,7 +730,7 @@ class BargateSMBLibrary(LibraryBase):
 				self._rsearch(sub_path)
 
 	def _direntry_load(self, dentry, path=None):
-		entry = {'skip': False, 'name': dentry.name, 'epurl': self.endpoint_url}
+		entry = {'skip': False, 'name': dentry.name}
 
 		if path is None:
 			path = self.path
@@ -789,9 +789,8 @@ class BargateSMBLibrary(LibraryBase):
 					entry['error']  = True
 					return entry
 
-				entry['mtimer'] = fstat.mtime
-				entry['atime']  = misc.ut_to_string(fstat.atime)
-				entry['mtime']  = misc.ut_to_string(fstat.mtime)
+				entry['atime']  = fstat.atime
+				entry['mtime']  = fstat.mtime
 				entry['size']   = fstat.size
 
 				# Image previews

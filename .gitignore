@@ -1,3 +1,5 @@
+.hidden
+
 # Minified files
 *.min.js
 *.min.css

@@ -1,5 +1,4 @@
 $( document ).ready(function() {
-	$("#loginUsername").focus();
-	$("#loginUsername").select();
-	$('[data-toggle="popover"]').popover();
+	$(".login-focus").focus();
+	$(".login-focus").select();
 });

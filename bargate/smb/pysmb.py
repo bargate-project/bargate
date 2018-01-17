@@ -30,7 +30,7 @@ from PIL import Image
 
 from bargate import app
 from bargate.smb.base import LibraryBase
-from bargate.lib import fs, misc, user, userdata, mime, errors, winbind
+from bargate.lib import fs, user, userdata, mime, errors, winbind
 
 
 class OperationFailureDecode:
@@ -296,8 +296,8 @@ class BargateSMBLibrary(LibraryBase):
 			'code': 0,
 			'filename': sfile.filename,
 			'size': sfile.file_size,
-			'atime': misc.ut_to_string(sfile.last_access_time),
-			'mtime': misc.ut_to_string(sfile.last_write_time),
+			'atime': sfile.last_access_time,
+			'mtime': sfile.last_write_time,
 			'ftype': ftype,
 			'mtype': mtype,
 			'owner': "N/A",
@@ -757,7 +757,7 @@ class BargateSMBLibrary(LibraryBase):
 		"""Takes a smb SharedFile object and returns a dictionary with information
 		about that SharedFile object.
 		"""
-		entry = {'skip': False, 'name': sfile.filename, 'epurl': self.endpoint_url}
+		entry = {'skip': False, 'name': sfile.filename}
 
 		if len(path) == 0:
 			entry['path'] = entry['name']
@@ -796,9 +796,8 @@ class BargateSMBLibrary(LibraryBase):
 			entry['icon'] = mime.mimetype_to_icon(entry['mtyper'])
 
 			# times
-			entry['mtimer'] = sfile.last_write_time
-			entry['mtime'] = misc.ut_to_string(sfile.last_write_time)
-			entry['atime'] = misc.ut_to_string(sfile.last_access_time)
+			entry['mtime'] = sfile.last_write_time
+			entry['atime'] = sfile.last_access_time
 
 			# Image previews
 			if app.config['IMAGE_PREVIEW'] and entry['mtyper'] in mime.pillow_supported:

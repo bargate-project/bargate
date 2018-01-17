@@ -1,0 +1,263 @@
+{#- modal for file click #}
+<div id="file-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-light text-dark p-2 p-md-3">
+				<h4 class="modal-title">File information</h4>
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+			</div>
+			<div class="modal-body">
+				<div class="text-center d-none d-md-block"><img src="about:blank" id="file-m-preview" class="hidden img-thumbnail img-responsive" alt="preview"></div>
+
+				<form class="d-none d-md-block form-horizontal details-large">
+					<div class="form-group row">
+						<label class="col-md-3 file-key">File name:</label>
+						<div class="col-md-9"><p class="file-value"><span class="fas fa-fw fa-question-circle file-m-icon"></span> <span class="file-m-name"></span></p></div>
+					</div>
+					<div class="form-group row">
+						<label class="col-md-3 file-key">Size:</label>
+						<div class="col-md-9"><p class="file-value file-m-size"></p></div>
+					</div>
+					<div class="form-group row">
+						<label class="col-md-3 file-key">Type:</label>
+						<div class="col-md-9"><p class="file-value file-m-mtype"></p></div>
+					</div>
+					<div class="form-group row">
+						<label class="col-md-3 file-key">Modified:</label>
+						<div class="col-md-9"><p class="file-value file-m-mtime"></p></div>
+					</div>
+					<div class="form-group row">
+						<label class="col-md-3 file-key">Accessed:</label>
+						<div class="col-md-9"><p class="file-value file-m-atime"></p></div>
+					</div>
+					{% if config['WBINFO_LOOKUP'] %}
+					<div class="form-group row">
+						<label class="col-md-3 file-key">Owner:</label>
+						<div class="col-md-9"><p class="file-value file-m-owner"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>
+					</div>
+					<div class="form-group row">
+						<label class="col-md-3 file-key">Group:</label>
+						<div class="col-md-9"><p class="file-value file-m-group"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>
+					</div>
+					{% endif %}
+				</form>
+
+				<form class="d-block d-md-none details-small">
+					<div class="form-group">
+						<label>File name</label>
+						<p><span class="fas fa-fw fa-question-circle file-m-icon"></span> <span class="file-m-name"></span></p>
+					</div>
+					<div class="form-group">
+						<label>Size</label>
+						<p class="file-m-size"></p>
+					</div>
+					<div class="form-group">
+						<label>Type</label>
+						<p class="file-m-mtype"></p>
+					</div>
+					<div class="form-group">
+						<label>Last modified</label>
+						<p class="file-m-mtime"></p>
+					</div>
+					<div class="form-group">
+						<label>Last accessed</label>
+						<p class="file-m-atime"></p>
+					</div>
+				</form>
+
+				<div class="d-none d-md-block mt-3">
+					<div class="btn-group d-flex" role="group">
+						<a href="" target="_blank" rel="noopener" class="btn btn-primary w-100 ml-1 file-m-download"><span class="fas fa-2x fa-fw fa-download"></span><div class="btn-label">Download</div></a>
+						<a href="" target="_blank" rel="noopener" class="btn btn-primary w-100 ml-1 hidden d-none file-m-view"><span class="fas fa-2x fa-fw fa-eye"></span><div class="btn-label">View</div></a>
+						<a href="" class="btn btn-primary w-100 ml-1 e-copy-b" data-dismiss="modal"><span class="fas fa-2x fa-fw  fa-copy"></span><div class="btn-label">Copy</div></a>
+						<a href="" class="btn btn-primary w-100 ml-1 e-rename-b" data-dismiss="modal"><span class="fas fa-2x fa-fw fa-edit"></span><div class="btn-label">Rename</div></a>
+						<a href="" class="btn btn-primary w-100 ml-1 e-delete-b" data-dismiss="modal"><span class="fas fa-2x fa-fw fa-trash-alt"></span><div class="btn-label">Delete</div></a>
+					</div>
+				</div>
+				<div class="d-block d-md-none">
+					<div class="btn-group d-flex mt-xs-0 mt-sm-3 mb-1 mx-5" role="group">
+						<a href="" target="_blank" rel="noopener" class="btn btn-primary w-100 mx-1 file-m-download"><span class="fas fa-2x fa-fw fa-download"></span><div class="btn-label">Download</div></a>
+						<a href="" class="btn btn-primary w-100 mx-1 e-copy-b" data-dismiss="modal"><span class="fas fa-2x fa-fw  fa-copy"></span><div class="btn-label">Copy</div></a>
+					</div>
+					<div class="btn-group d-flex mt-1 mx-5" role="group">
+						<a href="" class="btn btn-primary w-100 mx-1 e-rename-b" data-dismiss="modal"><span class="fas fa-2x fa-fw fa-edit"></span><div class="btn-label">Rename</div></a>
+						<a href="" class="btn btn-primary w-100 mx-1 e-delete-b" data-dismiss="modal"><span class="fas fa-2x fa-fw fa-trash-alt"></span><div class="btn-label">Delete</div></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="upload-drag-m" class="modal" tabindex="-1" data-backdrop="false">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-body text-center">
+				<i class="fas fa-fw fa-5x fa-cloud-download-alt"></i>
+				<h4>drop your files to upload</h4>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal" id="upload-m" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-light text-dark p-2 p-md-3">
+				<h4 class="modal-title">Upload Files</h4>
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+			</div>
+			<div class="modal-body">
+				<p>
+				Choose files to upload. You can select more than one file at a time. <span class="d-none d-md-inline">You can also drag and drop files anywhere on this page to start uploading.</span> The maximum file size is {{config['MAX_CONTENT_LENGTH']|filesizeformat(binary=True)|string|replace('.0','')}}.
+				</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-fw fa-times-circle"></i> Close</button>
+				<span class="btn btn-success fileinput-button">
+					<i class="fas fa-fw fa-plus"></i>
+					<span>Select files</span>
+					<input id="upload-i" type="file" name="files[]" multiple>
+				</span>
+			</div>
+		</div>
+	</div>
+</div>
+
+{#- RENAME #}
+<div id="e-rename-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<form data-fsub="rename">
+			<div class="modal-content">
+				<div class="modal-header bg-light text-dark p-2 p-md-3">
+					<h4 class="modal-title">Rename</h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+				</div>
+				<div class="modal-body">
+					<label>New file name:</label>
+					<input id="e-rename-i" class="form-control mfocus" type="text"/>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-primary" value="Rename"/>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{#- DELETE #}
+<div id="e-delete-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<form data-fsub="delete">
+			<div class="modal-content">
+				<div class="modal-header bg-light text-dark p-2 p-md-3">
+					<h4 class="modal-title">Delete <span id="e-delete-t"></span></h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+				</div>
+				<div class="modal-body text-center">
+					<span class="fas fa-fw fa-exclamation-triangle fa-5x"></span>
+					<p>Are you sure you want to permanently delete '<span id="e-delete-n"></span>'?</p>
+					<div id="e-delete-w" class="hidden"><label><span class="label label-danger">Note!</span> Only empty directories can be deleted! </label></div>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+					<input type="submit" class="btn btn-danger" value="Yes"/>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{#- COPY #}
+<div id="e-copy-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<form data-fsub="copy">
+			<div class="modal-content">
+				<div class="modal-header bg-light text-dark p-2 p-md-3">
+					<h4 class="modal-title">Copy</h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+				</div>
+				<div class="modal-body">
+					<label>Name of new file:</label>
+					<input id="e-copy-i" class="form-control mfocus" type="text"/>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-primary" value="Copy"/>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+{#- MKDIR #}
+<div id="mkdir-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<form data-fsub="mkdir">
+			<div class="modal-content">
+				<div class="modal-header bg-light text-dark p-2 p-md-3">
+					<h4 class="modal-title">Create directory</h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+				</div>
+				<div class="modal-body">
+					<label>New directory name:</label>
+					<input id="mkdir-i" class="form-control mfocus" type="text" placeholder="New directory"/>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<input type="submit" class="btn btn-success" value="Create"/>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+
+{% if config['SEARCH_ENABLED'] %}
+{#- SEARCH #}
+<div id="search-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form data-fsub="search">
+				<div class="modal-header bg-light text-dark p-2 p-md-3">
+					<h4 class="modal-title">Search</h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+				</div>
+				<div class="modal-body">
+					<input class="form-control mfocus" type="text" id="search-i" placeholder="Name to search for"/><br/>
+					<p class="text-muted"><i class="fas fa-fw fa-exclamation-triangle"></i> Search results can be slow depending on the speed of the file server you are using</p>
+				</div>
+				<div class="modal-footer">
+ 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<input id="search-b" type="submit" class="btn btn-success" value="Search"/>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endif %}
+
+{% if config['BOOKMARKS_ENABLED'] %}
+{#- ADD BOOKMARK  #}
+<div id="bmark-m" class="modal" tabindex='-1'>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form data-fsub="bmark">
+				<div class="modal-header bg-light text-dark p-2 p-md-3">
+					<h4 class="modal-title">Add Bookmark</h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+				</div>
+				<div class="modal-body">
+					<label>Bookmark name:</label>
+					<input id="bmark-i" class="form-control" type="text"/>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-success">Add</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endif %}

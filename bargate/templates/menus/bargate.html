@@ -1,0 +1,7 @@
+{% if config['REDIS_ENABLED'] %}
+<a class="dropdown-item" href="#" data-click="settings"><i class="fas fa-fw fa-cog"></i> Settings</a>
+{% endif %}
+{%- include 'menus/user.html' %}
+<a class="dropdown-item d-none d-md-block" href="#" data-click="shortcuts"><i class="fas fa-fw fa-keyboard"></i> Shortcuts</a>
+{%- include 'menus/help.html' %}
+<a class="dropdown-item" href="#about-m" data-toggle="modal"><i class="fas fa-fw fa-info-circle"></i> About</a>

@@ -1,0 +1,36 @@
+{% extends "login/base.html" %}
+{% block body %}
+<form action="{{ url_for('login') }}" method="POST">
+	<div class="form-group">
+		<div class="input-group input-group-lg">
+			<div class="input-group-prepend">
+				<div class="input-group-text">
+					<span class="fas fa-user"></span>
+				</div>
+			</div>
+			<input type="text" class="login-focus form-control" name="username" placeholder="Username">
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="input-group input-group-lg">
+			<div class="input-group-prepend">
+				<div class="input-group-text">
+					<span class="fas fa-key"></span>
+				</div>
+			</div>
+			<input type="password" class="form-control" name="password" placeholder="Password">
+		</div>
+	</div>
+	{% if config['REMEMBER_ME_ENABLED'] %}
+	<div class="form-group">
+		<div class="custom-control custom-checkbox">
+			<input class="custom-control-input" type="checkbox" value="confirm" name="rememberMe" id="rememberMe">
+			<label class="custom-control-label" for="rememberMe">Keep me logged in</label>
+		</div>
+	</div>
+	{% endif %}
+	<div class="form-group">
+		<button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
+	</div>
+</form>
+{% endblock %}

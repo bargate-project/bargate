@@ -74,7 +74,7 @@ REDIS_PORT = 6379
 REDIS_DB = 0
 
 # Default bootstrap/bootswatch theme
-THEME_DEFAULT = 'cerulean'
+THEME_DEFAULT = 'cosmo'
 
 # Default directory layout mode
 # either 'grid' or 'list'

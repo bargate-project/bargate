@@ -22,6 +22,9 @@ html, body {
 }
 
 /* Error pages error in middle of screen */
+.jumbotron {
+	margin-right: 12px;
+}
 .jumbotron-alert {
 	margin-left: auto;
 	margin-right: auto;
@@ -69,14 +72,14 @@ html, body {
 	margin-top: 0;
 }
 
-/* overflow text properly on panel labels for grid view */
-.grid-entry .panel-footer {
+/* overflow text properly on card labels for grid view */
+.grid-entry .card-footer {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.efile .panel-footer {
+.efile .card-footer {
 	text-align: center;
 }
 
@@ -84,7 +87,7 @@ html, body {
 	cursor: pointer;
 }
 
-.eshare .panel-footer {
+.eshare .card-footer {
 	text-align: center;
 }
 
@@ -157,10 +160,10 @@ html, body {
 	}
 }
 
-.grid-entry .panel {
+.grid-entry .card {
 	margin-bottom: 0;
 }
-.grid-entry .panel-body {
+.grid-entry .card-body {
 	height: 160px;
 	padding: 0;
 }
@@ -194,40 +197,11 @@ tbody {
 }
 
 /* Browse mode (list) */
-td.dentry {
+.dentry {
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-
-/* Table cell widths for multiple sizes */
-@media (max-width: 768px) {
-	td.dentry {
-		max-width: 1px;
-	}
-}
-
-@media (min-width: 768px) {
-	td.dentry {
-		max-width: 1px;
-	}
-}
-
-@media (min-width: 992px) {
-	td.dentry {
-		max-width: 1px;
-	}
-	td.dentry-mtime {
-		width: 15em;
-	}
-}
-
-@media (min-width: 1200px) {
-	td.dentry {
-		max-width: 200px;
-	}
-	td.dentry-mtime {
-		width: 15em;
-	}
+	white-space: nowrap;
+	max-width: 0;
 }
 
 .no-items {
@@ -245,27 +219,40 @@ td.dentry {
 	width: 100%;
 }
 
+/* some modals are far too small on medium width */
+@media (min-width: 768px) {
+	.modal-lg {
+		max-width: 700px;
+	}
+}
+
+@media (min-width: 992px) {
+	.modal-lg {
+		max-width: 900px;
+	}
+}
+
 /* mobile modals should take up the entire screen size */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
 	.modal-dialog {
 		margin: 0;
 		min-height: 100%;
+		max-width: none;
 	}
 	.modal-content {
 		border-radius: 0;
 		border: none;
 		min-height: 100vh;
 	}
-	/* bootstrap 3 adds padding-left via javascript onto modals with more length than the viewport. bootstrap 3
-	is EOL and unsupported (Even though bootstrap 4 isnt stable/released...) so we have to fix it here. as its
-	done horribly via adding a style="" tag, we have to use !important to override :( */
+
 	.modal {
 		padding-left: 0 !important; /* csslint allow: important */
+		padding-right: 0 !important; /* csslint allow: important */
 	}
 }
 
 /* on mobile, we need tabs to /always/ be shown, for settings modal. this way all the options are always visible*/
-@media (max-width: 768px) {
+@media (max-width: 767px) {
 	.tab-content > .tab-pane {
 		display: block;
 	}
@@ -299,12 +286,111 @@ td.dentry {
 .file-value {
 	margin-bottom: 0;
 	padding-top: 3px;
-	padding-bottom: 3px;
 	margin-left: -15px;
+	font-size: 1rem;
 }
 .file-key {
 	margin-bottom: 0;
 	padding-top: 3px;
 	text-align: right;
+	font-size: 1rem;
 }
 /* end of file details rules */
+
+/* b4 */
+.dropdown-menu-right {
+	right: 0;
+	left: auto;
+}
+
+.f-em-15
+{
+	font-size: 1.5em;
+}
+
+@media (min-width: 768px) {
+	.modal-content-settings
+	{
+		min-height: 500px;
+	}
+}
+
+.modal-header .close {
+	padding: 0;
+	margin: 0;
+	font-size: 1.8rem;
+	opacity: 0.5;
+}
+
+.kbkey {
+	border: 1px solid #343a40;
+	background-color: #e9ecef;
+	color: #000000;
+	padding: 0.25rem;
+	border-radius: 0.25rem;
+	min-width: 2rem;
+	display: inline-block;
+	text-align: center;
+}
+
+.kbmod {
+	min-width: 4rem;
+}
+
+.modal-header {
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.dataTables_wrapper {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* bootstrap 4 data tables uses !important to force border-collapse to seperate (?!?!?) */
+table.dataTable { /* csslint allow: overqualified-elements */
+	border-collapse: collapse !important; /* csslint allow: important */
+}
+
+.w-0 {
+	width: 0;
+}
+.w-1 {
+	width: 1px;
+	white-space: nowrap;
+}
+.w-40 {
+	width: 40%;
+}
+
+.about-logo {
+	color: #666;
+	font-size: 20em;
+	width: 100%;
+}
+
+.about-ver {
+	font-weight: 900;
+	color: #fff;
+}
+
+.about-title {
+	font-weight: 900;
+	font-family: Oswald;
+	color: #fff;
+}
+
+.about-subtitle {
+	font-size: 25px;
+}
+
+#upload-drag-m .modal-content {
+	opacity: 0.95;
+}
+
+#e-delete-n { 
+	word-wrap: break-word;
+}
+
+#shortcuts-m .modal-body {
+	font-size: 1.2rem;
+}

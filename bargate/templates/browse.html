@@ -1,9 +1,0 @@
-{%- extends "layout.html" -%}
-{%- block modals -%}
-{%- include 'directory-menus.html' -%}
-{%- include 'directory-modals.html' -%}
-{%- endblock %}
-{%- block body -%}
-<div id="browse"></div>
-<script>$init = {'epname': "{{epname}}", 'epurl': "{{epurl}}", 'path': "{{path}}"};</script>
-{%- endblock %}

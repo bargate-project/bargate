@@ -32,6 +32,18 @@ def smb_post():
 	if 'action' not in request.form:
 		return jsonify({'code': 1, 'msg': 'No action specified'})
 
+	if request.form['action'] == 'connect':
+		if not app.config['CONNECT_TO_ENABLED']:
+			return jsonify({'code': 1, 'msg': 'The system administrator has disabled connecting to a custom server'})
+
+		if 'path' not in request.form:
+			return jsonify({'code': 1, 'msg': 'You must enter an address to connect to.'})
+
+		path = request.form['path']
+		session['custom_uri'] = path
+		session.modified = True
+		return jsonify({'code': 0})
+
 	if 'epname' not in request.form:
 		return jsonify({'code': 1, 'msg': 'No endpoint name name specified'})
 
@@ -46,22 +58,6 @@ def smb_post():
 		request.form['action'] + "', path is: '" + path + "'")
 
 	return app.smblib.smb_action(request.form['epname'], request.form['action'], path)
-
-
-@app.route('/xhr/connect', methods=['POST'])
-@app.set_response_type('json')
-@app.login_required
-def connect():
-	if not app.config['CONNECT_TO_ENABLED']:
-		return jsonify({'code': 1, 'msg': 'The system administrator has disabled connecting to a custom server'})
-
-	if 'path' not in request.form:
-		return jsonify({'code': 1, 'msg': 'You must enter an address to connect to.'})
-
-	path = request.form['path']
-	session['custom_uri'] = path
-	session.modified = True
-	return jsonify({'code': 0})
 
 
 @app.route('/xhr/<action>/<epname>/', defaults={'path': ''})
@@ -96,4 +92,4 @@ def custom(path, action):
 @app.route('/other')
 @app.login_required
 def other():
-	return render_template('other.html', active='other', pwd='')
+	return render_template('views/other.html', active='other', pwd='')

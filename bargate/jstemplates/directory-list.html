@@ -1,9 +1,10 @@
-<table id="dir" class="table table-striped table-hover" style="width: 100%">
+<table id="dir" class="table table-striped table-hover table-nl w-100">
 	<thead>
-		<tr>
-			<th class="tsdisable" style="width: 1px"></th>
-			<th>Name</th>
-			<th class="hidden-xs hidden-sm">Modified</th>
+		<tr class="d-none d-md-table-row">
+			<th class="w-1"></th>
+			<th class="w-100">Name</th>
+			<th class="d-none d-md-table-cell px-md-4 px-lg-5">Size</th>
+			<th class="d-none d-md-table-cell px-md-4 px-lg-5">Modified</th>
 			<th></th>
 			<th></th>
 			<th></th>
@@ -13,9 +14,10 @@
 	<tbody>
 		{%- for entry in shares -%}
 		<tr class="eshare" data-path="{{entry.name}}">
-			<td class="text-center"><span class="fas fa-fw fa-hdd"></span></td>
-			<td class="dentry">{{ entry.name}}</td>
-			<td class="hidden-xs hidden-sm dentry-mtime"></td>
+			<td class="text-center w-1"><span class="fas fa-fw fa-hdd"></span></td>
+			<td class="dentry w-100">{{ entry.name}}</td>
+			<td class="d-none d-md-table-cell dentry-mtime w-1"></td>
+			<td class="d-none d-md-table-cell dentry-mtime w-1"></td>
 			<td>{{entry.name}}</td>
 			<td></td>
 			<td></td>
@@ -23,10 +25,11 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<tr class="edir" data-icon="fas fa-fw fa-folder" data-path="{{entry.path}}" data-filename="{{entry.name}}" data-stat="{{ entry.stat }}">
-			<td class="text-center"><span class="fas fa-fw fa-folder"></span></td>
-			<td class="dentry">{{ entry.name}}</td>
-			<td class="hidden-xs hidden-sm dentry-mtime">-</td>
+		<tr class="edir" data-icon="fas fa-fw fa-folder" data-path="{{entry.path}}" data-filename="{{entry.name}}">
+			<td class="text-center w-1"><span class="fas fa-fw fa-folder"></span></td>
+			<td class="dentry w-100">{{ entry.name}}</td>
+			<td class="d-none d-md-table-cell dentry-mtime w-1"></td>
+			<td class="d-none d-md-table-cell dentry-mtime w-1"></td>
 			<td>.1111{{entry.name}}</td>
 			<td>-1</td>
 			<td>111adir</td>
@@ -34,12 +37,13 @@
 		</tr>
 		{%- endfor -%}
 		{%- for entry in files -%}
-			<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-epurl="{{entry.epurl}}">
-			<td class="text-center"><span class="{{ entry.icon }} fa-fw"></span></td>
-			<td class="dentry">{{ entry.name}}</td>
-			<td class="hidden-xs hidden-sm dentry-mtime">{{ entry.mtime }}</td>
+			<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}">
+			<td class="text-center w-1"><span class="{{ entry.icon }} fa-fw"></span></td>
+			<td class="dentry w-100">{{ entry.name}}</td>
+			<td class="d-none d-md-table-cell dentry-mtime px-md-4 px-lg-5 w-1">{{ entry.size|filesizeformat }}</td>
+			<td class="d-none d-md-table-cell dentry-mtime px-md-4 px-lg-5 w-1">{{ entry.mtime|ts2str }}</td>
 			<td>{{ entry.name }}</td>
-			<td>{{ entry.mtimer }}</td>
+			<td>{{ entry.mtime }}</td>
 			<td>{{ entry.mtyper }}</td>
 			<td>{{ entry.size }}</td>
 		</tr>

@@ -73,7 +73,7 @@ def totp_logon_view():
 			if totp.device_trusted(session['username']):
 				return user.logon_ok()
 
-		return render_template('totp_verify.html', active="user")
+		return render_template('login/totp.html', active="user")
 	elif request.method == 'POST':
 		# verify the token entered
 		token = request.form['token']

@@ -18,22 +18,20 @@
 
 import traceback
 
-from flask import render_template, make_response, g, jsonify
+from flask import render_template, make_response, g, jsonify, request, session
+
+from bargate import app
 
 
 def stderr(title, message, http_return_code=200):
-	"""This function is called by other error functions to show the error to the
-	end user. It takes a title, message and a further error type. If redirect
-	is set then rather than show an error it will return the 'redirect' after
-	setting the popup error flags so that after the redirect a popup error is
-	shown to the user. Redirect should be a string returned from flask redirect().
-	"""
-
-	if g.get('response_type', 'html') == 'json':
-		return jsonify({'code': 1, 'msg': title + ": " + message})
-	else:
-		debug = traceback.format_exc()
-		return render_template('error.html', title=title, message=message, debug=debug), http_return_code
+	try:
+		if g.get('response_type', 'html') == 'json':
+			return jsonify({'code': 1, 'msg': title + ": " + message})
+		else:
+			debug = traceback.format_exc()
+			return render_template('views/error.html', title=title, message=message, debug=debug), http_return_code
+	except Exception as ex:
+		return fatalexc(ex)
 
 
 def fatalerr(title, message, debug='', http_return_code=500):
@@ -89,3 +87,43 @@ def fatalerr(title, message, debug='', http_return_code=500):
 	""" % (title, title, message, debug)
 
 		return make_response(html, http_return_code)
+
+
+def fatalexc(ex):
+	"""Handles generic exceptions within the application, displaying the
+	traceback if the application is running in debug mode."""
+	app.logger.debug("lib.errors.fatalexc called")
+
+	# Get the traceback
+	trace = str(traceback.format_exc())
+	if app.debug:
+		debug = trace
+	else:
+		debug = "Ask your system administrator to consult the error log for further information."
+
+	if app.is_user_logged_in():
+		username = session['username']
+	else:
+		username = 'Not logged in'
+
+	message = type(ex).__name__ + ": " + str(ex)
+
+	# Log the critical error (so that it goes to e-mail)
+	app.logger.error("""Fatal Error
+Exception Type:       {}
+Exception Message:    {}
+HTTP Path:            {}
+HTTP Method:          {}
+Client IP Address:    {}
+User Agent:           {}
+User Platform:        {}
+User Browser:         {}
+User Browser Version: {}
+Username:             {}
+
+{}
+""".format(type(ex).__name__, str(ex), request.path, request.method, request.remote_addr,
+			request.user_agent.string, request.user_agent.platform, request.user_agent.browser,
+			request.user_agent.version, username, trace))
+
+	return fatalerr(u"fatal error ☹", message, debug)
