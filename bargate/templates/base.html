@@ -48,10 +48,10 @@
 		<nav class="navbar navbar-themed navbar-expand-sm py-2 px-1 px-md-3 fixed-top{% for cls in theme_classes %} {{cls}}{%endfor%}">
 				<span data-click="mobile" class="navbar-brand mx-2 d-inline-block d-md-none"><i class="fas fa-fw fa-lg fa-bars"></i></span>
 				{%- if session.logged_in %}
-				<a href="{{ url_for(config['SHARES_DEFAULT']) }}" class="navbar-brand">
+				<span class="navbar-brand">
 					<span class="d-none d-sm-block">{{ config['APP_DISPLAY_NAME'] }}</span>
 					<span class="d-block d-sm-none">{{ config['APP_DISPLAY_NAME_SHORT'] }}</span>
-				</a>
+				</span>
 				{%- else %}
 				<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fas fa-arrow-circle-left"></i> Back to Login</a>
 				{%- endif %}
@@ -65,13 +65,13 @@
 					<form class="ml-auto">
 						{% if browse_mode %}
 						{% if config['SEARCH_ENABLED'] %}
-						<button type="button" data-click="search" class="btn btn-secondary browse-b disabled d-none d-md-inline-block" data-tooltip="yes" title="Search">
+						<button type="button" data-click="search" class="btn btn-secondary b-search disabled d-none d-md-inline-block" data-tooltip="yes" title="Search">
 							<i class="fas fa-fw fa-lg fa-search"></i>
 						</button>
 						{% endif %}
 
 						<div class="dropdown d-inline-block">
-							<button class="btn btn-secondary" type="button" id="sortMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-tooltip="yes" title="Sort by">
+							<button class="btn btn-secondary b-dir" type="button" id="sortMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-tooltip="yes" title="Sort by">
 							<i class="fas fa-fw fa-lg fa-sort"></i>
 							</button>
 							<div class="dropdown-menu" aria-labelledby="sortMenu">
@@ -83,19 +83,19 @@
 						</div>
 
 						{%- if config['REDIS_ENABLED'] %}
-						<button data-click="layout" type="button" class="btn btn-secondary d-none d-md-inline-block" data-tooltip="yes" title="Switch layout">
+						<button data-click="layout" type="button" class="btn btn-secondary d-none d-md-inline-block b-layout" data-tooltip="yes" title="Switch layout">
 							<i class="fas fa-fw fa-lg fa-list layout-ico"></i>
 						</button>
 						{%- endif %}
 						<div class="dropdown d-inline-block">
-							<button class="btn btn-secondary" type="button" id="newMenu" data-toggle="dropdown" data-tooltip="yes" title="New" aria-haspopup="true" aria-expanded="false">
+							<button class="btn btn-secondary b-dir" type="button" id="newMenu" data-toggle="dropdown" data-tooltip="yes" title="New" aria-haspopup="true" aria-expanded="false">
 							<i class="fas fa-fw fa-lg fa-plus"></i>
 							</button>
 							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="newMenu">
-								<a class="dropdown-item browse-b disabled" href="#" data-click="mkdir"><i class="fas fa-folder-open fa-fw"></i> New directory</a>
-								<a class="dropdown-item browse-b disabled" href="#" data-click="upload"><i class="fas fa-upload fa-fw"></i> Upload file</a>
+								<a class="dropdown-item b-dir disabled" href="#" data-click="mkdir"><i class="fas fa-folder-open fa-fw"></i> New directory</a>
+								<a class="dropdown-item b-dir disabled" href="#" data-click="upload"><i class="fas fa-upload fa-fw"></i> Upload file</a>
 								<div class="dropdown-divider"></div>
-								<a class="dropdown-item browse-b disabled" href="#" data-click="edit"><i class="fas fa-file-alt fa-fw"></i> New blank file</a>
+								<a class="dropdown-item b-dir disabled" href="#" data-click="edit"><i class="fas fa-file-alt fa-fw"></i> New blank file</a>
 							</div>
 						</div>
 						{%- endif %}
@@ -114,7 +114,7 @@
 				{% endif %}
 		</nav>
 
-		<div id="pdiv" class="container-fluid container-body">
+		<div id="pdiv" class="container-fluid container-body p-0 m-0">
 			{% block body %}{% endblock -%}
 		</div>
 		<script>$(document).ready(function($) { init({%- if browse_mode %}"{{epname}}", "{{epurl}}", "{{path}}"{%endif%})});</script>

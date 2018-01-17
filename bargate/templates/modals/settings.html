@@ -84,7 +84,7 @@
 								<p class="twoStepUntrusted">This device has not been marked as trusted, so you will be asked for a verification code on logon.</p>
 								<div class="prefsh">Disable two-step</div>
 								<p>To disable two-step verification generate a passcode from the app on your mobile device and enter it below:</p>
-								<form data-fsub="2step_disable" data-cmod="no" class="form-inline">
+								<form data-fsub="totp_disable" data-cmod="no" class="form-inline">
 									<div class="input-group input-group-lg mr-md-2">
 										<div class="input-group-prepend">
 											<div class="input-group-text">
@@ -116,7 +116,7 @@
 								<p><img id="qrcode" src="about:blank" data-src="{{ url_for('totp_qrcode_view') }}" alt="QR code"></p>
 
 								<p>Once scanned you should see an entry for "{{ config['TOTP_IDENT'] }}" with a six digit number displayed. Enter it below to enable two step verification.</p>
-								<form data-fsub="2step_enable" data-cmod="no" class="form-inline">
+								<form data-fsub="totp_enable" data-cmod="no" class="form-inline">
 									<div class="input-group input-group-lg mr-md-2">
 									<div class="input-group-prepend">
 										<div class="input-group-text">

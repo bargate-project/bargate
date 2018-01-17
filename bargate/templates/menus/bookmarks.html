@@ -6,7 +6,7 @@
 	</a>
 	<div class="dropdown-menu bm-menu" aria-labelledby="bmarksDropdown">
 		<a class="dropdown-item" href="{{ url_for('bookmarks') }}"><i class="fas fa-fw fa-tags"></i> Bookmark manager</a>
-		<a id="bmark-l" class="dropdown-item disabled" href="#" data-click="bmark"><i class="far fa-fw fa-bookmark"></i> Bookmark this location</a>
+		<a class="dropdown-item disabled" href="#" data-click="bmark"><i class="far fa-fw fa-bookmark"></i> Bookmark this location</a>
 		{% if user_bookmarks %}
 		<div class="dropdown-divider"></div>
 		{% for mark in user_bookmarks %}

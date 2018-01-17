@@ -1,28 +1,30 @@
-<h3><i class="fas fa-fw fa-search"></i> Search results for '{{query}}'</h3>
-{% if timeout_reached %}
-<div class="alert alert-dismissable alert-warning"><button type="button" class="close" data-dismiss="alert">×</button>Some search results have been omitted because the search took too long to perform</div>
-{% endif %}
-<table id="results" class="table table-striped table-hover w-100">
-	<thead>
-		<tr>
-			<th class="w-1"></th>
-			<th>Name</th>
-		</tr>
-	</thead>
-	<tbody>
-		{%- for entry in results -%}
-		{% if entry.type == 7 %}
-		<tr class="edir" data-url="{{entry.url}}">
-		{% elif entry.type == 8 %}
-		<tr class="efile" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-filename="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-epurl="{{entry.epurl}}" data-path="{{entry.path}}" {% if entry.view %}data-view="true"{%endif%}>
-			<td class="text-center w-1"><span class="{{ entry.icon }} fa-fw fa-2x"></span></td>
-			<td class="dentry">{{ entry.name}}<br/>
-				<span class="text-muted">in <a class="edir" data-path="{{entry.parent_path}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
-			</td>
-		{% endif %}
-		</tr>
-		{%- else -%}
-		<tr><td colspan="2"><em>No results found</em></td></tr>
-		{% endfor %}
-	</tbody>
-</table>
+<div class="results">
+	<h3 class="p-3"><i class="fas fa-fw fa-search"></i> Search results for '{{query}}'</h3>
+	{% if timeout_reached %}
+	<div class="alert alert-dismissable alert-warning"><button type="button" class="close" data-dismiss="alert">×</button>Some search results have been omitted because the search took too long to perform</div>
+	{% endif %}
+	<table id="results" class="table table-striped table-hover w-100">
+		<thead>
+			<tr>
+				<th class="w-1"></th>
+				<th>Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			{%- for entry in results -%}
+			{% if entry.type == 7 %}
+			<tr class="point" data-click="dir" data-url="{{entry.url}}" data-name="{{entry.name}}">
+			{% elif entry.type == 8 %}
+			<tr class="point" data-click="file" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-name="{{entry.name}}" data-mtime="{{entry.mtime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-epurl="{{entry.epurl}}" data-path="{{entry.path}}" {% if entry.view %}data-view="true"{%endif%}>
+				<td class="text-center w-1"><span class="{{ entry.icon }} fa-fw fa-2x"></span></td>
+				<td class="dentry">{{ entry.name}}<br/>
+					<span class="text-muted">in <a href="#" data-click="dir" data-path="{{entry.parent_path}}">{% if entry.parent_path %} /{{entry.parent_path}}{%else%}{{root_display_name}}{%endif%}</a></span>
+				</td>
+			{% endif %}
+			</tr>
+			{%- else -%}
+			<tr><td colspan="2"><em>No results found</em></td></tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>

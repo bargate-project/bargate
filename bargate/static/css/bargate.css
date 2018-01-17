@@ -79,17 +79,10 @@ html, body {
 	white-space: nowrap;
 }
 
-.efile .card-footer {
-	text-align: center;
-}
-
-.efile, .edir, .eshare {
+.point {
 	cursor: pointer;
 }
 
-.eshare .card-footer {
-	text-align: center;
-}
 
 /* wrap tooltips properly on grid view */
 .grid-entry .tooltip-inner {
@@ -175,11 +168,6 @@ html, body {
 .grid-img {
 	background-size: cover;
 	overflow: hidden;
-}
-
-/* LIST VIEW CSS */
-.listview {
-	padding: 0;
 }
 
 /* don't put a margin on directory view table - datatables used !important so we have to as well :( */

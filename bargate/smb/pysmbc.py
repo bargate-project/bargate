@@ -375,13 +375,15 @@ class BargateSMBLibrary(LibraryBase):
 						shares.append(entry)
 
 			bmark_enabled   = False
-			buttons_enabled = False
 			no_items        = False
 			crumbs          = []
 			parent          = False
 			parent_path     = None
 
 			if len(shares) == 0:
+				# tell javascript there are no shares
+				shares = None
+
 				# are there any items?
 				if len(files) == 0 and len(dirs) == 0:
 					no_items = True
@@ -389,8 +391,6 @@ class BargateSMBLibrary(LibraryBase):
 				# only allow bookmarking if we're not at the root
 				if len(self.path) > 0:
 					bmark_enabled = True
-
-				buttons_enabled = True
 
 				# Build a breadcrumbs trail #
 				parts = self.path.split('/')
@@ -414,7 +414,6 @@ class BargateSMBLibrary(LibraryBase):
 				'files': files,
 				'shares': shares,
 				'crumbs': crumbs,
-				'buttons': buttons_enabled,
 				'bmark_path': self.path + ' in ' + self.endpoint_title,
 				'bmark': bmark_enabled,
 				'root_name': self.endpoint_title,

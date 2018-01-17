@@ -1,10 +1,10 @@
 <nav aria-label="breadcrumb" class="d-none d-md-block">
 	<ol class="breadcrumb">
-		<li class="breadcrumb-item"><span class="fas fa-fw fa-home"></span> <a href="#" class="edir" data-path="">{{root_name}}</a></li>
+		<li class="breadcrumb-item"><span class="fas fa-fw fa-home"></span> <a href="#" data-click="dir" data-path="">{{root_name}}</a></li>
 
 		{%- for dir in crumbs %}
 		<li class="breadcrumb-item{% if loop.last %} active{%endif%}">
-			{%- if not loop.last %}<a href="#" class="edir" data-path="{{ dir.path }}">{{ dir.name }}</a>
+			{%- if not loop.last %}<a href="#" data-click="dir" data-path="{{ dir.path }}">{{ dir.name }}</a>
 			{%- else %}{{ dir.name }}
 			{%- endif %}
 		</li>

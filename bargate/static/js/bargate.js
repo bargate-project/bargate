@@ -1,10 +1,9 @@
 var $user = {hidden: false, overwrite: false, twostep: false};
-var $dir = {btnsEnabled: false, bmarkEnabled: false, sortBy: 'name' };
 var dragTimerShow;
 var dragCounter = 0;
 
 function showErr(title,desc) {
-	closeModals();
+	close_modal();
 	$("#err-m-t").text(title);
 	$("#err-m-d").text(desc);
 	$('#err-m').modal('show');
@@ -30,23 +29,16 @@ function raiseNonZero(title, message, code) {
 	}
 }
 
-function openModal(name) {
-	closeModals();
-	$(name).modal('show');
-}
-
-function openDirModal(name) {
-	if ($dir.btnsEnabled === true) {
-		closeModals();
-		$(name).modal('show');
-	}
-}
-
-function closeModals() {
+function close_modal() {
 	open = $('.modal.show').attr('id'); 
 	if (open) {
 		$('#' + open).modal('hide');
 	}
+}
+
+function open_modal(name) {
+	close_modal();
+	$(name).modal('show');
 }
 
 function ts2str(timestamp) {
@@ -57,297 +49,6 @@ function ts2str(timestamp) {
 	hs = ('0' + d.getHours()).slice(-2);
 	ms = ('0' + d.getMinutes()).slice(-2);
 	return yr + '-' + mo + '-' + da + ', ' + hs + ':' + ms;
-}
-
-function enableBrowseButts() {
-	$dir.btnsEnabled = true;
-	$('.browse-b').attr("disabled", false).removeClass("disabled");
-}
-
-function disableBrowseButts() {
-	$dir.btnsEnabled = false;
-	$('.browse-b').attr("disabled", true).addClass("disabled");
-}
-
-function enableBmark() {
-	$dir.bmarkEnabled = true;
-	$('#bmark-l').removeClass('disabled');
-	$('.bmark-b').attr("disabled", false).removeClass("disabled");
-}
-
-function disableBmark() {
-	$dir.bmarkEnabled = false;
-	$('#bmark-l').addClass('disabled');
-	$('.bmark-b').attr("disabled", true).addClass("disabled");
-}
-
-function drawDir() {
-	$('#pdiv').html(nunjucks.render('breadcrumbs.html', { crumbs: $dir.data.crumbs, root_name: $dir.data.root_name }));
-
-	if ($dir.data.no_items) {
-		$('#pdiv').append(nunjucks.render('empty.html'));
-	} else {
-		$('#pdiv').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: $dir.data.dirs, files: $dir.data.files, shares: $dir.data.shares, buildurl: buildurl}));
-	}
-
-	if ($user.layout == "list") {
-		draw_list();
-	}
-	else {
-		draw_grid();
-	}
-
-	doBrowse();
-}
-
-function reloadDir() {
-	loadDir($dir.epname, $dir.path, false);
-}
-
-function loadDir(epname, path, alterHist) {
-	if (alterHist === undefined) { alterHist = true; }
-
-	$.getJSON('/xhr/ls/' + epname + '/' + path)
-	.done(function(data) {
-		if (data.code > 0) {
-			raiseNonZero("Unable to open directory", data.msg, data.code);
-		} else {
-			if (data.bmark) {
-				enableBmark();
-			} else {
-				disableBmark();
-			}
-
-			if (data.buttons) {
-				enableBrowseButts();
-			} else {
-				disableBrowseButts();
-			}
-
-			$dir.data = data;
-			$dir.epurl = data.epurl;
-			$dir.epname = epname;
-			$dir.path  = path;
-
-			drawDir();
-			prepFileUpload();
-
-			if (alterHist) {
-				new_url = data.epurl + '/browse/' + path;
-				history.pushState({epname: epname, epurl: data.epurl, path: path}, '', new_url);
-			}
-		}
-	})
-	.fail(function(jqXHR, textStatus, errorThrown) {
-		raiseFail("Unable to open folder", "Could not load folder contents", jqXHR, textStatus, errorThrown);
-	});
-}
-
-function fsub_search() {
-	$.getJSON('/xhr/search/' + $dir.epname + '/' + $dir.path, {q: $('#search-i').val()})
-	.done(function(data) {
-		if (data.code > 0) {
-			raiseNonZero("Search failed", data.msg, data.code);
-		} else {
-			$dir.data = data;
-			$dir.parent = false;
-			$dir.parent_path = null;
-
-			disableBmark();
-			disableBrowseButts();
-
-			$('#pdiv').html(nunjucks.render('search.html', data));
-
-			draw_list();
-
-			$('#results').DataTable( {
-				"paging": false,
-				"searching": false,
-				"info": false,
-				"ordering": false,
-				"dom": 'lrtip'
-			});
-
-			doBrowse();
-		}
-	})
-	.fail(function(jqXHR, textStatus, errorThrown) {
-		raiseFail("Unable to search", "Could not obtain search results", jqXHR, textStatus, errorThrown);
-	});
-}
-
-function click_layout() {
-	if ($user.layout == "list") {
-		newLayout = "grid";
-	}
-	else {
-		newLayout = "list";
-	}
-
-	set_layout(newLayout);
-	closeModals();
-}
-
-
-function bytes2str(bytes,decimals) {
-	if (bytes == 0) return '0 Bytes';
-	var sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-	var i = Math.floor(Math.log(bytes) / Math.log(1024));
-	return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-function draw_list() {
-	function nameToNum (by) {
-		if (by == 'name') { return [4, "asc"]; }
-		else if (by == 'mtime') { return [5, "asc"]; }
-		else if (by == 'type') { return [6, "asc"]; }
-		else if (by == 'size') { return [7, "asc"]; }
-	}
-
-	$("[data-sort]").on('click', function(e) {
-		e.preventDefault();
-		sortby = $(this).data('sort');
-		$dir.sortBy = sortby;
-		$('#dir').DataTable().order(nameToNum(sortby)).draw();
-		$('[data-sort] > span').addClass('d-none');
-		$('[data-sort="' + sortby + '"] > span').removeClass('d-none');
-	});
-
-	$('#dir').DataTable( {
-		"paging": false,
-		"searching": false,
-		"info": false,
-		"columns": [
-			{ "orderable": false },
-			{ "orderable": false },
-			{ "orderable": false },
-			{ "orderable": false },
-			{ "visible": false},
-			{ "visible": false},
-			{ "visible": false},
-			{ "visible": false},
-		],
-		"order": [nameToNum($dir.sortBy)],
-		"dom": 'lrtip'
-	});
-}
-
-function doBrowse() {
-	$("#pdiv .edir, .eshare").click(function(e) {
-		e.preventDefault();
-		loadDir( $dir.epname, $(this).data('path') );
-	});
-
-	$("#pdiv [data-click]").click(function (e) {
-		e.preventDefault();
-		window["click_" + $(this).data('click')]();
-	});
-
-	// Bind actions to buttons in the 'file show' modal
-	$(".e-rename-b").click(function () { showRename(); });
-	$(".e-copy-b").click(function () { showCopy(); });
-	$(".e-delete-b").click(function () { showDeleteFile(); });
-
-	/* What to do when a user clicks a file entry in a listing */
-	$("#pdiv .efile").click(function() {
-		if ($user.onclick == 'ask') {
-			showFileOverview($(this));
-		} else if ($user.onclick == 'default') {
-			if ($(this).attr('data-view')) {
-				window.open(buildurl($(this).data('path'), 'view'),'_blank');
-			} else {
-				window.open(buildurl($(this).data('path'), 'download'),'_blank');
-			}
-		} else {
-			window.open(buildurl($(this).data('path'), 'download'),'_blank');
-		}
-	});
-
-	/* right click menu for files */
-	$(".efile").contextMenu({
-		menuSelector: "#ctx-menu-file",
-		hideSelector: "#ctx-menu-dir",
-		menuSelected: function (item, selectedMenu)
-		{
-			file = item.closest(".efile");
-			action = selectedMenu.closest("a").data("action");
-
-			if (action == 'view' || action == 'download') {
-				window.open(buildurl(file.data('path'),action),'_blank');
-			}
-			else if (action == 'copy') {
-				selectEntry(file.data('filename'), $dir.path);
-				showCopy();
-			}
-			else if (action == 'rename') {
-				selectEntry(file.data('filename'), $dir.path);
-				showRename();
-			}
-			else if (action == 'delete') {
-				selectEntry(file.data('filename'), $dir.path);
-				showDeleteFile();
-			}
-			else if (action == 'properties') {
-				showFileOverview(file);
-			}
-		}
-	});
-
-	/* context menu for directories */
-	$(".edir").contextMenu({
-		menuSelector: "#ctx-menu-dir",
-		hideSelector: "#ctx-menu-file",
-		menuSelected: function (invokedOn, selectedMenu) {
-			dir = invokedOn.closest(".edir");
-			action = selectedMenu.closest("a").data("action");
-
-			if (action == 'open') {
-				loadDir($dir.epname, dir.data('path'));
-			}
-			else if (action == 'rename') {
-				selectEntry(dir.data('filename'), $dir.path);
-				showRename(dir.data('filename'));
-			}
-			else if (action == 'delete') {
-				selectEntry(dir.data('filename'), $dir.path);
-				showDeleteDirectory(dir.data('filename'));
-			}
-		}
-	});
-}
-
-function draw_grid() {
-	var $container = $('#files').isotope({
-		getSortData: {
-			name: '[data-sortname]',
-			type: '[data-mtyper]',
-			mtime: '[data-mtime] parseInt',
-			size: '[data-sizer] parseInt',
-		},
-		transitionDuration: '0.2s',
-		percentPosition: true,
-		sortAscending: {
-			name: true,
-			type: true,
-			mtime: false,
-			size: false
-		},
-		sortBy: $dir.sortBy,
-	});
-
-	$("[data-sort]").on('click', function(e) {
-		e.preventDefault();
-		sortby = $(this).data('sort');
-		$dir.sortBy = sortby;
-		$container.isotope({ sortBy: sortby });
-		$('[data-sort] > span').addClass('d-none');
-		$('[data-sort="' + sortby + '"] > span').removeClass('d-none');
-	});
-
-	var $dirs = $('#dirs').isotope( {
-		getSortData: { name: '[data-sortname]',},
-		sortBy: 'name',
-	});
 }
 
 function filesizeformat(bytes) {
@@ -369,7 +70,195 @@ function filesizeformat(bytes) {
 	}
 }
 
-function prepFileUpload() {
+var $dir = {
+	sortBy: 'name',
+
+	draw: function() {
+		$('#pdiv').html(nunjucks.render('breadcrumbs.html', { crumbs: this.data.crumbs, root_name: this.data.root_name }));
+
+		if (this.data.no_items) {
+			$('#pdiv').append(nunjucks.render('empty.html'));
+		} else {
+			$('#pdiv').append(nunjucks.render('directory-' + $user.layout + '.html', {dirs: this.data.dirs, files: this.data.files, shares: this.data.shares, buildurl: buildurl}));
+		}
+
+		if ($user.layout == "list") {
+			this.draw_list();
+		}
+		else {
+			this.draw_grid();
+		}
+
+		this.set_triggers();
+	},
+
+	draw_list: function() {
+		var self = this;
+		function nameToNum (by) {
+			if (by == 'name') { return [4, "asc"]; }
+			else if (by == 'mtime') { return [5, "asc"]; }
+			else if (by == 'type') { return [6, "asc"]; }
+			else if (by == 'size') { return [7, "asc"]; }
+		}
+
+		$("[data-sort]").on('click', function(e) {
+			e.preventDefault();
+			sortby = $(this).data('sort');
+			self.sortBy = sortby;
+			$('#dir').DataTable().order(nameToNum(sortby)).draw();
+			$('[data-sort] > span').addClass('d-none');
+			$('[data-sort="' + sortby + '"] > span').removeClass('d-none');
+		});
+
+		$('#dir').DataTable( {
+			"paging": false,
+			"searching": false,
+			"info": false,
+			"columns": [
+				{ "orderable": false },
+				{ "orderable": false },
+				{ "orderable": false },
+				{ "orderable": false },
+				{ "visible": false},
+				{ "visible": false},
+				{ "visible": false},
+				{ "visible": false},
+			],
+			"order": [nameToNum(this.sortBy)],
+			"dom": 'lrtip'
+		});
+	},
+
+	draw_grid: function() {
+		var self = this;
+		var $container = $('#files').isotope({
+			getSortData: {
+				name: '[data-sortname]',
+				type: '[data-mtyper]',
+				mtime: '[data-mtime] parseInt',
+				size: '[data-sizer] parseInt',
+			},
+			transitionDuration: '0.2s',
+			percentPosition: true,
+			sortAscending: {
+				name: true,
+				type: true,
+				mtime: false,
+				size: false
+			},
+			sortBy: this.sortBy,
+		});
+
+		$("[data-sort]").on('click', function(e) {
+			e.preventDefault();
+			sortby = $(this).data('sort');
+			self.sortBy = sortby;
+			$container.isotope({ sortBy: sortby });
+			$('[data-sort] > span').addClass('d-none');
+			$('[data-sort="' + sortby + '"] > span').removeClass('d-none');
+		});
+
+		var $dirs = $('#dirs').isotope( {
+			getSortData: { name: '[data-sortname]',},
+			sortBy: 'name',
+		});
+	},
+
+	set_triggers: function() {
+		$("#pdiv [data-click]").click(function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			$click[$(this).data('click')](e);
+		});
+
+		/* right click menu for files */
+		$('[data-click="file"]').contextMenu({
+			menu: "#ctx-menu-file",
+			hide: "#ctx-menu-dir",
+			func: function (item, selectedMenu)
+			{
+				file = item.closest('[data-click="file"]');
+				action = selectedMenu.closest("a").data("action");
+
+				if (action == 'view' || action == 'download') {
+					window.open(buildurl(file.data('path'),action),'_blank');
+				}
+				else if (action == 'properties') {
+					$entry.action(action, file, 'file');
+				}
+			}
+		});
+
+		/* context menu for directories */
+		$('[data-click="dir"]').contextMenu({
+			menu: "#ctx-menu-dir",
+			hide: "#ctx-menu-file",
+			func: function (invokedOn, selectedMenu) {
+				dir = invokedOn.closest('[data-click="dir"]');
+				action = selectedMenu.closest("a").data("action");
+
+				if (action == 'open') {
+					$dir.load($dir.epname, dir.data('path'));
+				} else {
+					$entry.action(action, dir, 'dir');
+				}
+			}
+		});
+	},
+
+	load: function(epname, path, alterHist) {
+		var self = this;
+		if (alterHist === undefined) { alterHist = true; }
+
+		$.getJSON('/xhr/ls/' + epname + '/' + path)
+		.done(function(data) {
+			if (data.code > 0) {
+				raiseNonZero("Unable to open directory", data.msg, data.code);
+			} else {
+				if (data.bmark) {
+					$('[data-click="bmark"]').removeClass('disabled');
+				} else {
+					$('[data-click="bmark"]').addClass('disabled');
+				}
+
+				// make sure the switch layout button is enabled
+				$('.b-layout').attr("disabled", false).removeClass("disabled");
+
+				if (data.shares) {
+					self.mode = 'shares';
+					$('.b-dir').attr("disabled", true).addClass("disabled");
+					$('.b-search').attr("disabled", true).addClass("disabled");
+				} else {
+					self.mode = 'dir';
+					$('.b-dir').attr("disabled", false).removeClass("disabled");
+					$('.b-search').attr("disabled", false).removeClass("disabled");
+				}
+
+				self.data = data;
+				self.epurl = data.epurl;
+				self.epname = epname;
+				self.path  = path;
+
+				self.draw();
+				bind_upload_trigger();
+
+				if (alterHist) {
+					new_url = data.epurl + '/browse/' + path;
+					history.pushState({epname: epname, epurl: data.epurl, path: path}, '', new_url);
+				}
+			}
+		})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			raiseFail("Unable to open folder", "Could not load folder contents", jqXHR, textStatus, errorThrown);
+		});
+	},
+
+	reload: function() {
+		this.load(this.epname, this.path, false);
+	},
+};
+
+function bind_upload_trigger() {
 	$('#upload-i').fileupload({
 		url: '/xhr',
 		dataType: 'json',
@@ -393,7 +282,7 @@ function prepFileUpload() {
 						notifyOK("Uploaded " + file.name);
 					}
 
-					reloadDir();
+					$dir.reload();
 				}
 			});
 		},
@@ -453,90 +342,8 @@ function prepFileUpload() {
 	}).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
 }
 
-function selectEntry(name, path) {
-	$dir.entry = name;
-	$dir.entryDirPath = path;
-}
-
 function buildurl(path, action) {
 	return $dir.epurl + "/" + action + "/" + path;
-}
-
-function showFileOverview(file) {
-	$('.file-m-owner').html('<span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span>');
-	$('.file-m-group').html('<span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span>');
-
-	$('.file-m-name').text(file.data('filename'));
-	$('.file-m-size').text(file.data('size'));
-	$('.file-m-mtime').text(ts2str(file.data('mtime')));
-	$('.file-m-atime').text(ts2str(file.data('atime')));
-	$('.file-m-mtype').text(file.data('mtype'));
-	$('.file-m-icon').addClass(file.data('icon'));
-	$('.file-m-download').attr('href',buildurl(file.data('path'), 'download'));
-
-	if (file.attr('data-img')) {
-		$('#file-m-preview').attr('src',buildurl(file.data('path'), 'preview')).removeClass('d-none');
-	}
-	else {
-		$('#file-m-preview').attr('src','about:blank').addClass('d-none');
-	}
-	
-	if (file.attr('data-view')) {
-		$('.file-m-view').attr('href',buildurl(file.data('path'), 'view')).removeClass('d-none');
-	}
-	else {
-		$('.file-m-view').addClass('d-none');
-	}
-
-	if (file.attr('data-parent')) {
-		selectEntry(file.data('filename'), file.data('parent'));
-	} else {
-		selectEntry(file.data('filename'), $dir.path);
-	}
-
-	$('#file-m').modal('show');
-
-	$.getJSON('/xhr/stat/' + $dir.epname + '/' + file.data('path'))
-	.done(function(data) {
-		if (data.code != 0) {
-			$('.file-m-owner').html('Unknown');
-			$('.file-m-group').html('Unknown');
-		} else {
-			$('.file-m-owner').html(data.owner);
-			$('.file-m-group').html(data.group);
-		}
-	})
-	.fail(function(jqXHR, textStatus, errorThrown) {
-		$('.file-m-owner').html('Unknown');
-		$('.file-m-group').html('Unknown');
-	});
-}
-
-function showRename() {
-	$('#e-rename-i').val($dir.entry);
-	$('#e-rename-m').modal('show');
-}
-
-function showCopy() {
-	$('#e-copy-i').val("Copy of " + $dir.entry);
-	$('#e-copy-m').modal('show');
-}
-
-function showDeleteFile() {
-	$('#e-delete-t').text("file");
-	$('#e-delete-w').addClass('d-none');
-	showDelete();
-}
-
-function showDeleteDirectory() {
-	$('#e-delete-t').text("directory");
-	$('#e-delete-w').removeClass('d-none');
-	showDelete();
-}
-
-function showDelete() {
-	$('#e-delete-n').text($dir.entry);
-	$('#e-delete-m').modal('show');
 }
 
 function notifyOK(msg) {
@@ -547,48 +354,7 @@ function notifyErr(msg) {
 	$.notify({ icon: 'fas fa-fw fa-exclamation-triangle', message: msg },{ type: 'danger', delay: 10000, template: nunjucks.render('notify.html'), placement: {align: 'center', from: 'bottom'}});
 }
 
-function fsub_2step_enable() {
-	$.post( '/2step/enable', { _csrfp_token: $user.token, token: $('#twostep-enable-i').val()})
-		.fail(function(jqXHR, textStatus, errorThrown) {
-			raiseFail("Network error", "Could not enable two-step verification", jqXHR, textStatus, errorThrown);
-		})
-		.done(function(data, textStatus, jqXHR) {
-			if (data.code !== 0) {
-				raiseNonZero("Unable to enable two-step verification", data.msg, data.code);
-			} else {
-				$('.twoStepDisabled').addClass('d-none');
-				$('.twoStepEnabled').removeClass('d-none');
-				if ($user.twostep.trusted) {
-					$('.twoStepTrusted').removeClass('d-none');
-					$('.twoStepUntrusted').addClass('d-none');
-				} else {
-					$('.twoStepTrusted').addClass('d-none');
-					$('.twoStepUntrusted').removeClass('d-none');
-				}
-				$('#twostep-enable-i').val('');
-				$('#twostep-disable-i').val('');
-			}
-	});
-}
-
-function fsub_2step_disable() {
-	$.post( '/2step/disable', { _csrfp_token: $user.token, token: $('#twostep-disable-i').val()})
-		.fail(function(jqXHR, textStatus, errorThrown) {
-			raiseFail("Network error", "Could not disable two-step verification", jqXHR, textStatus, errorThrown);
-		})
-		.done(function(data, textStatus, jqXHR) {
-			if (data.code !== 0) {
-				raiseNonZero("Unable to disable two-step verification", data.msg, data.code);
-			} else {
-				$('.twoStepEnabled').addClass('d-none');
-				$('.twoStepDisabled').removeClass('d-none');
-				$('#twostep-enable-i').val('');
-				$('#twostep-disable-i').val('');
-			}
-	});
-}
-
-function do_action(action, params, desc, callback) {
+function xhr_post(action, params, desc, callback) {
 	params.epname = $dir.epname;
 	params.action = action;
 	params._csrfp_token = $user.token;
@@ -608,45 +374,123 @@ function do_action(action, params, desc, callback) {
 }
 
 function load_ctx() {
-	if ($dir.entryDirPath === $dir.path) {
-		reloadDir();
+	if ($entry.path === $dir.path) {
+		$dir.reload();
 	} else {
-		loadDir($dir.epname, $dir.EntryDirPath);
+		$dir.load($dir.epname, $entry.path);
 	}
 }
 
-function fsub_rename() {
-	do_action('rename', {path: $dir.entryDirPath, old_name: $dir.entry, new_name: $('#e-rename-i').val()}, 'rename', function () { load_ctx(); });
-}
+var $form_submit = {
 
-function fsub_copy() {
-	do_action('copy', {path: $dir.entryDirPath, src: $dir.entry, dest: $('#e-copy-i').val()}, 'copy file', function () { load_ctx(); });
-}
+	rename: function() {
+		xhr_post('rename', {path: $entry.path, old_name: $entry.name, new_name: $('#e-rename-i').val()}, 'rename', function () { load_ctx(); });
+	},
 
-function fsub_delete() {
-	do_action('delete', {path: $dir.entryDirPath, name: $dir.entry}, 'delete', function () { load_ctx(); });
-}
+	copy: function() {
+		xhr_post('copy', {path: $entry.path, src: $entry.name, dest: $('#e-copy-i').val()}, 'copy file', function () { load_ctx(); });
+	},
 
-function fsub_mkdir() {
-	do_action('mkdir', {path: $dir.path, name: $('#mkdir-i').val()}, 'create directory', function () { reloadDir(); });
-}
+	delete: function() {
+		xhr_post('delete', {path: $entry.path, name: $entry.name}, 'delete', function () { load_ctx(); });
+	},
 
-function fsub_bmark() {
-	do_action('bookmark', {path: $dir.path, name: $('#bmark-i').val()}, 'create bookmark', function (data) { 
-		$('.bmarks').append('<li><a href="' + data.url + '"><i class="fas fa-arrow-right fa-fw"></i>' + $('#bmark-i').val() + '</a></li>');
-	});
-}
+	mkdir: function() {
+		xhr_post('mkdir', {path: $dir.path, name: $('#mkdir-i').val()}, 'create directory', function () { $dir.reload(); });
+	},
 
-function fsub_connect() {
-	do_action('connect', {path: $('#connect-i').val()}, 'connect to server', function () { loadDir('custom', ''); });
-}
+	bmark: function() {
+		xhr_post('bookmark', {path: $dir.path, name: $('#bmark-i').val()}, 'create bookmark', function (data) { 
+			$('.bmarks').append('<li><a href="' + data.url + '"><i class="fas fa-arrow-right fa-fw"></i>' + $('#bmark-i').val() + '</a></li>');
+		});
+	},
+
+	connect: function() {
+		xhr_post('connect', {path: $('#connect-i').val()}, 'connect to server', function () { $dir.load('custom', ''); });
+	},
+
+	search: function() {
+		$.getJSON('/xhr/search/' + $dir.epname + '/' + $dir.path, {q: $('#search-i').val()})
+		.done(function(data) {
+			if (data.code > 0) {
+				raiseNonZero("Search failed", data.msg, data.code);
+			} else {
+				$dir.data = data;
+				$dir.parent = false;
+				$dir.parent_path = null;
+
+				$dir.mode = "search";
+				$('.b-dir').attr("disabled", true).addClass("disabled");
+				$('.b-layout').attr("disabled", true).addClass("disabled");
+				$('[data-click="bmark"]').addClass('disabled');
+
+				$('#pdiv').html(nunjucks.render('search.html', data));
+
+				$dir.draw_list();
+
+				$('#results').DataTable( {
+					"paging": false,
+					"searching": false,
+					"info": false,
+					"ordering": false,
+					"dom": 'lrtip'
+				});
+
+				$dir.set_triggers();
+			}
+		})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			raiseFail("Unable to search", "Could not obtain search results", jqXHR, textStatus, errorThrown);
+		});
+	},
+
+	totp_enable: function() {
+		$.post( '/2step/enable', { _csrfp_token: $user.token, token: $('#twostep-enable-i').val()})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				raiseFail("Network error", "Could not enable two-step verification", jqXHR, textStatus, errorThrown);
+			})
+			.done(function(data, textStatus, jqXHR) {
+				if (data.code !== 0) {
+					raiseNonZero("Unable to enable two-step verification", data.msg, data.code);
+				} else {
+					$('.twoStepDisabled').addClass('d-none');
+					$('.twoStepEnabled').removeClass('d-none');
+					if ($user.twostep.trusted) {
+						$('.twoStepTrusted').removeClass('d-none');
+						$('.twoStepUntrusted').addClass('d-none');
+					} else {
+						$('.twoStepTrusted').addClass('d-none');
+						$('.twoStepUntrusted').removeClass('d-none');
+					}
+					$('#twostep-enable-i').val('');
+					$('#twostep-disable-i').val('');
+				}
+		});
+	},
+
+	totp_disable: function() {
+		$.post( '/2step/disable', { _csrfp_token: $user.token, token: $('#twostep-disable-i').val()})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				raiseFail("Network error", "Could not disable two-step verification", jqXHR, textStatus, errorThrown);
+			})
+			.done(function(data, textStatus, jqXHR) {
+				if (data.code !== 0) {
+					raiseNonZero("Unable to disable two-step verification", data.msg, data.code);
+				} else {
+					$('.twoStepEnabled').addClass('d-none');
+					$('.twoStepDisabled').removeClass('d-none');
+					$('#twostep-enable-i').val('');
+					$('#twostep-disable-i').val('');
+				}
+		});
+	},
+
+};
 
 function set_layout_cls() {
 	if ($user.layout == "grid") {
-		$("#pdiv").removeClass("listview").addClass("gridview");
 		$(".layout-ico").removeClass("fa-th-large").addClass("fa-list");
 	} else {
-		$("#pdiv").removeClass("gridview").addClass("listview");
 		$(".layout-ico").removeClass("fa-list").addClass("fa-th-large");
 	}
 }
@@ -669,7 +513,7 @@ function set_layout(newLayout) {
 	save_setting('layout', newLayout, function (data) { 
 		$user.layout = newLayout;
 		set_layout_cls();
-		drawDir();
+		$dir.draw();
 	});
 
 }
@@ -698,49 +542,180 @@ function set_theme(themeName) {
 	});
 }
 
-function click_search() {
-	openDirModal('#search-m');
-}
+var $click = {
 
-function click_mkdir() {
-	openDirModal('#mkdir-m');
-}
+	search: function() {
+		if ($dir.mode != 'shares') {
+			open_modal('#search-m');
+		}
+	},
 
-function click_settings() {
-	openModal('#prefs-m');
-}
+	mkdir: function() {
+		if ($dir.mode == 'dir') {
+			open_modal('#mkdir-m');
+		}
+	},
 
-function click_upload() {
-	openModal('#upload-m');
-}
+	settings: function() {
+		open_modal('#prefs-m');
+	},
 
-function click_shortcuts() {
-	openModal('#shortcuts-m');
-}
+	upload: function() {
+		if ($dir.mode == 'dir') {
+			open_modal('#upload-m');
+		}
+	},
 
-function click_mobile() {
-	openModal('#mobile-m');
-}
+	shortcuts: function() {
+		open_modal('#shortcuts-m');
+	},
 
-function click_about() {
-	openModal('#about-m');
-}
+	mobile: function() {
+		open_modal('#mobile-m');
+	},
 
-function click_connect() {
-	contents = $('#connect-i').val();
-	$('#connect-i').focus().val("").val(contents);
-	openModal('#connect-m');
-}
+	about: function() {
+		open_modal('#about-m');
+	},
 
-function click_bmark() {
-	if ($dir.bmarkEnabled === true) {
-		openDirModal('#bmark-m');
+	connect: function() {
+		contents = $('#connect-i').val();
+		$('#connect-i').focus().val("").val(contents);
+		open_modal('#connect-m');
+	},
+
+	bmark: function() {
+		if ($dir.data.bmark === true) {
+			if ($dir.mode == 'dir') {
+				open_modal('#bmark-m');
+			}
+		}
+	},
+
+	layout: function() {
+		if ($dir.mode != 'search') {
+			newLayout = "list";
+			if ($user.layout == "list") {
+				newLayout = "grid";
+			}
+
+			set_layout(newLayout);
+			close_modal();
+		}
+	},
+
+	parent: function() {
+		if ($dir.mode == 'dir') {
+			$dir.load($dir.epname, $dir.data.parent_path);
+		}
+	},
+
+	dir: function(e) {
+		$dir.load( $dir.epname, $(e.currentTarget).data('path') );
+	},
+
+	share: function(e) {
+		$dir.load( $dir.epname, $(e.currentTarget).data('path') );
+	},
+
+	file: function(e) {
+		if ($user.onclick == 'ask') {
+			$entry.action('properties', $(e.currentTarget), 'file');
+			return;
+		}
+
+		if ($user.onclick == 'default' && $(e.currentTarget).data('view')) {
+			window.open(buildurl($(e.currentTarget).data('path'), 'view'),'_blank');
+			return;
+		}
+
+		window.open(buildurl($(e.currentTarget).data('path'), 'download'),'_blank');
+	},
+};
+
+var $entry = {
+
+	action: function(action, entry, type) {
+		this.entry = entry;
+		this.name = this.entry.data('name');
+
+		if (this.entry.data('parent')) {
+			this.path = this.entry.data('parent');
+		} else {
+			this.path = $dir.path;
+		}
+
+		this.type = type;
+		this[action]();
+	},
+
+	rename: function(e) {
+		$('#e-rename-i').val(this.name);
+		open_modal('#e-rename-m');
+	},
+
+	delete: function() {
+		$('#e-delete-n').text(this.name);
+
+		if (this.type == 'dir') {
+			$('#e-delete-t').text("directory");
+			$('#e-delete-w').removeClass('d-none');
+		} else {
+			$('#e-delete-t').text("file");
+			$('#e-delete-w').addClass('d-none');
+		}
+		open_modal('#e-delete-m');
+	},
+
+	copy: function() {
+		$('#e-copy-i').val("Copy of " + this.name);
+		open_modal('#e-copy-m');
+	},
+
+	properties: function() {
+		$('.file-m-owner').html('<span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span>');
+		$('.file-m-group').html('<span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span>');
+
+		$('.file-m-name').text(this.name);
+		$('.file-m-size').text(this.entry.data('size'));
+		$('.file-m-mtime').text(ts2str(this.entry.data('mtime')));
+		$('.file-m-atime').text(ts2str(this.entry.data('atime')));
+		$('.file-m-mtype').text(this.entry.data('mtype'));
+		$('.file-m-icon').addClass(this.entry.data('icon'));
+		$('.file-m-download').attr('href',buildurl(this.entry.data('path'), 'download'));
+
+		if (this.entry.attr('data-img')) {
+			$('#file-m-preview').attr('src',buildurl(this.entry.data('path'), 'preview')).removeClass('d-none');
+		}
+		else {
+			$('#file-m-preview').attr('src','about:blank').addClass('d-none');
+		}
+		
+		if (this.entry.data('view')) {
+			$('.file-m-view').attr('href',buildurl(this.entry.data('path'), 'view')).removeClass('d-none');
+		}
+		else {
+			$('.file-m-view').addClass('d-none');
+		}
+
+		open_modal('#file-m');
+
+		$.getJSON('/xhr/stat/' + $dir.epname + '/' + this.entry.data('path'))
+		.done(function(data) {
+			if (data.code != 0) {
+				$('.file-m-owner').html('Unknown');
+				$('.file-m-group').html('Unknown');
+			} else {
+				$('.file-m-owner').html(data.owner);
+				$('.file-m-group').html(data.group);
+			}
+		})
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			$('.file-m-owner').html('Unknown');
+			$('.file-m-group').html('Unknown');
+		});
 	}
-}
-
-function click_parent() {
-	loadDir($dir.epname, $dir.data.parent_path);
-}
+};
 
 function init(epname, epurl, path) {
 	/* load settings via ajax call */
@@ -786,8 +761,8 @@ function init(epname, epurl, path) {
 
 			$('#prefs-hidden').change(function() {
 				save_setting('hidden', this.checked, function (data) { 
-					if ($dir.btnsEnabled) {
-						reloadDir();
+					if ($dir.mode == 'dir') {
+						$dir.reload();
 					}
 					$user.hidden = show_hidden;
 				});
@@ -795,8 +770,8 @@ function init(epname, epurl, path) {
 
 			$('input[type=radio][name=prefs-click-i]').change(function() {
 				save_setting('click', this.value, function (data) { 
-					if ($dir.btnsEnabled) {
-						reloadDir();
+					if ($dir.mode == 'dir') {
+						$dir.reload();
 					}
 					$user.onclick = newMode;
 				});
@@ -815,17 +790,19 @@ function init(epname, epurl, path) {
 			/* trigger js functions on form submissions */
 			$("[data-fsub]").submit(function (e) {
 				e.preventDefault();
-				if ($(this).data('cmod') !== 'no') {
-					closeModals();
+				if ($(this).data('cmod') != 'no') {
+					close_modal();
 				}
 
-				window["fsub_" + $(this).data('fsub')]();
+				$form_submit[$(this).data('fsub')](e);
 			});
 
 			/* trigger js functions on click */
 			$("[data-click]").click(function (e) {
+				console.log("data-click handler: " + $(this).data('click'));
 				e.preventDefault();
-				window["click_" + $(this).data('click')]();
+				e.stopPropagation();
+				$click[$(this).data('click')](e);
 			});
 
 			if (epname !== undefined) {
@@ -842,7 +819,7 @@ function init(epname, epurl, path) {
 				/* respond to back/forward buttons */
 				window.addEventListener('popstate', function(e) {
 					if (e.state != null) {
-						loadDir(e.state.epname, e.state.path, false);
+						$dir.load(e.state.epname, e.state.path, false);
 					}
 				});
 
@@ -875,6 +852,11 @@ function init(epname, epurl, path) {
 					}
 				});
 
+				$("[data-entry]").click(function (e) {
+					e.preventDefault();
+					$entry[$(this).data('entry')](e);
+				});
+
 				$('body').on('dragleave', function(e) {
 					if (dragCounter > 0) {
 						dragCounter--;
@@ -889,21 +871,21 @@ function init(epname, epurl, path) {
 				Mousetrap.bind('alt+up', function(e) {
 					e.preventDefault();
 					if ($dir.data.parent) {
-						closeModals(); click_parent();
+						close_modal(); $click.parent();
 					}
 				});
 
-				Mousetrap.bind('shift+p', function(e) { e.preventDefault(); click_settings(); });
-				Mousetrap.bind('shift+s', function(e) { e.preventDefault(); click_search(); });
-				Mousetrap.bind('shift+n', function(e) { e.preventDefault(); click_mkdir(); });
-				Mousetrap.bind('shift+l', function(e) { e.preventDefault(); click_layout(); });
-				Mousetrap.bind('shift+u', function(e) { e.preventDefault(); click_upload(); });
-				Mousetrap.bind('shift+c', function(e) { e.preventDefault(); click_connect(); });
-				Mousetrap.bind('shift+b', function(e) { e.preventDefault(); click_bmark(); });
+				Mousetrap.bind('shift+p', function(e) { e.preventDefault(); $click.settings(); });
+				Mousetrap.bind('shift+s', function(e) { e.preventDefault(); $click.search(); });
+				Mousetrap.bind('shift+n', function(e) { e.preventDefault(); $click.mkdir(); });
+				Mousetrap.bind('shift+l', function(e) { e.preventDefault(); $click.layout(); });
+				Mousetrap.bind('shift+u', function(e) { e.preventDefault(); $click.upload(); });
+				Mousetrap.bind('shift+c', function(e) { e.preventDefault(); $click.connect(); });
+				Mousetrap.bind('shift+b', function(e) { e.preventDefault(); $click.bmark(); });
 
 				init_url = epurl + '/browse/' + path;
 				history.replaceState({epurl: epurl, epname: epname, path: path}, '', init_url);
-				loadDir(epname, path, false);
+				$dir.load(epname, path, false);
 			}
 		}
 	});
@@ -919,7 +901,7 @@ function init(epname, epurl, path) {
 				// Hide other menu type
 				$(opts.hideSelector).removeClass('d-block');
 
-				menu = $(opts.menuSelector);
+				menu = $(opts.menu);
 				menu.data("invokedOn", $(e.target))
 				.css({
 					position: "absolute",
@@ -929,11 +911,11 @@ function init(epname, epurl, path) {
 				.addClass("d-block")
 				.off('click').on('click', 'a', function (e) {
 					menu.removeClass('d-block');
-					opts.menuSelected.call(this, menu.data("invokedOn"), $(e.target));
+					opts.func.call(this, menu.data("invokedOn"), $(e.target));
 				});
 
 				/* Extra code to show/hide view option based on type */
-				if (menu.data("invokedOn").closest(".efile").attr('data-view')) {
+				if (menu.data("invokedOn").closest('[data-click="file"]').attr('data-view')) {
 					$('#ctx-menu-view').removeClass('d-none').addClass('d-block');
 				}
 				else {
@@ -945,12 +927,12 @@ function init(epname, epurl, path) {
 
 			//make sure menu closes on any click
 			$('body').click(function () {
-				$(opts.menuSelector).removeClass('d-block');
+				$(opts.menu).removeClass('d-block');
 			});
 		});
 
 		function getMenuPosition(mouse, direction, scrollDir) {
-			var win = $(window)[direction](), scroll = $(window)[scrollDir](), menu = $(opts.menuSelector)[direction](), position = mouse + scroll;
+			var win = $(window)[direction](), scroll = $(window)[scrollDir](), menu = $(opts.menu)[direction](), position = mouse + scroll;
 
 			// opening menu would pass the side of the page
 			if (mouse + menu > win && menu < mouse) {
