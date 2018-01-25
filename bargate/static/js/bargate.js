@@ -94,6 +94,12 @@ var $dir = {
 	sortBy: 'name',
 
 	draw: function() {
+		try {
+			window.stop();
+		} catch (exception) {
+			document.execCommand('Stop');
+		}
+		
 		$('#crumbs').html(nunjucks.render('breadcrumbs.html', { crumbs: this.data.crumbs, root_name: this.data.root_name }));
 
 		if (this.data.no_items) {

@@ -1,4 +1,3 @@
-import os
 #!/usr/bin/python2
 #
 # This file is part of Bargate.
@@ -16,6 +15,7 @@ import os
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 from setuptools import find_packages, setup
 
 
@@ -53,18 +53,18 @@ setup(
 		'Development Status :: 5 - Production/Stable',
 		'Natural Language :: English',
 	],
-    project_urls={
-        'Bug Tracker': 'https://github.com/divad/bargate/issues',
-       'Documentation': 'https://bargate.io',
-        'Source Code': 'https://github.com/divad/bargate',
-    },
+	project_urls={
+		'Bug Tracker': 'https://github.com/divad/bargate/issues',
+		'Documentation': 'https://bargate.io',
+		'Source Code': 'https://github.com/divad/bargate',
+	},
 	install_requires=[
 		'Flask>=0.12',
 		'cryptography>=2.1.4',
-	]
-    extras_require={
-        'previews':  ["Pillow>=3.0"],
-        'smbc': ["pysmbc>=1.0.15.5"],
-        'userdata': ["redis>=2.4"], 
-    }
+	],
+	extras_require={
+		'previews': ["Pillow>=3.0"],
+		'smbc': ["pysmbc>=1.0.15.5"],
+		'userdata': ["redis>=2.4"],
+	}
 )

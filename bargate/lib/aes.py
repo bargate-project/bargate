@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import base64 
+import base64
 
 from cryptography.fernet import Fernet
 
@@ -30,7 +29,7 @@ def encrypt(data, key):
 
 	key = base64.urlsafe_b64encode(key)
 	return Fernet(key).encrypt(data)
-	
+
 
 def decrypt(data, key):
 	key = base64.urlsafe_b64encode(key)

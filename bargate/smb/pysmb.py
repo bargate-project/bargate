@@ -100,8 +100,7 @@ class BargateSMBLibrary(LibraryBase):
 			if not conn.connect(self.server_name, port=445, timeout=10):
 				app.logger.debug("smb_auth did not connect")
 				return False
-			#conn.listPath(self.share_name, self.path_without_share)
-			conn.listPath(self.share_name, 'crap')
+			conn.listPath(self.share_name, self.path_without_share)
 			return True
 		except Exception as ex:
 			app.logger.debug("smb_auth exception: " + str(type(ex).__name__) + " - " + str(ex))
