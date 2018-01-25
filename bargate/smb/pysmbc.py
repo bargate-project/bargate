@@ -152,6 +152,7 @@ class BargateSMBLibrary(LibraryBase):
 			flash('Unexpected SMB authentication error: ' + str(ex), 'alert-danger')
 			return False
 
+		return True
 		app.logger.debug("bargate.lib.user.auth auth smb success")
 
 	def smb_action(self, endpoint_name, action, path):
@@ -182,15 +183,15 @@ class BargateSMBLibrary(LibraryBase):
 		app.logger.debug("_action_download()")
 
 		try:
-			fstat = self.libsmbclient.stat(self.full_addr)
+			fstat = self.libsmbclient.stat(self.addr)
 		except Exception as ex:
-			return self.smb_error(ex)
+			return self.return_exception(ex)
 
 		if not fstat.type == fs.EntryType.file:
 			abort(400)
 
 		try:
-			file_object = self.libsmbclient.open(self.full_addr)
+			file_object = self.libsmbclient.open(self.addr)
 
 			# Default to sending files as an 'attachment' ("Content-Disposition: attachment")
 			attach = True
@@ -215,7 +216,7 @@ class BargateSMBLibrary(LibraryBase):
 			return resp
 
 		except Exception as ex:
-			return self.smb_error(ex)
+			return self.return_exception(ex)
 
 	def _action_preview(self):
 		app.logger.debug("_action_image_preview()")
@@ -224,7 +225,7 @@ class BargateSMBLibrary(LibraryBase):
 			abort(400)
 
 		try:
-			fstat = self.libsmbclient.stat(self.full_addr)
+			fstat = self.libsmbclient.stat(self.addr)
 		except Exception:
 			abort(400)
 
@@ -245,7 +246,7 @@ class BargateSMBLibrary(LibraryBase):
 
 		# Open the file
 		try:
-			file_object = self.libsmbclient.open(self.full_addr)
+			file_object = self.libsmbclient.open(self.addr)
 		except Exception:
 			abort(400)
 
@@ -257,7 +258,7 @@ class BargateSMBLibrary(LibraryBase):
 			pil_img.thumbnail((app.config['IMAGE_PREVIEW_WIDTH'], app.config['IMAGE_PREVIEW_HEIGHT']))
 
 			ifile = StringIO.StringIO()
-			pil_img.save(ifile, 'PNG', compress_level=app.config['IMAGE_PREVIEW_LEVEL'])
+			pil_img.save(ifile, 'JPEG', quality=app.config['IMAGE_PREVIEW_QUALITY'])
 			ifile.seek(0)
 
 			return send_file(ifile, mimetype='image/jpeg', add_etags=False)
@@ -268,7 +269,7 @@ class BargateSMBLibrary(LibraryBase):
 		app.logger.debug("_action_stat()")
 
 		try:
-			fstat = self.libsmbclient.stat(self.full_addr)
+			fstat = self.libsmbclient.stat(self.addr)
 		except Exception as ex:
 			return self.return_exception(ex)
 
@@ -292,8 +293,8 @@ class BargateSMBLibrary(LibraryBase):
 		}
 
 		try:
-			data['owner'] = self.libsmbclient.getxattr(self.full_addr, smbc.XATTR_OWNER)
-			data['group'] = self.libsmbclient.getxattr(self.full_addr, smbc.XATTR_GROUP)
+			data['owner'] = self.libsmbclient.getxattr(self.addr, smbc.XATTR_OWNER)
+			data['group'] = self.libsmbclient.getxattr(self.addr, smbc.XATTR_GROUP)
 
 			if app.config['WBINFO_LOOKUP']:
 				data['owner'] = winbind.sid_to_name(data['owner'])
@@ -348,7 +349,7 @@ class BargateSMBLibrary(LibraryBase):
 		app.logger.debug("_action_ls()")
 
 		try:
-			directory_entries = self.libsmbclient.ls(self.full_addr)
+			directory_entries = self.libsmbclient.ls(self.addr)
 		except smbc.NotDirectoryError as ex:
 			return jsonify({'code': 1, 'msg': 'The given path is not a directory'})
 		except Exception as ex:
@@ -442,7 +443,7 @@ class BargateSMBLibrary(LibraryBase):
 
 			# Make the filename "secure" - see http://flask.pocoo.org/docs/patterns/fileuploads/#uploading-files
 			filename = fs.secure_filename(ufile.filename)
-			upload_uri = self.full_addr + '/' + filename
+			upload_uri = self.addr + '/' + filename
 
 			# Check the new file name is valid
 			try:
@@ -526,8 +527,8 @@ class BargateSMBLibrary(LibraryBase):
 			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
 		# Build paths
-		old_path = self.full_addr + "/" + old_name
-		new_path = self.full_addr + "/" + new_name
+		old_path = self.addr + "/" + old_name
+		new_path = self.addr + "/" + new_name
 
 		# get the item type of the existing 'filename'
 		fstat = self.libsmbclient.stat(old_path)
@@ -563,8 +564,8 @@ class BargateSMBLibrary(LibraryBase):
 			return jsonify({'code': 1, 'msg': 'The new name is invalid'})
 
 		# Build paths
-		src_path  = self.full_addr + "/" + src
-		dest_path = self.full_addr + "/" + dest
+		src_path  = self.addr + "/" + src
+		dest_path = self.addr + "/" + dest
 
 		try:
 			source_stat = self.libsmbclient.stat(src_path)
@@ -623,7 +624,7 @@ class BargateSMBLibrary(LibraryBase):
 			return jsonify({'code': 1, 'msg': 'That directory name is invalid'})
 
 		try:
-			self.libsmbclient.mkdir(self.full_addr + '/' + dirname)
+			self.libsmbclient.mkdir(self.addr + '/' + dirname)
 		except Exception as ex:
 			return self.return_exception(ex)
 
@@ -637,7 +638,7 @@ class BargateSMBLibrary(LibraryBase):
 		except Exception as ex:
 			return jsonify({'code': 1, 'msg': 'Invalid parameter'})
 
-		delete_path  = self.full_addr + "/" + delete_name
+		delete_path  = self.addr + "/" + delete_name
 
 		fstat = self.libsmbclient.stat(delete_path)
 
@@ -707,7 +708,7 @@ class BargateSMBLibrary(LibraryBase):
 				self.timeout_reached = True
 				break
 
-			entry = self._direntry_load(dentry, path)
+			entry = self._direntry_load(dentry, path, include_path=True)
 
 			# Skip hidden files
 			if entry['skip']:
@@ -728,7 +729,7 @@ class BargateSMBLibrary(LibraryBase):
 
 				self._rsearch(sub_path)
 
-	def _direntry_load(self, dentry, path=None):
+	def _direntry_load(self, dentry, path=None, include_path=False):
 		entry = {'skip': False, 'name': dentry.name}
 
 		if path is None:
@@ -738,10 +739,11 @@ class BargateSMBLibrary(LibraryBase):
 		if isinstance(entry['name'], str):
 			entry['name'] = entry['name'].decode("utf-8")
 
-		if len(self.path) == 0:
-			entry['path'] = entry['name']
-		else:
-			entry['path'] = path + '/' + entry['name']
+		if include_path:
+			if len(self.path) == 0:
+				entry['path'] = entry['name']
+			else:
+				entry['path'] = path + '/' + entry['name']
 
 		# Skip entries for 'this dir' and 'parent dir'
 		if entry['name'] == '.' or entry['name'] == '..':
@@ -776,9 +778,9 @@ class BargateSMBLibrary(LibraryBase):
 				entry['icon'] = mime.mimetype_to_icon(entry['mtyper'])
 
 				try:
-					fstat = self.libsmbclient.stat(self.full_addr + '/' + entry['name'])
+					fstat = self.libsmbclient.stat(self.addr + '/' + entry['name'])
 				except Exception as ex:
-					app.logger.debug("stat failed against " + self.full_addr + '/' + entry['name'])
+					app.logger.debug("stat failed against " + self.addr + '/' + entry['name'])
 					app.logger.debug(str(ex))
 					# If the file stat failed we return a result with the data missing
 					# rather than fail the entire page load

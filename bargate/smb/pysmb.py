@@ -19,6 +19,7 @@ import socket     # used to get the local hostname to send to the SMB server
 import tempfile   # used for reading from files on the smb server
 import time       # used in search (timeout)
 import errno      # used in OperationFailureDecode
+import traceback
 
 from smb.SMBConnection import SMBConnection
 from smb.base import SMBTimeout, NotReadyError, NotConnectedError, SharedDevice
@@ -99,10 +100,12 @@ class BargateSMBLibrary(LibraryBase):
 			if not conn.connect(self.server_name, port=445, timeout=10):
 				app.logger.debug("smb_auth did not connect")
 				return False
-			conn.listPath(self.share_name, self.path_without_share)
+			#conn.listPath(self.share_name, self.path_without_share)
+			conn.listPath(self.share_name, 'crap')
 			return True
 		except Exception as ex:
-			app.logger.debug("smb_auth exception: " + str(ex))
+			app.logger.debug("smb_auth exception: " + str(type(ex).__name__) + " - " + str(ex))
+			app.logger.debug(traceback.format_exc())
 			return False
 
 	def decode_exception(self, ex):
@@ -203,7 +206,7 @@ class BargateSMBLibrary(LibraryBase):
 			try:
 				sfile = self.conn.getAttributes(self.share_name, self.path_without_share)
 			except Exception as ex:
-				return self.smb_error(ex)
+				return self.return_exception(ex)
 
 			if sfile.isDirectory:
 				abort(400)
@@ -233,7 +236,7 @@ class BargateSMBLibrary(LibraryBase):
 			return resp
 
 		except Exception as ex:
-			return self.smb_error(ex)
+			return self.return_exception(ex)
 
 	def _action_preview(self):
 		app.logger.debug("_action_image_preview()")
@@ -271,7 +274,8 @@ class BargateSMBLibrary(LibraryBase):
 			pil_img.thumbnail((app.config['IMAGE_PREVIEW_WIDTH'], app.config['IMAGE_PREVIEW_HEIGHT']))
 
 			ifile = StringIO.StringIO()
-			pil_img.save(ifile, 'PNG', compress_level=app.config['IMAGE_PREVIEW_LEVEL'])
+			pil_img.save(ifile, 'JPEG', quality=app.config['IMAGE_PREVIEW_QUALITY'])
+
 			ifile.seek(0)
 			return send_file(ifile, mimetype='image/png', add_etags=False)
 		except Exception:
@@ -400,6 +404,7 @@ class BargateSMBLibrary(LibraryBase):
 		else:
 			try:
 				try:
+					app.logger.debug("conn.listPath('" + self.share_name + "','" + self.path_without_share + "')")
 					directory_entries = self.conn.listPath(self.share_name, self.path_without_share)
 				except Exception as ex:
 					return self.return_exception(ex)
@@ -727,7 +732,7 @@ class BargateSMBLibrary(LibraryBase):
 				self.timeout_reached = True
 				break
 
-			entry = self._sfile_load(sfile, path)
+			entry = self._sfile_load(sfile, path, include_path=True)
 
 			# Skip hidden files
 			if entry['skip']:
@@ -751,16 +756,17 @@ class BargateSMBLibrary(LibraryBase):
 
 				self._rsearch(sub_path, sub_path_without_share)
 
-	def _sfile_load(self, sfile, path):
+	def _sfile_load(self, sfile, path, include_path=False):
 		"""Takes a smb SharedFile object and returns a dictionary with information
 		about that SharedFile object.
 		"""
 		entry = {'skip': False, 'name': sfile.filename}
 
-		if len(path) == 0:
-			entry['path'] = entry['name']
-		else:
-			entry['path'] = path + '/' + entry['name']
+		if include_path:
+			if len(path) == 0:
+				entry['path'] = entry['name']
+			else:
+				entry['path'] = path + '/' + entry['name']
 
 		# Skip entries for 'this dir' and 'parent dir'
 		if entry['name'] == '.' or entry['name'] == '..':

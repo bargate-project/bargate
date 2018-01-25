@@ -1,5 +1,23 @@
 import os
+#!/usr/bin/python2
+#
+# This file is part of Bargate.
+#
+# Bargate is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Bargate is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
+
 from setuptools import find_packages, setup
+
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 	README = readme.read()
@@ -12,7 +30,7 @@ setup(
 	packages=find_packages(),
 	include_package_data=True,
 	license='GNU General Public License v3',
-	description='Open source modern web interface for SMB file servers',
+	description='Open source web interface to SMB file servers',
 	long_description=README,
 	url='https://bargate.io',
 	author='David Bell',
@@ -35,11 +53,18 @@ setup(
 		'Development Status :: 5 - Production/Stable',
 		'Natural Language :: English',
 	],
+    project_urls={
+        'Bug Tracker': 'https://github.com/divad/bargate/issues',
+       'Documentation': 'https://bargate.io',
+        'Source Code': 'https://github.com/divad/bargate',
+    },
 	install_requires=[
 		'Flask>=0.12',
-		'pysmbc>=1.0.15.5',
-		'pycrypto>=2.6.1',
-		'Pillow>=3.0',
-		'redis>=2.4',
+		'cryptography>=2.1.4',
 	]
+    extras_require={
+        'previews':  ["Pillow>=3.0"],
+        'smbc': ["pysmbc>=1.0.15.5"],
+        'userdata': ["redis>=2.4"], 
+    }
 )

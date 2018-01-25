@@ -150,7 +150,7 @@ IMAGE_PREVIEW_MAX_SIZE = 30 * 1024 * 1024
 # Image preview size (width/height)
 IMAGE_PREVIEW_WIDTH = 400
 IMAGE_PREVIEW_HEIGHT = 400
-IMAGE_PREVIEW_LEVEL = 2
+IMAGE_PREVIEW_QUALITY = 60
 
 # Should bargate attempt to use winbind to resolve a SID to a name?
 WBINFO_LOOKUP = False

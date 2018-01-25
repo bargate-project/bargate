@@ -79,11 +79,6 @@ def logout():
 	return redirect(url_for('login'))
 
 
-@app.route('/about/changelog')
-def changelog():
-	return render_template('views/changelog.html', active='help')
-
-
 @app.route('/nojs')
 def nojs():
 	return render_template('views/nojs.html')

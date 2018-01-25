@@ -1,6 +1,7 @@
-<nav aria-label="breadcrumb" class="d-none d-md-block">
-	<ol class="breadcrumb">
-		<li class="breadcrumb-item"><span class="fas fa-fw fa-home"></span> <a href="#" data-click="dir" data-path="">{{root_name}}</a></li>
+<nav class="p-2 d-none d-md-block">
+	<span data-click="parent" class="float-right navbar-brand mx-2 point pb-0 pt-1"><i class="fas fa-fw fa-lg fa-angle-up"></i></span>
+	<ol class="breadcrumb p-2 m-0">
+		<li class="breadcrumb-item"><span class="fas fa-fw fa-home"></span> <a href="#" data-click="root">{{root_name}}</a></li>
 		{%- for dir in crumbs %}
 		<li class="breadcrumb-item{% if loop.last %} active{%endif%}">
 			{%- if not loop.last %}<a href="#" data-click="dir" data-path="{{ dir.path }}">{{ dir.name }}</a>
@@ -12,10 +13,10 @@
 </nav>
 
 {% if crumbs|length > 0 %}
-<nav class="navbar py-2 px-1 px-md-3 w-100 navbar-light bg-light d-md-none">
-	<span data-click="parent" class="navbar-brand mx-2"><i class="fas fa-fw fa-lg fa-angle-up"></i></span>
-	<div class="navbar-text mr-auto">{{ (crumbs | last).name }}</div>
+<nav class="navbar navbar-crumbs navbar-light bg-light d-md-none p-1">
+	<div class="navbar-brand mx-2"><i class="fas fa-fw fa-folder fa-lg"></i> {{ (crumbs | last).name }}</div>
+	<span data-click="parent" class="ml-auto navbar-brand mx-2 point"><i class="fas fa-fw fa-lg fa-angle-up"></i></span>
 </nav>
 {% else %}
-<div class="p-1"></div>
+<div class="p-1 d-md-none"></div>
 {% endif %}

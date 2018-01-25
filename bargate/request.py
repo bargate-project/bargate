@@ -79,7 +79,7 @@ def context_processor():
 	if app.config['LOCAL_FAVICON']:
 		data['favicon'] = url_for('local_static', filename='favicon.ico')
 	else:
-		data['favicon'] = url_for('static', filename='favicon.ico')
+		data['favicon'] = url_for('static', filename='images/favicon.png')
 
 	data['type'] = fs.EntryType
 

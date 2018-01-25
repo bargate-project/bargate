@@ -13,7 +13,7 @@
 </thead>
 <tbody>
 	{%- for entry in shares -%}
-	<tr class="point" data-click="share" data-path="{{entry.name}}">
+	<tr class="point" data-click="share" data-name="{{entry.name}}">
 		<td class="text-center w-1"><span class="fas fa-fw fa-hdd"></span></td>
 		<td class="dentry w-100">{{ entry.name}}</td>
 		<td class="d-none d-md-table-cell dentry-mtime w-1"></td>
@@ -25,7 +25,7 @@
 	</tr>
 	{%- endfor -%}
 	{%- for entry in dirs -%}
-	<tr class="point" data-click="dir" data-ctx="dir" data-icon="fas fa-fw fa-folder" data-path="{{entry.path}}" data-name="{{entry.name}}">
+	<tr class="point" data-click="dir" data-ctx="dir" data-icon="fas fa-fw fa-folder" data-name="{{entry.name}}">
 		<td class="text-center w-1"><span class="fas fa-fw fa-folder"></span></td>
 		<td class="dentry w-100">{{ entry.name}}</td>
 		<td class="d-none d-md-table-cell dentry-mtime w-1"></td>
@@ -37,7 +37,7 @@
 	</tr>
 	{%- endfor -%}
 	{%- for entry in files -%}
-		<tr class="point" data-click="file" data-ctx="file" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-name="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}">
+		<tr class="point" data-click="file" data-ctx="file" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} {% if entry.view %}data-view="true"{%endif%} data-mtype="{{entry.mtype}}" data-name="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}">
 		<td class="text-center w-1"><span class="{{ entry.icon }} fa-fw"></span></td>
 		<td class="dentry w-100">{{ entry.name}}</td>
 		<td class="d-none d-md-table-cell dentry-mtime px-md-4 px-lg-5 w-1">{{ entry.size|filesizeformat }}</td>

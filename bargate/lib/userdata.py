@@ -34,7 +34,7 @@ themes = {'cerulean': ['navbar-dark', 'bg-primary'],
 	'minty': ['navbar-dark', 'bg-primary'],
 	'pulse': ['navbar-dark', 'bg-primary'],
 	'simplex': ['navbar-dark', 'bg-dark'],
-	'spacelab': ['navbar-light', 'bg-light'],
+	'strap': ['navbar-dark', 'bg-primary'],
 	'united': ['navbar-light', 'bg-light'],
 	'yeti': ['navbar-dark', 'bg-dark']}
 

@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import request, session, redirect, url_for, render_template, jsonify, abort
+from flask import request, session, redirect, url_for, jsonify, abort
 
 from bargate import app
 
 
 @app.login_required
 def endpoint_handler(path, action):
+	app.logger.debug("endpoint_handler('" + path + "','" + action + "')")
 	return app.smblib.smb_action(request.endpoint, action, path)
 
 
@@ -64,7 +65,8 @@ def smb_post():
 @app.route('/xhr/<action>/<epname>/<path:path>')
 @app.set_response_type('json')
 @app.login_required
-def smb_get_json(epname, action, path):
+def smb_get(epname, action, path):
+	app.logger.debug("smb_get_json('" + epname + "','" + action + "','" + path + "')")
 	return app.smblib.smb_action(epname, action, path)
 
 
@@ -76,7 +78,7 @@ def smb_get_json(epname, action, path):
 @app.route('/custom/<action>/<path:path>/')
 @app.route('/custom/<action>/<path:path>')
 @app.login_required
-def custom(path, action):
+def smb_custom(path, action):
 	if not app.config['CONNECT_TO_ENABLED']:
 		abort(404)
 
@@ -87,9 +89,3 @@ def custom(path, action):
 		return redirect(url_for('custom_server'))
 
 	return app.smblib.smb_action('custom', action, path)
-
-
-@app.route('/other')
-@app.login_required
-def other():
-	return render_template('views/other.html', active='other', pwd='')

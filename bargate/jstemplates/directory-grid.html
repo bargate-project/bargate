@@ -1,7 +1,7 @@
 <div class="gridview">
 	<div id="dirs">
 		{%- for entry in shares -%}
-		<div class="grid-entry point" data-click="share" data-path="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+		<div class="grid-entry point" data-click="share" data-name="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 			<div class="card">
 				<div class="card-body grid-icon"><span class="fas fa-fw fa-hdd"></span></div>
 				<div class="card-footer text-center" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}>{{ entry.name }}</div>
@@ -9,7 +9,7 @@
 		</div>
 		{%- endfor -%}
 		{%- for entry in dirs -%}
-		<div class="grid-entry point" data-ctx="dir" data-click="dir" data-path="{{entry.path}}" data-name="{{entry.name}}" data-sortname="{{entry.name|lower}}">
+		<div class="grid-entry point" data-ctx="dir" data-click="dir" data-name="{{entry.name}}" data-sortname="{{entry.name|lower}}">
 			<div class="card">
 				<div class="card-footer" {% if entry.name|length > 18 %} rel="tooltip" title="{{entry.name}}"{%endif%}><i class="fas fa-fw fa-folder"></i> {{ entry.name }}</div>
 			</div>
@@ -19,10 +19,10 @@
 	<div class="clearfix"></div>
 	<div id="files">
 		{%- for entry in files -%}
-		<div class="grid-entry point" data-ctx="file" data-click="file" data-mtyper="{{entry.mtyper}}" data-sizer="{{ entry.size }}" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-name="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-path="{{entry.path}}" data-sortname="{{entry.name|lower}}" {% if entry.view %}data-view="true"{%endif%}>
+		<div class="grid-entry point" data-ctx="file" data-click="file" data-mtyper="{{entry.mtyper}}" data-sizer="{{ entry.size }}" data-icon="{{entry.icon}} fa-fw" {% if entry.img %}data-img="true" {%endif%} data-mtype="{{entry.mtype}}" data-name="{{entry.name}}" data-mtime="{{entry.mtime}}" data-atime="{{entry.atime}}" data-size="{{entry.size|filesizeformat(binary=True)}}" data-sortname="{{entry.name|lower}}" {% if entry.view %}data-view="true"{%endif%}>
 			{%- if entry.img -%}
 			<div class="card">
-				<div class="card-body grid-img" style="background-image: url('{{ buildurl(entry.path, 'preview') }}')"></div>
+				<div class="card-body grid-img" style="background-image: url('{{ buildurl(entry.name, 'preview') }}')"></div>
 			{%- else -%}
 			<div class="card">
 				<div class="card-body grid-icon"><span class="{{ entry.icon }} fa-fw"></span></div>

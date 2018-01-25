@@ -1,0 +1,135 @@
+			<div class="modal-header bg-light text-dark p-2 p-md-3">
+				<button type="button" class="close d-block d-md-none py-1" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-angle-left"></span></span></button>
+				<h4 class="modal-title d-block d-md-none mr-auto ml-4">Settings</h4>
+				<ul class="nav nav-pills d-none d-md-flex" role="tablist">
+					<li class="nav-item"><a href="#fopts" class="nav-link active" aria-controls="fopts" role="tab" data-toggle="tab">Folder options</a></li>
+					<li class="nav-item"><a href="#uploadprefs" class="nav-link" aria-controls="uploadprefs" role="tab" data-toggle="tab">Uploads</a></li>
+					<li class="nav-item"><a href="#theme" class="nav-link" aria-controls="theme" role="tab" data-toggle="tab">Theme</a></li>
+					{% if config.totp %}<li class="nav-item"><a href="#2step" class="nav-link" aria-controls="theme" role="tab" data-toggle="tab">Two-step verification</a></li>{%endif%}
+				</ul>
+				<button type="button" class="close d-none d-md-block" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="far fa fa-fw fa-times"></span></span></button>
+			</div>
+			<div class="modal-body mh500">
+				<div class="tab-content">
+					<div role="tabpanel" class="tab-pane active" id="fopts">
+						<form>
+							<div class="prefshF">Layout mode</div>
+							<div class="custom-control custom-radio">
+								<input type="radio" name="layout-r" class="custom-control-input" value="grid" {% if user.layout == 'grid' %}checked="checked"{%endif%}>
+								<label class="custom-control-label">View folder contents as a grid of icons</label>
+							</div>
+							<div class="custom-control custom-radio">
+								<input type="radio" name="layout-r" class="custom-control-input" value="list"{% if user.layout == 'list' %} checked="checked"{%endif%}>
+								<label class="custom-control-label">View folder contents as a list</label>
+							</div>
+
+							<div class="prefsh">Hidden files</div>
+							<div class="custom-control custom-checkbox">
+								<input type="checkbox" class="custom-control-input" id="hidden-c" value="show" name="hidden-c"{% if user.hidden %} checked="checked"{%endif%}>
+								<label class="custom-control-label" for="hidden-c">Show hidden files and directories</label>
+							</div>
+
+							<div class="prefsh">On file click</div>
+							<div class="custom-control custom-radio">
+								<input type="radio" name="click-r" class="custom-control-input" value="ask"{% if user.click == 'ask' %} checked="checked"{%endif%}>
+								<label class="custom-control-label">View file information <span class="text-muted hidden-xs">(Recommended)</span></label>
+							</div>
+							<div class="custom-control custom-radio">
+								<input type="radio" name="click-r" class="custom-control-input" value="default"{% if user.click == 'default' %} checked="checked"{%endif%}>
+								<label class="custom-control-label">View or download files when clicked without prompting</label>
+							</div>
+							<div class="custom-control custom-radio">
+								<input type="radio" name="click-r" class="custom-control-input" value="download"{% if user.click == 'download' %} checked="checked"{%endif%}>
+								<label class="custom-control-label">Download files when clicked without prompting</label>
+							</div>
+						</form>
+					</div>
+					<div role="tabpanel" class="tab-pane" id="uploadprefs">
+						<div class="prefshS">Overwrite on upload</div>
+						<form>
+							<div class="custom-control custom-checkbox">
+								<input type="checkbox" class="custom-control-input" id="prefs-overwrite" name="prefs-overwrite"{% if user.overwrite %} checked="checked"{%endif%}>
+								<label class="custom-control-label" for="prefs-overwrite">Allow overwriting an existing file when uploading if the filename matches</label>
+							</div>
+						</form>
+					</div>
+					<div role="tabpanel" class="tab-pane" id="theme">
+						<div class="prefshS visible-xs">Theme</div>
+						<form>
+							{% for name, value in config.themes %}
+							<div class="custom-control custom-radio custom-control-inline w-40">
+								<input type="radio" id="pt-{{name}}" name="theme-r" class="custom-control-input" value="{{name}}"{% if user.theme == name %} checked="checked"{%endif%}>
+								<label class="custom-control-label" for="pt-{{name}}">{{name|capitalize}}</label>
+							</div>
+							{% endfor %}
+						</form>
+					</div>
+					{% if config.totp.enabled %}
+					<div role="tabpanel" class="tab-pane" id="2step">
+						<div class="d-none d-md-block">
+							{% if user.totp.enabled %}
+							<div class="float-right bg-success text-light text-center p-2 ml-4 f-em-15 px-3">
+							<span class="fas fa-fw fa-2x fa-check"></span> <div class="btn-label">Enabled</div>
+							</div>
+							<div class="prefshS">Status</div>
+							<p>Your account is currently protected by two-step verification. When logging in 
+							you must enter a unique passcode, generated by an app on your mobile device, in 
+							addition to your username and password.
+							</p>
+							<div class="prefsh">Trusted Device</div>
+							{% if user.totp.trusted %}
+							<p>This device is currently trusted and so you will not be asked for a verification code on logon.</p>
+							{% else %}
+							<p>This device has not been marked as trusted, so you will be asked for a verification code on logon.</p>
+							{% endif %}
+							<div class="prefsh">Disable two-step</div>
+							<p>To disable two-step verification generate a passcode from the app on your mobile device and enter it below:</p>
+							<form data-fsub="totp_disable" data-cmod="no" class="form-inline">
+								<div class="input-group input-group-lg mr-md-2">
+									<div class="input-group-prepend">
+										<div class="input-group-text">
+											<span class="fas fa-key"></span>
+										</div>
+									</div>
+									<input type="text" class="form-control" id="twostep-disable-i" name="token">
+								</div>
+								<div class="form-group">
+									<button class="btn btn-primary btn-lg" type="submit">Disable</button>
+								</div>
+							</form>
+							{% else %}
+							<div class="float-right bg-warning text-light text-center ml-4 p-2 f-em-15 px-3">
+							<span class="fas fa-fw fa-2x fa-times"></span> <div class="btn-label">Disabled</div>
+							</div>
+							<div class="prefshS">Status</div>
+							<p>Your account is not protected by two-step verification. If an attacker were to obtain
+							your password they could use your account to make malicious changes, or simply download
+							files they should not have access to. </p>
+							<div class="prefsh">Enable two-step</div>
+							<p>To use two-step verification you must first install an application on your smart phone 
+							or similar mobile device. We recommend FreeOTP for 
+							<a href="https://itunes.apple.com/gb/app/freeotp-authenticator/id872559395?mt=8">iPhone</a> or 
+							<a href="https://play.google.com/store/apps/details?id=org.fedorahosted.freeotp">Android</a>.
+							</p>
+							<p>Once installed open the application add a new site and scan the following image:</p>
+							<p><img id="qrcode" src="/totp/qrcode" alt="QR code"></p>
+
+							<p>Once scanned you should see an entry for "{{ config.totp.ident }}" with a six digit number displayed. Enter it below to enable two step verification.</p>
+							<form data-fsub="totp_enable" class="form-inline">
+								<div class="input-group input-group-lg mr-md-2">
+								<div class="input-group-prepend">
+									<div class="input-group-text">
+										<span class="fas fa-key"></span>
+									</div>
+								</div>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-primary btn-lg" type="submit">Enable</button>
+								</div>
+							</form>
+							{% endif %}
+						</div>
+					</div>
+					{% endif %}
+				</div>
+			</div>

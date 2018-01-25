@@ -1,0 +1,18 @@
+<form data-fsub="delete">
+	<div class="modal-header bg-light text-dark p-2 p-md-3">
+		<h4 class="modal-title">Delete</h4>
+		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+	</div>
+	<div class="modal-body text-center">
+		<p>You are about to permanently delete the {% if type == 'dir'%}directory{%else%}file{%endif%}:</p>
+		<code>{{name}}</code>
+		<p class="m-3">Are you sure?</p>
+		{% if type == 'dir' %}
+		<div><label><span class="badge badge-danger">Note!</span> Only empty directories can be deleted! </label></div>
+		{% endif %}
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+		<input type="submit" class="btn btn-danger" value="Yes"/>
+	</div>
+</form>

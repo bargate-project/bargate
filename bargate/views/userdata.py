@@ -22,7 +22,7 @@ from bargate.lib import userdata
 from bargate import app
 
 
-@app.route('/xhr/settings', methods=['GET', 'POST'])
+@app.route('/xhr/data', methods=['GET', 'POST'])
 @app.set_response_type('json')
 def settings():
 	if request.method == 'GET':
@@ -41,16 +41,31 @@ def settings():
 		theme = userdata.get_theme()
 
 		return(jsonify({'code': 0,
-			'layout': userdata.get_layout(),
-			'token': app.csrfp_token(),
-			'theme': theme,
-			'theme_classes': userdata.themes[theme],
-			'hidden': userdata.get_show_hidden_files(),
-			'overwrite': userdata.get_overwrite_on_upload(),
-			'onclick': userdata.get_on_file_click(),
-			'totp': {
-				'enabled': twoStepEnabled,
-				'trusted': twoStepTrusted
+			'user': {
+				'layout': userdata.get_layout(),
+				'token': app.csrfp_token(),
+				'theme': theme,
+				'theme_classes': userdata.themes[theme],
+				'hidden': userdata.get_show_hidden_files(),
+				'overwrite': userdata.get_overwrite_on_upload(),
+				'click': userdata.get_on_file_click(),
+				'totp': {
+					'enabled': twoStepEnabled,
+					'trusted': twoStepTrusted
+				},
+			},
+			'config': {
+				'shortname': app.config['APP_DISPLAY_NAME_SHORT'],
+				'domain': app.config['SMB_WORKGROUP'],
+				'search': app.config['SEARCH_ENABLED'],
+				'userdata': app.config['REDIS_ENABLED'],
+				'bmark': app.config['BOOKMARKS_ENABLED'],
+				'connect': app.config['CONNECT_TO_ENABLED'],
+				'totp': {
+					'enabled': app.config['TOTP_ENABLED'],
+					'ident': app.config['TOTP_IDENT'],
+				},
+				'themes': userdata.themes,
 			}}))
 
 	else:

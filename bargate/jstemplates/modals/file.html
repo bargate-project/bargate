@@ -1,0 +1,87 @@
+<div class="modal-header bg-light text-dark p-2 p-md-3">
+	<h4 class="modal-title">File information</h4>
+	<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+</div>
+<div class="modal-body">
+	{% if img %}
+	<div class="text-center d-none d-md-block">
+		<img src="{{img}}" class="img-thumbnail img-fluid" alt="thumbnail">
+	</div>
+	{% endif %}
+	<form class="d-none d-md-block form-horizontal details-large">
+		<div class="form-group row">
+			<label class="col-md-3 file-key">File name:</label>
+			<div class="col-md-9"><p class="file-value"><span class="fas fa-fw {{icon}} file-m-icon"></span> <span class="file-m-name">{{name}}</span></p></div>
+		</div>
+		<div class="form-group row">
+			<label class="col-md-3 file-key">Size:</label>
+			<div class="col-md-9"><p class="file-value file-m-size">{{size}}</p></div>
+		</div>
+		<div class="form-group row">
+			<label class="col-md-3 file-key">Type:</label>
+			<div class="col-md-9"><p class="file-value file-m-mtype">{{mtype}}</p></div>
+		</div>
+		<div class="form-group row">
+			<label class="col-md-3 file-key">Modified:</label>
+			<div class="col-md-9"><p class="file-value file-m-mtime">{{mtime|ts2str}}</p></div>
+		</div>
+		<div class="form-group row">
+			<label class="col-md-3 file-key">Accessed:</label>
+			<div class="col-md-9"><p class="file-value file-m-atime">{{atime|ts2str}}</p></div>
+		</div>
+		{% if config['WBINFO_LOOKUP'] %}
+		<div class="form-group row">
+			<label class="col-md-3 file-key">Owner:</label>
+			<div class="col-md-9"><p class="file-value f-user"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>
+		</div>
+		<div class="form-group row">
+			<label class="col-md-3 file-key">Group:</label>
+			<div class="col-md-9"><p class="file-value f-group"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>
+		</div>
+		{% endif %}
+	</form>
+
+	<form class="d-block d-md-none details-small">
+		<div class="form-group">
+			<label>File name</label>
+			<p><span class="fas fa-fw {{icon}} file-m-icon"></span> <span class="file-m-name">{{name}}</span></p>
+		</div>
+		<div class="form-group">
+			<label>Size</label>
+			<p class="file-m-size">{{size}}</p>
+		</div>
+		<div class="form-group">
+			<label>Type</label>
+			<p class="file-m-mtype">{{mtype}}</p>
+		</div>
+		<div class="form-group">
+			<label>Last modified</label>
+			<p class="file-m-mtime">{{mtime|ts2str}}</p>
+		</div>
+		<div class="form-group">
+			<label>Last accessed</label>
+			<p class="file-m-atime">{{atime|ts2str}}</p>
+		</div>
+	</form>
+	<div class="d-none d-md-block mt-3">
+		<div class="btn-group d-flex" role="group">
+			<a href="{{download}}" class="btn btn-primary w-100 ml-1 file-m-download"><span class="fas fa-2x fa-fw fa-download"></span><div class="btn-label">Download</div></a>
+			{% if view %}
+			<a href="{{view}}" target="_blank" rel="noopener" class="btn btn-primary w-100 ml-1 file-m-view"><span class="fas fa-2x fa-fw fa-eye"></span><div class="btn-label">View</div></a>
+			{% endif %}
+			<a href="#" class="btn btn-primary w-100 ml-1" data-entry="copy"><span class="fas fa-2x fa-fw  fa-copy"></span><div class="btn-label">Copy</div></a>
+			<a href="#" class="btn btn-primary w-100 ml-1" data-entry="rename"><span class="fas fa-2x fa-fw fa-edit"></span><div class="btn-label">Rename</div></a>
+			<a href="#" class="btn btn-primary w-100 ml-1" data-entry="delete"><span class="fas fa-2x fa-fw fa-trash-alt"></span><div class="btn-label">Delete</div></a>
+		</div>
+	</div>
+	<div class="d-block d-md-none">
+		<div class="btn-group d-flex mt-xs-0 mt-sm-3 mb-1 mx-5" role="group">
+			<a href="#" class="btn btn-primary w-100 mx-1 file-m-download"><span class="fas fa-2x fa-fw fa-download"></span><div class="btn-label">Download</div></a>
+			<a href="#" class="btn btn-primary w-100 mx-1" data-entry="copy"><span class="fas fa-2x fa-fw  fa-copy"></span><div class="btn-label">Copy</div></a>
+		</div>
+		<div class="btn-group d-flex mt-1 mx-5" role="group">
+			<a href="#" class="btn btn-primary w-100 mx-1" data-entry="rename"><span class="fas fa-2x fa-fw fa-edit"></span><div class="btn-label">Rename</div></a>
+			<a href="#" class="btn btn-primary w-100 mx-1" data-entry="delete"><span class="fas fa-2x fa-fw fa-trash-alt"></span><div class="btn-label">Delete</div></a>
+		</div>
+	</div>
+</div>

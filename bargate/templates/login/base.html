@@ -9,27 +9,28 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<link rel="icon" type="image/png" href="{{ favicon }}">
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
-		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 		<link href="{{ url_for('static', filename='css/login.min.css') }}" type="text/css" rel="stylesheet">
-		{% include 'login/head.html' ignore missing %}
 		<noscript>
 			<meta http-equiv="refresh" content="0; url={{ url_for('nojs')}}" />
 		</noscript>
 		{% include 'js.html' %}
 		<script src="{{ url_for('static', filename='js/login.min.js') }}" async></script>
+		{% include 'login/head.html' ignore missing %}
 	</head>
 	<body>
-		{% include 'modals/about.html' %}
+		<div class="modal" id="scr" tabindex="-1">
+			<div class="modal-dialog">
+				<div id="scr-c" class="modal-content">
+				</div>
+			</div>
+		</div>
 		{% include 'login/body.html' ignore missing %}
 		<div class="container-fluid">
 			{% include 'login/container.html' ignore missing %}
 			<div class="row">
 				<div class="col-login col-sm-8 col-md-6">
 					<div class="login-box">
-						{% include 'login/box.html' ignore missing %}
-						<h1 class="login-title">
-							{{ config['APP_DISPLAY_NAME'] }}
-						</h1>
+						{% include 'login/title.html' ignore missing %}
 						{% for category, message in get_flashed_messages(with_categories=true) %}
 						<div class="alert {{ category or 'alert-info' }} fade show alert-dismissible" role="alert">
 							{{ message|safe }}

@@ -13,110 +13,102 @@
 		<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.bootstrap4.min.css" crossorigin="anonymous" />
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/bargate.min.css') }}">
 		{% include 'js.html' %}
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/mouse0270-bootstrap-notify/3.1.7/bootstrap-notify.min.js" integrity="sha256-LlN0a0J3hMkDLO1mhcMwy+GIMbIRV7kvKHx4oCxNoxI=" crossorigin="anonymous" async></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.0.1/nunjucks-slim.min.js" integrity="sha256-tdB3uMy+X5YRM5JMGgy1oMtdSm1GwTEMmWb7q80e2+g=" crossorigin="anonymous" defer></script>
+		<script src="{{ url_for('static', filename='js/bootstrap-notify.min.js') }}" defer></script>
+		<script src="{{ url_for('static', filename='js/nunjucks-slim.min.js') }}" defer></script>
 		<script src="{{ url_for('static', filename='js/jquery.ui.widget.min.js') }}" async></script>
 		<script src="{{ url_for('static', filename='js/jquery.fileupload.min.js') }}" async></script>
 		<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js" crossorigin="anonymous" async></script>
-		<script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js" crossorigin="anonymous" async></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.4/isotope.pkgd.min.js" integrity="sha256-+WFRRTv1uGEhn6sykgWJyTBYDE8cQn8uAj50Kefp9II=" crossorigin="anonymous" async></script>
+		<script src="https://cdn.datatables.net/1.10.16/js/dataTables.bootstrap4.min.js" crossorigin="anonymous" defer></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.4/isotope.pkgd.min.js" integrity="sha256-+WFRRTv1uGEhn6sykgWJyTBYDE8cQn8uAj50Kefp9II=" crossorigin="anonymous" defer></script>
 		<script src="{{ url_for('static', filename='js/mousetrap.min.js') }}" defer></script>
 		<script src="{{ url_for('static', filename='js/bargate.min.js') }}" defer></script>
 		<script src="{{ url_for('static', filename='templates.js') }}" defer></script>
 	</head>
 	<body>
-	<div class="modal" id="err-m" tabindex="-1">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h4 class="modal-title text-danger"><span class="fas fa-fw fa-exclamation-triangle"></span> <span id="err-m-t">Error</span></h4>
-					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
-				</div>
-				<div class="modal-body"><p id="err-m-d"></p></div>
-				<div class="modal-footer">
-					<a href="#" class="btn btn-secondary" data-dismiss="modal">Close</a>
+		<div id="modals">
+			<div class="modal" id="mdl" tabindex="-1">
+				<div id="mdl-d" class="modal-dialog">
+					<div id="mdl-c" class="modal-content">
+					</div>
 				</div>
 			</div>
+			{% block modals %}{% endblock %}
 		</div>
-	</div>
-	{%- include 'modals/shortcuts.html' %}
-	{% if config.CONNECT_TO_ENABLED %}{%- include 'modals/connect.html' %} {%endif%}
-	{% if config.REDIS_ENABLED %} {%- include 'modals/settings.html' %} {% endif %}
-	{%- include 'modals/about.html' %}
-	{%- include 'modals/mobile.html' %}
-	{% block modals %}{% endblock %}
-		<nav class="navbar navbar-themed navbar-expand-sm py-2 px-1 px-md-3 fixed-top{% for cls in theme_classes %} {{cls}}{%endfor%}">
-				<span data-click="mobile" class="navbar-brand mx-2 d-inline-block d-md-none"><i class="fas fa-fw fa-lg fa-bars"></i></span>
-				{%- if session.logged_in %}
-				<span class="navbar-brand">
-					<span class="d-none d-sm-block">{{ config['APP_DISPLAY_NAME'] }}</span>
-					<span class="d-block d-sm-none">{{ config['APP_DISPLAY_NAME_SHORT'] }}</span>
-				</span>
-				{%- else %}
-				<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fas fa-arrow-circle-left"></i> Back to Login</a>
-				{%- endif %}
+		<div id="nav" class="fixed-top">
+			<nav class="navbar navbar-themed navbar-expand-sm py-2 px-1 px-md-3{% for cls in theme_classes %} {{cls}}{%endfor%}">
+					<span data-click="mobile" class="navbar-brand mx-2 d-inline-block d-md-none"><i class="fas fa-fw fa-lg fa-bars"></i></span>
+					{%- if session.logged_in %}
+					<span class="navbar-brand">
+						<span class="d-none d-none d-lg-block">{{ config['APP_DISPLAY_NAME'] }}</span>
+						<span class="d-block d-lg-none">{{ config['APP_DISPLAY_NAME_SHORT'] }}</span>
+					</span>
+					{%- else %}
+					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fas fa-arrow-circle-left"></i> Back to Login</a>
+					{%- endif %}
 
-				{%- if session.logged_in %}
-					<ul class="navbar-nav d-none d-md-flex">
-						{%- include 'menus/dropdown.html' %}
-						{%- include 'menus/bookmarks.html' %}
-					</ul>
+					{%- if session.logged_in %}
+						<ul class="navbar-nav d-none d-md-flex">
+							{%- include 'menus/dropdown.html' %}
+							{%- include 'menus/bookmarks.html' %}
+						</ul>
 
-					<form class="ml-auto">
-						{% if browse_mode %}
-						{% if config['SEARCH_ENABLED'] %}
-						<button type="button" data-click="search" class="btn btn-secondary b-search disabled d-none d-md-inline-block" data-tooltip="yes" title="Search">
-							<i class="fas fa-fw fa-lg fa-search"></i>
-						</button>
-						{% endif %}
-
-						<div class="dropdown d-inline-block">
-							<button class="btn btn-secondary b-dir" type="button" id="sortMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-tooltip="yes" title="Sort by">
-							<i class="fas fa-fw fa-lg fa-sort"></i>
+						<form class="ml-auto">
+							{% if browse_mode %}
+							{% if config['SEARCH_ENABLED'] %}
+							<button type="button" data-click="search" class="btn btn-secondary b-search disabled d-none d-md-inline-block" data-tooltip="yes" title="Search">
+								<i class="fas fa-fw fa-lg fa-search"></i>
 							</button>
-							<div class="dropdown-menu" aria-labelledby="sortMenu">
-								<a href="#" class="dropdown-item" data-sort="name"><span><i class="fas fa-fw fa-check"></i></span> Name</a>
-								<a href="#" class="dropdown-item" data-sort="type"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Type</a>
-								<a href="#" class="dropdown-item" data-sort="mtime"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Modified</a>
-								<a href="#" class="dropdown-item" data-sort="size"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Size</a>
-							</div>
-						</div>
+							{% endif %}
 
-						{%- if config['REDIS_ENABLED'] %}
-						<button data-click="layout" type="button" class="btn btn-secondary d-none d-md-inline-block b-layout" data-tooltip="yes" title="Switch layout">
-							<i class="fas fa-fw fa-lg fa-list layout-ico"></i>
-						</button>
-						{%- endif %}
-						<div class="dropdown d-inline-block">
-							<button class="btn btn-secondary b-dir" type="button" id="newMenu" data-toggle="dropdown" data-tooltip="yes" title="New" aria-haspopup="true" aria-expanded="false">
-							<i class="fas fa-fw fa-lg fa-plus"></i>
+							<div class="dropdown d-inline-block">
+								<button class="btn btn-secondary b-dir" type="button" id="sortMenu" data-toggle="dropdown" aria-label="Sort by" aria-haspopup="true" aria-expanded="false" data-tooltip="yes" title="Sort by">
+								<i class="fas fa-fw fa-lg fa-sort"></i>
+								</button>
+								<div class="dropdown-menu" aria-labelledby="sortMenu">
+									<a href="#" class="dropdown-item" data-sort="name"><span><i class="fas fa-fw fa-check"></i></span> Name</a>
+									<a href="#" class="dropdown-item" data-sort="type"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Type</a>
+									<a href="#" class="dropdown-item" data-sort="mtime"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Modified</a>
+									<a href="#" class="dropdown-item" data-sort="size"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Size</a>
+								</div>
+							</div>
+
+							{%- if config['REDIS_ENABLED'] %}
+							<button data-click="layout" type="button" class="btn btn-secondary d-none d-md-inline-block b-layout" data-tooltip="yes" title="Switch layout">
+								<i class="fas fa-fw fa-lg fa-list layout-ico"></i>
 							</button>
-							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="newMenu">
-								<a class="dropdown-item b-dir disabled" href="#" data-click="mkdir"><i class="fas fa-folder-open fa-fw"></i> New directory</a>
-								<a class="dropdown-item b-dir disabled" href="#" data-click="upload"><i class="fas fa-upload fa-fw"></i> Upload file</a>
-								<div class="dropdown-divider"></div>
-								<a class="dropdown-item b-dir disabled" href="#" data-click="edit"><i class="fas fa-file-alt fa-fw"></i> New blank file</a>
+							{%- endif %}
+							<div class="dropdown d-inline-block">
+								<button class="btn btn-secondary b-dir" type="button" id="newMenu" data-toggle="dropdown" data-tooltip="yes" title="New" aria-label="New" aria-haspopup="true" aria-expanded="false">
+								<i class="fas fa-fw fa-lg fa-plus"></i>
+								</button>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="newMenu">
+									<a class="dropdown-item b-dir disabled" href="#" data-click="mkdir"><i class="fas fa-folder-open fa-fw"></i> New directory</a>
+									<a class="dropdown-item b-dir disabled" href="#" data-click="upload"><i class="fas fa-upload fa-fw"></i> Upload file</a>
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item b-dir disabled" href="#" data-click="edit"><i class="fas fa-file-alt fa-fw"></i> New blank file</a>
+								</div>
 							</div>
-						</div>
-						{%- endif %}
+							{%- endif %}
 
-						<div class="dropdown d-none d-md-inline-block">
-							<button class="btn btn-secondary" type="button" id="mainMenu" data-toggle="dropdown" data-tooltip="yes" title="Menu" aria-haspopup="true" aria-expanded="false">
-							<i class="fas fa-fw fa-lg fa-ellipsis-v"></i>
-							</button>
-							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="mainMenu">
-								{%- include 'menus/bargate.html' -%}
-								<div class="dropdown-divider"></div>
-								<a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>
+							<div class="dropdown d-none d-md-inline-block">
+								<button class="btn btn-secondary" type="button" id="mainMenu" data-toggle="dropdown" data-tooltip="yes" title="Menu" aria-haspopup="true" aria-expanded="false">
+								<i class="fas fa-fw fa-lg fa-ellipsis-v"></i>
+								</button>
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="mainMenu">
+									{%- include 'menus/bargate.html' -%}
+									<div class="dropdown-divider"></div>
+									<a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>
+								</div>
 							</div>
-						</div>
-					</form>
-				{% endif %}
-		</nav>
-
-		<div id="pdiv" class="container-fluid container-body p-0 m-0">
+						</form>
+					{% endif %}
+			</nav>
+			<div id="crumbs" class="bg-light"></div>
+		</div>
+		<div id="main" class="container-fluid container-body p-0 m-0">
 			{% block body %}{% endblock -%}
 		</div>
 		<script>$(document).ready(function($) { init({%- if browse_mode %}"{{epname}}", "{{epurl}}", "{{path}}"{%endif%})});</script>
+		<input id="upload-i" type="file" name="files[]" multiple class="d-none">
 	</body>
 </html>

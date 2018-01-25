@@ -21,7 +21,7 @@ from bargate import app
 from bargate.lib import totp, user
 
 
-@app.route('/2step/qrcode')
+@app.route('/totp/qrcode')
 @app.login_required
 def totp_qrcode_view():
 	if not totp.user_enabled(session['username']):
@@ -30,7 +30,7 @@ def totp_qrcode_view():
 		abort(403)
 
 
-@app.route('/2step/enable', methods=['POST'])
+@app.route('/totp/enable', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
 def totp_enable():
@@ -47,7 +47,7 @@ def totp_enable():
 			return jsonify({'code': 1, 'msg': 'Invalid verification code'})
 
 
-@app.route('/2step/disable', methods=['POST'])
+@app.route('/totp/disable', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
 def totp_disable():

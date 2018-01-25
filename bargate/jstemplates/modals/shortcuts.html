@@ -1,0 +1,46 @@
+<div class="modal-header bg-light text-dark p-2 p-md-3">
+	<h4 class="modal-title">Keyboard shortcuts</h4>
+	<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+</div>
+<div class="modal-body">
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Alt</code> + <code class="kbkey">▲</code></div>
+		<div class="col-sm-8">navigate to parent directory</div>
+	</div>
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">U</code></div>
+		<div class="col-sm-8">upload file</div>
+	</div>
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">N</code></div>
+		<div class="col-sm-8">create directory</div>
+	</div>
+	{% if config.userdata %}
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">P</code></div>
+		<div class="col-sm-8">change settings</div>
+	</div>
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">L</code></div>
+		<div class="col-sm-8">switch layout mode</div>
+	</div>
+	{% if config.bmark %}
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">B</code></div>
+		<div class="col-sm-8">bookmark current location</div>
+	</div>
+	{% endif %}
+	{% endif %}
+	{% if config['SEARCH_ENABLED'] %}
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">S</code></div>
+		<div class="col-sm-8">search in current directory</div>
+	</div>
+	{% endif %}
+	{% if config['CONNECT_TO_ENABLED'] %}
+	<div class="row mb-2">
+		<div class="col-sm-4 text-right"><code class="kbkey kbmod">Shift</code> + <code class="kbkey">C</code></div>
+		<div class="col-sm-8">connect to server</div>
+	</div>
+	{% endif %}
+</div>

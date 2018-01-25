@@ -1,0 +1,18 @@
+<form data-fsub="connect">
+	<div class="modal-header bg-light text-dark p-2 p-md-3">
+		<h4 class="modal-title">Connect to server</h4>
+		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+	</div>
+	<div class="modal-body">
+		<p>You can use this to connect to file servers available on the network. The file server you connect to must be part of the <code>{{config.domain}}</code> domain/workgroup.</p>
+		<fieldset>
+			<label>Server URL</label>
+			<input type="text" class="form-control mfocus" id="connect-i" value="smb://">
+			<span class="help-block">e.g. smb://fileserver.address/share/</span>
+		</fieldset>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fas fa-fw fa-times-circle"></i> Close</button>
+		<button type="submit" class="btn btn-primary"><i class="fas fa-fw fa-plug"></i> Connect</button>
+	</div>
+</form>

@@ -297,7 +297,7 @@ tbody {
 }
 
 @media (min-width: 768px) {
-	.modal-content-settings
+	.mh500
 	{
 		min-height: 500px;
 	}
@@ -337,6 +337,8 @@ tbody {
 /* bootstrap 4 data tables uses !important to force border-collapse to seperate (?!?!?) */
 table.dataTable { /* csslint allow: overqualified-elements */
 	border-collapse: collapse !important; /* csslint allow: important */
+	margin-top: 0 !important; /* csslint allow: important */
+	margin-bottom: 0 !important; /* csslint allow: important */
 }
 
 .w-0 {
@@ -363,7 +365,6 @@ table.dataTable { /* csslint allow: overqualified-elements */
 
 .about-title {
 	font-weight: 900;
-	font-family: Oswald;
 	color: #fff;
 }
 
@@ -381,4 +382,9 @@ table.dataTable { /* csslint allow: overqualified-elements */
 
 #shortcuts-m .modal-body {
 	font-size: 1.2rem;
+}
+
+.navbar-crumbs {
+	padding: 0.5rem 0.25rem; /* csslint allow: box-model */
+	width: 100%; /* csslint allow: box-model */
 }

@@ -16,52 +16,22 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from base64 import b64encode, b64decode
+import base64 
 
-from Crypto.Cipher import AES
-
-
-def encrypt(s, key):
-	"""This function is used to encrypt a string via AES.
-	Pass it the string to encrypt and the key to use to do so.
-	Returns a base64 encoded string using AES CFB.
-	"""
-
-	# https://www.dlitz.net/software/pycrypto/api/current/Crypto.Cipher.blockalgo-module.html#MODE_CFB
-	# CFB does not require padding
-	# 32-bit key is required (AES256)
-
-	# Create the IV (Initialization Vector)
-	iv = os.urandom(AES.block_size)
-
-	# Create the cipher with the key, mode and iv
-	c = AES.new(key, AES.MODE_CFB, iv)
-
-	# Base 64 encode the iv and the encrypted data together
-	return b64encode(iv + c.encrypt(s))
+from cryptography.fernet import Fernet
 
 
-def decrypt(s, key):
-	"""This function is used to decrypt a base64-encoded
-	AES CFB encrypted string.
-	Pass it the string to decrypt and the correct key.
-	Returns an unencrypted string.
-	"""
+def encrypt(data, key):
+	if isinstance(data, unicode):
+		data = data.encode('utf-8')
 
-	# Get the block size for AES
-	block_size = AES.block_size
+	if len(key) != 32:
+		raise RuntimeError('The encryption key MUST be 32-characters long')
 
-	# Base64 decode the encrypted data
-	binary = b64decode(s)
+	key = base64.urlsafe_b64encode(key)
+	return Fernet(key).encrypt(data)
+	
 
-	# Pull out the IV (Initialization Vector) which is the first N bytes where N is the block size
-	iv = binary[:block_size]
-
-	# Pull out the data
-	e = binary[block_size:]
-
-	# Set up the cipher object with the key, the mode (CFB) and the IV
-	c = AES.new(key, AES.MODE_CFB, iv)
-
-	# return decrypted data
-	return c.decrypt(e)
+def decrypt(data, key):
+	key = base64.urlsafe_b64encode(key)
+	return Fernet(key).decrypt(data)
