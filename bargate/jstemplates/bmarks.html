@@ -1,0 +1,8 @@
+		<a class="dropdown-item" href="#" data-click="bmarks"><i class="fas fa-fw fa-tags"></i> Bookmark manager</a>
+		<a class="dropdown-item disabled" href="#" data-click="bmark"><i class="far fa-fw fa-bookmark"></i> Bookmark this location</a>
+		{% if bmarks.length > 0 %}
+		<div class="dropdown-divider"></div>
+		{% for bmark in bmarks %}
+		<a href="#" data-click="link" data-ep="{{bmark.epname}}" data-path="{{bmark.path}}" class="dropdown-item"><i class="fas fa-arrow-right fa-fw"></i> {{bmark.name|truncate(30, True) }}</a>
+		{% endfor %}
+		{% endif %}

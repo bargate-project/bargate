@@ -1,38 +1,32 @@
-<div class="modal" id="mobile-m" tabindex="-1">
-	<div class="modal-dialog" style="width: 85%; box-shadow:5px 0 10px 0 rgba(0,0,0,.5)">
-		<div class="modal-content">
-			<div class="modal-header rounded-0 p-0 border-0">
-				<nav class="navbar navbar-themed py-2 px-1 px-md-3 w-100{% for cls in $user.theme_classes %} {{cls}}{%endfor%}">
-					<span data-dismiss="modal" class="navbar-brand mx-2 d-inline-block d-md-none"><i class="fas fa-fw fa-lg fa-angle-left"></i></span>
-					<span class="navbar-brand mr-auto">{{config.shortname}}</span></a>
-				</nav>
-			</div>
-			<div class="modal-body">
-				<div class="dropdown">
-					<a class="nav-link px-0" href="#"><span class="fas fa-fw fa-star mr-2"></span> Servers?</a>
-					<a class="nav-link px-0" href="#"><span class="fas fa-fw fa-star mr-2"></span> Bookmarks?</a>
-					{% if config.connect %}
-					<a class="nav-link px-0" href="#" data-click="connect"><span class="fas fa-fw fa-hdd mr-2"></span> Connect to server</a>
-					{% endif %}
-					<div class="dropdown-divider"></div>
-					{% if config.search %}
-					<a class="nav-link px-0 b-search" href="#" data-click="search"><span class="fas fa-fw fa-search mr-2"></span> Search</a>
-					{% endif %}
-					{% if config.userdata %}
-					<a class="nav-link px-0 b-layout" href="#" data-click="layout"><span class="fas fa-fw fa-list mr-2 layout-ico"></span> Switch layout</a>
-					{% endif %}
-					{% if config.search or config.userdata %}
-					<div class="dropdown-divider"></div>
-					{% endif %}
-					<a class="nav-link px-0" href="http://bargate.io"><span class="fas fa-fw fa-life-ring mr-2"></span> Help</a>
-					<a class="nav-link px-0" href="#" data-click="about"><span class="fas fa-fw fa-info-circle mr-2"></span> About</a>
-					{% if config.userdata %}
-					<a class="nav-link px-0" href="#" data-click="settings"><span class="fas fa-fw fa-cog mr-2"></span> Settings</a>
-					{% endif %}
-					<div class="dropdown-divider"></div>
-					<a class="nav-link px-0" href="{{ url_for('logout') }}"><span class="fas fa-fw fa-sign-out-alt mr-2"></span> Sign out</a>
-				</div>
-			</div>
-		</div>
+<div class="modal-header rounded-0 p-0 border-0">
+	<nav class="navbar navbar-themed py-2 px-1 px-md-3 w-100{% for cls in user.theme_classes %} {{cls}}{%endfor%}">
+		<span data-dismiss="modal" class="navbar-brand mx-2 d-inline-block d-md-none"><i class="fas fa-fw fa-lg fa-angle-left"></i></span>
+		<span class="navbar-brand mr-auto">{{config.shortname}}</span></a>
+	</nav>
+</div>
+<div class="modal-body">
+	<div class="dropdown">
+		<a class="nav-link px-0" href="#"><span class="fas fa-fw fa-star mr-2"></span> Servers?</a>
+		<a class="nav-link px-0" href="#" data-click="bmarks"><span class="fas fa-fw fa-bookmark mr-2"></span> Bookmarks</a>
+		{% if config.connect %}
+		<a class="nav-link px-0" href="#" data-click="connect"><span class="fas fa-fw fa-hdd mr-2"></span> Connect to server</a>
+		{% endif %}
+		<div class="dropdown-divider"></div>
+		{% if config.search %}
+		<a class="nav-link px-0 b-search" href="#" data-click="search"><span class="fas fa-fw fa-search mr-2"></span> Search</a>
+		{% endif %}
+		{% if config.userdata %}
+		<a class="nav-link px-0 b-layout" href="#" data-click="layout"><span class="fas fa-fw fa-list mr-2 layout-ico"></span> Switch layout</a>
+		{% endif %}
+		{% if config.search or config.userdata %}
+		<div class="dropdown-divider"></div>
+		{% endif %}
+		<a class="nav-link px-0" href="http://bargate.io"><span class="fas fa-fw fa-life-ring mr-2"></span> Help</a>
+		<a class="nav-link px-0" href="#" data-click="about"><span class="fas fa-fw fa-info-circle mr-2"></span> About</a>
+		{% if config.userdata %}
+		<a class="nav-link px-0" href="#" data-click="settings"><span class="fas fa-fw fa-cog mr-2"></span> Settings</a>
+		{% endif %}
+		<div class="dropdown-divider"></div>
+		<a class="nav-link px-0" href="/logout"><span class="fas fa-fw fa-sign-out-alt mr-2"></span> Sign out</a>
 	</div>
 </div>

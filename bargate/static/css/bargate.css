@@ -282,6 +282,7 @@ tbody {
 	padding-top: 3px;
 	text-align: right;
 	font-size: 1rem;
+	font-weight: bold;
 }
 /* end of file details rules */
 
@@ -387,4 +388,15 @@ table.dataTable { /* csslint allow: overqualified-elements */
 .navbar-crumbs {
 	padding: 0.5rem 0.25rem; /* csslint allow: box-model */
 	width: 100%; /* csslint allow: box-model */
+}
+
+.modal-side
+{
+	width: 80%;
+	box-shadow: 5px 0 10px 0 rgba(0,0,0,.5);
+}
+
+/* stop bootstraps stupid padding-right nonsense for scrollbars */
+.fixed-top, body {
+	padding-right: 0 !important;  /* csslint allow: important */
 }

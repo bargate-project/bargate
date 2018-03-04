@@ -29,7 +29,7 @@
 			<label class="col-md-3 file-key">Accessed:</label>
 			<div class="col-md-9"><p class="file-value file-m-atime">{{atime|ts2str}}</p></div>
 		</div>
-		{% if config['WBINFO_LOOKUP'] %}
+		{% if config.wbinfo %}
 		<div class="form-group row">
 			<label class="col-md-3 file-key">Owner:</label>
 			<div class="col-md-9"><p class="file-value f-user"><span class="text-muted">Loading <span class="fas fa-spin fa-cog"></span></span></p></div>

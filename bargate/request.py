@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -15,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-from flask import session, g, url_for
+from flask import g, url_for
+from flask import current_app as app
 
-from bargate import app
-from bargate.lib import fs, userdata, errors
+from bargate.lib import userdata, errors
 
 
 @app.before_request
@@ -49,11 +48,7 @@ def before_request():
 			g.redis.get('foo')
 		except Exception as ex:
 			app.logger.error('Could not connect to REDIS. ' + type(ex).__name__ + ": " + str(ex))
-			return errors.fatalerr(ex, 'Could not connect to REDIS. ' + type(ex).__name__ + ": " + str(ex))
-
-		# Log user last access time
-		if app.is_user_logged_in():
-			userdata.record_user_activity(session['username'])
+			return errors.fatalerr("Fatal error", 'Could not connect to REDIS. ' + type(ex).__name__ + ": " + str(ex))
 
 	# Default to sending HTML responses
 	g.response_type = 'html'
@@ -67,20 +62,17 @@ def context_processor():
 	data['bookmarks'] = []
 	data['user_theme'] = app.config['THEME_DEFAULT']
 	data['theme_classes'] = 'navbar-dark bg-primary'
-	data['themes'] = userdata.themes
 
 	if app.is_user_logged_in():
-		if app.config['REDIS_ENABLED'] and not app.config['DISABLE_APP']:
+		if app.config['REDIS_ENABLED']:
 			data['user_bookmarks'] = userdata.get_bookmarks()
 			data['user_theme'] = userdata.get_theme()
 			data['user_layout'] = userdata.get_layout()
-			data['theme_classes'] = userdata.themes[data['user_theme']]
+			data['theme_classes'] = userdata.THEMES[data['user_theme']]
 
 	if app.config['LOCAL_FAVICON']:
 		data['favicon'] = url_for('local_static', filename='favicon.ico')
 	else:
 		data['favicon'] = url_for('static', filename='images/favicon.png')
-
-	data['type'] = fs.EntryType
 
 	return data

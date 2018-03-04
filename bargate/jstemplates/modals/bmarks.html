@@ -1,0 +1,34 @@
+<form data-fsub="bmark">
+	<div class="modal-header bg-light text-dark p-2 p-md-3">
+		<h4 class="modal-title">Bookmarks</h4>
+		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true" aria-label="close"><span class="fas fa fa-fw fa-times"></span></span></button>
+	</div>
+	<div class="modal-body p-0 border-0" style="min-height: 50vh">
+		<ul class="list-group" id="bmarkmlist">
+			{% for bmark in bmarks %}
+			<li class="list-group-item list-group-item-action flex-column align-items-start">
+				<div class="d-flex w-100 justify-content-between">
+					<div>
+						<h4 class="mb-1" style="text-overflow: ellipsis;">{{bmark.name}}</h4>
+						<p class="mb-1 text-muted d-none d-md-block">{{bmark.eptitle}}</p>
+					</div>
+					<div class="ml-auto mb-1">
+
+<div class="dropdown">
+  <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <i class="fas fa-fw fa-ellipsis-v"></i>
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" href="#">Action</a>
+    <a class="dropdown-item" href="#">Another action</a>
+    <a class="dropdown-item" href="#">Something else here</a>
+  </div>
+</div>
+
+					</div>
+				</div>
+			</li>
+			{% endfor %}
+		</ul>
+	</div>
+</form>

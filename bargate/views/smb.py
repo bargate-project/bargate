@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -16,17 +15,10 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import request, session, redirect, url_for, jsonify, abort
-
-from bargate import app
-
-
-@app.login_required
-def endpoint_handler(path, action):
-	app.logger.debug("endpoint_handler('" + path + "','" + action + "')")
-	return app.smblib.smb_action(request.endpoint, action, path)
+from flask import current_app as app
 
 
-@app.route('/xhr', methods=['POST'])
+@app.route('/api/smb', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
 def smb_post():
@@ -61,13 +53,19 @@ def smb_post():
 	return app.smblib.smb_action(request.form['epname'], request.form['action'], path)
 
 
-@app.route('/xhr/<action>/<epname>/', defaults={'path': ''})
-@app.route('/xhr/<action>/<epname>/<path:path>')
+@app.route('/api/smb/<action>/<epname>/', defaults={'path': ''})
+@app.route('/api/smb/<action>/<epname>/<path:path>')
 @app.set_response_type('json')
 @app.login_required
 def smb_get(epname, action, path):
 	app.logger.debug("smb_get_json('" + epname + "','" + action + "','" + path + "')")
 	return app.smblib.smb_action(epname, action, path)
+
+
+@app.login_required
+def endpoint_handler(path, action):
+	app.logger.debug("endpoint_handler('" + path + "','" + action + "')")
+	return app.smblib.smb_action(request.endpoint, action, path)
 
 
 @app.route('/custom/browse/', defaults={'action': 'browse', 'path': ''})

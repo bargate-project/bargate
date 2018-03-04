@@ -17,8 +17,8 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import g, jsonify
+from flask import current_app as app
 
-from bargate import app
 from bargate.lib import errors
 
 

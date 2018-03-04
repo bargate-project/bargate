@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -84,9 +83,7 @@ LAYOUT_DEFAULT = 'grid'
 SESSION_COOKIE_SECURE      = True
 SESSION_COOKIE_HTTPONLY    = True
 PREFERRED_URL_SCHEME       = 'https'
-USE_X_SENDFILE             = False
 PERMANENT_SESSION_LIFETIME = timedelta(days=7)
-SEND_FILE_MAX_AGE_DEFAULT  = 0
 
 # Shares config file
 SHARES_CONFIG  = '/etc/bargate/shares.conf'
@@ -174,10 +171,6 @@ JSONIFY_PRETTYPRINT_REGULAR = False
 
 # Enable/disable bookmarking
 BOOKMARKS_ENABLED = False
-
-# User stats (requires REDIS)
-USER_STATS_ENABLED = False
-USER_STATS_EXPIRE = 1440
 
 # Custom server addresses ("connect to server")
 CONNECT_TO_ENABLED = True

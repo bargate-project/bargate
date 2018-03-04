@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -15,15 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-import werkzeug
 import uuid
 
-from flask import session, url_for, g
+from flask import session, g
+from flask import current_app as app
 
-from bargate import app
 
-themes = {'cerulean': ['navbar-dark', 'bg-primary'],
+THEMES = {'cerulean': ['navbar-dark', 'bg-primary'],
 	'cosmo': ['navbar-dark', 'bg-dark'],
 	'flatly': ['navbar-dark', 'bg-primary'],
 	'journal': ['navbar-dark', 'bg-primary'],
@@ -39,89 +36,9 @@ themes = {'cerulean': ['navbar-dark', 'bg-primary'],
 	'yeti': ['navbar-dark', 'bg-dark']}
 
 
-def record_user_activity(user_id):
-	if app.config['REDIS_ENABLED']:
-		if app.config['USER_STATS_ENABLED']:
-			now = int(time.time())
-			expires = now + (app.config['USER_STATS_EXPIRE'] * 60) + 10
-
-			all_users_key = 'online-users/%d' % (now // 60)
-			user_key = 'user:%s:last' % user_id
-			p = g.redis.pipeline()
-			p.sadd(all_users_key, user_id)
-			p.set(user_key, now)
-			p.expireat(all_users_key, expires)
-			p.execute()
-
-
 def save(key, value):
 	if app.config['REDIS_ENABLED']:
 		g.redis.set('user:' + session['username'] + ':' + key, value)
-
-
-def get_bookmarks():
-	user_bookmarks_key = 'user:' + session['username'] + ':bookmarks'
-	user_bookmark_key  = 'user:' + session['username'] + ':bookmark:'
-	bookmarks          = list()
-
-	if app.config['REDIS_ENABLED'] and 'redis' in g:
-		if g.redis.exists(user_bookmarks_key):
-			try:
-				user_bookmarks = g.redis.smembers(user_bookmarks_key)
-			except Exception as ex:
-				app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
-				return user_bookmarks
-
-			if user_bookmarks is not None:
-				if isinstance(user_bookmarks, set):
-					for bookmark_id in user_bookmarks:
-
-						try:
-							bookmark = g.redis.hgetall(user_bookmark_key + bookmark_id)
-						except Exception as ex:
-							app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
-								session['username'] + ': ' + str(ex))
-							continue
-
-						if 'version' not in bookmark:
-							# Version 1 bookmark - we link directly from here
-							if 'function' not in bookmark or 'path' not in bookmark:
-								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
-									session['username'] + ': ', 'function and/or path was not set')
-								continue
-
-							try:
-								bookmark['url'] = url_for(bookmark['function'], path=bookmark['path'])
-							except werkzeug.routing.BuildError as ex:
-								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
-									session['username'] + ': Invalid bookmark function: ', str(ex))
-								continue
-
-							# Version 1 bookmarks stored the name of the bookmark as the ID :(
-							bookmark['name'] = bookmark_id
-
-						else:
-							if bookmark['version'] == '2':
-								# Version 2 bookmark - use a resolver / redirector function
-								if 'name' not in bookmark:
-									app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
-										session['username'] + ': No name set')
-									continue
-
-								bookmark['url'] = url_for('bookmark', bookmark_id=bookmark_id)
-							else:
-								app.logger.error('Failed to load bookmark ' + bookmark_id + ' for ' +
-									session['username'] + ': Invalid value for version field')
-								continue
-
-						bookmark['id'] = bookmark_id
-						bookmarks.append(bookmark)
-
-				else:
-					app.logger.error('Failed to load bookmarks',
-						'Invalid redis data type when loading bookmarks set for ' + session['username'])
-
-	return bookmarks
 
 
 def get_layout():
@@ -147,13 +64,13 @@ def get_theme():
 		try:
 			theme = g.redis.get('user:' + session['username'] + ':theme')
 			if theme is not None:
-				if theme in themes.keys():
+				if theme in THEMES.keys():
 					return theme
 
 		except Exception as ex:
 			app.logger.error('An error occured whilst loading data from redis: ' + str(ex))
 
-	if app.config['THEME_DEFAULT'] not in themes.keys():
+	if app.config['THEME_DEFAULT'] not in THEMES.keys():
 		return 'cosmo'
 	else:
 		return app.config['THEME_DEFAULT']
@@ -225,17 +142,6 @@ def get_on_file_click():
 	return 'ask'
 
 
-def get_online_users(minutes=15):
-	if app.config['REDIS_ENABLED']:
-		if minutes > 86400:
-			minutes = 86400
-		current = int(time.time()) // 60
-		minutes = xrange(minutes)
-		return g.redis.sunion(['online-users/%d' % (current - x) for x in minutes])
-	else:
-		return []
-
-
 def save_bookmark(bookmark_name, endpoint, path):
 	# Generate a unique identifier for this bookmark
 	bookmark_id = uuid.uuid4().hex
@@ -257,4 +163,54 @@ def save_bookmark(bookmark_name, endpoint, path):
 	# add the new bookmark name to the list of bookmarks for the user
 	g.redis.sadd('user:' + session['username'] + ':bookmarks', bookmark_id)
 
-	return bookmark_id
+	return {'id': bookmark_id, 'epname': endpoint, 'name': bookmark_name, 'path': path}
+
+
+def get_bookmarks():
+	bookmarks = []
+
+	if app.is_user_logged_in and app.config['BOOKMARKS_ENABLED'] and app.config['REDIS_ENABLED']:
+		user_bookmarks_key = 'user:' + session['username'] + ':bookmarks'
+		user_bookmark_key  = 'user:' + session['username'] + ':bookmark:'
+
+		if g.redis.exists(user_bookmarks_key):
+			try:
+				user_bookmarks = g.redis.smembers(user_bookmarks_key)
+			except Exception as ex:
+				app.logger.error('Failed to load bookmarks for ' + session['username'] + ': ' + str(ex))
+				return []
+
+			if user_bookmarks is not None:
+				if isinstance(user_bookmarks, set):
+					for bid in user_bookmarks:
+
+						try:
+							bmark = g.redis.hgetall(user_bookmark_key + bid)
+
+							if 'version' not in bmark:
+								continue
+
+							# Make sure the function/epname still exists and is loaded
+							if app.sharesConfig.has_section(bmark['function']):
+								if app.sharesConfig.has_option(bmark['function'], 'display'):
+									eptitle = app.sharesConfig.get(bmark['function'], 'display')
+								else:
+									eptitle = app.sharesConfig.get(bmark['function'], 'url')
+							else:
+								continue
+
+							bookmarks.append({'id': bid,
+								'name': bmark['name'],
+								'path': bmark['path'],
+								'epname': bmark['function'],
+								'eptitle': eptitle})
+
+						except Exception as ex:
+							app.logger.error('Failed to load bookmark ' + bid + ' for ' +
+								session['username'] + ': ' + type(ex).__name__ + " - " + str(ex))
+							continue
+				else:
+					app.logger.error('Failed to load bookmarks',
+						'Invalid redis data type when loading bookmarks set for ' + session['username'])
+
+	return bookmarks

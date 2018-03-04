@@ -22,9 +22,8 @@ import hashlib
 from datetime import datetime, timedelta
 
 from flask import g, session, request
+from flask import current_app as app
 from itsdangerous import TimestampSigner, BadData
-
-from bargate import app
 
 try:
 	import onetimepass

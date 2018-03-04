@@ -17,18 +17,19 @@
 
 import os
 import re
-from unicodedata import normalize
+import unicodedata
+import codecs
+from time import time
 
-from bargate import app
+from flask import request, current_app as app
+import werkzeug
 
 
-class EntryType:
-	# these values are taken from libsmbclient/samba
-	other = 0
-	share = 3
-	dir   = 7
-	file  = 8
-	link  = 9
+TYPE_OTHER = 0
+TYPE_SHARE = 3
+TYPE_DIR   = 7
+TYPE_FILE  = 8
+TYPE_LINK  = 9
 
 
 def banned_filename(filename):
@@ -36,14 +37,11 @@ def banned_filename(filename):
 	file extension. Returns True or False.
 	"""
 
-	if '.' not in filename:
-		return False
+	if '.' in filename:
+		if filename.rsplit('.', 1)[1] in app.config['BANNED_EXTENSIONS']:
+			return True
 
-	elif filename.rsplit('.', 1)[1] in app.config['BANNED_EXTENSIONS']:
-		return True
-
-	else:
-		return False
+	return False
 
 
 def secure_filename(filename):
@@ -75,7 +73,7 @@ def secure_filename(filename):
 	"""
 
 	if isinstance(filename, unicode):
-		filename = normalize('NFKD', filename).encode('ascii', 'ignore')
+		filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore')
 
 	for sep in os.path.sep, os.path.altsep:
 		if sep:
@@ -147,3 +145,58 @@ def check_path(path):
 		raise ValueError('Invalid path. Paths cannot contain "/./"')
 
 	return path
+
+
+def send_fp(fp, mtime, mimetype, headers=None):
+	"""Sends the contents of a file-like object to the client.
+
+	:param fp: a file-like object containing the data to send
+	:param mtime: the time the file wast modified. Either a :class:`~datetime.datetime` or timestamp
+	:param mtype: the mime type of the file.
+	:headers: an optional :class:`~werkzeug.datastructures.Headers` object
+	"""
+
+	if headers is None:
+		headers = werkzeug.datastructures.Headers()
+
+	data = werkzeug.wsgi.wrap_file(request.environ, fp)
+	rv = app.response_class(data, mimetype=mimetype, headers=headers, direct_passthrough=True)
+	rv.last_modified = mtime
+
+	rv.cache_control.public = True
+	cache_timeout = app.get_send_file_max_age(None)
+	rv.cache_control.max_age = cache_timeout
+	rv.expires = int(time() + cache_timeout)
+
+	return rv
+
+
+def send_attachment(fp, name, mtime, mtype):
+	"""Sends the contents of a file-like object to the client as an attachment via the HTTP header
+	`Content-Disposition: attachment`. This method supports UTF-8 filename encoding as specified in RFC 2231.
+
+	:param fp: a file-like object containing the data to send
+	:param name: the name of the file
+	:param mtime: the time the file wast modified. Either a :class:`~datetime.datetime` or timestamp
+	:param mtype: the mime type of the file.
+	"""
+
+	headers = werkzeug.datastructures.Headers()
+	try:
+		name = name.encode('latin-1')
+	except UnicodeEncodeError:
+
+		def replace_with_underscores(error):
+			return (u"_", error.start + 1)
+
+		codecs.register_error('replace_with_underscores', replace_with_underscores)
+
+		filenames = {
+			'filename': unicodedata.normalize('NFKD', name).encode('latin-1', 'replace_with_underscores'),
+			'filename*': "UTF-8''%s" % werkzeug.urls.url_quote(name),
+		}
+	else:
+		filenames = {'filename': name}
+
+	headers.add('Content-Disposition', 'attachment', **filenames)
+	return send_fp(fp, mtime, mtype, headers=headers)

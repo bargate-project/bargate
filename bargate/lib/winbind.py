@@ -17,7 +17,7 @@
 
 import subprocess
 
-from bargate import app
+from flask import current_app as app
 
 
 def sid_to_name(sid):

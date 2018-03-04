@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -15,12 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-
 from flask import request, session, redirect, url_for, flash, abort, render_template, send_from_directory
+from flask import current_app as app
 
-from bargate import app
-from bargate.lib import aes, user, userdata, misc
+from bargate.lib import aes, user, misc
 
 
 @app.csrfp_exempt
@@ -71,8 +68,6 @@ def login():
 def logout():
 
 	if app.is_user_logged_in():
-		if app.config['USER_STATS_ENABLED']:
-			userdata.save('logout', str(time.time()))
 		user.logout()
 		flash('You have logged out successfully', 'alert-success')
 

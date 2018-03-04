@@ -19,8 +19,7 @@
 import traceback
 
 from flask import render_template, make_response, g, jsonify, request, session
-
-from bargate import app
+from flask import current_app as app
 
 
 def stderr(title, message, http_return_code=200):

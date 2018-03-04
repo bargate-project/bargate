@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -15,12 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-
 from flask import request, redirect, session, url_for, abort, flash
+from flask import current_app as app
 
-from bargate import app
-from bargate.lib import aes, userdata
+from bargate.lib import aes
 
 # load kerberos or ldap auth if needed
 if app.config['AUTH_TYPE'] == 'kerberos' or app.config['AUTH_TYPE'] == 'krb5':
@@ -50,10 +47,6 @@ def logon_ok():
 	# Log a successful login
 	app.logger.info('User "' + session['username'] + '" logged in from "' + request.remote_addr +
 		'" using ' + request.user_agent.string)
-
-	# Record the last login time
-	if app.config['USER_STATS_ENABLED']:
-		userdata.save('login', time.time())
 
 	# determine if "next" variable is set (the URL to be sent to)
 	next = request.form.get('next', default=None)
@@ -190,8 +183,7 @@ def auth(username, password):
 				app.logger.debug("bargate.lib.user.auth ldap success")
 				return True
 
-		# Catch all return false for LDAP auth
-		return False
+	return False
 
 
 def logout():
@@ -199,7 +191,5 @@ def logout():
 
 	app.logger.info('User "' + session['username'] + '" logged out from "' +
 		request.remote_addr + '" using ' + request.user_agent.string)
-	session.pop('logged_in', None)
-	session.pop('username', None)
-	session.pop('id', None)
-	session.pop('ldap_homedir', None)
+	session.clear()
+	session.modified = True

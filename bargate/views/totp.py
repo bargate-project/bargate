@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -16,21 +15,12 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import session, render_template, redirect, url_for, request, flash, abort, jsonify
+from flask import current_app as app
 
-from bargate import app
 from bargate.lib import totp, user
 
 
-@app.route('/totp/qrcode')
-@app.login_required
-def totp_qrcode_view():
-	if not totp.user_enabled(session['username']):
-		return totp.return_qrcode(session['username'])
-	else:
-		abort(403)
-
-
-@app.route('/totp/enable', methods=['POST'])
+@app.route('/api/totp/enable', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
 def totp_enable():
@@ -47,7 +37,7 @@ def totp_enable():
 			return jsonify({'code': 1, 'msg': 'Invalid verification code'})
 
 
-@app.route('/totp/disable', methods=['POST'])
+@app.route('/api/totp/disable', methods=['POST'])
 @app.set_response_type('json')
 @app.login_required
 def totp_disable():
@@ -64,7 +54,16 @@ def totp_disable():
 			return jsonify({'code': 1, 'msg': 'Invalid verification code'})
 
 
-@app.route('/verify', methods=['GET', 'POST'])
+@app.route('/totp/qrcode')
+@app.login_required
+def totp_qrcode_view():
+	if not totp.user_enabled(session['username']):
+		return totp.return_qrcode(session['username'])
+	else:
+		abort(403)
+
+
+@app.route('/login/verify', methods=['GET', 'POST'])
 def totp_logon_view():
 	if request.method == 'GET':
 		if app.is_user_logged_in():

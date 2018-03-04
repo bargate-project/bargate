@@ -4,15 +4,7 @@
 	<a class="nav-link dropdown-toggle" href="#" id="bmarksDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 	Bookmarks
 	</a>
-	<div class="dropdown-menu bm-menu" aria-labelledby="bmarksDropdown">
-		<a class="dropdown-item" href="{{ url_for('bookmarks') }}"><i class="fas fa-fw fa-tags"></i> Bookmark manager</a>
-		<a class="dropdown-item disabled" href="#" data-click="bmark"><i class="far fa-fw fa-bookmark"></i> Bookmark this location</a>
-		{% if user_bookmarks %}
-		<div class="dropdown-divider"></div>
-		{% for mark in user_bookmarks %}
-		<a href="{{ mark.url }}" class="dropdown-item"><i class="fas fa-arrow-right fa-fw"></i> {{mark.name|truncate(30, True) }}</a>
-		{% endfor %}
-		{% endif %}
+	<div class="dropdown-menu bm-menu bmarks" aria-labelledby="bmarksDropdown">
 	</div>
 </li>
 {%- endif %}

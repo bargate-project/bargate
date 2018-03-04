@@ -61,10 +61,12 @@ setup(
 	install_requires=[
 		'Flask>=0.12',
 		'cryptography>=2.1.4',
+		'pyyaml>=3.12',
 	],
 	extras_require={
 		'previews': ["Pillow>=3.0"],
 		'smbc': ["pysmbc>=1.0.15.5"],
+		'pysmb': ["pysmb>=1.1.22"],
 		'userdata': ["redis>=2.4"],
 	}
 )

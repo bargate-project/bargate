@@ -14,7 +14,9 @@ var $err = {
 		if (jqXHR.status === 0) {
 			reason = "a network error occured.";
 		} else if (jqXHR.status === 400) {
-			reason = "the server said 'Bad Request'";
+			reason = "the server said 400 Bad request";
+		} else if (jqXHR.status === 404) {
+			reason = "the server said 404 Not found";
 		} else {
 			reason = textStatus;
 		}
@@ -34,6 +36,7 @@ var $err = {
 var $mdl = {
 	draw: function (name, data) {
 		$('#mdl-d').removeClass('modal-lg');
+		$('#mdl-d').removeClass('modal-side');
 
 		if (!data) { data = {}; }
 		data.config = $config;
@@ -58,6 +61,9 @@ var $mdl = {
 	},
 	lg: function () {
 		$('#mdl-d').addClass('modal-lg');
+	},
+	side: function () {
+		$('#mdl-d').addClass('modal-side');
 	}
 };
 
@@ -99,7 +105,7 @@ var $dir = {
 		} catch (exception) {
 			document.execCommand('Stop');
 		}
-		
+
 		$('#crumbs').html(nunjucks.render('breadcrumbs.html', { crumbs: this.data.crumbs, root_name: this.data.root_name }));
 
 		if (this.data.no_items) {
@@ -231,10 +237,11 @@ var $dir = {
 	},
 
 	load: function(epname, path, alterHist) {
+		console.log("load: " + epname + " - " + path);
 		var self = this;
 		if (alterHist === undefined) { alterHist = true; }
 
-		$.getJSON('/xhr/ls/' + epname + '/' + path)
+		$.getJSON('/api/smb/ls/' + epname + '/' + path)
 		.done(function(data) {
 			if (data.code > 0) {
 				$err.nonzero("Unable to open directory", data.msg, data.code);
@@ -270,6 +277,7 @@ var $dir = {
 					new_url = data.epurl + '/browse/' + path;
 					history.pushState({epname: epname, epurl: data.epurl, path: path}, '', new_url);
 				}
+                console.log("finished load:");
 			}
 		})
 		.fail(function(jqXHR, textStatus, errorThrown) {
@@ -296,7 +304,7 @@ var $dir = {
 		params.epname = this.epname;
 		params._csrfp_token = $user.token;
 
-		$.post( '/xhr', params)
+		$.post( '/api/smb', params)
 			.fail(function(jqXHR, textStatus, errorThrown) {
 				$err.fail("Error", "Unable to " + desc, jqXHR, textStatus, errorThrown);
 			})
@@ -316,7 +324,7 @@ var $dir = {
 
 function bind_upload_trigger() {
 	$('#upload-i').fileupload({
-		url: '/xhr',
+		url: '/api/smb',
 		dataType: 'json',
 		maxChunkSize: 10485760, // 10MB
 		formData: [{name: '_csrfp_token', value: $user.token}, {name: 'action', value: 'upload'}, {name: 'epname', value: $dir.epname}, {name: 'path', value: $dir.path}],
@@ -402,7 +410,7 @@ function get_path(entry) {
 	if (entry.data('path')) {
 		return entry.data('path');
 	} else {
-		if ($dir.path) { 
+		if ($dir.path) {
 			return $dir.path + "/" + entry.data('name');
 		} else {
 			return entry.data('name');
@@ -454,8 +462,9 @@ var $fsub = {
 	},
 
 	bmark: function() {
-		$dir.post({action: 'bookmark', path: $dir.path, name: $('#bmark-i').val()}, 'create bookmark', function (data) { 
-			$('.bmarks').append('<li><a href="' + data.url + '"><i class="fas fa-arrow-right fa-fw"></i>' + $('#bmark-i').val() + '</a></li>');
+		$dir.post({action: 'bookmark', path: $dir.path, name: $('#bmark-i').val()}, 'create bookmark', function (data) {
+			$user.bmarks.push(data.bmark);
+			$settings.draw_bmarks();
 		});
 	},
 
@@ -464,7 +473,7 @@ var $fsub = {
 	},
 
 	search: function() {
-		$.getJSON('/xhr/search/' + $dir.epname + '/' + $dir.path, {q: $('#search-i').val()})
+		$.getJSON('/api/smb/search/' + $dir.epname + '/' + $dir.path, {q: $('#search-i').val()})
 		.done(function(data) {
 			if (data.code > 0) {
 				$err.nonzero("Search failed", data.msg, data.code);
@@ -531,17 +540,18 @@ var $settings = {
 		$mdl.draw('settings');
 
 		$('input[name=layout-r]').change(function() {
+			console.log("layout-r change");
 			self.layout(this.value);
 		});
 
 		$('#hidden-c').change(function() {
-			self.save('hidden', this.checked, function (data) { 
+			self.save('hidden', this.checked, function (data) {
 				$dir.reload();
 			});
 		});
 
 		$('input[name=click-r]').change(function() {
-			self.save('click', this.value, function (data) { 
+			self.save('click', this.value, function (data) {
 				$dir.reload();
 			});
 		});
@@ -557,7 +567,7 @@ var $settings = {
 		$mdl.show().lg();
 	},
 	save: function(key, value, callback) {
-		$.post( "/xhr/data", { key: key, value: value, _csrfp_token: $user.token })
+		$.post( "/api/save", { key: key, value: value, _csrfp_token: $user.token })
 			.fail(function(jqXHR, textStatus, errorThrown) {
 				$err.fail("Settings error", "Unable to save settings", jqXHR, textStatus, errorThrown);
 			})
@@ -572,8 +582,8 @@ var $settings = {
 	},
 	layout: function(name) {
 		var self = this;
-		this.save('layout', name, function (data) { 
-			$user.layout = newLayout;
+		this.save('layout', name, function (data) {
+			$user.layout = name;
 			self.set_layout_cls();
 			$dir.draw();
 		});
@@ -588,7 +598,7 @@ var $settings = {
 	theme: function(name) {
 		if (name == $user.theme) { return; }
 
-		this.save('theme', name, function (data) { 
+		this.save('theme', name, function (data) {
 			$("body").fadeOut(100, function() {
 				$("body").css('display', 'none');
 				$("#theme-l").attr("href", "/static/themes/" + name + "/bootstrap.min.css");
@@ -609,6 +619,14 @@ var $settings = {
 			$user.theme = name;
 		});
 	},
+	draw_bmarks: function() {
+		if ($config.bmark) {
+			if ($user.bmarks) {
+				$('.bmarks').html(nunjucks.render('bmarks.html', { bmarks: $user.bmarks }));
+				$click.bind('.bmarks');
+			}
+		}
+	}
 };
 
 var $click = {
@@ -618,8 +636,10 @@ var $click = {
 		if (selector) { selector = selector + ' '; } else { selector = ''; }
 
 		$(selector + "[data-click]").click(function (e) {
+            console.log("data-click handler");
+            console.log(e);
 			e.preventDefault();
-			e.stopPropagation();
+			//e.stopPropagation();
 			self[$(this).data('click')](e);
 		});
 	},
@@ -657,7 +677,7 @@ var $click = {
 	},
 
 	mobile: function() {
-		$mdl.draw('mobile').show();
+		$mdl.draw('mobile').show().side();
 	},
 
 	about: function() {
@@ -676,6 +696,19 @@ var $click = {
 				$mdl.draw('bmark', {name: $dir.data.bmark_path}).show();
 			}
 		}
+	},
+
+	bmarks: function() {
+		if ($config.bmark) {
+			$mdl.draw('bmarks', {bmarks: $user.bmarks});
+			$mdl.show().lg();
+		}
+	},
+
+	link: function(e) {
+		console.log("link function handler");
+		console.log($(e.currentTarget).data('ep') + " " + $(e.currentTarget).data('path'));
+		$dir.load($(e.currentTarget).data('ep'), $(e.currentTarget).data('path'));
 	},
 
 	layout: function() {
@@ -761,7 +794,7 @@ var $entry = {
 
 	properties: function() {
 		f = this.entry;
-		data = {name: this.name, 
+		data = {name: this.name,
 			size: f.data('size'),
 			mtime: f.data('mtime'),
 			atime: f.data('atime'),
@@ -779,7 +812,7 @@ var $entry = {
 
 		$mdl.draw('file', data ).show();
 
-		$.getJSON('/xhr/stat/' + $dir.epname + '/' + get_path(this.entry))
+		$.getJSON('/api/smb/stat/' + $dir.epname + '/' + get_path(this.entry))
 		.done(function(data) {
 			if (data.code != 0) {
 				$('.f-user').html('Unknown');
@@ -798,9 +831,9 @@ var $entry = {
 
 function init(epname, epurl, path) {
 	/* load settings via ajax call */
-	$.getJSON('/xhr/data')
+	$.getJSON('/api/init')
 	.fail(function(jqXHR, textStatus, errorThrown) {
-		$err.fail("Unable to load settings", "Unable to contact the server", jqXHR, textStatus, errorThrown);
+		$err.fail("Unable to load settings", "Unable to load settings", jqXHR, textStatus, errorThrown);
 	})
 	.done(function(data) {
 		if (data.code !== 0) {
@@ -817,6 +850,7 @@ function init(epname, epurl, path) {
 
 			$click.bind();
 			$fsub.bind();
+			$settings.draw_bmarks();
 
 			if (epname !== undefined) {
 				env = nunjucks.configure('',{ autoescape: true});

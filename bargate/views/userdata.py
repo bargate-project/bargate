@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # This file is part of Bargate.
 #
@@ -16,99 +15,100 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from flask import request, session, redirect, url_for, flash, g, abort, render_template, jsonify
-import werkzeug
+from flask import current_app as app
 
 from bargate.lib import userdata
-from bargate import app
 
 
-@app.route('/xhr/data', methods=['GET', 'POST'])
+@app.route('/api/init')
 @app.set_response_type('json')
-def settings():
-	if request.method == 'GET':
+def client_init():
+	twoStepEnabled = False
+	twoStepTrusted = False
+	if app.config['TOTP_ENABLED']:
+		if app.is_user_logged_in():
+			from bargate.lib import totp
+			if totp.user_enabled(session['username']):
+				twoStepEnabled = True
 
-		twoStepEnabled = False
-		twoStepTrusted = False
-		if app.config['TOTP_ENABLED']:
-			if app.is_user_logged_in():
-				from bargate.lib import totp
-				if totp.user_enabled(session['username']):
-					twoStepEnabled = True
+				if totp.device_trusted(session['username']):
+					twoStepTrusted = True
 
-					if totp.device_trusted(session['username']):
-						twoStepTrusted = True
+	theme = userdata.get_theme()
 
-		theme = userdata.get_theme()
-
-		return(jsonify({'code': 0,
-			'user': {
-				'layout': userdata.get_layout(),
-				'token': app.csrfp_token(),
-				'theme': theme,
-				'theme_classes': userdata.themes[theme],
-				'hidden': userdata.get_show_hidden_files(),
-				'overwrite': userdata.get_overwrite_on_upload(),
-				'click': userdata.get_on_file_click(),
-				'totp': {
-					'enabled': twoStepEnabled,
-					'trusted': twoStepTrusted
-				},
+	return(jsonify({'code': 0,
+		'user': {
+			'layout': userdata.get_layout(),
+			'token': app.csrfp_token(),
+			'theme': theme,
+			'theme_classes': userdata.THEMES[theme],
+			'hidden': userdata.get_show_hidden_files(),
+			'overwrite': userdata.get_overwrite_on_upload(),
+			'click': userdata.get_on_file_click(),
+			'bmarks': userdata.get_bookmarks(),
+			'totp': {
+				'enabled': twoStepEnabled,
+				'trusted': twoStepTrusted
 			},
-			'config': {
-				'shortname': app.config['APP_DISPLAY_NAME_SHORT'],
-				'domain': app.config['SMB_WORKGROUP'],
-				'search': app.config['SEARCH_ENABLED'],
-				'userdata': app.config['REDIS_ENABLED'],
-				'bmark': app.config['BOOKMARKS_ENABLED'],
-				'connect': app.config['CONNECT_TO_ENABLED'],
-				'totp': {
-					'enabled': app.config['TOTP_ENABLED'],
-					'ident': app.config['TOTP_IDENT'],
-				},
-				'themes': userdata.themes,
-			}}))
+		},
+		'config': {
+			'shortname': app.config['APP_DISPLAY_NAME_SHORT'],
+			'domain': app.config['SMB_WORKGROUP'],
+			'search': app.config['SEARCH_ENABLED'],
+			'userdata': app.config['REDIS_ENABLED'],
+			'bmark': app.config['BOOKMARKS_ENABLED'],
+			'wbinfo': app.config['WBINFO_LOOKUP'],
+			'connect': app.config['CONNECT_TO_ENABLED'],
+			'totp': {
+				'enabled': app.config['TOTP_ENABLED'],
+				'ident': app.config['TOTP_IDENT'],
+			},
+			'themes': userdata.THEMES,
+		}}))
 
-	else:
 
-		if not app.is_user_logged_in():
-			return jsonify({'code': 401, 'msg': 'You must be logged in to do that'})
+@app.route('/api/save', methods=['POST'])
+@app.set_response_type('json')
+def client_save_setting():
+	if not app.is_user_logged_in():
+		return jsonify({'code': 401, 'msg': 'You must be logged in to do that'})
 
-		if not app.config['REDIS_ENABLED']:
-			return jsonify({'code': 1, 'msg': 'The system administrator has disabled per-user settings'})
+	if not app.config['REDIS_ENABLED']:
+		return jsonify({'code': 1, 'msg': 'The system administrator has disabled per-user settings'})
 
-		key   = request.form['key']
-		value = request.form['value']
+	key   = request.form['key']
+	value = request.form['value']
 
-		if key == 'layout':
-			if value not in ['grid', 'list']:
-				value = app.config['LAYOUT_DEFAULT']
-			userdata.save('layout', value)
+	if key == 'layout':
+		if value not in ['grid', 'list']:
+			value = app.config['LAYOUT_DEFAULT']
+		userdata.save('layout', value)
 
-		elif key == 'click':
-			if value not in ['ask', 'default', 'download']:
-				value = 'ask'
-			userdata.save('on_file_click', value)
+	elif key == 'click':
+		if value not in ['ask', 'default', 'download']:
+			value = 'ask'
+		userdata.save('on_file_click', value)
 
-		elif key == 'hidden':
-			if value == 'true':
-				userdata.save('hidden_files', 'show')
-			else:
-				userdata.save('hidden_files', 'hide')
+	elif key == 'hidden':
+		if value == 'true':
+			userdata.save('hidden_files', 'show')
+		else:
+			userdata.save('hidden_files', 'hide')
 
-		elif key == 'overwrite':
-			if value == 'true':
-				userdata.save('upload_overwrite', 'yes')
-			else:
-				userdata.save('upload_overwrite', 'no')
+	elif key == 'overwrite':
+		if value == 'true':
+			userdata.save('upload_overwrite', 'yes')
+		else:
+			userdata.save('upload_overwrite', 'no')
 
-		elif key == 'theme':
-			if value not in userdata.themes.keys():
-				value = app.config['THEME_DEFAULT']
+	elif key == 'theme':
+		if value not in userdata.THEMES.keys():
+			value = app.config['THEME_DEFAULT']
 
-			userdata.save('theme', value)
-			return jsonify({'code': 0, 'theme_classes': userdata.themes[value]})
+		userdata.save('theme', value)
+		return jsonify({'code': 0, 'theme_classes': userdata.THEMES[value]})
 
-		return jsonify({'code': 0})
+	return jsonify({'code': 0})
 
 
 @app.route('/bookmarks', methods=['GET', 'POST'])
@@ -160,88 +160,3 @@ def bookmarks():
 
 			flash('Bookmark not found!', 'alert-danger')
 			return redirect(url_for('bookmarks'))
-
-
-@app.route('/bookmark/<string:bookmark_id>')
-@app.login_required
-def bookmark(bookmark_id):
-	"""This function takes a bookmark ID and redirects the user to the location
-	specified by the bookmark in the REDIS database. This only works with
-	version 2 bookmarks, not version 1 (Bargate v1.4 or earlier)"""
-
-	if not app.config['REDIS_ENABLED']:
-		abort(404)
-	if not app.config['BOOKMARKS_ENABLED']:
-		abort(404)
-
-	# Prepare the redis key name
-	redis_key = 'user:' + session['username'] + ':bookmark:' + bookmark_id
-
-	# bookmarks are a hash with the keys 'version', 'function', 'path' and
-	# 'custom_uri' (optional) only proceed if we can find the bmark in redis
-	if g.redis.exists(redis_key):
-		try:
-			# redis returns 'None' for hget if the hash key doesn't exist
-			bookmark_version    = g.redis.hget(redis_key, 'version')
-			bookmark_function   = g.redis.hget(redis_key, 'function')
-			bookmark_path       = g.redis.hget(redis_key, 'path')
-			bookmark_custom_uri = g.redis.hget(redis_key, 'custom_uri')
-		except Exception as ex:
-			app.logger.error('Failed to load v2 bookmark ' + bookmark_id +
-				' user: ' + session['username'] + ' error: ' + str(ex))
-			abort(404)
-
-		if bookmark_version is None:
-			abort(404)
-
-		if bookmark_version != '2':
-			abort(404)
-
-		# Handle custom URI bookmarks
-		if bookmark_function == 'custom':
-			# Set the custom_uri in the session so when the custom function is
-			# hit then the user is sent to the right place (maybe)
-			session['custom_uri'] = bookmark_custom_uri
-			session.modified      = True
-
-			# redirect the user to the custom function
-			return redirect(url_for('custom', path=bookmark_path))
-
-		# Handle standard non-custom bookmarks
-		else:
-			try:
-				return redirect(url_for(bookmark_function, path=bookmark_path))
-			except werkzeug.routing.BuildError as ex:
-				# could not build a URL for that function_name
-				# it could be that the function/share was removed by the admin
-				# so we should say 404 not found.
-				abort(404)
-
-	else:
-		abort(404)
-
-
-@app.route('/online/<last>')
-@app.login_required
-def online(last=5):
-	if not app.config['REDIS_ENABLED']:
-		abort(404)
-
-	if not app.config['USER_STATS_ENABLED']:
-		abort(404)
-
-	last = int(last)
-
-	if last == 1440:
-		last_str = "24 hours"
-	elif last == 60:
-		last_str = "hour"
-	elif last == 120:
-		last_str = "2 hours"
-	elif last == 180:
-		last_str = "3 hours"
-	else:
-		last_str = str(last) + " minutes"
-
-	usernames = userdata.get_online_users(last)
-	return render_template('views/online.html', online=usernames, active="help", last=last_str)
