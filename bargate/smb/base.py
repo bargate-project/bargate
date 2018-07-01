@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
-import traceback
+from time import time
 
 from flask import request, session, render_template, jsonify, abort, make_response
 from flask import current_app as app
@@ -24,80 +24,8 @@ from cStringIO import StringIO
 from bargate.lib import fs, errors, userdata, mime, winbind
 
 
-class FatalError(Exception):
-	pass
-
-
-class NotFoundError(Exception):
-	pass
-
-
-class Entry(object):
-	def __init__(self, name):
-		self.name = name
-
-	@property
-	def skip(self):
-		if self.name == '.' or self.name == '..':
-			return True
-
-		if not userdata.get_show_hidden_files():
-			if self.name.startswith('.'):
-				return True
-			if self.name.startswith('~$'):
-				return True
-			if self.name in ['desktop.ini', '$RECYCLE.BIN', 'RECYCLER', 'Thumbs.db']:
-				return True
-
-			if self.type == fs.TYPE_SHARE:
-				if self.name.endswith == "$":
-					return True
-
-		if self.type not in [fs.TYPE_FILE, fs.TYPE_DIR, fs.TYPE_DIR]:
-			return True
-
-		return False
-
-	def to_dict(self, path='', include_path=False):
-		data = {'name': self.name, 'type': self.type, 'skip': False}
-
-		if self.skip:
-			data['skip'] = True
-		else:
-			if include_path:
-				if not path:
-					data['path'] = self.name
-				else:
-					data['path'] = path + '/' + self.name
-
-			if self.type is fs.TYPE_FILE:
-				(htype, mtype) = mime.filename_to_mimetype(self.name)
-				data['icon'] = mime.mimetype_to_icon(mtype)
-
-				data['mtype'] = htype
-				data['atime'] = self.atime
-				data['mtime'] = self.mtime
-				data['size'] = self.size
-
-				if app.config['IMAGE_PREVIEW'] and mtype in mime.pillow_supported:
-					if self.size <= app.config['IMAGE_PREVIEW_MAX_SIZE']:
-						data['img'] = True
-
-				if mime.view_in_browser(mtype):
-					data['view'] = True
-
-		return data
-
-
 class LibraryBase(object):
 	path = ''
-
-	def return_exception(self, ex):
-		app.logger.debug("smblib.return_exception: called with '" + str(ex))
-		app.logger.debug(traceback.format_exc())
-		(title, desc) = self.decode_exception(ex)
-		app.logger.debug("smblib.return_exception: decoded to: '" + title + "', '" + desc + "'")
-		return errors.stderr(title, desc)
 
 	def smb_action(self, endpoint_name, action, path):
 		app.logger.debug("smb_action('" + endpoint_name + "','" + action + "','" + path + "')")
@@ -108,8 +36,7 @@ class LibraryBase(object):
 
 		if self.endpoint_name == 'custom':
 			if not app.config['CONNECT_TO_ENABLED']:
-				return jsonify({'code': 1, 'msg':
-					'The system administrator has disabled connecting to a custom server'})
+				return errors.stderr('Feature disabled', 'The system administrator has disabled connecting to a custom address')
 
 			self.endpoint_path = unicode(session['custom_uri'])
 			self.endpoint_url  = '/custom'
@@ -170,7 +97,8 @@ class LibraryBase(object):
 			app.logger.debug("calling library connect()")
 			self.connect()
 		except Exception as ex:
-			return self.return_exception(ex)
+			(title, desc) = self.decode_exception(ex)
+			return errors.stderr(title, desc)
 
 		app.logger.debug("smblib.smb_action: Going to call: _action_" + self.action)
 
@@ -180,19 +108,23 @@ class LibraryBase(object):
 			'", ua: ' + request.user_agent.string)
 
 		try:
-			method = getattr(self, '_action_' + self.action)
+			method = getattr(self, 'action_' + self.action)
 		except AttributeError:
 			return errors.stderr('Not found', 'The action specified was not found')
 
 		try:
 			return method()
-		except FatalError as ex:
+		except errors.FatalError as ex:
 			return errors.stderr('Error', str(ex))
 		except Exception as ex:
-			return self.return_exception(ex)
+			(title, desc) = self.decode_exception(ex)
+			return errors.stderr(title, desc)
 
-	def _action_browse(self):
-		app.logger.debug("_action_browse()")
+	def success(self, message):
+		return jsonify({'code': 0, 'msg': message})
+
+	def action_browse(self):
+		app.logger.debug("action_browse()")
 
 		return render_template('views/browse.html',
 			active=self.endpoint_name,
@@ -201,49 +133,40 @@ class LibraryBase(object):
 			epurl=self.endpoint_url,
 			path=self.path)
 
-	def _action_view(self):
-		app.logger.debug("_action_view()")
+	def action_view(self):
+		app.logger.debug("action_view()")
 
-		return self._action_download(view=True)
+		return self.action_download(view=True)
 
-	def _action_bookmark(self):
-		app.logger.debug("_action_bookmark()")
+	def action_bookmark(self):
+		app.logger.debug("action_bookmark()")
 
 		if not app.config['REDIS_ENABLED']:
-			raise FatalError('Persistent storage (redis) is disabled')
+			raise errors.FatalError('Persistent storage (redis) is disabled')
 		if not app.config['BOOKMARKS_ENABLED']:
-			raise FatalError('Bookmarks are disabled')
+			raise errors.FatalError('Bookmarks are disabled')
 
 		try:
 			bookmark_name = request.form['name']
 		except Exception:
-			raise FatalError("Missing parameter")
+			raise errors.FatalError("Missing parameter")
 
 		if self.endpoint_name == 'custom':
 			if 'custom_uri' not in session:
-				raise FatalError("Missing parameter")
+				raise errors.FatalError("Missing parameter")
 
 		try:
 			bmark = userdata.save_bookmark(bookmark_name, self.endpoint_name, self.path)
 		except Exception as ex:
-			raise FatalError('Could not set bookmark, ' + type(ex).__name__ + ": " + str(ex))
+			raise errors.FatalError('Could not set bookmark, ' + type(ex).__name__ + ": " + str(ex))
 
 		return jsonify({'code': 0, 'bmark': bmark})
 
-#
-#
-#
-#
-#
-
-	def success(self, message):
-		return jsonify({'code': 0, 'msg': message})
-
-	def _action_search(self):
-		app.logger.debug("_action_seach()")
+	def action_search(self):
+		app.logger.debug("action_seach()")
 
 		if not app.config['SEARCH_ENABLED']:
-			raise FatalError("Search is not enabled")
+			raise errors.FatalError("Search is not enabled")
 
 		# Build a breadcrumbs trail #
 		crumbs = []
@@ -265,23 +188,26 @@ class LibraryBase(object):
 			parent      = True
 			parent_path = ''
 
-		query = request.args.get('q')
-		results, timeout_reached = self._search(query)
+		self.query = request.args.get('q')
+		self.timeout_reached = False
+		self.results         = []
+		self.timeout_at = int(time()) + app.config['SEARCH_TIMEOUT']
+		self.rsearch()
 
 		return jsonify({'code': 0,
-			'results': results,
-			'query': query,
+			'results': self.results,
+			'query': self.query,
 			'crumbs': crumbs,
 			'root_name': self.endpoint_title,
 			'epname': self.endpoint_name,
 			'epurl': self.endpoint_url,
 			'path': self.path,
-			'timeout_reached': timeout_reached,
+			'timeout_reached': self.timeout_reached,
 			'parent': parent,
 			'parent_path': parent_path})
 
-	def _action_ls(self):
-		app.logger.debug("_action_ls()")
+	def action_ls(self):
+		app.logger.debug("action_ls()")
 
 		(files, dirs, shares) = self.ls()
 
@@ -340,13 +266,13 @@ class LibraryBase(object):
 			'parent': parent,
 			'parent_path': parent_path})
 
-	def _action_stat(self):
-		app.logger.debug("_action_stat()")
+	def action_stat(self):
+		app.logger.debug("action_stat()")
 
 		finfo = self.stat()
 
 		if not finfo.type == fs.TYPE_FILE:
-			raise FatalError("You cannot stat a directory")
+			raise errors.FatalError("You cannot stat a directory")
 
 		(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
@@ -373,8 +299,8 @@ class LibraryBase(object):
 
 		return jsonify(data)
 
-	def _action_preview(self):
-		app.logger.debug("_action_image_preview()")
+	def action_preview(self):
+		app.logger.debug("action_image_preview()")
 
 		if not app.config['IMAGE_PREVIEW']:
 			abort(400)
@@ -409,12 +335,12 @@ class LibraryBase(object):
 			app.logger.error("Could not generate image thumbnail: " + type(ex).__name__ + ": " + str(ex))
 			abort(400)
 
-	def _action_download(self, view=False):
-		app.logger.debug("_action_download()")
+	def action_download(self, view=False):
+		app.logger.debug("action_download()")
 
 		finfo = self.stat()
 		if finfo.type == fs.TYPE_DIR:
-			raise FatalError("You tried to download a directory")
+			raise errors.FatalError("You tried to download a directory")
 
 		(ftype, mtype) = mime.filename_to_mimetype(self.entry_name)
 
@@ -433,8 +359,8 @@ class LibraryBase(object):
 		resp.headers['Content-length'] = finfo.size
 		return resp
 
-	def _action_upload(self):
-		app.logger.debug("_action_upload()")
+	def action_upload(self):
+		app.logger.debug("action_upload()")
 
 		ret = []
 
@@ -459,7 +385,7 @@ class LibraryBase(object):
 			try:
 				finfo = self.stat(filename)
 				file_already_exists = True
-			except NotFoundError:
+			except errors.NotFoundError:
 				file_already_exists = False
 			except Exception as ex:
 				(title, msg) = self.decode_exception(ex)
@@ -497,19 +423,19 @@ class LibraryBase(object):
 
 		return jsonify({'files': ret})
 
-	def _action_rename(self):
-		app.logger.debug("_action_rename()")
+	def action_rename(self):
+		app.logger.debug("action_rename()")
 
 		try:
 			old_name = request.form['old_name']
 			new_name = request.form['new_name']
 		except KeyError:
-			raise FatalError("Missing parameter")
+			raise errors.FatalError("Missing parameter")
 
 		try:
 			fs.check_name(new_name)
 		except ValueError:
-			raise FatalError("Invalid name")
+			raise errors.FatalError("Invalid name")
 
 		finfo = self.stat(old_name)
 
@@ -518,63 +444,63 @@ class LibraryBase(object):
 		elif finfo.type == fs.TYPE_DIR:
 			typestr = "directory"
 		else:
-			raise FatalError("You can only rename files or directories")
+			raise errors.FatalError("You can only rename files or directories")
 
 		self.rename(old_name, new_name)
 		return self.success("The " + typestr + " '" + old_name + "' was renamed to '" + new_name + "' successfully")
 
-	def _action_copy(self):
-		app.logger.debug("_action_copy()")
+	def action_copy(self):
+		app.logger.debug("action_copy()")
 
 		try:
 			src  = request.form['src']
 			dest = request.form['dest']
 		except KeyError:
-			raise FatalError("Missing parameter")
+			raise errors.FatalError("Missing parameter")
 
 		try:
 			fs.check_name(dest)
 		except ValueError:
-			raise FatalError("Invalid name")
+			raise errors.FatalError("Invalid name")
 
 		# Ensure the src file exists and is not a directory
 		src_finfo = self.stat(src)
 
 		if src_finfo.type != fs.TYPE_FILE:
-			raise FatalError("The source item must be a file")
+			raise errors.FatalError("The source item must be a file")
 
 		# Make sure the dest file does not exist
 		try:
 			self.stat(dest)
-		except NotFoundError:
-			raise FatalError("The destination filename already exists")
+		except errors.NotFoundError:
+			raise errors.FatalError("The destination filename already exists")
 
 		self.copy(src, dest, src_finfo.size)
 		return self.success('A copy of "' + src + '" was created as "' + dest + '"')
 
-	def _action_mkdir(self):
-		app.logger.debug("_action_mkdir()")
+	def action_mkdir(self):
+		app.logger.debug("action_mkdir()")
 
 		try:
 			name = request.form['name']
 		except KeyError:
-			raise FatalError("Missing parameter")
+			raise errors.FatalError("Missing parameter")
 
 		try:
 			fs.check_name(name)
 		except ValueError:
-			raise FatalError("Invalid directory name")
+			raise errors.FatalError("Invalid directory name")
 
 		self.mkdir(name)
 		return self.success("The directory '" + name + "' was created successfully.")
 
-	def _action_delete(self):
-		app.logger.debug("_action_delete()")
+	def action_delete(self):
+		app.logger.debug("action_delete()")
 
 		try:
 			name = request.form['name']
 		except KeyError:
-			raise FatalError("Missing parameter")
+			raise errors.FatalError("Missing parameter")
 
 		finfo = self.stat(name)
 
@@ -587,4 +513,33 @@ class LibraryBase(object):
 			return self.success("The file '" + name + "' was deleted")
 
 		else:
-			return FatalError("You tried to delete something other than a file or directory")
+			return errors.FatalError("You tried to delete something other than a file or directory")
+
+	def rsearch(self, path_suffix=None):
+		app.logger.warn("rsearch called: " + unicode(path_suffix))
+
+		try:
+			(files, dirs, shares) = self.ls(path_suffix, strip_data=False)
+		except Exception as ex:
+			app.logger.warn("Search encountered an exception, " + type(ex).__name__ + ": " + unicode(ex))
+			return
+
+		entries = files + dirs
+		for entry in entries:
+			if int(time()) >= self.timeout_at:
+				self.timeout_reached = True
+				break
+
+			if self.query.lower() in entry['name'].lower():
+				entry['parent_path'] = self.path
+				if path_suffix is not None:
+					if len(self.path) > 0:
+						entry['parent_path'] = self.path + '/' + path_suffix
+				self.results.append(entry)
+
+			# Search subdirectories if we found one
+			if entry['type'] == fs.TYPE_DIR:
+				if path_suffix is not None:
+					self.rsearch(path_suffix + '/' + entry['name'])
+				else:
+					self.rsearch(entry['name'])

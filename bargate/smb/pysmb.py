@@ -16,7 +16,6 @@
 
 import socket
 import tempfile
-import time
 import errno
 import traceback
 
@@ -26,12 +25,12 @@ from smb.smb_structs import UnsupportedFeature, ProtocolError, OperationFailure
 from flask import session
 from flask import current_app as app
 
-from bargate.lib import fs, user
-from bargate.smb import LibraryBase, Entry, NotFoundError, FatalError
+from bargate.lib import fs, user, errors
+from bargate.smb import LibraryBase, DirectoryEntry
 from bargate.smb.pysmb_errors import OperationFailureDecode
 
 
-class EntryData(Entry):
+class EntryData(DirectoryEntry):
 	"""A wrapper class to provide a consistent interface to file information across backends"""
 
 	def __init__(self, shared_file):
@@ -106,7 +105,7 @@ class BargateSMBLibrary(LibraryBase):
 			domain=app.config['SMB_WORKGROUP'], use_ntlm_v2=True, is_direct_tcp=True)
 
 		if not self.conn.connect(self.server_name, port=445, timeout=5):
-			raise FatalError("Could not connect to the file server")
+			raise errors.FatalError("Could not connect to the file server")
 
 	def decode_exception(self, ex):
 		"""Determine a human friendly title and description based on the exception passed"""
@@ -151,32 +150,58 @@ class BargateSMBLibrary(LibraryBase):
 		else:
 			return ("Error", type(ex).__name__ + ": " + str(ex))
 
-	def ls(self):
+	def ls(self, path_suffix=None, strip_data=True):
+		app.logger.debug("ls called with " + str(path_suffix))
 		files  = []
 		dirs   = []
 		shares = []
 
-		if self.share_name is None:
-			smb_shares = self.conn.listShares()
-			for share in smb_shares:
-				if share.type == SharedDevice.DISK_TREE:
-					shares.append({'name': share.name})
+		if path_suffix is None:
+			if self.share_name is None:
+				smb_shares = self.conn.listShares()
+				for share in smb_shares:
+					if share.type == SharedDevice.DISK_TREE:
+						shares.append({'name': share.name})
 
+				return (files, dirs, shares)
+			else:
+				ls_path = self.path
+				ls_share_name = self.share_name
+				ls_path_without_share = self.path_without_share
 		else:
-			directory_entries = self.conn.listPath(self.share_name, self.path_without_share)
+			if len(self.path) > 0:
+				ls_path = self.path + '/' + path_suffix
+			else:
+				ls_path = path_suffix
 
-			for shared_file in directory_entries:
-				entry = EntryData(shared_file).to_dict(self.path)
+			if self.share_name is None:
+				parts = path_suffix.split('/')
+				ls_share_name = parts[0]
+				ls_path_without_share = '/'.join(parts[1:])
+			else:
+				ls_share_name = self.share_name
+				if len(self.path_without_share) > 0:
+					ls_path_without_share = self.path_without_share + '/' + path_suffix
+				else:
+					ls_path_without_share = path_suffix
 
-				if not entry['skip']:
-					etype = entry['type']
+		app.logger.debug("listPath " + ls_share_name + " -- " + ls_path_without_share)
+
+		directory_entries = self.conn.listPath(ls_share_name, ls_path_without_share)
+
+		for shared_file in directory_entries:
+			entry = EntryData(shared_file).to_dict(ls_path)
+
+			if not entry['skip']:
+				etype = entry['type']
+				if strip_data:
 					entry.pop('skip', None)
 					entry.pop('type', None)
 
-					if etype == fs.TYPE_FILE:
-						files.append(entry)
-					elif etype == fs.TYPE_DIR:
-						dirs.append(entry)
+				if etype == fs.TYPE_FILE:
+					files.append(entry)
+				elif etype == fs.TYPE_DIR:
+					dirs.append(entry)
 
 		return (files, dirs, shares)
 
@@ -234,7 +259,7 @@ class BargateSMBLibrary(LibraryBase):
 			failure = OperationFailureDecode(ex)
 			if failure.err is not None:
 				if failure.err is errno.ENOENT:
-					raise NotFoundError()
+					raise errors.NotFoundError()
 
 			raise ex
 
@@ -245,52 +270,3 @@ class BargateSMBLibrary(LibraryBase):
 	def delete_dir(self, name):
 		path = self.path_without_share + "/" + name
 		self.conn.deleteDirectory(self.share_name, path)
-
-	def _search(self, query):
-		self.query           = query
-		self.timeout_reached = False
-		self.results         = []
-
-		self.timeout_at = int(time.time()) + app.config['SEARCH_TIMEOUT']
-		self._rsearch(self.path, self.path_without_share)
-		return self.results, self.timeout_reached
-
-	def _rsearch(self, path, path_without_share):
-		app.logger.debug("rsearch " + path + " , " + path_without_share)
-		try:
-			directory_entries = self.conn.listPath(self.share_name, path_without_share)
-		except Exception as ex:
-			app.logger.debug("Search encountered an exception, " + type(ex).__name__ + ": " + str(ex))
-			return
-
-		for sfile in directory_entries:
-			# don't keep searching if we reach the timeout
-			if self.timeout_reached:
-				break
-			elif int(time.time()) >= self.timeout_at:
-				self.timeout_reached = True
-				break
-
-			entry = EntryData(sfile).to_dict(path, include_path=True)
-
-			# Skip hidden files
-			if entry['skip']:
-				continue
-
-			if self.query.lower() in entry['name'].lower():
-				entry['parent_path'] = path
-				self.results.append(entry)
-
-			# Search subdirectories if we found one
-			if entry['type'] == fs.TYPE_DIR:
-				if len(path) > 0:
-					sub_path = path + "/" + entry['name']
-				else:
-					sub_path = entry['name']
-
-				if len(path_without_share) > 0:
-					sub_path_without_share = path_without_share + "/" + entry['name']
-				else:
-					sub_path_without_share = entry['name']
-
-				self._rsearch(sub_path, sub_path_without_share)

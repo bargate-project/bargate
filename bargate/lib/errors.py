@@ -22,6 +22,14 @@ from flask import render_template, make_response, g, jsonify, request, session
 from flask import current_app as app
 
 
+class FatalError(Exception):
+	pass
+
+
+class NotFoundError(Exception):
+	pass
+
+
 def stderr(title, message, http_return_code=200):
 	try:
 		if g.get('response_type', 'html') == 'json':

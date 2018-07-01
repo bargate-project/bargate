@@ -15,6 +15,4 @@
 # along with Bargate.  If not, see <http://www.gnu.org/licenses/>.
 
 from .base import LibraryBase # noqa
-from .base import Entry # noqa
-from .base import FatalError # noqa
-from .base import NotFoundError # noqa
+from .directory_entry import DirectoryEntry # noqa

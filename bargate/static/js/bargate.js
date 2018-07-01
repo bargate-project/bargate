@@ -21,6 +21,7 @@ var $err = {
 			reason = textStatus;
 		}
 
+		console.log("Error! " + title + ": " + message + ": " + reason);
 		this.show(title, message + ": " + reason);
 	},
 	nonzero: function(title, message, code) {
@@ -98,6 +99,7 @@ function filesizeformat(bytes) {
 
 var $dir = {
 	sortBy: 'name',
+	loading: false,
 
 	draw: function() {
 		try {
@@ -237,9 +239,16 @@ var $dir = {
 	},
 
 	load: function(epname, path, alterHist) {
-		console.log("load: " + epname + " - " + path);
 		var self = this;
 		if (alterHist === undefined) { alterHist = true; }
+
+		if (self.loading === true) {
+			console.log("ignoring duplicate load");
+			return;
+		} else {
+			console.log("loading");
+			self.loading = true;
+		}
 
 		$.getJSON('/api/smb/ls/' + epname + '/' + path)
 		.done(function(data) {
@@ -277,11 +286,12 @@ var $dir = {
 					new_url = data.epurl + '/browse/' + path;
 					history.pushState({epname: epname, epurl: data.epurl, path: path}, '', new_url);
 				}
-                console.log("finished load:");
+				self.loading = false;
 			}
 		})
 		.fail(function(jqXHR, textStatus, errorThrown) {
 			$err.fail("Unable to open folder", "Could not load folder contents", jqXHR, textStatus, errorThrown);
+			self.loading = false;
 		});
 	},
 
@@ -540,7 +550,7 @@ var $settings = {
 		$mdl.draw('settings');
 
 		$('input[name=layout-r]').change(function() {
-			console.log("layout-r change");
+			//console.log("layout-r change");
 			self.layout(this.value);
 		});
 
@@ -636,8 +646,8 @@ var $click = {
 		if (selector) { selector = selector + ' '; } else { selector = ''; }
 
 		$(selector + "[data-click]").click(function (e) {
-            console.log("data-click handler");
-            console.log(e);
+            //console.log("data-click handler");
+            //console.log(e);
 			e.preventDefault();
 			//e.stopPropagation();
 			self[$(this).data('click')](e);
@@ -706,8 +716,8 @@ var $click = {
 	},
 
 	link: function(e) {
-		console.log("link function handler");
-		console.log($(e.currentTarget).data('ep') + " " + $(e.currentTarget).data('path'));
+		//console.log("link function handler");
+		//console.log($(e.currentTarget).data('ep') + " " + $(e.currentTarget).data('path'));
 		$dir.load($(e.currentTarget).data('ep'), $(e.currentTarget).data('path'));
 	},
 

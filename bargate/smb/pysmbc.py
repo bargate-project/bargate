@@ -17,18 +17,17 @@
 import os
 import io
 import stat
-import time
 import tempfile
 
 import smbc
 from flask import current_app as app
 
-from bargate.lib import fs
-from bargate.smb import LibraryBase, Entry, FatalError, NotFoundError
+from bargate.lib import fs, errors
+from bargate.smb import LibraryBase, DirectoryEntry
 from bargate.smb.libsmbclient import SMBClient
 
 
-class EntryData(Entry):
+class EntryData(DirectoryEntry):
 	def __init__(self, name, fstat):
 
 		self.size  = fstat[6]
@@ -117,15 +116,19 @@ class BargateSMBLibrary(LibraryBase):
 	def connect(self):
 		self.libsmbclient = SMBClient()
 
-	def ls(self):
+	def ls(self, path_suffix=None):
 		files  = []
 		dirs   = []
 		shares = []
 
-		directory_entries = self.libsmbclient.ls(self.addr)
+		if path_suffix is not None:
+			ls_addr = self.addr + "/" + path_suffix
+			ls_path = self.path + '/' + path_suffix
+
+		directory_entries = self.libsmbclient.ls(ls_addr)
 
 		for smbc_dirent in directory_entries:
-			entry = self.stat(smbc_dirent.name).to_dict(self.path)
+			entry = self.stat(smbc_dirent.name).to_dict(ls_path)
 
 			if not entry['skip']:
 				etype = entry['type']
@@ -216,7 +219,7 @@ class BargateSMBLibrary(LibraryBase):
 			return EntryData(name, self.libsmbclient.stat(path))
 
 		except smbc.NoEntryError:
-			raise NotFoundError()
+			raise errors.NotFoundError()
 
 	def delete_file(self, name):
 		path  = self.addr + "/" + name
@@ -228,57 +231,6 @@ class BargateSMBLibrary(LibraryBase):
 		contents = self.libsmbclient.ls(path)
 		contents = filter(lambda s: not (s.name == '.' or s.name == '..'), contents)
 		if len(contents) > 0:
-			raise FatalError("The directory is not empty")
+			raise errors.FatalError("The directory is not empty")
 
 		self.libsmbclient.rmdir(path)
-
-	def _search(self, query):
-		self.query           = query
-		self.timeout_reached = False
-		self.results         = []
-
-		self.timeout_at = int(time.time()) + app.config['SEARCH_TIMEOUT']
-		self._rsearch(self.path)
-		return (self.results, self.timeout_reached)
-
-	def _rsearch(self, path):
-		# Try getting directory contents of where we are
-		app.logger.debug("_rsearch called to search: " + path)
-		try:
-			directory_entries = self.libsmbclient.ls(self.addr + path)
-		except smbc.NotDirectoryError as ex:
-			return
-		except Exception as ex:
-			app.logger.info("Search encountered an exception " + type(ex).__name__ + ": " + str(ex))
-			return
-
-		# now loop over each entry
-		for dentry in directory_entries:
-
-			# don't keep searching if we reach the timeout
-			if self.timeout_reached:
-				break
-			elif int(time.time()) >= self.timeout_at:
-				self.timeout_reached = True
-				break
-
-			entry = self.stat(dentry.name).to_dict(path, include_path=True)
-
-			# Skip hidden files
-			if entry['skip']:
-				continue
-
-			# Check if the filename matched
-			if self.query.lower() in entry['name'].lower():
-				app.logger.debug("_rsearch: Matched: " + entry['name'])
-				entry['parent_path'] = path
-				self.results.append(entry)
-
-			# Search subdirectories if we found one
-			if entry['type'] == fs.TYPE_DIR:
-				if len(path) > 0:
-					sub_path = path + "/" + entry['name']
-				else:
-					sub_path = entry['name']
-
-				self._rsearch(sub_path)
