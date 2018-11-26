@@ -23,16 +23,12 @@ from flask import current_app as app
 THEMES = {'cerulean': ['navbar-dark', 'bg-primary'],
 	'cosmo': ['navbar-dark', 'bg-dark'],
 	'flatly': ['navbar-dark', 'bg-primary'],
-	'journal': ['navbar-dark', 'bg-primary'],
 	'litera': ['navbar-light', 'bg-light'],
 	'lumen': ['navbar-dark', 'bg-primary'],
 	'lux': ['navbar-dark', 'bg-dark'],
 	'materia': ['navbar-dark', 'bg-primary'],
-	'minty': ['navbar-dark', 'bg-primary'],
 	'pulse': ['navbar-dark', 'bg-primary'],
-	'simplex': ['navbar-dark', 'bg-dark'],
 	'strap': ['navbar-dark', 'bg-primary'],
-	'united': ['navbar-light', 'bg-light'],
 	'yeti': ['navbar-dark', 'bg-dark']}
 
 

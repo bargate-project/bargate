@@ -60,6 +60,7 @@ def context_processor():
 
 	data = {}
 	data['bookmarks'] = []
+	data['themes'] = userdata.THEMES.keys()
 	data['user_theme'] = app.config['THEME_DEFAULT']
 	data['theme_classes'] = 'navbar-dark bg-primary'
 

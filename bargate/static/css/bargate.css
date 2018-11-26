@@ -2,6 +2,10 @@ html, body {
 	height: 100%;
 }
 
+body {
+	padding-top: 54px;
+}
+
 .changelog {
 	list-style: none;
 	margin: 0 0 10px 10px;
@@ -49,7 +53,7 @@ html, body {
 	top: 0;
 }
 
-/* Prevent themes from putting borders on tables */ 
+/* Prevent themes from putting borders on tables */
 .table-nl>thead>tr>th, .table-nl>tbody>tr>th, .table-nl>tfoot>tr>th, .table-nl>thead>tr>td, .table-nl>tbody>tr>td, .table-nl>tfoot>tr>td {
 	border-bottom: none;
 	border-top: none;
@@ -121,7 +125,7 @@ html, body {
 	}
 }
 
-/* four icons - small desktops */ 
+/* four icons - small desktops */
 @media (min-width: 768px) {
 	.gridview {
 		padding-left: 12px;
@@ -139,14 +143,14 @@ html, body {
 
 }
 
-/* six icons - medium desktops */ 
+/* six icons - medium desktops */
 @media (min-width: 992px) {
 	.grid-entry {
 		width: calc(16.666666667% - 12px);
 	}
 }
 
-/* eight icons - large desktops */ 
+/* eight icons - large desktops */
 @media (min-width: 1200px) {
 	.grid-entry {
 		width: calc(12.5% - 12px);
@@ -377,7 +381,7 @@ table.dataTable { /* csslint allow: overqualified-elements */
 	opacity: 0.95;
 }
 
-#e-delete-n { 
+#e-delete-n {
 	word-wrap: break-word;
 }
 
@@ -397,6 +401,62 @@ table.dataTable { /* csslint allow: overqualified-elements */
 }
 
 /* stop bootstraps stupid padding-right nonsense for scrollbars */
-.fixed-top, body {
+/*.fixed-top, body {
 	padding-right: 0 !important;  /* csslint allow: important */
+/*}*/
+
+.dside {
+	z-index: 1;
+	position: fixed;
+	top: 54px; /* Height of navbar */
+	bottom: 0;
+	width: 70%;
+	height: 100%;
+	padding-right: 1rem; /* csslint allow: box-model */
+	padding-left: 1rem; /* csslint allow: box-model */
+	overflow-y: auto;
+	transition-timing-function: ease-in-out;
+	transition-duration: .25s;
+	transition-property: left, visibility;
+}
+
+@media (max-width: 991.98px) {
+	.dside {
+		left: -100%;
+		width: 50%;
+		visibility: hidden;
+	}
+
+	.dside-open {
+		left: 0;
+		visibility: visible;
+		box-shadow: 5px 0 5px 0 rgba(0,0,0,0.68);
+	}
+}
+
+@media (min-width: 992px) {
+	.dside {
+		width: 200px;
+	}
+	.dmain {
+		margin-left: 200px;
+	}
+}
+
+@media (min-width: 1440px) {
+	.dside {
+		width: 200px;
+	}
+	.dmain {
+		margin-left: 200px;
+	}
+}
+
+@media (min-width: 1800px) {
+	.dside {
+		width: 250px;
+	}
+	.dmain {
+		margin-left: 250px;
+	}
 }

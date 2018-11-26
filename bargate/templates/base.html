@@ -8,9 +8,11 @@
 		<meta name="mobile-web-app-capable" content="yes">
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<link rel="icon" type="image/png" href="{{ favicon }}">
-		<link rel="stylesheet" href="{{ url_for('static', filename='themes/' + user_theme + '/bootstrap.min.css') }}" id="theme-l">
-		<link rel="stylesheet" href="{{ url_for('static', filename='themes/' + user_theme + '/' + user_theme + '.css') }}" id="theme-o-l">
+		{% for theme in themes %}
+		<link class="utheme" rel="{%if theme == user_theme%}alternate {%endif%}stylesheet" href="{{ url_for('static', filename='themes/' + theme + '.css') }}" title="{{theme}}">
+		{% endfor %}
 		<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css" crossorigin="anonymous" />
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/bargate.min.css') }}">
 		{% include 'js.html' %}
 		<script src="{{ url_for('static', filename='js/bootstrap-notify.min.js') }}" defer></script>
@@ -34,23 +36,23 @@
 			</div>
 			{% block modals %}{% endblock %}
 		</div>
-		<div id="nav" class="fixed-top">
-			<nav class="navbar navbar-themed navbar-expand-sm py-2 px-1 px-md-3{% for cls in theme_classes %} {{cls}}{%endfor%}">
-					<span data-click="mobile" class="navbar-brand mx-2 d-inline-block d-md-none"><i class="fas fa-fw fa-lg fa-bars"></i></span>
+			<nav class="navbar fixed-top navbar-expand py-2 px-2{% for cls in theme_classes %} {{cls}}{%endfor%}">
+					<span data-click="mobile" class="navbar-brand mx-2 d-inline-block d-lg-none"><i class="fas fa-fw fa-lg fa-bars"></i></span>
+					<!--<div id="crumbs"></div>-->
 					{%- if session.logged_in %}
-					<span class="navbar-brand">
+					<!--<span class="navbar-brand">
 						<span class="d-none d-none d-lg-block">{{ config['APP_DISPLAY_NAME'] }}</span>
 						<span class="d-block d-lg-none">{{ config['APP_DISPLAY_NAME_SHORT'] }}</span>
-					</span>
+					</span>-->
 					{%- else %}
 					<a href="{{ url_for('login') }}" class="navbar-brand"><i class="fas fa-arrow-circle-left"></i> Back to Login</a>
 					{%- endif %}
 
 					{%- if session.logged_in %}
-						<ul class="navbar-nav d-none d-md-flex">
+						<!--<ul class="navbar-nav d-none d-md-flex">
 							{%- include 'menus/dropdown.html' %}
 							{%- include 'menus/bookmarks.html' %}
-						</ul>
+						</ul>-->
 
 						<form class="ml-auto">
 							{% if browse_mode %}
@@ -64,7 +66,7 @@
 								<button class="btn btn-secondary b-dir" type="button" id="sortMenu" data-toggle="dropdown" aria-label="Sort by" aria-haspopup="true" aria-expanded="false" data-tooltip="yes" title="Sort by">
 								<i class="fas fa-fw fa-lg fa-sort"></i>
 								</button>
-								<div class="dropdown-menu" aria-labelledby="sortMenu">
+								<div class="dropdown-menu dropdown-menu-right" aria-labelledby="sortMenu">
 									<a href="#" class="dropdown-item" data-sort="name"><span><i class="fas fa-fw fa-check"></i></span> Name</a>
 									<a href="#" class="dropdown-item" data-sort="type"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Type</a>
 									<a href="#" class="dropdown-item" data-sort="mtime"><span class="d-none"><i class="fas fa-fw fa-check"></i></span> Modified</a>
@@ -90,7 +92,7 @@
 							</div>
 							{%- endif %}
 
-							<div class="dropdown d-none d-md-inline-block">
+							<!--<div class="dropdown d-none d-md-inline-block">
 								<button class="btn btn-secondary" type="button" id="mainMenu" data-toggle="dropdown" data-tooltip="yes" title="Menu" aria-haspopup="true" aria-expanded="false">
 								<i class="fas fa-fw fa-lg fa-ellipsis-v"></i>
 								</button>
@@ -99,14 +101,16 @@
 									<div class="dropdown-divider"></div>
 									<a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt fa-fw"></i> Sign out</a>
 								</div>
-							</div>
+							</div>-->
 						</form>
 					{% endif %}
 			</nav>
-			<div id="crumbs" class="bg-light"></div>
-		</div>
-		<div id="main" class="container-fluid container-body p-0 m-0">
-			{% block body %}{% endblock -%}
+		<div class="container-fluid m-0 p-0">
+				<div class="dside bg-light text-dark">
+				</div>
+				<div class="dmain">
+					{% block body %}{% endblock -%}
+				</div>
 		</div>
 		<script>$(document).ready(function($) { init({%- if browse_mode %}"{{epname}}", "{{epurl}}", "{{path}}"{%endif%})});</script>
 		<input id="upload-i" type="file" name="files[]" multiple class="d-none">

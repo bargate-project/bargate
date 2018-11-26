@@ -2,10 +2,6 @@ var $user = {hidden: false, overwrite: false, twostep: false};
 var $config = {};
 var dragCounter = 0;
 
-function set_body_padding() {
-	$('body').css('padding-top', $('#nav').outerHeight(true));
-}
-
 var $err = {
 	show: function(title, desc) {
 		$mdl.draw('error', {title: title, desc: desc}).show();
@@ -100,20 +96,15 @@ function filesizeformat(bytes) {
 var $dir = {
 	sortBy: 'name',
 	loading: false,
+	count: 0,
 
 	draw: function() {
-		try {
-			window.stop();
-		} catch (exception) {
-			document.execCommand('Stop');
-		}
-
 		$('#crumbs').html(nunjucks.render('breadcrumbs.html', { crumbs: this.data.crumbs, root_name: this.data.root_name }));
 
 		if (this.data.no_items) {
-			$('#main').html(nunjucks.render('empty.html'));
+			$('.dmain').html(nunjucks.render('empty.html'));
 		} else {
-			$('#main').html(nunjucks.render('directory-' + $user.layout + '.html', {dirs: this.data.dirs, files: this.data.files, shares: this.data.shares, buildurl: buildurl}));
+			$('.dmain').html(nunjucks.render('directory-' + $user.layout + '.html', {dirs: this.data.dirs, files: this.data.files, shares: this.data.shares, buildurl: buildurl}));
 		}
 
 		if ($user.layout == "list") {
@@ -124,7 +115,6 @@ var $dir = {
 		}
 
 		this.bind();
-		set_body_padding();
 	},
 
 	draw_list: function() {
@@ -200,7 +190,7 @@ var $dir = {
 	},
 
 	bind: function() {
-		$click.bind('#main');
+		$click.bind('.dmain');
 		$click.bind('#crumbs');
 
 		/* right click menu for files */
@@ -243,10 +233,9 @@ var $dir = {
 		if (alterHist === undefined) { alterHist = true; }
 
 		if (self.loading === true) {
-			console.log("ignoring duplicate load");
+			console.log("ignoring rage click");
 			return;
 		} else {
-			console.log("loading");
 			self.loading = true;
 		}
 
@@ -290,8 +279,8 @@ var $dir = {
 			}
 		})
 		.fail(function(jqXHR, textStatus, errorThrown) {
-			$err.fail("Unable to open folder", "Could not load folder contents", jqXHR, textStatus, errorThrown);
 			self.loading = false;
+			$err.fail("Unable to open folder", "Could not load folder contents", jqXHR, textStatus, errorThrown);
 		});
 	},
 
@@ -496,7 +485,7 @@ var $fsub = {
 				$('.b-layout').attr("disabled", true).addClass("disabled");
 				$('[data-click="bmark"]').addClass('disabled');
 
-				$('#main').html(nunjucks.render('search.html', data));
+				$('.dmain').html(nunjucks.render('search.html', data));
 
 				$('#results').DataTable({
 					"paging": false,
@@ -622,7 +611,6 @@ var $settings = {
 
 				setTimeout(function() {
 					$("body").css('display', 'block');
-					set_body_padding();
 				}, 100);
 			});
 
@@ -687,7 +675,8 @@ var $click = {
 	},
 
 	mobile: function() {
-		$mdl.draw('mobile').show().side();
+		//$mdl.draw('mobile').show().side();
+		$('.dside').toggleClass('dside-open');
 	},
 
 	about: function() {
@@ -852,11 +841,11 @@ function init(epname, epurl, path) {
 			$user = data.user;
 			$config = data.config;
 
-			set_body_padding();
 
-			$( window ).resize(function() {
-			  set_body_padding();
-			});
+			mdata = {};
+			mdata.config = $config;
+			mdata.user = $user;
+			$('.dside').html(nunjucks.render("modals/mobile.html", mdata));
 
 			$click.bind();
 			$fsub.bind();
